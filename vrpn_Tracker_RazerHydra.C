@@ -20,6 +20,7 @@
 // Internal Includes
 #include "vrpn_Tracker_RazerHydra.h"
 #include "quat.h"
+#include "vrpn_BufferUtils.h"
 
 // Library/third-party includes
 // - none
@@ -49,22 +50,6 @@ static const int HYDRA_FEATURE_REPORT_LEN = 91;
 
 /// 5 seconds is as long as we give it to settle down into a mode.
 static const unsigned long MAXIMUM_WAIT_USEC = 5000000L;
-
-template<typename T, typename ByteT>
-static inline T unbufferLittleEndian(ByteT * & input) {
-	/// @todo make this a static assertion
-	assert(sizeof(ByteT) == 1);
-
-	union {
-		ByteT bytes[sizeof(T)];
-		T value;
-	};
-	for (int i = 0; i < sizeof(T); ++i) {
-		bytes[i] = input[i];
-	}
-	input += sizeof(T);
-	return value;
-}
 
 
 static inline unsigned long duration(struct timeval t1, struct timeval t2) {
@@ -221,16 +206,15 @@ void vrpn_Tracker_RazerHydra::_report_for_sensor(int sensorNum, vrpn_uint8 * dat
 	const int buttonOffset = sensorNum * 8;
 
 	d_sensor = sensorNum;
+	pos[0] = vrpn_unbuffer_from_little_endian<vrpn_int16>(data) * MM_PER_METER;
+	pos[1] = vrpn_unbuffer_from_little_endian<vrpn_int16>(data) * MM_PER_METER;
+	pos[2] = vrpn_unbuffer_from_little_endian<vrpn_int16>(data) * MM_PER_METER;
 
-	pos[0] = unbufferLittleEndian<vrpn_int16>(data) * MM_PER_METER;
-	pos[1] = unbufferLittleEndian<vrpn_int16>(data) * MM_PER_METER;
-	pos[2] = unbufferLittleEndian<vrpn_int16>(data) * MM_PER_METER;
-
-	d_quat[Q_W] = unbufferLittleEndian<vrpn_int16>(data) * SCALE_INT16_TO_FLOAT_PLUSMINUS_1;
-	d_quat[Q_X] = unbufferLittleEndian<vrpn_int16>(data) * SCALE_INT16_TO_FLOAT_PLUSMINUS_1;
-	d_quat[Q_Y] = unbufferLittleEndian<vrpn_int16>(data) * SCALE_INT16_TO_FLOAT_PLUSMINUS_1;
-	d_quat[Q_Z] = unbufferLittleEndian<vrpn_int16>(data) * SCALE_INT16_TO_FLOAT_PLUSMINUS_1;
-	vrpn_uint8 buttonBits = unbufferLittleEndian<vrpn_uint8>(data);
+	d_quat[Q_W] = vrpn_unbuffer_from_little_endian<vrpn_int16>(data) * SCALE_INT16_TO_FLOAT_PLUSMINUS_1;
+	d_quat[Q_X] = vrpn_unbuffer_from_little_endian<vrpn_int16>(data) * SCALE_INT16_TO_FLOAT_PLUSMINUS_1;
+	d_quat[Q_Y] = vrpn_unbuffer_from_little_endian<vrpn_int16>(data) * SCALE_INT16_TO_FLOAT_PLUSMINUS_1;
+	d_quat[Q_Z] = vrpn_unbuffer_from_little_endian<vrpn_int16>(data) * SCALE_INT16_TO_FLOAT_PLUSMINUS_1;
+	vrpn_uint8 buttonBits = vrpn_unbuffer_from_little_endian<vrpn_uint8>(data);
 
 	/// "middle" button
 	buttons[0 + buttonOffset] = buttonBits & 0x20;
@@ -248,11 +232,11 @@ void vrpn_Tracker_RazerHydra::_report_for_sensor(int sensorNum, vrpn_uint8 * dat
 	buttons[6 + buttonOffset] = buttonBits & 0x40;
 
 	/// Joystick X, Y
-	channel[0 + channelOffset] = unbufferLittleEndian<vrpn_int16>(data) * SCALE_INT16_TO_FLOAT_PLUSMINUS_1;
-	channel[1 + channelOffset] = unbufferLittleEndian<vrpn_int16>(data) * SCALE_INT16_TO_FLOAT_PLUSMINUS_1;
+	channel[0 + channelOffset] = vrpn_unbuffer_from_little_endian<vrpn_int16>(data) * SCALE_INT16_TO_FLOAT_PLUSMINUS_1;
+	channel[1 + channelOffset] = vrpn_unbuffer_from_little_endian<vrpn_int16>(data) * SCALE_INT16_TO_FLOAT_PLUSMINUS_1;
 
 	/// Trigger analog
-	channel[2 + channelOffset] = unbufferLittleEndian<vrpn_uint8>(data) * SCALE_UINT8_TO_FLOAT_0_TO_1;
+	channel[2 + channelOffset] = vrpn_unbuffer_from_little_endian<vrpn_uint8>(data) * SCALE_UINT8_TO_FLOAT_0_TO_1;
 
 	char msgbuf[512];
 	int len = vrpn_Tracker::encode_to(msgbuf);
