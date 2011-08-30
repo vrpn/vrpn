@@ -509,11 +509,6 @@ int vrpn_unbuffer (const char ** buffer, char * cval) {
   return 0;
 }
 
-int vrpn_unbuffer (const vrpn_uint8 ** buffer, char * cval) {
-  *cval = vrpn_unbuffer<char>(*buffer);
-  return 0;
-}
-
 /** Utility routine for taking a vrpn_int16 from a buffer that
     was sent as a message. Handles unpacking from an
     unaligned buffer, because people did this anyway. Advances the reading
@@ -527,11 +522,6 @@ int vrpn_unbuffer (const vrpn_uint8 ** buffer, char * cval) {
 */
 
 int vrpn_unbuffer (const char ** buffer, vrpn_int16 * lval)
-{
-    *lval = vrpn_unbuffer<vrpn_int16>(*buffer);
-    return 0;
-}
-int vrpn_unbuffer (const vrpn_uint8 ** buffer, vrpn_int16 * lval)
 {
     *lval = vrpn_unbuffer<vrpn_int16>(*buffer);
     return 0;
@@ -555,12 +545,6 @@ int vrpn_unbuffer (const char ** buffer, vrpn_uint16 * lval)
     return 0;
 }
 
-int vrpn_unbuffer (const vrpn_uint8 ** buffer, vrpn_uint16 * lval)
-{
-    *lval = vrpn_unbuffer<vrpn_uint16>(*buffer);
-    return 0;
-}
-
 /** Utility routine for taking a vrpn_int32 from a buffer that
     was sent as a message. Handles unpacking from an
     unaligned buffer, because people did this anyway. Advances the reading
@@ -574,12 +558,6 @@ int vrpn_unbuffer (const vrpn_uint8 ** buffer, vrpn_uint16 * lval)
 */
 
 int vrpn_unbuffer (const char ** buffer, vrpn_int32 * lval)
-{
-    *lval = vrpn_unbuffer<vrpn_int32>(*buffer);
-    return 0;
-}
-
-int vrpn_unbuffer (const vrpn_uint8 ** buffer, vrpn_int32 * lval)
 {
     *lval = vrpn_unbuffer<vrpn_int32>(*buffer);
     return 0;
@@ -603,12 +581,6 @@ int vrpn_unbuffer (const char ** buffer, vrpn_uint32 * lval)
     return 0;
 }
 
-int vrpn_unbuffer (const vrpn_uint8 ** buffer, vrpn_uint32 * lval)
-{
-    *lval = vrpn_unbuffer<vrpn_uint32>(*buffer);
-    return 0;
-}
-
 /** Utility routine for taking a vrpn_float32 from a buffer that
     was sent as a message. Handles unpacking from an
     unaligned buffer, because people did this anyway. Advances the reading
@@ -622,12 +594,6 @@ int vrpn_unbuffer (const vrpn_uint8 ** buffer, vrpn_uint32 * lval)
 */
 
 int vrpn_unbuffer (const char ** buffer, vrpn_float32 * fval)
-{
-    *fval = vrpn_unbuffer<vrpn_float32>(*buffer);
-    return 0;
-}
-
-int vrpn_unbuffer (const vrpn_uint8 ** buffer, vrpn_float32 * fval)
 {
     *fval = vrpn_unbuffer<vrpn_float32>(*buffer);
     return 0;
@@ -653,12 +619,6 @@ int vrpn_unbuffer (const char ** buffer, vrpn_float64 * dval)
     return 0;
 }
 
-int vrpn_unbuffer (const vrpn_uint8 ** buffer, vrpn_float64 * dval)
-{
-    *dval = vrpn_unbuffer<vrpn_float64>(*buffer);
-    return 0;
-}
-
 /** Utility routine for taking a struct timeval from a buffer that
     was sent as a message. Handles unpacking from an
     unaligned buffer, because people did this anyway. Advances the reading
@@ -672,19 +632,6 @@ int vrpn_unbuffer (const vrpn_uint8 ** buffer, vrpn_float64 * dval)
 */
 
 int vrpn_unbuffer (const char ** buffer, timeval * t)
-{
-    vrpn_int32 sec, usec;
-
-    CHECK(vrpn_unbuffer(buffer, &sec));
-    CHECK(vrpn_unbuffer(buffer, &usec));
-
-    t->tv_sec = sec;
-    t->tv_usec = usec;
-
-    return 0;
-}
-
-int vrpn_unbuffer (const vrpn_uint8 ** buffer, timeval * t)
 {
     vrpn_int32 sec, usec;
 
@@ -732,38 +679,6 @@ int vrpn_unbuffer (const char ** buffer, char * string,
 
     return 0;
 }
-
-/*
-int vrpn_unbuffer_from_little_endian (const vrpn_uint8 ** buffer, vrpn_int16 * lval) {
-    *lval = vrpn_unbuffer_from_little_endian<vrpn_int16>(*buffer);
-    return 0;
-}
-
-int vrpn_unbuffer_from_little_endian (const vrpn_uint8 ** buffer, vrpn_uint16 * lval) {
-    *lval = vrpn_unbuffer_from_little_endian<vrpn_uint16>(*buffer);
-    return 0;
-}
-
-int vrpn_unbuffer_from_little_endian (const vrpn_uint8 ** buffer, vrpn_int32 * lval) {
-    *lval = vrpn_unbuffer_from_little_endian<vrpn_int32>(*buffer);
-    return 0;
-}
-
-int vrpn_unbuffer_from_little_endian (const vrpn_uint8 ** buffer, vrpn_uint32 * lval) {
-    *lval = vrpn_unbuffer_from_little_endian<vrpn_uint32>(*buffer);
-    return 0;
-}
-
-int vrpn_unbuffer_from_little_endian (const vrpn_uint8 ** buffer, vrpn_float32 * lval) {
-    *lval = vrpn_unbuffer_from_little_endian<vrpn_float32>(*buffer);
-    return 0;
-}
-
-int vrpn_unbuffer_from_little_endian (const vrpn_uint8 ** buffer, vrpn_float64 * lval) {
-    *lval = vrpn_unbuffer_from_little_endian<vrpn_float64>(*buffer);
-    return 0;
-}
-*/
 
 ///////////////////////////////////////////////////////////////
 // More accurate gettimeofday() on some Windows operating systems
