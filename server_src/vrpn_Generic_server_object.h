@@ -116,7 +116,6 @@ class vrpn_Generic_Server_Object
     int setup_Wintracker (char * & pch, char * line, FILE * config_file);
     int setup_Tracker_WiimoteHead (char * & pch, char * line, FILE * /*config_file*/);
     int setup_Freespace (char * & pch, char * line, FILE * /*config_file*/);
-    int setup_DreamCheeky (char * & pch, char * line, FILE * /*config_file*/) ;
     int setup_Tracker_NovintFalcon (char * & pch, char * line, FILE * /*config_file*/);
     int setup_Tracker_TrivisioColibri (char * &pch, char * line, FILE * /*config_file*/);
     int setup_Tracker_GameTrak (char *pch, char *line, FILE * config_file);

@@ -3641,32 +3641,6 @@ int vrpn_Generic_Server_Object::setup_Tracker_GPS(char * & pch, char * line, FIL
   return 0;
 }
 
-int vrpn_Generic_Server_Object::setup_DreamCheeky (char * & pch, char * line, FILE * /*config_file*/)
-{
-  char s2 [LINESIZE];
-
-  VRPN_CONFIG_NEXT();
-  if (sscanf (pch, "%511s", s2) != 1) {
-    fprintf (stderr, "Bad DreamCheeky line: %s\n", line);
-    return -1;
-  }
-
-#if defined(VRPN_USE_HID)
-
-  // Open the DreamCheeky
-  // Open the button
-  if (verbose) {
-    printf ("Opening vrpn_Dream_Cheeky_USB_roll_up_drums as device %s\n", s2);
-  }
-  _devices->add(new vrpn_DreamCheeky_Drum_Kit (s2, connection));
-
-  return 0;  // successful completion
-
-#else
-  fprintf (stderr, "vrpn_DreamCheeky not yet implemented for this architecture.\n");
-  return -1;
-#endif
-}
 
 int vrpn_Generic_Server_Object::setup_Tracker_TrivisioColibri (char * & pch, char * line, FILE * /*config_file*/)
 {
@@ -4364,7 +4338,7 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object (vrpn_Connection *connect
       } else if (VRPN_ISIT ("vrpn_Event_Mouse")) {
         VRPN_CHECK (setup_Event_Mouse);
       } else if (VRPN_ISIT ("vrpn_Dream_Cheeky_USB_roll_up_drums")) {
-        VRPN_CHECK (setup_DreamCheeky);
+        VRPN_CHECK (templated_setup_HID_device_name_only<vrpn_DreamCheeky_Drum_Kit>);
       } else if (VRPN_ISIT ("vrpn_LUDL_USBMAC6000")) {
         VRPN_CHECK (setup_LUDL_USBMAC6000);
       } else if (VRPN_ISIT ("vrpn_Analog_5dtUSB_Glove5Left")) {
