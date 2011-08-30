@@ -188,4 +188,12 @@ inline T vrpn_unbuffer(ByteT * & input) {
 	return ntoh(value.typed);
 }
 
+namespace templated_unbuffer {
+	template<typename T, typename ByteT>
+	inline int vrpn_unbuffer(ByteT ** input, T * lvalue) {
+		*lvalue = vrpn_unbuffer<T>(*input);
+		return 0;
+	}
+} // end of namespace templated_unbuffer
+
 #endif // INCLUDED_vrpn_BufferUtils_h_GUID_6a741cf1_9fa4_4064_8af0_fa0c6a16c810
