@@ -39,7 +39,7 @@ void vrpn_Tracker_SpacePoint::on_data_received(size_t bytes, vrpn_uint8 *buffer)
      */
 
     // test from the app note
-    // the quaternion should be: 02474, -0.1697, -0.1713, 0.9384
+    // the quaternion should be: 0.2474, -0.1697, -0.1713, 0.9384
     /*
     bytes = 15;
     vrpn_uint8 test_dta[] =
