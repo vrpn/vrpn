@@ -1,4 +1,5 @@
 #include "vrpn_Shared.h"
+#include "vrpn_BufferUtils.h"
 
 #include <stdio.h>
 #include <math.h>
@@ -504,8 +505,7 @@ int vrpn_buffer (char ** insertPt, vrpn_int32 * buflen,
 */
 
 int vrpn_unbuffer (const char ** buffer, char * cval) {
-  *cval = **buffer;
-  *buffer += sizeof(char);
+  *cval = detail::unbuffer<char>(*buffer);
   return 0;
 }
 
@@ -523,11 +523,7 @@ int vrpn_unbuffer (const char ** buffer, char * cval) {
 
 int vrpn_unbuffer (const char ** buffer, vrpn_int16 * lval)
 {
-    vrpn_int16	aligned;
-
-    memcpy(&aligned, *buffer, sizeof(aligned));
-    *lval = ntohs(aligned);
-    *buffer += sizeof(vrpn_int16);
+    *lval = detail::unbuffer<vrpn_int16>(*buffer);
     return 0;
 }
 
@@ -545,11 +541,7 @@ int vrpn_unbuffer (const char ** buffer, vrpn_int16 * lval)
 
 int vrpn_unbuffer (const char ** buffer, vrpn_uint16 * lval)
 {
-    vrpn_uint16	aligned;
-
-    memcpy(&aligned, *buffer, sizeof(aligned));
-    *lval = ntohs(aligned);
-    *buffer += sizeof(vrpn_uint16);
+    *lval = detail::unbuffer<vrpn_uint16>(*buffer);
     return 0;
 }
 
@@ -567,11 +559,7 @@ int vrpn_unbuffer (const char ** buffer, vrpn_uint16 * lval)
 
 int vrpn_unbuffer (const char ** buffer, vrpn_int32 * lval)
 {
-    vrpn_int32	aligned;
-
-    memcpy(&aligned, *buffer, sizeof(aligned));
-    *lval = ntohl(aligned);
-    *buffer += sizeof(vrpn_int32);
+    *lval = detail::unbuffer<vrpn_int32>(*buffer);
     return 0;
 }
 
@@ -589,11 +577,7 @@ int vrpn_unbuffer (const char ** buffer, vrpn_int32 * lval)
 
 int vrpn_unbuffer (const char ** buffer, vrpn_uint32 * lval)
 {
-    vrpn_uint32	aligned;
-
-    memcpy(&aligned, *buffer, sizeof(aligned));
-    *lval = ntohl(aligned);
-    *buffer += sizeof(vrpn_uint32);
+    *lval = detail::unbuffer<vrpn_uint32>(*buffer);
     return 0;
 }
 
@@ -611,9 +595,7 @@ int vrpn_unbuffer (const char ** buffer, vrpn_uint32 * lval)
 
 int vrpn_unbuffer (const char ** buffer, vrpn_float32 * fval)
 {
-    vrpn_int32 lval;
-    CHECK(vrpn_unbuffer(buffer, &lval));
-    *fval = *((vrpn_float32 *) &lval);
+    *fval = detail::unbuffer<vrpn_float32>(*buffer);
     return 0;
 }
 
@@ -633,11 +615,7 @@ int vrpn_unbuffer (const char ** buffer, vrpn_float32 * fval)
 #endif
 int vrpn_unbuffer (const char ** buffer, vrpn_float64 * dval)
 {
-    vrpn_float64 aligned;
-
-    memcpy( &aligned, *buffer, sizeof( aligned ) );
-    *dval = ntohd( aligned );
-    *buffer += sizeof( aligned );
+    *dval = detail::unbuffer<vrpn_float64>(*buffer);
     return 0;
 }
 
