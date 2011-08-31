@@ -35,6 +35,7 @@ const unsigned int HYDRA_VENDOR = 0x1532;
 const unsigned int HYDRA_PRODUCT = 0x0300;
 const unsigned int HYDRA_INTERFACE = 0x0;
 
+/// Feature report 0 to set to enter motion controller mode
 static const vrpn_uint8 HYDRA_FEATURE_REPORT[] = {
 	0x00, // first byte must be report type
 	0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x04, 0x03, 0x00, 0x00, 0x00,
@@ -48,7 +49,6 @@ static const vrpn_uint8 HYDRA_FEATURE_REPORT[] = {
 };
 static const int HYDRA_FEATURE_REPORT_LEN = 91;
 
-/// 1 second is as long as we give it to send a first report if it's already reporting
 /// Feature report 0 to set to enter gamepad mode
 static const vrpn_uint8 HYDRA_GAMEPAD_COMMAND[] = {
 	0x00, // first byte must be report type
@@ -63,9 +63,12 @@ static const vrpn_uint8 HYDRA_GAMEPAD_COMMAND[] = {
 };
 static const int HYDRA_GAMEPAD_COMMAND_LEN = 91;
 
+/// 1 second is as long as we give it to send a first report if it's already
+/// in motion-controller mode
 static const unsigned long MAXIMUM_INITIAL_WAIT_USEC = 1000000L;
 
-/// 5 seconds is as long as we give it to settle down into a mode.
+/// 5 seconds is as long as we give it to switch into motion-controller mode
+/// after we tell it to.
 static const unsigned long MAXIMUM_WAIT_USEC = 5000000L;
 
 
@@ -210,6 +213,14 @@ void vrpn_Tracker_RazerHydra::_enter_motion_controller_mode() {
 
 	_attempt++;
 	_wasInGamepadMode = true;
+
+	/** @todo get a feature report as a way of determining current mode
+
+	buf[0] = 0;
+	int bytes = get_feature_report(91, buf);
+	printf("feature report 0:\n");
+	dumpReport(buf, bytes);
+	*/
 
 	/// Prompt to start streaming motion data
 	send_feature_report(HYDRA_FEATURE_REPORT_LEN, HYDRA_FEATURE_REPORT);
