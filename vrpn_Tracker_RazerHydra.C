@@ -148,7 +148,7 @@ void vrpn_Tracker_RazerHydra::_waiting_for_connect() {
 	if (connected()) {
 		status = HYDRA_LISTENING_AFTER_CONNECT;
 		vrpn_gettimeofday(&_connected, NULL);
-		TEXT_MESSAGE("Listening to see if device is in reporting mode.", vrpn_TEXT_NORMAL);
+		TEXT_MESSAGE("Listening to see if device is in motion controller mode.", vrpn_TEXT_NORMAL);
 
 		/// Reset the mode-change-attempt counter
 		_attempt = 0;
@@ -161,7 +161,7 @@ void vrpn_Tracker_RazerHydra::_listening_after_connect() {
 	struct timeval now;
 	vrpn_gettimeofday(&now, NULL);
 	if (duration(now, _connected) > MAXIMUM_INITIAL_WAIT_USEC) {
-		TEXT_MESSAGE("device apparently not in reporting mode, attempting to change modes.", vrpn_TEXT_NORMAL);
+		TEXT_MESSAGE("device apparently not in motion controller mode, attempting to change modes.", vrpn_TEXT_NORMAL);
 		_enter_motion_controller_mode();
 	}
 }
@@ -171,7 +171,7 @@ void vrpn_Tracker_RazerHydra::_listening_after_set_feature() {
 	struct timeval now;
 	vrpn_gettimeofday(&now, NULL);
 	if (duration(now, _set_feature) > MAXIMUM_WAIT_USEC) {
-		TEXT_MESSAGE("Really sleepy device - won't start reporting despite our earlier "
+		TEXT_MESSAGE("Really sleepy device - won't start motion controller reports despite our earlier "
 		             << _attempt << " attempt(s). Trying again - if this doesn't work, unplug and replug device and restart the VRPN server.", vrpn_TEXT_WARNING);
 		_enter_motion_controller_mode();
 	}
