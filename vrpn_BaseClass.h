@@ -60,6 +60,7 @@ Things to do in the server object (server device) files to convert from 4.XX
 
 #include "vrpn_Connection.h"
 
+#include <sstream>
 
 const int vrpn_MAX_BCADRS =	100;
 ///< Internal value for number of BaseClass addresses
@@ -175,6 +176,46 @@ class VRPN_API vrpn_BaseClassUnique {
 	int send_text_message(const char *msg, struct timeval timestamp,
 		vrpn_TEXT_SEVERITY type = vrpn_TEXT_NORMAL, vrpn_uint32 level = 0);
 
+	friend class TextMessageProxy;
+	class TextMessageProxy {
+		private:
+			vrpn_BaseClassUnique * _p;
+			vrpn_TEXT_SEVERITY _severity;
+			std::ostringstream _s;
+		public:
+			TextMessageProxy(vrpn_BaseClassUnique * device, vrpn_TEXT_SEVERITY type)
+				: _p(device)
+				, _severity(type)
+				{
+				printf("Constructing TextMessageProxy %hx\n", this);
+				}
+			TextMessageProxy(TextMessageProxy const& other)
+				: _p(other._p)
+				, _severity(other._severity)
+				, _s(other._s.str())
+				{
+				printf("Copy-constructing TextMessageProxy %hx from %hx\n", this, &other);
+				}
+			~TextMessageProxy() {
+				printf("Destroying TextMessageProxy %hx\n", this);
+				if (!_s.str().empty()) {
+					struct timeval timestamp;
+					vrpn_gettimeofday(&timestamp, NULL);
+					_p->send_text_message(_s.str().c_str(), timestamp, _severity);
+				}
+			}/*
+			operator std::ostream &() {
+				return _s;
+			}*/
+			template<typename T>
+			std::ostream & operator<<(T const& other) {
+				_s << other;
+				return _s;
+			}
+	};
+	TextMessageProxy send_text_message(vrpn_TEXT_SEVERITY type = vrpn_TEXT_NORMAL) {
+		return TextMessageProxy(this, type);
+	}
 	/// Handles functions that all servers should provide in their mainloop() (ping/pong, for example)
 	/// Should be called by all servers in their mainloop()
 	void	server_mainloop(void);
