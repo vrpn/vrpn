@@ -49,6 +49,20 @@ static const vrpn_uint8 HYDRA_FEATURE_REPORT[] = {
 static const int HYDRA_FEATURE_REPORT_LEN = 91;
 
 /// 1 second is as long as we give it to send a first report if it's already reporting
+/// Feature report 0 to set to enter gamepad mode
+static const vrpn_uint8 HYDRA_GAMEPAD_COMMAND[] = {
+	0x00, // first byte must be report type
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x04, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x05, 0x00
+};
+static const int HYDRA_GAMEPAD_COMMAND_LEN = 91;
+
 static const unsigned long MAXIMUM_INITIAL_WAIT_USEC = 1000000L;
 
 /// 5 seconds is as long as we give it to settle down into a mode.
@@ -77,6 +91,7 @@ vrpn_Tracker_RazerHydra::vrpn_Tracker_RazerHydra(const char * name, vrpn_Connect
 	                        new vrpn_HidInterfaceNumberAcceptor(HYDRA_INTERFACE),
 	                        new vrpn_HidProductAcceptor(HYDRA_VENDOR, HYDRA_PRODUCT)))
 	, status(HYDRA_WAITING_FOR_CONNECT)
+	, _wasInGamepadMode(false) /// assume not - if we have to send a command, then set to true
 	, _attempt(0) {
 
 	/// Set up sensor counts
@@ -89,6 +104,16 @@ vrpn_Tracker_RazerHydra::vrpn_Tracker_RazerHydra(const char * name, vrpn_Connect
 	memset(lastbuttons, 0, sizeof(lastbuttons));
 	memset(channel, 0, sizeof(channel));
 	memset(last, 0, sizeof(last));
+}
+
+vrpn_Tracker_RazerHydra::~vrpn_Tracker_RazerHydra() {
+	if (status == HYDRA_REPORTING && _wasInGamepadMode) {
+		TEXT_MESSAGE("Hydra was in gamepad mode when we started: switching back to gamepad mode.", vrpn_TEXT_WARNING);
+		send_feature_report(HYDRA_GAMEPAD_COMMAND_LEN, HYDRA_GAMEPAD_COMMAND);
+
+		TEXT_MESSAGE("Waiting 2 seconds for mode change to complete.", vrpn_TEXT_NORMAL);
+		vrpn_SleepMsecs(2000);
+	}
 }
 
 void vrpn_Tracker_RazerHydra::on_data_received(size_t bytes, vrpn_uint8 *buffer) {
@@ -152,6 +177,8 @@ void vrpn_Tracker_RazerHydra::_waiting_for_connect() {
 
 		/// Reset the mode-change-attempt counter
 		_attempt = 0;
+		/// We'll assume not in gamepad mode unless we have to tell it to switch
+		_wasInGamepadMode = false;
 	}
 }
 
@@ -182,6 +209,7 @@ void vrpn_Tracker_RazerHydra::_enter_motion_controller_mode() {
 	assert(connected());
 
 	_attempt++;
+	_wasInGamepadMode = true;
 
 	/// Prompt to start streaming motion data
 	send_feature_report(HYDRA_FEATURE_REPORT_LEN, HYDRA_FEATURE_REPORT);

@@ -70,6 +70,7 @@
 class VRPN_API vrpn_Tracker_RazerHydra: public vrpn_Analog, public vrpn_Button_Filter, public vrpn_Tracker, vrpn_HidInterface {
 	public:
 		vrpn_Tracker_RazerHydra(const char * name, vrpn_Connection * trackercon);
+		~vrpn_Tracker_RazerHydra();
 
 		virtual void mainloop();
 		virtual void reconnect();
@@ -93,6 +94,7 @@ class VRPN_API vrpn_Tracker_RazerHydra: public vrpn_Analog, public vrpn_Button_F
 		void _report_for_sensor(int sensorNum, vrpn_uint8 * data);
 
 		HydraStatus status;
+		bool _wasInGamepadMode;
 		int _attempt;
 		struct timeval _timestamp;
 		struct timeval _connected;
