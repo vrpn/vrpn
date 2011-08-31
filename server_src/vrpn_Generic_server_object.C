@@ -486,6 +486,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_AnalogFly (char * & pch, char * li
   float f1;
   vrpn_Tracker_AnalogFlyParam     p;
   vrpn_bool    absolute;
+  vrpn_bool    worldFrame = VRPN_FALSE;
 
   next();
 
@@ -596,10 +597,15 @@ int vrpn_Generic_Server_Object::setup_Tracker_AnalogFly (char * & pch, char * li
         p.clutch_name = strdup (s3);
         p.clutch_which = i1;
       }
+    } else if (strcmp (tok, "WORLDFRAME") == 0) {
+      if (verbose) {
+        printf ("Enabling world-frame mode\n");
+      }
+      worldFrame = VRPN_TRUE;
     }
   }
 
-  trackers[num_trackers] = new vrpn_Tracker_AnalogFly (s2, connection, &p, f1, absolute);
+  trackers[num_trackers] = new vrpn_Tracker_AnalogFly (s2, connection, &p, f1, absolute, VRPN_FALSE, worldFrame);
 
   if (!trackers[num_trackers]) {
     fprintf (stderr, "Can't create new vrpn_Tracker_AnalogFly\n");
@@ -4574,11 +4580,11 @@ int vrpn_Generic_Server_Object::setup_Tracker_RazerHydra (char * &pch, char * li
   if (verbose) {
     printf ("Opening vrpn_Tracker_RazerHydra as device %s\n", s2);
   }
-  if ( (device = new vrpn_Tracker_RazerHydra(s2, connection)) == NULL) {
+  if ( (device = new vrpn_Tracker_RazerHydra (s2, connection)) == NULL) {
     fprintf (stderr, "Can't create new vrpn_Tracker_RazerHydra\n");
     return -1;
   } else {
-	_devices.add(device);
+    _devices.add (device);
   }
 
   return 0;  // successful completion

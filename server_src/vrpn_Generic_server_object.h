@@ -328,7 +328,7 @@ class vrpn_Generic_Server_Object
     int setup_Analog_5dtUSB_Glove5Right (char * &pch, char * line, FILE * config_file);
     int setup_Analog_5dtUSB_Glove14Left (char * &pch, char * line, FILE * config_file);
     int setup_Analog_5dtUSB_Glove14Right (char * &pch, char * line, FILE * config_file);
-  int setup_Tracker_RazerHydra(char * &pch, char * line, FILE * config_file);
+    int setup_Tracker_RazerHydra (char * &pch, char * line, FILE * config_file);
 
     // BUW additions
     int setup_Atmel (char* &pch, char *line, FILE *config_file);
