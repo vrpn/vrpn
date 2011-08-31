@@ -48,6 +48,9 @@ static const vrpn_uint8 HYDRA_FEATURE_REPORT[] = {
 };
 static const int HYDRA_FEATURE_REPORT_LEN = 91;
 
+/// 1 second is as long as we give it to send a first report if it's already reporting
+static const unsigned long MAXIMUM_INITIAL_WAIT_USEC = 1000000L;
+
 /// 5 seconds is as long as we give it to settle down into a mode.
 static const unsigned long MAXIMUM_WAIT_USEC = 5000000L;
 
@@ -157,7 +160,7 @@ void vrpn_Tracker_RazerHydra::_listening_after_connect() {
 	assert(connected());
 	struct timeval now;
 	vrpn_gettimeofday(&now, NULL);
-	if (duration(now, _connected) > MAXIMUM_WAIT_USEC) {
+	if (duration(now, _connected) > MAXIMUM_INITIAL_WAIT_USEC) {
 		TEXT_MESSAGE("device apparently not in reporting mode, attempting to change modes.", vrpn_TEXT_NORMAL);
 		_enter_motion_controller_mode();
 	}
