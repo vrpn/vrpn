@@ -159,10 +159,10 @@ endif()
 ###
 if(WIN32 AND NOT UNIX)
 	# Winsock - needed for endianness conversion
-	list(APPEND EXTRA_LIBS Ws2_32)
+	list(APPEND EXTRA_LIBS ws2_32)
 
 	# Windows multimedia - needed for joywin32
-	list(APPEND EXTRA_LIBS Winmm)
+	list(APPEND EXTRA_LIBS winmm)
 endif()
 
 ###
