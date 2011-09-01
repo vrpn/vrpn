@@ -44,7 +44,7 @@ vrpn_Joywin32::vrpn_Joywin32 (const char * name, vrpn_Connection * c, vrpn_uint8
         return;
 	}
 
-	if (_mode <0 || _mode >2) {
+	if (_mode >2) {
 		fprintf(stderr,"invalid mode, should be 0 (raw), 1 (normalized to 0,1) or 2 (normalized to -1,1).\n");
 		_status = STATUS_BROKEN;
         return;
