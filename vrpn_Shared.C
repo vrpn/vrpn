@@ -1059,7 +1059,7 @@ void get_time_using_GetLocalTime(unsigned long &sec, unsigned long &usec)
 	  perf_counter.QuadPart = perf_counter.QuadPart - first_count.QuadPart;
 	} else {
 	  // Take care of the case when the counter rolls over.
-	  perf_counter.QuadPart = 0x7fffffffffffffff - first_count.QuadPart + perf_counter.QuadPart;
+	  perf_counter.QuadPart = 0x7fffffffffffffffLL - first_count.QuadPart + perf_counter.QuadPart;
 	}
 
 	// Reinterpret the performance counter into seconds and microseconds
