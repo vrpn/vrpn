@@ -1,6 +1,6 @@
 #ifndef	VRPN_BUTTON_USB_H
 #ifdef	_WIN32
-#include "vrpn_button.h"
+#include "vrpn_Button.h"
 
 // USB button code. 
 // This class is derived from the vrpn_Button_Filter class, so that it
