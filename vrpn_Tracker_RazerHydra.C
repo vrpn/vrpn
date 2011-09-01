@@ -21,6 +21,7 @@
 #include "vrpn_Tracker_RazerHydra.h"
 #include "quat.h"
 #include "vrpn_BufferUtils.h"
+#include "vrpn_SendTextMessageStreamProxy.h"
 
 // Library/third-party includes
 // - none

@@ -559,7 +559,8 @@ LIB_INCLUDES = \
 	vrpn_Auxiliary_Logger.h \
 	vrpn_MainloopObject.h \
 	vrpn_MainloopContainer.h \
-	vrpn_BufferUtils.h
+	vrpn_BufferUtils.h \
+	vrpn_SendTextMessageStreamProxy.h
 
 $(LIB_OBJECTS):
 $(OBJECT_DIR)/libvrpn.a: $(MAKEFILE) $(LIB_OBJECTS)
