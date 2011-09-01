@@ -16,6 +16,11 @@ else()
 	set(HIDAPI_DEPS_CHECK LIBUSB1_FOUND)
 endif()
 
+
+if(CMAKE_SYSTEM_NAME MATCHES "Linux")
+	find_library(HIDAPI_LIBRT rt)
+endif()
+
 if(EXISTS "${VRPN_SOURCE_DIR}/submodules/hidapi/hidapi/hidapi.h")
 	set(LOCAL_HIDAPI_SUBMODULE_RETRIEVED TRUE)
 else()
@@ -42,6 +47,10 @@ if(VRPN_USE_LOCAL_HIDAPI)
 		list(APPEND HIDAPI_SOURCES "${PROJECT_SOURCE_DIR}/vrpn_HIDAPI_Linux_Hack.c")
 		set(HIDAPI_LIBRARIES ${LIBUSB1_LIBRARIES})
 		list(APPEND HIDAPI_INCLUDE_DIRS ${LIBUSB1_INCLUDE_DIRS})
+	endif()
+	if(HIDAPI_LIBRT)
+		mark_as_advanced(HIDAPI_LIBRT)
+		list(APPEND HIDAPI_LIBRARIES ${HIDAPI_LIBRT})
 	endif()
 
 	source_group("HIDAPI Submodule" FILES ${HIDAPI_SOURCES})
