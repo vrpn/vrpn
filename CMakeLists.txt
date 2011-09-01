@@ -80,11 +80,12 @@ if(MSVC)	# MS-Windows Visual Studio, both 32 and 64 bits
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /fp:fast")
 	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /FIXED:NO")
 
-elseif(CMAKE_COMPILER_IS_GNUCXX AND CMAKE_SIZEOF_VOID_P EQUAL 8)
+else()
 	# GCC compilers on 64-bit machines require -fPIC for shared libraries or libs
 	# linked into shared libraries.
-	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}   -fPIC")
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
+
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${CMAKE_SHARED_LIBRARY_C_FLAGS}")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CMAKE_SHARED_LIBRARY_CXX_FLAGS}")
 endif()
 
 #-----------------------------------------------------------------------------
