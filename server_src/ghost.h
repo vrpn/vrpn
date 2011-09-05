@@ -119,6 +119,7 @@
     double  pose[4][4];
     double  last_pose[4][4];
     double  max_stiffness;
+	double	current_force[3];
     int	  instant_rate;
     int	  buttons;
   } HDAPI_state;
