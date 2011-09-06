@@ -106,6 +106,10 @@ ifdef PBASE_ROOT
   endif
 endif
 
+ifndef HW_OS
+	exit
+endif
+
 # Which C++ compiler to use.  Default is g++, but some don't use this.
 #
 # IF YOU CHANGE THESE, document either here or in the header comment
