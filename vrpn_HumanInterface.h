@@ -9,19 +9,19 @@
    the following (from a post at microchip.com/forums)
 
  mcuee@Ubuntu804:~$ lsusb
- Bus 002 Device 010: ID 04f2:0760 Chicony Electronics Co., Ltd 
- Bus 002 Device 007: ID ffff:0005  
- Bus 002 Device 005: ID 046d:c054 Logitech, Inc. 
- Bus 002 Device 004: ID 14c0:0008  
- Bus 002 Device 003: ID 1947:0033  
+ Bus 002 Device 010: ID 04f2:0760 Chicony Electronics Co., Ltd
+ Bus 002 Device 007: ID ffff:0005
+ Bus 002 Device 005: ID 046d:c054 Logitech, Inc.
+ Bus 002 Device 004: ID 14c0:0008
+ Bus 002 Device 003: ID 1947:0033
  Bus 002 Device 002: ID 058f:9360 Alcor Micro Corp. 8-in-1 Media Card Reader
- Bus 002 Device 001: ID 0000:0000  
- Bus 001 Device 001: ID 0000:0000  
+ Bus 002 Device 001: ID 0000:0000
+ Bus 001 Device 001: ID 0000:0000
  mcuee@Ubuntu804:~$ sudo libhid-detach-device 04f2:0760
  Trying to detach HID with IDs 04f2:0760... done.
  mcuee@Ubuntu804:~$ sudo lsusb -vvv | more
- 
- Bus 002 Device 010: ID 04f2:0760 Chicony Electronics Co., Ltd 
+
+ Bus 002 Device 010: ID 04f2:0760 Chicony Electronics Co., Ltd
  Device Descriptor:
    bLength                18
    bDescriptorType         1
@@ -41,6 +41,7 @@ struct vrpn_HIDDEVINFO {
         wchar_t     *serial_number;     // USB device serial number
         wchar_t     *manufacturer_string;
         wchar_t     *product_string;
+        int interface_number;
 };
 
 // General interface for device enumeration:
@@ -51,6 +52,7 @@ struct vrpn_HIDDEVINFO {
 // this file.
 class VRPN_API vrpn_HidAcceptor {
 public:
+	virtual ~vrpn_HidAcceptor() { }
 	virtual bool accept(const vrpn_HIDDEVINFO &device) = 0;
 	virtual void reset() { }
 };
@@ -87,6 +89,9 @@ public:
 	/// Returns USB product ID of connected device
 	vrpn_uint16 product() const;
 
+	/// Returns the USB interface number of connected device
+	int interface_number() const;
+
 protected:
 
 	/** @brief Derived class reimplements this callback.  It is called whenever a
@@ -100,9 +105,18 @@ protected:
         to me, but that's how it behaves.
 	*/
 	virtual void on_data_received(size_t bytes, vrpn_uint8 *buffer) = 0;
-	
+
 	/// Call this to send data to the device
 	void send_data(size_t bytes, const vrpn_uint8 *buffer);
+
+	/// Call this to send a feature report to the device - first byte must be Report ID
+	/// (or 0x0 for devices without numbered reports)
+	void send_feature_report(size_t bytes, const vrpn_uint8 *buffer);
+
+	/// Call this to get a feature report from the device - first byte must be Report ID
+	/// (or 0x0 for devices without numbered reports)
+	/// @return Number of bytes received, or -1 on error
+	int get_feature_report(size_t bytes, vrpn_uint8 *buffer);
 
 	/** @brief This is the HidAcceptor we use when reconnecting.
 
@@ -115,6 +129,7 @@ protected:
 	bool _working;
 	vrpn_uint16 _vendor;
 	vrpn_uint16 _product;
+	int _interface;
 
 private:
         hid_device  *_device;   ///< The HID device to use.
@@ -146,6 +161,16 @@ public:
 	bool accept(const vrpn_HIDDEVINFO &device) { return !wcscmp(devNum, device.serial_number); }
 private:
 	const wchar_t *devNum;
+};
+
+/// Accepts any device with a particular interface number. Best in conjunction
+/// with vrpn_HidBooleanAndAcceptor.
+class VRPN_API vrpn_HidInterfaceNumberAcceptor: public vrpn_HidAcceptor {
+public:
+	vrpn_HidInterfaceNumberAcceptor(int iface) : _iface(iface) { }
+	bool accept(const vrpn_HIDDEVINFO &device) { return _iface == device.interface_number; }
+private:
+	const int _iface;
 };
 
 /** @brief Accepts the Nth device matching a given acceptor.

@@ -202,7 +202,7 @@ void vrpn_Tracker_Isotrak::reset()
     }
     else if ( (statusmsg[0]!='2') ) {
         int i;
-        statusmsg[22] = '\0';	// Null-terminate the string
+        statusmsg[21] = '\0';	// Null-terminate the string
         fprintf(stderr, "  Isotrack: bad status (");
         for (i = 0; i < ret; i++) {
             if (isprint(statusmsg[i])) {

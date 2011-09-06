@@ -228,8 +228,8 @@ int vrpn_Tracker_Flock::checkError() {
   return rguch[0];
 }
 
-vrpn_Tracker_Flock::vrpn_Tracker_Flock(char *name, vrpn_Connection *c, 
-				       int cSensors, char *port, long baud,
+vrpn_Tracker_Flock::vrpn_Tracker_Flock(char *name, vrpn_Connection *c,
+				       int cSensors, const char *port, long baud,
 				       int fStreamMode, int useERT, bool invertQuaternion, int active_hemisphere) :
   vrpn_Tracker_Serial(name,c,port,baud), cSensors(cSensors), cResets(0),
   fStream(fStreamMode), fGroupMode(1), cSyncs(0), fFirstStatusReport(1), d_useERT(useERT),

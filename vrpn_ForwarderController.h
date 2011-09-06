@@ -38,7 +38,7 @@ class VRPN_API vrpn_Forwarder_Brain {
   public:
 
     vrpn_Forwarder_Brain (vrpn_Connection *);
-    ~vrpn_Forwarder_Brain (void);
+    virtual ~vrpn_Forwarder_Brain (void);
 
     // Tell a Forwarder_Server to open a vrpn_Connection on remote_port.
 
@@ -93,7 +93,7 @@ class VRPN_API vrpn_Forwarder_Server : public vrpn_Forwarder_Brain {
   public:
 
     vrpn_Forwarder_Server (vrpn_Connection *);
-    ~vrpn_Forwarder_Server (void);
+    virtual ~vrpn_Forwarder_Server (void);
 
     virtual void mainloop (void);
 

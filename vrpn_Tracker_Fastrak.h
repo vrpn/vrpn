@@ -74,13 +74,6 @@ class VRPN_API vrpn_Tracker_Fastrak: public vrpn_Tracker_Serial {
   virtual int get_report(void);
   virtual void reset();
 
-  /// Swap the endian-ness of the 4-byte entry in the buffer.
-  /// This is used to make the little-endian IEEE float values
-  /// returned by the Fastrak into the big-endian format that is
-  /// expected by the VRPN unbuffer routines.
-
-  void swap_endian4(char *buffer);
-
   struct timeval reset_time;
   int	do_filter;		//< Should we turn on filtering for pos/orient?
   int	num_stations;		//< How many stations maximum on this Fastrak?

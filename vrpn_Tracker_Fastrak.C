@@ -37,6 +37,8 @@
 #include "vrpn_Tracker_Fastrak.h"
 #include "vrpn_Serial.h"
 #include "vrpn_Shared.h"
+#include "vrpn_BufferUtils.h"
+#include "quat.h"
 
 #define	INCHES_TO_METERS	(2.54/100.0)
 
@@ -443,21 +445,6 @@ void vrpn_Tracker_Fastrak::reset()
    status = vrpn_TRACKER_SYNCING;	// We're trying for a new reading
 }
 
-// Swap the endian-ness of the 4-byte entry in the buffer.
-// This is used to make the little-endian IEEE float values
-// returned by the Fastrak into the big-endian format that is
-// expected by the VRPN unbuffer routines.
-
-void vrpn_Tracker_Fastrak::swap_endian4(char *buffer)
-{
-	char c;
-
-	c = buffer[0]; buffer[0] = buffer[3]; buffer[3] = c;
-	c = buffer[1]; buffer[1] = buffer[2]; buffer[2] = c;
-}
-
-
-
 // This function will read characters until it has a full report, then
 // put that report into the time, sensor, pos and quat fields so that it can
 // be sent the next time through the loop. The time stored is that of
@@ -483,7 +470,7 @@ int vrpn_Tracker_Fastrak::get_report(void)
    char errmsg[512];	// Error message to send to VRPN
    int ret;		// Return value from function call to be checked
    int i;		// Loop counter
-   char *bufptr;	// Points into buffer at the current value to read
+   unsigned char *bufptr;	// Points into buffer at the current value to read
 
    //--------------------------------------------------------------------
    // Each report starts with an ASCII '0' character. If we're synching,
@@ -618,30 +605,19 @@ int vrpn_Tracker_Fastrak::get_report(void)
    //--------------------------------------------------------------------
 
    // Point at the first value in the buffer (position of the X value)
-   bufptr = (char *)&buffer[3];
-
-   // Copy the values into local float32 arrays, then copy these into the
-   // tracker's fields (which are float64s)
-   vrpn_float32	read_pos[3], read_quat[4];
-
-   swap_endian4(bufptr); vrpn_unbuffer( const_cast<const char**>(&bufptr), &read_pos[0]);
-   swap_endian4(bufptr); vrpn_unbuffer( const_cast<const char**>(&bufptr), &read_pos[1]);
-   swap_endian4(bufptr); vrpn_unbuffer( const_cast<const char**>(&bufptr), &read_pos[2]);
-
-   // Change the order of the quaternion fields to match quatlib order
-   swap_endian4(bufptr); vrpn_unbuffer( const_cast<const char**>(&bufptr), &read_quat[3]);
-   swap_endian4(bufptr); vrpn_unbuffer( const_cast<const char**>(&bufptr), &read_quat[0]);
-   swap_endian4(bufptr); vrpn_unbuffer( const_cast<const char**>(&bufptr), &read_quat[1]);
-   swap_endian4(bufptr); vrpn_unbuffer( const_cast<const char**>(&bufptr), &read_quat[2]);
+   bufptr = &buffer[3];
 
    // When copying the positions, convert from inches to meters, since the
    // Fastrak reports in inches and VRPN reports in meters.
-   for (i = 0; i < 3; i++) {
-	pos[i] = read_pos[i] * INCHES_TO_METERS;
-   }
-   for (i = 0; i < 4; i++) {
-	d_quat[i] = read_quat[i];
-   }
+   pos[0] = vrpn_unbuffer_from_little_endian<vrpn_float32>(bufptr) * INCHES_TO_METERS;
+   pos[1] = vrpn_unbuffer_from_little_endian<vrpn_float32>(bufptr) * INCHES_TO_METERS;
+   pos[2] = vrpn_unbuffer_from_little_endian<vrpn_float32>(bufptr) * INCHES_TO_METERS;
+
+   // Change the order of the quaternion fields to match quatlib order
+   d_quat[Q_W] = vrpn_unbuffer_from_little_endian<vrpn_float32>(bufptr);
+   d_quat[Q_X] = vrpn_unbuffer_from_little_endian<vrpn_float32>(bufptr);
+   d_quat[Q_Y] = vrpn_unbuffer_from_little_endian<vrpn_float32>(bufptr);
+   d_quat[Q_Z] = vrpn_unbuffer_from_little_endian<vrpn_float32>(bufptr);
 
    //--------------------------------------------------------------------
    // If we are doing IS900 timestamps, decode the time, add it to the
@@ -651,11 +627,10 @@ int vrpn_Tracker_Fastrak::get_report(void)
    //--------------------------------------------------------------------
 
    if (do_is900_timestamps) {
-       vrpn_float32 read_time;
        struct timeval delta_time;   // Time since the clock was reset
 
        // Read the floating-point value of the time from the record.
-       swap_endian4(bufptr); vrpn_unbuffer( (const char **)&bufptr, &read_time);
+       vrpn_float32 read_time = vrpn_unbuffer_from_little_endian<vrpn_float32>(bufptr);
 
        // Convert from the float in MILLIseconds to the struct timeval
        delta_time.tv_sec = (long)(read_time / 1000);	// Integer trunction to seconds
@@ -702,9 +677,9 @@ int vrpn_Tracker_Fastrak::get_report(void)
    if (is900_analogs[d_sensor]) {
 
        // Read the raw values for the left/right and top/bottom channels
-       unsigned char raw_lr = *(unsigned char *)bufptr;
+       unsigned char raw_lr = *bufptr;
        bufptr++;
-       unsigned char raw_tb = *(unsigned char *)bufptr;
+       unsigned char raw_tb = *bufptr;
        bufptr++;
 
        // Normalize the values to the range -1 to 1

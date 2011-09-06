@@ -78,7 +78,7 @@ protected:
 
 	int just_read_something;
 
-	void unbuffer_packet(raw_packet &dest, const char *buffer);
+	void unbuffer_packet(raw_packet &dest, unsigned char *buffer);
 	int validate_packet(const raw_packet &packet);
 	void process_packet(const raw_packet &packet);
 

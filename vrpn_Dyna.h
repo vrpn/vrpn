@@ -24,7 +24,7 @@ private:
  public:
   
   vrpn_Tracker_Dyna(char *name, vrpn_Connection *c, int cSensors=1,
-		      char *port = "/dev/ttyd3", long baud = 38400);
+		      const char *port = "/dev/ttyd3", long baud = 38400);
     
   virtual ~vrpn_Tracker_Dyna();
     

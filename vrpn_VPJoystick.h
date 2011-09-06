@@ -11,8 +11,8 @@
 class VRPN_API vrpn_VPJoystick : public vrpn_Button {
 
  public:
-  vrpn_VPJoystick(char* name, vrpn_Connection *c, 
-             char *port="/dev/ttyS0", long baud=9600);
+  vrpn_VPJoystick(char* name, vrpn_Connection *c,
+             const char *port="/dev/ttyS0", long baud=9600);
 
   ~vrpn_VPJoystick();
 

@@ -12,7 +12,7 @@
 
 #include "vrpn_Types.h"
 
-// Oct 2000: Sang-Uok changed because vrpn code was compiling but giving 
+// Oct 2000: Sang-Uok changed because vrpn code was compiling but giving
 // runtime errors with cygwin 1.1. I changed the code so it only uses unix
 // code. I had to change includes in various files.
 
@@ -254,7 +254,7 @@ protected:
 #endif
 };
 
-// A ptr to this struct will be passed to the 
+// A ptr to this struct will be passed to the
 // thread function.  The user data ptr will be in pvUD.
 // (There used to be a non-functional semaphore object
 // also in this structure, but it was removed.  This leaves
@@ -286,7 +286,7 @@ public:
   // start/kill the thread (true on success, false on failure)
   bool go();
   bool kill();
-  
+
   // thread info: check if running, get proc id
   bool running();
 #if defined(sgi) || defined(_WIN32)
@@ -308,12 +308,12 @@ public:
   // effect the next time go() is called.
   void userData( void *pvNewUserData );
   void *userData();
-  
-protected:  
+
+protected:
   // user func and data ptrs
   void (*pfThread)(vrpn_ThreadData &ThreadData);
   vrpn_ThreadData td;
-  
+
   // utility func for calling the specified function.
   static void threadFuncShell(void *pvThread);
 

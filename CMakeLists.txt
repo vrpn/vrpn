@@ -50,7 +50,7 @@ if (WIN32)
 	if (NOT ONCE_SET_CMAKE_INSTALL_PREFIX)
 		set(ONCE_SET_CMAKE_INSTALL_PREFIX true CACHE BOOL
 			"Have we set the install prefix yet?" FORCE)
-		set(CMAKE_INSTALL_PREFIX C:/usr/local CACHE PATH
+		set(CMAKE_INSTALL_PREFIX /usr/local CACHE PATH
 		    "Install path prefix, prepended onto install directories"
 		    FORCE)
 	endif (NOT ONCE_SET_CMAKE_INSTALL_PREFIX)
@@ -472,6 +472,7 @@ set(VRPN_CLIENT_PUBLIC_HEADERS
 	vrpn_Analog_Output.h
 	vrpn_Auxiliary_Logger.h
 	vrpn_BaseClass.h
+	vrpn_BufferUtils.h
 	vrpn_Button.h
 	vrpn_Connection.h
 	vrpn_Dial.h
@@ -483,6 +484,8 @@ set(VRPN_CLIENT_PUBLIC_HEADERS
 	vrpn_Imager.h
 	vrpn_LamportClock.h
 	vrpn_Log.h
+	vrpn_MainloopContainer.h
+	vrpn_MainloopObject.h
 	vrpn_Mutex.h
 	vrpn_Serial.h
 	vrpn_Shared.h
@@ -555,6 +558,7 @@ set(VRPN_SERVER_SOURCES
 	vrpn_Tracker_NDI_Polaris.C
 	vrpn_Tracker_NovintFalcon.C
 	vrpn_Tracker_PhaseSpace.C
+	vrpn_Tracker_RazerHydra.C
 	vrpn_Tracker_SpacePoint.C
 	vrpn_Tracker_TrivisioColibri.C
 	vrpn_Tracker_WiimoteHead.C
@@ -625,7 +629,7 @@ set(VRPN_SERVER_PUBLIC_HEADERS
 	vrpn_Tracker_Crossbow.h
 	vrpn_Tracker_DTrack.h
 	vrpn_Tracker_Fastrak.h
-	vrpn_Tracker_GameTrak.h
+    vrpn_Tracker_GameTrak.h
 	vrpn_Tracker_isense.h
 	vrpn_Tracker_Isotrak.h
 	vrpn_Tracker_JsonNet.h
@@ -634,7 +638,8 @@ set(VRPN_SERVER_PUBLIC_HEADERS
 	vrpn_Tracker_NDI_Polaris.h
 	vrpn_Tracker_NovintFalcon.h
 	vrpn_Tracker_PhaseSpace.h
-	vrpn_Tracker_SpacePoint.h
+	vrpn_Tracker_RazerHydra.h
+    vrpn_Tracker_SpacePoint.h
 	vrpn_Tracker_TrivisioColibri.h
 	vrpn_Tracker_WiimoteHead.h
 	vrpn_UNC_Joystick.h

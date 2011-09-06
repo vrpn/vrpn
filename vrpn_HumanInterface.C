@@ -12,6 +12,11 @@ vrpn_uint16 vrpn_HidInterface::product() const {
 	return _product;
 }
 
+// Accessor for USB interface number of connected device
+int vrpn_HidInterface::interface_number() const {
+	return _interface;
+}
+
 // Returns true iff everything was working last time we checked
 bool vrpn_HidInterface::connected() const {
 	return _working;
@@ -24,6 +29,7 @@ vrpn_HidInterface::vrpn_HidInterface(vrpn_HidAcceptor *acceptor)
 	, _working(false)
 	, _vendor(0)
 	, _product(0)
+	, _interface(0)
 {
 	if (_acceptor == NULL) {
 		fprintf(stderr,"vrpn_HidInterface::vrpn_HidInterface(): NULL acceptor\n");
@@ -61,11 +67,13 @@ void vrpn_HidInterface::reconnect() {
           device_info.serial_number = loop->serial_number;
           device_info.manufacturer_string = loop->manufacturer_string;
           device_info.product_string = loop->product_string;
+          device_info.interface_number = loop->interface_number;
           //printf("XXX Found vendor %x, product %x\n", (unsigned)(loop->vendor_id), (unsigned)(loop->product_id));
 
           if (_acceptor->accept(device_info)) {
             _vendor = loop->vendor_id;
             _product = loop->product_id;
+            _interface = loop->interface_number;
             serial = loop->serial_number;
             found = true;
           }
@@ -141,7 +149,7 @@ void vrpn_HidInterface::update()
 }
 
 // This is based on sample code from UMinn Duluth at
-// http://www.google.com/url?sa=t&source=web&cd=4&ved=0CDUQFjAD&url=http%3A%2F%2Fwww.d.umn.edu%2F~cprince%2FPubRes%2FHardware%2FLinuxUSB%2FPICDEM%2Ftutorial1.c&rct=j&q=hid_interrrupt_read&ei=3C3gTKWeN4GClAeX9qCXAw&usg=AFQjCNHp94pwNFKjZTMqrgPfhV1nk7p5Lg&sig2=rG1A7PL-Up0Yv-sbvEMaCw&cad=rja
+// http://www.d.umn.edu/~cprince/PubRes/Hardware/LinuxUSB/PICDEM/tutorial1.c
 // It has not yet been tested.
 
 void vrpn_HidInterface::send_data(size_t bytes, const vrpn_uint8 *buffer)
@@ -154,6 +162,35 @@ void vrpn_HidInterface::send_data(size_t bytes, const vrpn_uint8 *buffer)
 	if ( (ret = hid_write(_device, const_cast<vrpn_uint8 *>(buffer), bytes)) != bytes) {
 		fprintf(stderr,"vrpn_HidInterface::send_data(): hid_interrupt_write() failed with code %d\n", ret);
 	}
+}
+
+void vrpn_HidInterface::send_feature_report(size_t bytes, const vrpn_uint8 *buffer) {
+	if (!_working) {
+		fprintf(stderr,"vrpn_HidInterface::send_feature_report(): Interface not currently working\n");
+		return;
+	}
+
+	int ret = hid_send_feature_report(_device, buffer, bytes);
+	if (ret == -1) {
+		fprintf(stderr, "vrpn_HidInterface::send_feature_report(): failed to send feature report\n");
+	} else {
+		//fprintf(stderr, "vrpn_HidInterface::send_feature_report(): sent feature report, %d bytes\n", static_cast<int>(bytes));
+	}
+}
+
+int vrpn_HidInterface::get_feature_report(size_t bytes, vrpn_uint8 *buffer) {
+	if (!_working) {
+		fprintf(stderr,"vrpn_HidInterface::get_feature_report(): Interface not currently working\n");
+		return -1;
+	}
+
+	int ret = hid_get_feature_report(_device, buffer, bytes);
+	if (ret == -1) {
+		fprintf(stderr, "vrpn_HidInterface::get_feature_report(): failed to get feature report\n");
+	} else {
+		//fprintf(stderr, "vrpn_HidInterface::get_feature_report(): got feature report, %d bytes\n", static_cast<int>(bytes));
+	}
+	return ret;
 }
 
 #endif // any interface

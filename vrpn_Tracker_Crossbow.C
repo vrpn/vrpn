@@ -5,6 +5,7 @@
 #include "vrpn_Tracker_Crossbow.h"
 #include "vrpn_Serial.h"
 #include "quat.h"
+#include "vrpn_BufferUtils.h"
 
 // Conversion multiplier from degrees to radians (Pi radians per 180 degrees)
 #define DEGREES_TO_RADIANS (3.1415926535897 / 180)
@@ -25,7 +26,8 @@ vrpn_Tracker_Crossbow::~vrpn_Tracker_Crossbow() {
 }
 
 // Retrieves a raw_packet from an incoming byte array, and even flips endianness as necessary.
-void vrpn_Tracker_Crossbow::unbuffer_packet(raw_packet &dest, const char *buffer) {
+void vrpn_Tracker_Crossbow::unbuffer_packet(raw_packet &dest, unsigned char *buffer) {
+	using namespace templated_unbuffer;
 	vrpn_unbuffer(&buffer, &dest.header);
 	vrpn_unbuffer(&buffer, &dest.roll_angle);
 	vrpn_unbuffer(&buffer, &dest.pitch_angle);
@@ -41,20 +43,25 @@ void vrpn_Tracker_Crossbow::unbuffer_packet(raw_packet &dest, const char *buffer
 }
 
 int vrpn_Tracker_Crossbow::validate_packet(const raw_packet &packet) {
-	// Convert the packet to a string of bytes (may cause alignment issues on non-x86 architectures)
-	const vrpn_uint8 *bytes = reinterpret_cast<const vrpn_uint8 *>(&packet);
+
+	// Allow accessing the packet as a string of bytes
+	union {
+		raw_packet packet;
+		vrpn_uint8 bytes[sizeof(raw_packet)];
+	} aligned;
+	aligned.packet = packet;
 
 	// Check the header for the magic number
 	if (packet.header != 0xAA55) {
 		fprintf(stderr, "vrpn_Tracker_Crossbow: Received packet with invalid header $%02X%02X (should be $AA55)\n",
-			bytes[0], bytes[1]);
+			aligned.bytes[0], aligned.bytes[1]);
 		return 1;
 	}
 
 	// Now calculate the expected checksum
 	vrpn_uint16 checksum = 0;
 	for (int i = 2; i < 22; i++)
-		checksum += bytes[i];
+		checksum += aligned.bytes[i];
 
 	// And compare the two checksum values.
 	if (checksum != packet.checksum) {
@@ -128,7 +135,7 @@ int vrpn_Tracker_Crossbow::get_report() {
 				return 0;
 
 			raw_packet new_data;
-			unbuffer_packet(new_data, reinterpret_cast<const char*>(&buffer[0]));
+			unbuffer_packet(new_data, &buffer[0]);
 
 			// Ensure the packet is valid
 			if (validate_packet(new_data)) {

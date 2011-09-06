@@ -67,8 +67,8 @@
 #endif
 
 
-vrpn_VPJoystick::vrpn_VPJoystick(char* name, vrpn_Connection *c, 
-                       char *port, long baud)
+vrpn_VPJoystick::vrpn_VPJoystick(char* name, vrpn_Connection *c,
+                       const char *port, long baud)
   :  vrpn_Button(name, c),
      serial_fd(0), state( STATE_SYNCHING )
 {
