@@ -455,7 +455,6 @@ int vrpn_Tracker_Liberty::get_report(void)
 {
    char errmsg[512];	// Error message to send to VRPN
    int ret;		// Return value from function call to be checked
-   int i;		// Loop counter
    unsigned char *bufptr;	// Points into buffer at the current value to read
    static int singleSyncChar = 0; // set if we only get a single sync char
 
