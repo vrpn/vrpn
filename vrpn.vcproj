@@ -1669,6 +1669,30 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="vrpn_Tracker_RazerHydra.C"
+				>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath="vrpn_Tracker_3DMouse.C"
 				>
 				<FileConfiguration
@@ -2467,6 +2491,10 @@
 			</File>
 			<File
 				RelativePath="vrpn_Tracker.h"
+				>
+			</File>
+			<File
+				RelativePath="vrpn_Tracker_RazerHydra.h"
 				>
 			</File>
 			<File
