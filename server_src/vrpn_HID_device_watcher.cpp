@@ -3,6 +3,7 @@
 #ifdef _WIN32
 #include <conio.h>
 #endif
+#include <sstream>
 
 #if defined(VRPN_USE_HID)
 class HidDebug: public vrpn_HidInterface {
@@ -24,20 +25,87 @@ void HidDebug::on_data_received(size_t bytes, vrpn_uint8 *buffer) {
 }
 #endif
 
-int main() {
+int usage(char * argv0) {
+	printf("Usage:\n\n"
+		"%s -h|--help\n"
+		"	Display this help text.\n\n"
+
+		"%s [N]\n"
+		"	Open HID device number N (default to 0)\n\n"
+
+		"%s VEND PROD [N]\n"
+		"	Open HID device number N (default to 0) that matches\n"
+		"	vendor VEND and product PROD, in _decimal_\n\n"
+
+
+#ifdef  _WIN32
+		"During runtime:\n"
+		"	Press ESC to exit\n"
+		"	Press r to reconnect\n\n"
+#endif
+		,
+		argv0, argv0, argv0);
+	return 1;
+}
+
+int failedOnArgument(int argNum, const char * expected, char * argv[]) {
+	fprintf(stderr, "Failed to interpret argument %d: expected %s, got '%s' - usage help follows.\n\n", argNum, expected, argv[argNum]);
+	return usage(argv[0]);
+}
+
+int main(int argc, char * argv[]) {
 
 #if defined(VRPN_USE_HID)
+	if (argc > 1 && (std::string("-h") == argv[1] || std::string("--help") == argv[1])) {
+		return usage(argv[0]);
+	}
+	vrpn_HidAcceptor * acceptor = NULL;
 	unsigned N = 0; // Which device to open?
-	HidDebug hid(new vrpn_HidNthMatchAcceptor(N, new vrpn_HidAlwaysAcceptor));
+	if (argc >= 3) {
+		vrpn_uint16 vend;
+		std::istringstream vendS(argv[1]);
+		if (!(vendS >> vend)) {
+			return failedOnArgument(1, "a decimal vendor ID", argv);
+		}
+
+		vrpn_uint16 prod;
+		std::istringstream prodS(argv[2]);
+		if (!(prodS >> prod)) {
+			return failedOnArgument(2, "a decimal product ID", argv);
+		}
+
+		if (argc >= 4) {
+			std::istringstream nS(argv[3]);
+			if (!(nS >> N)) {
+				return failedOnArgument(3, "a number indicating which matching device to pick, or nothing for the default '0'", argv);
+			}
+		}
+		printf("Will accept HID device number %u that has vendor:product %04x:%04x\n", N, vend, prod);
+		acceptor = new vrpn_HidProductAcceptor(vend, prod);
+	} else {
+		if (argc == 2) {
+			std::istringstream nS(argv[1]);
+			if (!(nS >> N)) {
+				return failedOnArgument(1, "a number indicating which device to pick, or nothing for the default '0'", argv);
+			}
+		}
+		printf("Will accept HID device number %u\n", N);
+		acceptor =  new vrpn_HidAlwaysAcceptor;
+	}
+
+	HidDebug hid(new vrpn_HidNthMatchAcceptor(N, acceptor));
 	printf("HID initialized.\n");
 	if (hid.connected()) {
-		printf("HID device vendor ID %u, product ID %u\n",
+		printf("Connected: HID device vendor ID %u, product ID %u, aka %04x:%04x\n",
+		       static_cast<unsigned>(hid.vendor()), static_cast<unsigned>(hid.product()),
 		       static_cast<unsigned>(hid.vendor()), static_cast<unsigned>(hid.product()));
 	} else {
+		printf("Could not connect.\n");
 		return 1;
 	}
 
 	bool go = true;
+	printf("Entering update loop.\n");
 	while (go) {
 		hid.update();
 #ifdef  _WIN32

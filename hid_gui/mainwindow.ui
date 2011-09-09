@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>800</width>
+    <height>768</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>VRPN HID Tool</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QVBoxLayout" name="verticalLayout">
+    <item>
+     <widget class="QScrollArea" name="scrollArea">
+      <property name="horizontalScrollBarPolicy">
+       <enum>Qt::ScrollBarAlwaysOff</enum>
+      </property>
+      <property name="widgetResizable">
+       <bool>true</bool>
+      </property>
+      <widget class="QWidget" name="scrollAreaWidgetContents">
+       <property name="geometry">
+        <rect>
+         <x>0</x>
+         <y>0</y>
+         <width>780</width>
+         <height>445</height>
+        </rect>
+       </property>
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <layout class="QGridLayout" name="gridLayout">
+        <item row="0" column="0">
+         <layout class="QVBoxLayout" name="chartBox"/>
+        </item>
+       </layout>
+      </widget>
+     </widget>
+    </item>
+    <item>
+     <layout class="QFormLayout" name="formLayout">
+      <property name="fieldGrowthPolicy">
+       <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
+      </property>
+      <item row="0" column="0">
+       <widget class="QLabel" name="label">
+        <property name="text">
+         <string>Last Report:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QLabel" name="reportSizeLabel">
+        <property name="text">
+         <string/>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <widget class="QLineEdit" name="reportContents">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="font">
+       <font>
+        <family>Courier New</family>
+        <pointsize>12</pointsize>
+       </font>
+      </property>
+      <property name="contextMenuPolicy">
+       <enum>Qt::CustomContextMenu</enum>
+      </property>
+      <property name="readOnly">
+       <bool>true</bool>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QTextBrowser" name="textLog">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>800</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menu_File">
+    <property name="title">
+     <string>&amp;File</string>
+    </property>
+    <addaction name="action_Quit"/>
+   </widget>
+   <widget class="QMenu" name="menu_Inspect">
+    <property name="title">
+     <string>&amp;Inspect</string>
+    </property>
+    <addaction name="actionInt8_2"/>
+    <addaction name="actionUint8_2"/>
+    <addaction name="actionInt16_LE"/>
+    <addaction name="actionInt16_BE"/>
+    <addaction name="actionUint16_LE"/>
+    <addaction name="actionUint16_BE"/>
+    <addaction name="separator"/>
+    <addaction name="actionRemove_all_inspectors"/>
+   </widget>
+   <addaction name="menu_File"/>
+   <addaction name="menu_Inspect"/>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+  <action name="action_Quit">
+   <property name="text">
+    <string>&amp;Quit</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Q</string>
+   </property>
+  </action>
+  <action name="actionUint8">
+   <property name="text">
+    <string>uint8</string>
+   </property>
+  </action>
+  <action name="actionInt8">
+   <property name="text">
+    <string>int8</string>
+   </property>
+  </action>
+  <action name="actionBig_Endian">
+   <property name="text">
+    <string>Big Endian</string>
+   </property>
+  </action>
+  <action name="actionLittle_Endian">
+   <property name="text">
+    <string>Little Endian</string>
+   </property>
+  </action>
+  <action name="actionInt8_LE">
+   <property name="text">
+    <string>int8 (LE)</string>
+   </property>
+  </action>
+  <action name="actionInt8_BE">
+   <property name="text">
+    <string>int8 (BE)</string>
+   </property>
+  </action>
+  <action name="actionInt8_2">
+   <property name="text">
+    <string>int8</string>
+   </property>
+  </action>
+  <action name="actionUint8_2">
+   <property name="text">
+    <string>uint8</string>
+   </property>
+  </action>
+  <action name="actionInt16_LE">
+   <property name="text">
+    <string>int16 (LE)</string>
+   </property>
+  </action>
+  <action name="actionInt16_BE">
+   <property name="text">
+    <string>int16 (BE)</string>
+   </property>
+  </action>
+  <action name="actionUint16_LE">
+   <property name="text">
+    <string>uint16 (LE)</string>
+   </property>
+  </action>
+  <action name="actionUint16_BE">
+   <property name="text">
+    <string>uint16 (BE)</string>
+   </property>
+  </action>
+  <action name="actionRemove_all_inspectors">
+   <property name="text">
+    <string>Remove all inspectors</string>
+   </property>
+  </action>
+ </widget>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>action_Quit</sender>
+   <signal>activated()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>close()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>399</x>
+     <y>299</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>
