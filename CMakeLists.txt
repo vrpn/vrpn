@@ -796,7 +796,9 @@ endif()
 
 #-----------------------------------------------------------------------------
 # Create documentation
-add_subdirectory(doxygen)
+if(NOT SUBPROJECT)
+	add_subdirectory(doxygen)
+endif()
 
 #-----------------------------------------------------------------------------
 # Python wrappers
