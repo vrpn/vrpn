@@ -150,7 +150,7 @@ the maximum stable surface presentable by the device.
   // enable force device and send first surface
   forceDevice->startSurface();
 
-  printf("\n3cm tesselated sphere at the origin should be present always\n");
+  printf("\n3cm sphere at the origin should be present always\n");
   printf("Press and release the Phantom button 3 times to exit\n");
 
   // main loop
