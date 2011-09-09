@@ -57,7 +57,7 @@ endif()
 # the change in the GUI, and also letting the user change the value in
 # the GUI if they don't like what we did.  If I knew how to do this only
 # happen on Windows 7, I'd make the if(WIN32) more specific.
-if (WIN32)
+if (WIN32 AND NOT SUBPROJECT)
 	if (NOT ONCE_SET_CMAKE_INSTALL_PREFIX)
 		set(ONCE_SET_CMAKE_INSTALL_PREFIX true CACHE BOOL
 			"Have we set the install prefix yet?" FORCE)
@@ -65,7 +65,7 @@ if (WIN32)
 		    "Install path prefix, prepended onto install directories"
 		    FORCE)
 	endif (NOT ONCE_SET_CMAKE_INSTALL_PREFIX)
-endif (WIN32)
+endif ()
 
 
 ###
