@@ -7,7 +7,7 @@
 
 #include <windows.h>
 #include <stdio.h>
-
+#include <cmath>
 // vrpn_Joywin32.C
 //	This is a driver for joysticks being used through the
 // Win32 basic interface.
@@ -34,8 +34,8 @@ vrpn_Joywin32::vrpn_Joywin32 (const char * name, vrpn_Connection * c, vrpn_uint8
 		vrpn_Button(name, c),
 		_read_rate(readRate),
 		_joyNumber(joyNumber),
-		_numchannels(min(12,vrpn_CHANNEL_MAX)),		   // Maximum available
-		_numbuttons(min(128,vrpn_BUTTON_MAX_BUTTONS)),     // Maximum available
+		_numchannels((std::min)(12,vrpn_CHANNEL_MAX)),		   // Maximum available
+		_numbuttons((std::min)(128,vrpn_BUTTON_MAX_BUTTONS)),     // Maximum available
 		_mode(mode)
 {
 	if (deadzone >100 || deadzone<0) {
@@ -44,7 +44,7 @@ vrpn_Joywin32::vrpn_Joywin32 (const char * name, vrpn_Connection * c, vrpn_uint8
         return;
 	}
 
-	if (_mode <0 || _mode >2) {
+	if (_mode >2) {
 		fprintf(stderr,"invalid mode, should be 0 (raw), 1 (normalized to 0,1) or 2 (normalized to -1,1).\n");
 		_status = STATUS_BROKEN;
         return;
@@ -321,7 +321,7 @@ int vrpn_Joywin32::get_report(void)
 	}
 
 	// update vrpn_Buttons state
-	for (vrpn_uint32 i=0;i<min(_jc.wMaxButtons, _numbuttons);i++) {
+	for (vrpn_uint32 i=0;i<(std::min)(_jc.wMaxButtons, _numbuttons);i++) {
 		// get flag for current button with a single bit mask and move it left to get 0x1 or 0x0 value
 		buttons[i] = (char) ((jie.dwButtons&(1<<(i)))>>(i));
 	}

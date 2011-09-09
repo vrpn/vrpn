@@ -2,8 +2,8 @@
 #ifdef  _WIN32
 #define _CRT_SECURE_NO_WARNINGS
 
-#include <Windows.h>
-#include <Winbase.h>
+#include <windows.h>
+#include <winbase.h>
 #include <stdio.h>
 #include <math.h>
 #include <sys/types.h>
