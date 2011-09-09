@@ -219,7 +219,7 @@ namespace templated_buffer {
 		value.typed = hton(inVal);
 
 		/// Copy bytes into buffer
-		std::memcpy(insertPt, value.bytes, sizeof(T));
+		std::memcpy(*insertPt, value.bytes, sizeof(T));
 
 		/// Advance insert pointer
 		*insertPt += sizeof(T);
