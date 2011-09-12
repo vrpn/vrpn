@@ -37,7 +37,7 @@ EOS
 
 function CleanFileList()
 {
-	sort | grep --invert-match "Android" | grep --invert-match "Atmel"
+	sort -f | grep --invert-match "Android" | grep --invert-match "Atmel"
 }
 
 function GenerateFilesSection()
