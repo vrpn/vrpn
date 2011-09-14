@@ -489,6 +489,7 @@ set(VRPN_CLIENT_PUBLIC_HEADERS
 	vrpn_MainloopContainer.h
 	vrpn_MainloopObject.h
 	vrpn_Mutex.h
+	vrpn_SendTextMessageStreamProxy.h
 	vrpn_Serial.h
 	vrpn_Shared.h
 	vrpn_SharedObject.h

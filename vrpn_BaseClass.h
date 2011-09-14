@@ -60,7 +60,6 @@ Things to do in the server object (server device) files to convert from 4.XX
 
 #include "vrpn_Connection.h"
 
-
 const int vrpn_MAX_BCADRS =	100;
 ///< Internal value for number of BaseClass addresses
 
@@ -142,7 +141,31 @@ class VRPN_API vrpn_BaseClassUnique {
 	virtual ~vrpn_BaseClassUnique();
 
 	bool shutup;	// if True, don't print the "No response from server" messages.
-	
+
+	friend class SendTextMessageBoundCall;
+	class SendTextMessageBoundCall {
+		private:
+			vrpn_BaseClassUnique * _p;
+			vrpn_TEXT_SEVERITY _severity;
+
+		public:
+			SendTextMessageBoundCall(vrpn_BaseClassUnique * device, vrpn_TEXT_SEVERITY type)
+				: _p(device)
+				, _severity(type)
+				{}
+
+			SendTextMessageBoundCall(SendTextMessageBoundCall const& other)
+				: _p(other._p)
+				, _severity(other._severity)
+				{}
+
+			int operator()(const char * msg) const {
+				struct timeval timestamp;
+				vrpn_gettimeofday(&timestamp, NULL);
+				return _p->send_text_message(msg, timestamp, _severity);
+			}
+	};
+
   protected:
         vrpn_Connection *d_connection;  ///< Connection that this object talks to
         char *d_servicename;            ///< Name of this device, not including the connection part
@@ -174,6 +197,13 @@ class VRPN_API vrpn_BaseClassUnique {
 	/// Sends a NULL-terminated text message from the device d_sender_id
 	int send_text_message(const char *msg, struct timeval timestamp,
 		vrpn_TEXT_SEVERITY type = vrpn_TEXT_NORMAL, vrpn_uint32 level = 0);
+
+	/// Returns an object you can stream into to send a text message from the device
+	/// like send_text_message(vrpn_TEXT_WARNING) << "Value of i is: " << i;
+	/// This use requires including vrpn_SendTextMessageStreamProxy.h
+	SendTextMessageBoundCall send_text_message(vrpn_TEXT_SEVERITY type = vrpn_TEXT_NORMAL) {
+		return SendTextMessageBoundCall(this, type);
+	}
 
 	/// Handles functions that all servers should provide in their mainloop() (ping/pong, for example)
 	/// Should be called by all servers in their mainloop()

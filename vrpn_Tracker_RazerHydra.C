@@ -21,6 +21,7 @@
 #include "vrpn_Tracker_RazerHydra.h"
 #include "quat.h"
 #include "vrpn_BufferUtils.h"
+#include "vrpn_SendTextMessageStreamProxy.h"
 
 // Library/third-party includes
 // - none
@@ -77,15 +78,6 @@ static inline unsigned long duration(struct timeval t1, struct timeval t2) {
 	       1000000L * (t1.tv_sec - t2.tv_sec);
 }
 
-#define TEXT_MESSAGE(_MSG, _SEVERITY) \
-	{ \
-		struct timeval msg_now; \
-		vrpn_gettimeofday(&msg_now, NULL); \
-		std::ostringstream msg_ostream; \
-		msg_ostream << _MSG; \
-		send_text_message(msg_ostream.str().c_str(), msg_now, _SEVERITY); \
-	}
-
 vrpn_Tracker_RazerHydra::vrpn_Tracker_RazerHydra(const char * name, vrpn_Connection * con)
 	: vrpn_Analog(name, con)
 	, vrpn_Button_Filter(name, con)
@@ -111,23 +103,25 @@ vrpn_Tracker_RazerHydra::vrpn_Tracker_RazerHydra(const char * name, vrpn_Connect
 
 vrpn_Tracker_RazerHydra::~vrpn_Tracker_RazerHydra() {
 	if (status == HYDRA_REPORTING && _wasInGamepadMode) {
-		TEXT_MESSAGE("Hydra was in gamepad mode when we started: switching back to gamepad mode.", vrpn_TEXT_WARNING);
+		send_text_message(vrpn_TEXT_WARNING) << "Hydra was in gamepad mode when we started: switching back to gamepad mode.";
 		send_feature_report(HYDRA_GAMEPAD_COMMAND_LEN, HYDRA_GAMEPAD_COMMAND);
 
-		TEXT_MESSAGE("Waiting 2 seconds for mode change to complete.", vrpn_TEXT_NORMAL);
+		send_text_message() << "Waiting 2 seconds for mode change to complete.";
 		vrpn_SleepMsecs(2000);
 	}
 }
 
 void vrpn_Tracker_RazerHydra::on_data_received(size_t bytes, vrpn_uint8 *buffer) {
 	if (bytes != 52) {
-		TEXT_MESSAGE("Got input report of " << bytes << " bytes, expected 52! Discarding.", vrpn_TEXT_WARNING);
+		send_text_message(vrpn_TEXT_WARNING) << "Got input report of "
+		                                     << bytes << " bytes, expected 52! Discarding.";
 		return;
 	}
 
 	if (status != HYDRA_REPORTING) {
-		TEXT_MESSAGE("Got first motion controller report! This means everything is working properly now. (Took "
-		             << _attempt << " attempt(s) to change modes.)", vrpn_TEXT_WARNING);
+
+		send_text_message(vrpn_TEXT_WARNING) << "Got first motion controller report! This means everything is working properly now. "
+		                                     << "(Took " << _attempt << " attempt(s) to change modes.)";
 		status = HYDRA_REPORTING;
 	}
 
@@ -176,7 +170,7 @@ void vrpn_Tracker_RazerHydra::_waiting_for_connect() {
 	if (connected()) {
 		status = HYDRA_LISTENING_AFTER_CONNECT;
 		vrpn_gettimeofday(&_connected, NULL);
-		TEXT_MESSAGE("Listening to see if device is in motion controller mode.", vrpn_TEXT_NORMAL);
+		send_text_message() << "Listening to see if device is in motion controller mode.";
 
 		/// Reset the mode-change-attempt counter
 		_attempt = 0;
@@ -191,7 +185,7 @@ void vrpn_Tracker_RazerHydra::_listening_after_connect() {
 	struct timeval now;
 	vrpn_gettimeofday(&now, NULL);
 	if (duration(now, _connected) > MAXIMUM_INITIAL_WAIT_USEC) {
-		TEXT_MESSAGE("device apparently not in motion controller mode, attempting to change modes.", vrpn_TEXT_NORMAL);
+		send_text_message() << "device apparently not in motion controller mode, attempting to change modes.";
 		_enter_motion_controller_mode();
 	}
 }
@@ -201,8 +195,8 @@ void vrpn_Tracker_RazerHydra::_listening_after_set_feature() {
 	struct timeval now;
 	vrpn_gettimeofday(&now, NULL);
 	if (duration(now, _set_feature) > MAXIMUM_WAIT_USEC) {
-		TEXT_MESSAGE("Really sleepy device - won't start motion controller reports despite our earlier "
-		             << _attempt << " attempt(s). Trying again - if this doesn't work, unplug and replug device and restart the VRPN server.", vrpn_TEXT_WARNING);
+		send_text_message(vrpn_TEXT_WARNING) << "Really sleepy device - won't start motion controller reports despite our earlier "
+		                                     << _attempt << " attempt(s). Trying again - if this doesn't work, unplug and replug device and restart the VRPN server.";
 		_enter_motion_controller_mode();
 	}
 }
