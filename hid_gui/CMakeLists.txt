@@ -10,7 +10,6 @@ if(NOT WIN32)
 	set(VRPN_ATMEL_LIBRARY vrpn_atmel)
 endif()
 
-
 set(SOURCES
 	HIDDevice.cpp
 	Inspector.cpp
@@ -42,7 +41,6 @@ if(QT_FOUND)
 	# Build and link the app!
 	add_executable(vrpn_hid_gui
 		MACOSX_BUNDLE
-		WIN32
 		${SOURCES}
 		${GENERATED_SOURCES}
 		${HEADERS}

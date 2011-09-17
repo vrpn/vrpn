@@ -30,7 +30,6 @@
 // Standard includes
 // - none
 
-
 namespace Ui {
 	class Plot;
 }
@@ -51,7 +50,7 @@ class QuickChart : public QFrame {
 		}
 
 		/// get minimum y value
-		float min() const {
+		float getMin(void) const {
 			return _min;
 		}
 
@@ -62,7 +61,7 @@ class QuickChart : public QFrame {
 		}
 
 		/// get maximum y value
-		float max() const {
+		float getMax(void) const {
 			return _max;
 		}
 

@@ -19,6 +19,7 @@
 
 // Internal Includes
 #include "Inspector.h"
+#include "vrpn_Shared.h"
 
 // Library/third-party includes
 // - none
@@ -26,7 +27,7 @@
 // Standard includes
 #include <stdexcept>
 #include <iostream>
-#include <stdint.h>
+//#include <stdint.h>
 
 template<typename T>
 T getFromByteArray(QByteArray const& input) {
@@ -63,7 +64,8 @@ void Inspector::updatedData(QByteArray buf, qint64 timestamp) {
 	if (!_bigEndian) {
 		myPortion = buf.mid(_first, _length);
 	} else {
-		for (int i = 0; i < _length; ++i) {
+		unsigned i;
+		for (i = 0; i < _length; ++i) {
 			myPortion.prepend(buf.at(_first + i));
 		}
 
@@ -73,18 +75,18 @@ void Inspector::updatedData(QByteArray buf, qint64 timestamp) {
 		case 1:
 			_sendNewValue(timestamp, _signed ?
 			              myPortion.at(0)
-			              : getFromByteArray<uint8_t>(myPortion));
+			              : getFromByteArray<vrpn_uint8>(myPortion));
 			break;
 		case 2:
 
 			_sendNewValue(timestamp, _signed ?
-			              getFromByteArray<int16_t>(myPortion) :
-			              getFromByteArray<uint16_t>(myPortion));
+			              getFromByteArray<vrpn_int16>(myPortion) :
+			              getFromByteArray<vrpn_uint16>(myPortion));
 			break;
 		case 4:
 			_sendNewValue(timestamp, _signed ?
-			              getFromByteArray<int32_t>(myPortion) :
-			              getFromByteArray<uint32_t>(myPortion));
+			              getFromByteArray<vrpn_int32>(myPortion) :
+			              getFromByteArray<vrpn_uint32>(myPortion));
 			break;
 	}
 }

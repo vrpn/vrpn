@@ -189,7 +189,7 @@ void MainWindow::_addInspector(std::size_t size, bool signedVal, bool bigEndian)
 
 void MainWindow::_addInspector(std::size_t offset, std::size_t size, bool signedVal, bool bigEndian) {
 	QuickChart * chart = new QuickChart(this);
-	int range = std::pow(2, 8 * size);
+	int range = std::pow(2.0, 8.0 * size);
 	chart->setMin(signedVal ? - range / 2 : 0);
 	chart->setMax(signedVal ? range / 2 : range);
 	QString label = QString("Offset %1 as %2-endian %3 int %4")
