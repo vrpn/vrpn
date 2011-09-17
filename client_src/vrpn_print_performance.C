@@ -192,7 +192,6 @@ void	VRPN_CALLBACK handle_button (void *userdata, const vrpn_BUTTONCB b)
 
 void	VRPN_CALLBACK handle_analog (void *userdata, const vrpn_ANALOGCB a)
 {
-    int i;
     const char *name = (const char *)userdata;
     struct timeval now;
 	double interval;
