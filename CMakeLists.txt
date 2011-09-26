@@ -359,6 +359,21 @@ if(WIN32)
 endif()
 
 ###
+# DirectInput
+###
+if(WIN32)
+	find_package(DirectInput)
+	option_requires(VRPN_USE_DIRECTINPUT
+			"Build with Microsoft DirectInput support"
+			${DEFAULT_OFF_IF_SUBPROJECT}
+			DIRECTINPUT_FOUND)
+	if(VRPN_USE_DIRECTINPUT)
+		include_directories(${DIRECTINPUT_INCLUDE_DIRS})
+		list(APPEND SERVER_EXTRA_LIBS ${DIRECTINPUT_LIBRARIES})
+	endif()
+endif()
+
+###
 # GPM
 ###
 if(UNIX)
