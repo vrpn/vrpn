@@ -61,10 +61,10 @@ class VRPN_API vrpn_Button_NI_DIO24 : public vrpn_Button_Filter {
     virtual void mainloop () ;
 
   private:
-    //  Addresses of the devices
+  //  Addresses of the devices
 #ifdef VRPN_USE_NATIONAL_INSTRUMENTS_MX
     TaskHandle    _taskHandle ;
-#endif // def(_WIN32) || def(WIN32)
+#endif
 
     /// Sets the number of channels and ports, clamped to maximums if needed.
     /// This should be used before mainloop is ever called.

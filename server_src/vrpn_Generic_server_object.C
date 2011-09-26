@@ -1058,10 +1058,7 @@ int vrpn_Generic_Server_Object::setup_NationalInstrumentsOutput (char * & pch, c
 int vrpn_Generic_Server_Object::setup_NationalInstruments (char * & pch, char * line, FILE * config_file)
 {
 
-#ifndef	VRPN_USE_NATIONAL_INSTRUMENTS
-  fprintf (stderr, "Attemting to use National Instruments board, but not compiled in\n");
-  fprintf (stderr, "  (Define VRPN_USE_NATIONAL_INSTRUMENTS in vrpn_Configuration.h\n");
-#else
+#if	defined(VRPN_USE_NATIONAL_INSTRUMENTS) || defined(VRPN_USE_NATIONAL_INSTRUMENTS_MX)
   char s2 [LINESIZE], s3 [LINESIZE];
   int num_in_channels, in_polarity, in_mode, in_range, in_drive_ais, in_gain;
   int num_out_channels, out_polarity;
@@ -1100,6 +1097,9 @@ int vrpn_Generic_Server_Object::setup_NationalInstruments (char * & pch, char * 
   } else {
     num_analogs++;
   }
+#else
+  fprintf (stderr, "Attemting to use National Instruments board, but not compiled in\n");
+  fprintf (stderr, "  (Define VRPN_USE_NATIONAL_INSTRUMENTS in vrpn_Configuration.h\n");
 #endif
 
   return 0;

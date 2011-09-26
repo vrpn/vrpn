@@ -5,6 +5,10 @@
 #ifndef VRPN_NATIONALINSTRUMENTS_H
 #define VRPN_NATIONALINSTRUMENTS_H
 
+#ifdef	VRPN_USE_NATIONAL_INSTRUMENTS_MX
+#include <NIDAQmx.h>
+#endif
+
 #include "vrpn_Analog.h"
 #include "vrpn_Analog_Output.h"
 
@@ -39,7 +43,14 @@ public:
     virtual void mainloop();
 
 protected:
+  //  Addresses of the devices
+#ifdef VRPN_USE_NATIONAL_INSTRUMENTS_MX
+    TaskHandle    d_analog_task_handle;
+    TaskHandle    d_analog_out_task_handle ;
+    void reportError(int32 errnumber, vrpn_bool exitProgram = vrpn_false);
+#else
     short   d_device_number;	      //< National Instruments device to use
+#endif
     short   d_in_polarity;	      //< Polarity (1 = unipolar, 0 = bipolar)
     int     d_in_gain;                //< Input gain
     double  d_in_min_delay;           //< Minimum delay between two readings
@@ -81,7 +92,8 @@ protected:
 };
 
 // An Analog output server that uses National Instruments cards to do its
-// output.
+// output.  It is superceded by vrpn_National_Instruments_Server, and is
+// now deprecated.  It only works with the NIDAQ traditional.
 
 class VRPN_API vrpn_Analog_Output_Server_NI : public vrpn_Analog_Output {
 public:

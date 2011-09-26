@@ -1,6 +1,8 @@
 /*****************************************************************************\
   vrpn_Nidaq.h
   --
+  NOTICE: This class is superceded by vrpn_NationalInstruments.h and is
+		  now deprecated.
 
   Description : This class reads from a National Instruments D/A Card
 		(NIDAQ).  To compile this class, you must have the

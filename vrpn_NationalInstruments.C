@@ -13,25 +13,24 @@ static	double	duration(struct timeval t1, struct timeval t2)
 }
 
 vrpn_National_Instruments_Server::vrpn_National_Instruments_Server (const char* name, vrpn_Connection * c, 
-                                                     const char *boardName,
+                             const char *boardName,
 						     int numInChannels, int numOutChannels,
-                                                     double minInputReportDelaySecs,
-                                                     bool inBipolar, int inputMode, int inputRange, bool driveAIS, int inputGain,
-                                                     bool outBipolar, double minOutVoltage, double maxOutVoltage) :
+                             double minInputReportDelaySecs,
+                             bool inBipolar, int inputMode, int inputRange, bool driveAIS, int inputGain,
+                             bool outBipolar, double minOutVoltage, double maxOutVoltage) :
         vrpn_Analog(name, c),
-	vrpn_Analog_Output(name, c),
-	d_device_number(-1),
-	d_out_min_voltage(minOutVoltage),
-	d_out_max_voltage(maxOutVoltage),
+		vrpn_Analog_Output(name, c),
+#if defined(VRPN_USE_NATIONAL_INSTRUMENTS_MX)
+		d_analog_task_handle(0),
+		d_analog_out_task_handle(0),
+#else
+		d_device_number(-1),
+#endif
+		d_out_min_voltage(minOutVoltage),
+		d_out_max_voltage(maxOutVoltage),
         d_in_min_delay(minInputReportDelaySecs),
         d_in_gain(inputGain)
 {
-#ifdef	VRPN_USE_NATIONAL_INSTRUMENTS
-  short i;
-  short	  update_mode = 0;	//< Mode 0 is immediate
-  short	  ref_source = 0;	//< Reference source, 0 = internal, 1 = external
-  double  ref_voltage = 10.0;
-
   // Set the polarity.  0 is bipolar, 1 is unipolar.
   if (inBipolar) {
     d_in_polarity = 0;
@@ -46,6 +45,118 @@ vrpn_National_Instruments_Server::vrpn_National_Instruments_Server (const char* 
 
   setNumInChannels( numInChannels );
   setNumOutChannels( numOutChannels );
+
+#if defined(VRPN_USE_NATIONAL_INSTRUMENTS_MX)
+  char	portName[1024];
+  int32 error=0;
+
+  // Input mode that we are using
+  int32 terminalConfig;
+  switch(inputMode) {
+	  case vrpn_NI_INPUT_MODE_DIFFERENTIAL:
+		  terminalConfig = DAQmx_Val_Diff;
+		  break;
+	  case vrpn_NI_INPUT_MODE_REF_SINGLE_ENDED:
+		  terminalConfig = DAQmx_Val_RSE;
+		  break;
+	  case vrpn_NI_INPUT_MODE_NON_REF_SINGLE_ENDED:
+		  terminalConfig = DAQmx_Val_NRSE;
+		  break;
+	  default:
+		  fprintf(stderr,"vrpn_National_Instruments_Server::vrpn_National_Instruments_Server(): Invalid inputMode (%d)\n", inputMode);
+		  return;
+  }
+
+  // Minimum and maximum values that we expect to read.
+  // Set the high end of the voltage range.  If we're bipolar, then
+  // we get half the range above and half below zero.
+  double	min_val = 0.0, max_val = inputRange;
+  if (inBipolar) {
+	  min_val = -max_val/2;
+	  max_val = max_val/2;
+  }
+
+  // If we are going analog input, then we specify the range of input
+  // ports that we use from 0 through the number requested.  We make a
+  // task to handle reading of these channels as a group.  We then
+  // start this task.
+  if (numInChannels > 0) {
+	  sprintf(portName, "%s/ai0:%d", boardName, numInChannels-1);
+	  error = DAQmxCreateTask("", &d_analog_task_handle);
+	  if (error == 0) {
+		  error = DAQmxCreateAIVoltageChan(
+			  d_analog_task_handle			// The handle we'll use to read values
+			  , portName					// Device name and port range
+			  , ""							// Our nickname for the channel
+			  , terminalConfig				// Single-ended vs. differentil
+			  , min_val, max_val			// Range of values we expect to read
+			  , DAQmx_Val_Volts, NULL		// Units, no custom scale
+			);
+		  if (error == 0) {
+			  fprintf(stderr,"vrpn_National_Instruments_Server::vrpn_National_Instruments_Server(): Cannot create input voltage channel\n");
+			  error = DAQmxStartTask(d_analog_task_handle);
+		  }
+	  }
+	  if (error) {
+		  fprintf(stderr,"vrpn_National_Instruments_Server::vrpn_National_Instruments_Server(): Cannot create input voltage task\n");
+		  reportError(error);
+		  return;
+	  }
+  }
+
+  // If we are going analog output, then we specify the range of output
+  // ports that we use from 0 through the number requested.  We make a
+  // task to handle writing of these channels as a group.  Start the
+  // task.  Also, set the outputs to their minimum value at startup.
+  if (numOutChannels > 0) {
+	  sprintf(portName, "%s/ao0:%d", boardName, numOutChannels-1);
+	  error = DAQmxCreateTask("", &d_analog_out_task_handle);
+	  if (error == 0) {
+		  error = DAQmxCreateAOVoltageChan(
+			  d_analog_out_task_handle		// The handle we'll use to write values
+			  , portName					// Device name and port range
+			  , ""							// Our nickname for the channel
+			  , minOutVoltage, maxOutVoltage// Range of values we expect to write
+			  , DAQmx_Val_Volts, NULL		// Units, no custom scale
+			);
+		  if (error) {
+			  fprintf(stderr,"vrpn_National_Instruments_Server::vrpn_National_Instruments_Server(): Cannot create output voltage channel\n");
+			  reportError(error);
+			  return;
+		  }
+	  }
+	  if (error == 0) {
+		  error = DAQmxStartTask(d_analog_out_task_handle);
+	  }
+	  if (error) {
+		  fprintf(stderr,"vrpn_National_Instruments_Server::vrpn_National_Instruments_Server(): Cannot create or start output voltage task\n");
+		  reportError(error);
+		  return;
+	  }
+
+	  // Set the output values to their minimums.  Also send these
+	  // values to the board.
+	  float64 outbuffer[vrpn_CHANNEL_MAX];
+	  int i;
+	  for (i = 0; i < vrpn_Analog_Output::o_num_channel; i++) {
+		  vrpn_Analog_Output::o_channel[i] = minOutVoltage;
+		  outbuffer[i] = vrpn_Analog_Output::o_channel[i];
+	  }
+	  int32 count;
+	  error = DAQmxWriteAnalogF64(d_analog_out_task_handle, 1, true, 1.0,
+		  DAQmx_Val_GroupByChannel, outbuffer, &count, NULL);
+	  if (error) {
+		  fprintf(stderr,"vrpn_National_Instruments_Server::vrpn_National_Instruments_Server(): Cannot write output voltages\n");
+		  reportError(error);
+		  return;
+	  }
+  }
+
+#elif defined(VRPN_USE_NATIONAL_INSTRUMENTS)
+  short i;
+  short	  update_mode = 0;	//< Mode 0 is immediate
+  short	  ref_source = 0;	//< Reference source, 0 = internal, 1 = external
+  double  ref_voltage = 10.0;
 
   // Open the board
   d_device_number = NIUtil::findDevice(boardName);
@@ -90,6 +201,10 @@ vrpn_National_Instruments_Server::vrpn_National_Instruments_Server (const char* 
     }
   }
 
+#else
+  fprintf(stderr,"vrpn_National_Instruments_Server: Support for NI not compiled in, edit vrpn_Configure.h and recompile VRPN\n");
+#endif
+
   // Check if we have a connection
   if (d_connection == NULL) {
     fprintf(stderr, "vrpn_National_Instruments_Server: Can't get connection!\n");
@@ -120,14 +235,33 @@ vrpn_National_Instruments_Server::vrpn_National_Instruments_Server (const char* 
   // No report yet sent.
   d_last_report_time.tv_sec = 0;
   d_last_report_time.tv_usec = 0;
-
-#else
-  fprintf(stderr,"vrpn_National_Instruments_Server: Support for NI not compiled in, edit vrpn_Configure.h and recompile VRPN\n");
-#endif
 }
 
 // virtual
-vrpn_National_Instruments_Server::~vrpn_National_Instruments_Server(void) {}
+vrpn_National_Instruments_Server::~vrpn_National_Instruments_Server(void)
+{
+#ifdef VRPN_USE_NATIONAL_INSTRUMENTS_MX
+    if( d_analog_task_handle != 0 ) 
+    {
+        /*********************************************/
+        // DAQmx Stop Code
+        /*********************************************/
+        DAQmxStopTask(d_analog_task_handle);
+        DAQmxClearTask(d_analog_task_handle);
+        d_analog_task_handle = 0 ;
+    }
+
+    if( d_analog_out_task_handle != 0 ) 
+    {
+        /*********************************************/
+        // DAQmx Stop Code
+        /*********************************************/
+        DAQmxStopTask(d_analog_out_task_handle);
+        DAQmxClearTask(d_analog_out_task_handle);
+        d_analog_out_task_handle = 0 ;
+    }
+#endif
+}
 
 // virtual
 void vrpn_National_Instruments_Server::mainloop(void)
@@ -141,8 +275,32 @@ void vrpn_National_Instruments_Server::mainloop(void)
   gettimeofday(&now, NULL);
   if (duration(now, d_last_report_time) >= d_in_min_delay) {
     d_last_report_time = now;
-#ifdef	VRPN_USE_NATIONAL_INSTRUMENTS
 
+#if defined(VRPN_USE_NATIONAL_INSTRUMENTS_MX)
+	// Read one complete set of channel values from the board and store
+	// the results (which are already in volts) into the channels.
+	if (vrpn_Analog::num_channel > 0) {
+		int32 error;
+		int32 channelsRead = 0;
+		float64	data[vrpn_CHANNEL_MAX];
+		error = DAQmxReadAnalogF64(d_analog_task_handle, 1, 1.0, DAQmx_Val_GroupByChannel,
+			data, vrpn_CHANNEL_MAX, &channelsRead, NULL);
+		if (channelsRead != vrpn_Analog::num_channel) {
+			send_text_message("vrpn_National_Instruments_Server::mainloop(): Cannot read channel", now, vrpn_TEXT_ERROR);
+			setNumInChannels(0);
+			return;
+		}
+		if (error) {
+			  reportError(error);
+			  return;
+		}
+		int i;
+		for (i = 0; i < channelsRead; i++) {
+			channel[i] = data[i];
+		}
+	}
+
+#elif defined(VRPN_USE_NATIONAL_INSTRUMENTS)
     // Read from the board, convert to volts, and store in the channel array
     i16 value;
     int i;
@@ -154,15 +312,15 @@ void vrpn_National_Instruments_Server::mainloop(void)
         return;
       }
       if(0 == d_in_polarity){ //Bipolar: We multiply by 10, but it will only go halfway (it is signed).
-	channel[i] = (value / 65536.0) * (10.0 / d_in_gain);		    
+		channel[i] = (value / 65536.0) * (10.0 / d_in_gain);		    
       } else { //Unipolar (cast it to unsigned, so it will be from zero to almost 10 volts).
-	channel[i] = ((vrpn_uint16)value / 65536.0) * (10.0 / d_in_gain);
+		channel[i] = ((vrpn_uint16)value / 65536.0) * (10.0 / d_in_gain);
       }
     }
+#endif
 
     // Send a report.
     vrpn_Analog::report();
-#endif
   }
 }
 
@@ -221,7 +379,24 @@ int VRPN_CALLBACK vrpn_National_Instruments_Server::handle_request_message(void 
     me->o_channel[chan_num] = value;
 
     // Send the new value to the D/A board
-#ifdef	VRPN_USE_NATIONAL_INSTRUMENTS
+#if defined(VRPN_USE_NATIONAL_INSTRUMENTS_MX)
+	// Send all current values to the board, including the
+	// changed one.
+	float64 outbuffer[vrpn_CHANNEL_MAX];
+	int i;
+	for (i = 0; i < me->vrpn_Analog_Output::o_num_channel ; i++) {
+	  outbuffer[i] = me->vrpn_Analog_Output::o_channel[i];
+	}
+	int32 error, count;
+	error = DAQmxWriteAnalogF64(me->d_analog_out_task_handle, 1, true, 1.0,
+	  DAQmx_Val_GroupByChannel, outbuffer, &count, NULL);
+	if (error) {
+		me->send_text_message( "vrpn_National_Instruments_Server::handle_request_message(): Could not set value", p.msg_time, vrpn_TEXT_ERROR );
+	  me->reportError(error);
+	  return -1;
+	}
+
+#elif	defined(VRPN_USE_NATIONAL_INSTRUMENTS)
     if (me->d_device_number != -1) {
       AO_VWrite(me->d_device_number, (short)(chan_num), value);
     }
@@ -259,31 +434,49 @@ int vrpn_National_Instruments_Server::handle_request_channels_message(void* user
          return 0;
     }
     for (chan_num = 0; chan_num < num; chan_num++) {
-	vrpn_unbuffer(&bufptr, &value);
+		vrpn_unbuffer(&bufptr, &value);
 
-	// Make sure the voltage value is within the allowed range.
-	if (value < me->d_out_min_voltage) {
-	  char msg[1024];
-	  sprintf( msg, "Error:  (handle_request_messages): voltage %g is too low.  Clamping to %g.", value, me->d_out_min_voltage);
-	  me->send_text_message( msg, p.msg_time, vrpn_TEXT_WARNING );
-	  value = me->d_out_min_voltage;
-	}
-	if (value > me->d_out_max_voltage) {
-	  char msg[1024];
-	  sprintf( msg, "Error:  (handle_request_messages): voltage %g is too high.  Clamping to %g.", value, me->d_out_max_voltage);
-	  me->send_text_message( msg, p.msg_time, vrpn_TEXT_WARNING );
-	  value = me->d_out_max_voltage;
-	}
-	me->o_channel[chan_num] = value;
+		// Make sure the voltage value is within the allowed range.
+		if (value < me->d_out_min_voltage) {
+		  char msg[1024];
+		  sprintf( msg, "Error:  (handle_request_messages): voltage %g is too low.  Clamping to %g.", value, me->d_out_min_voltage);
+		  me->send_text_message( msg, p.msg_time, vrpn_TEXT_WARNING );
+		  value = me->d_out_min_voltage;
+		}
+		if (value > me->d_out_max_voltage) {
+		  char msg[1024];
+		  sprintf( msg, "Error:  (handle_request_messages): voltage %g is too high.  Clamping to %g.", value, me->d_out_max_voltage);
+		  me->send_text_message( msg, p.msg_time, vrpn_TEXT_WARNING );
+		  value = me->d_out_max_voltage;
+		}
+		me->o_channel[chan_num] = value;
 
-	// Send the new value to the D/A board
+		// Send the new value to the D/A board
 #ifdef	VRPN_USE_NATIONAL_INSTRUMENTS
-	if (me->d_device_number != -1) {
-	  AO_VWrite(me->d_device_number, (short)(chan_num), value);
-	}
+		if (me->d_device_number != -1) {
+		  AO_VWrite(me->d_device_number, (short)(chan_num), value);
+		}
 #endif
     }
-    
+
+#if defined(VRPN_USE_NATIONAL_INSTRUMENTS_MX)
+	// Send all current values to the board, including the
+	// changed one.
+	float64 outbuffer[vrpn_CHANNEL_MAX];
+	int i;
+	for (i = 0; i < me->vrpn_Analog_Output::o_num_channel ; i++) {
+	  outbuffer[i] = me->vrpn_Analog_Output::o_channel[i];
+	}
+	int32 error, count;
+	error = DAQmxWriteAnalogF64(me->d_analog_out_task_handle, 1, true, 1.0,
+	  DAQmx_Val_GroupByChannel, outbuffer, &count, NULL);
+	if (error) {
+		me->send_text_message( "vrpn_National_Instruments_Server::handle_request_channels_message(): Could not set values", p.msg_time, vrpn_TEXT_ERROR );
+	  me->reportError(error);
+	  return -1;
+	}
+#endif
+
     return 0;
 }
 
@@ -563,3 +756,24 @@ encode_num_channels_to( char* buf, vrpn_int32 num )
     vrpn_buffer(&buf, &buflen, num);
     return sizeof(vrpn_int32);
 }
+
+//  This handles error reporting
+#ifdef VRPN_USE_NATIONAL_INSTRUMENTS_MX
+void vrpn_National_Instruments_Server::reportError(int32 errnumber, vrpn_bool exitProgram)
+{
+    char    errBuff[2048]={'\0'};
+
+    if( DAQmxFailed(errnumber) )
+    {
+        DAQmxGetExtendedErrorInfo(errBuff,2048);
+        printf("DAQmx Error: %s\n",errBuff);
+        if (exitProgram==vrpn_true) {
+            printf("Exiting...\n") ;
+            throw(errnumber) ;    //  this will quit, cause the destructor to be called
+        } else {
+            printf("Sleeping...\n") ;
+            vrpn_SleepMsecs(1000.0*1) ;    //  so at least the log will slow down so someone can see the error
+        }
+    }
+}    //  reportError
+#endif
