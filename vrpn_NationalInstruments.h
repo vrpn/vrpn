@@ -46,7 +46,8 @@ protected:
   //  Addresses of the devices
 #ifdef VRPN_USE_NATIONAL_INSTRUMENTS_MX
     TaskHandle    d_analog_task_handle;
-    TaskHandle    d_analog_out_task_handle ;
+    TaskHandle    d_analog_out_task_handle;
+	bool setValues(void);	// Transfer our internal values to the D/A
     void reportError(int32 errnumber, vrpn_bool exitProgram = vrpn_false);
 #else
     short   d_device_number;	      //< National Instruments device to use

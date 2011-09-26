@@ -136,20 +136,15 @@ vrpn_National_Instruments_Server::vrpn_National_Instruments_Server (const char* 
 
 	  // Set the output values to zero or to the minimum if the minimum
 	  // is above 0.  Also send these values to the board.
-	  float64 outbuffer[vrpn_CHANNEL_MAX];
 	  float64 minval = 0.0;
 	  if (minval < minOutVoltage) { minval = minOutVoltage; }
 	  int i;
 	  for (i = 0; i < vrpn_Analog_Output::o_num_channel; i++) {
 		  vrpn_Analog_Output::o_channel[i] = minval;
-		  outbuffer[i] = vrpn_Analog_Output::o_channel[i];
 	  }
-	  error = DAQmxWriteAnalogF64(d_analog_out_task_handle, 1, true, 1.0,
-		  DAQmx_Val_GroupByChannel, outbuffer, NULL, NULL);
-	  if (error) {
-		  fprintf(stderr,"vrpn_National_Instruments_Server::vrpn_National_Instruments_Server(): Cannot write output voltages\n");
-		  reportError(error);
-		  return;
+	  if (!setValues()) {
+	    fprintf(stderr, "vrpn_National_Instruments_Server::vrpn_National_Instruments_Server(): Could not set values\n");
+	    return;
 	  }
   }
 
@@ -381,19 +376,8 @@ int VRPN_CALLBACK vrpn_National_Instruments_Server::handle_request_message(void 
 
     // Send the new value to the D/A board
 #if defined(VRPN_USE_NATIONAL_INSTRUMENTS_MX)
-	// Send all current values to the board, including the
-	// changed one.
-	float64 outbuffer[vrpn_CHANNEL_MAX];
-	int i;
-	for (i = 0; i < me->vrpn_Analog_Output::o_num_channel ; i++) {
-	  outbuffer[i] = me->vrpn_Analog_Output::o_channel[i];
-	}
-	int32 error;
-	error = DAQmxWriteAnalogF64(me->d_analog_out_task_handle, 1, true, 1.0,
-	  DAQmx_Val_GroupByChannel, outbuffer, NULL, NULL);
-	if (error) {
-		me->send_text_message( "vrpn_National_Instruments_Server::handle_request_message(): Could not set value", p.msg_time, vrpn_TEXT_ERROR );
-	  me->reportError(error);
+	if (!me->setValues()) {
+	  me->send_text_message( "vrpn_National_Instruments_Server::handle_request_message(): Could not set values", p.msg_time, vrpn_TEXT_ERROR );
 	  return -1;
 	}
 
@@ -461,19 +445,8 @@ int vrpn_National_Instruments_Server::handle_request_channels_message(void* user
     }
 
 #if defined(VRPN_USE_NATIONAL_INSTRUMENTS_MX)
-	// Send all current values to the board, including the
-	// changed one.
-	float64 outbuffer[vrpn_CHANNEL_MAX];
-	int i;
-	for (i = 0; i < me->vrpn_Analog_Output::o_num_channel ; i++) {
-	  outbuffer[i] = me->vrpn_Analog_Output::o_channel[i];
-	}
-	int32 error;
-	error = DAQmxWriteAnalogF64(me->d_analog_out_task_handle, 1, true, 1.0,
-	  DAQmx_Val_GroupByChannel, outbuffer, NULL, NULL);
-	if (error) {
-		me->send_text_message( "vrpn_National_Instruments_Server::handle_request_channels_message(): Could not set values", p.msg_time, vrpn_TEXT_ERROR );
-	  me->reportError(error);
+	if (!me->setValues()) {
+	  me->send_text_message( "vrpn_National_Instruments_Server::handle_request_channels_message(): Could not set values", p.msg_time, vrpn_TEXT_ERROR );
 	  return -1;
 	}
 #endif
@@ -481,6 +454,34 @@ int vrpn_National_Instruments_Server::handle_request_channels_message(void* user
     return 0;
 }
 
+bool vrpn_National_Instruments_Server::setValues(void) {
+#if defined(VRPN_USE_NATIONAL_INSTRUMENTS_MX)
+	// Send all current values to the board, including the
+	// changed one.
+	float64 outbuffer[vrpn_CHANNEL_MAX];
+	int i;
+	for (i = 0; i < vrpn_Analog_Output::o_num_channel ; i++) {
+	  outbuffer[i] = vrpn_Analog_Output::o_channel[i];
+	}
+	int32 error;
+	error = DAQmxWriteAnalogF64(d_analog_out_task_handle, 1, true, 1.0,
+	  DAQmx_Val_GroupByChannel, outbuffer, NULL, NULL);
+	if (error) {
+	  reportError(error);
+	  return false;
+	}
+	/*
+	printf("Debug: Setting %d channels:", o_num_channel);
+	for (i = 0; i < o_num_channel; i++) {
+		printf(" %lg", outbuffer[i]);
+	}
+	printf("\n");
+	*/
+	return true;
+#else
+	return false;
+#endif
+}
 
 /* static */
 int VRPN_CALLBACK vrpn_National_Instruments_Server::handle_got_connection( void* userdata, vrpn_HANDLERPARAM )
