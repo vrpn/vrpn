@@ -451,21 +451,6 @@
   #endif
 #endif
 
-// DirectInput include file and libraries.
-// Load DirectX SDK libraries and tell which version we need if we are using it.
-#ifdef	VRPN_USE_DIRECTINPUT
-#define	DIRECTINPUT_VERSION 0x0800
-#include <dinput.h>
-#endif
-
-#ifdef	VRPN_USE_DIRECTINPUT
-#pragma comment (lib, "dxguid.lib")
-// Newer versions of the SDK have renamed this dxerr.lib;
-// dxerr9.lib has also been said to work.
-#pragma comment (lib, "dxerr8.lib")
-#pragma comment (lib, "dinput8.lib")
-#endif
-
 // Load National Instruments libraries if we are using them.
 // If this doesn't match where you have installed these libraries,
 // edit the following lines to point at the correct libraries.  Do

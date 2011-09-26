@@ -8,6 +8,10 @@
 #include "vrpn_Button.h"
 #include "vrpn_Analog_Output.h"
 
+#ifndef DIRECTINPUT_VERSION
+#define	DIRECTINPUT_VERSION 0x0800
+#endif
+#include <dinput.h>
 #include <windows.h>
 
 // This implements a RumblePad, which has analog outputs and button outputs

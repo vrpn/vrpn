@@ -8,6 +8,10 @@
 #include "vrpn_ForceDeviceServer.h"
 
 #if defined(_WIN32) && defined(VRPN_USE_DIRECTINPUT)
+#ifndef DIRECTINPUT_VERSION
+#define	DIRECTINPUT_VERSION 0x0800
+#endif
+#include <dinput.h>
 #include <basetsd.h>
 
 class VRPN_API vrpn_DirectXFFJoystick: public vrpn_Analog
