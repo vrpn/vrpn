@@ -71,7 +71,7 @@ if(MSVC)
 		"${_PROG_FILES}/Microsoft DirectX SDK (February 2006)")
 else()
 	set(_lib_suffixes lib)
-	set(DXSDK_DIRS /)
+	set(DXSDK_DIRS /mingw)
 endif()
 
 find_path(DIRECTINPUT_INCLUDE_DIR
@@ -84,16 +84,7 @@ find_path(DIRECTINPUT_INCLUDE_DIR
 	PATH_SUFFIXES
 	include)
 
-find_library(DIRECTINPUT_DINPUT_LIBRARY
-	NAMES
-	dinput8
-	dinput
-	PATHS
-	${DXSDK_DIRS}
-	HINTS
-	"${DIRECTINPUT_ROOT_DIR}"
-	PATH_SUFFIXES
-	${_lib_suffixes})
+
 
 find_library(DIRECTINPUT_DXGUID_LIBRARY
 	NAMES
@@ -101,6 +92,22 @@ find_library(DIRECTINPUT_DXGUID_LIBRARY
 	PATHS
 	${DXSDK_DIRS}
 	HINTS
+	"${DIRECTINPUT_ROOT_DIR}"
+	PATH_SUFFIXES
+	${_lib_suffixes})
+
+if(DIRECTINPUT_DXGUID_LIBRARY)
+	get_filename_component(_dinput_lib_dir ${DIRECTINPUT_DXGUID_LIBRARY} PATH)
+endif()
+
+find_library(DIRECTINPUT_DINPUT_LIBRARY
+	NAMES
+	dinput8
+	dinput
+	PATHS
+	${DXSDK_DIRS}
+	HINTS
+	"${_dinput_lib_dir}"
 	"${DIRECTINPUT_ROOT_DIR}"
 	PATH_SUFFIXES
 	${_lib_suffixes})
@@ -113,10 +120,10 @@ find_library(DIRECTINPUT_DXERR_LIBRARY
 	PATHS
 	${DXSDK_DIRS}
 	HINTS
+	"${_dinput_lib_dir}"
 	"${DIRECTINPUT_ROOT_DIR}"
 	PATH_SUFFIXES
 	${_lib_suffixes})
-
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(DirectInput
