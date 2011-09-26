@@ -50,7 +50,6 @@ typedef	vrpn_int32	int32;
 const vrpn_int32 vrpn_Button_NI_DIO24::vrpn_Button_NI_DIO24_CHANNEL_MAX = 
     (24<vrpn_BUTTON_MAX_BUTTONS) ? 24 : vrpn_BUTTON_MAX_BUTTONS ;    //  pick the least
 
-//  Constructor initializes the USDigital's SEI communication, and prepares to read the A2
 vrpn_Button_NI_DIO24::vrpn_Button_NI_DIO24 (const char * name,
                                         vrpn_Connection * c,
                                         vrpn_int32 numChannels) :

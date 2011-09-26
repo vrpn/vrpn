@@ -350,13 +350,26 @@ if(VRPN_USE_GPM_MOUSE)
 endif()
 
 ###
+# NIDAQMX
+###
+find_package(NIDAQMX)
+option_requires(VRPN_USE_NATIONAL_INSTRUMENTS_MX
+	"Build with National Instruments NIDAQMX support"
+	NIDAQMX_FOUND)
+
+if(NIDAQMX_FOUND)
+	include_directories(${NIDAQMX_INCLUDE_DIRS})
+	list(APPEND SERVER_EXTRA_LIBS ${NIDAQMX_LIBRARIES})
+endif()
+
+###
 # XXX Other libraries needing detection and handling (TODO)
 ###
 # possibly GHOST?
 # DirectX (for DirectInput)
 # Adrienne time-code generator
 # InterSense Interface Libraries SDK
-# National Instruments Nidaq (both new [MX] and old)
+# National Instruments Nidaq traditional
 # US Digital SEI/A2
 # microscribe3D library
 # PhaseSpace OWL API
@@ -386,9 +399,6 @@ option(VRPN_INCLUDE_INTERSENSE
 	OFF)
 option(VRPN_USE_NATIONAL_INSTRUMENTS
 	"Build with National Instruments (old library) support"
-	OFF)
-option(VRPN_USE_NATIONAL_INSTRUMENTS_MX
-	"Build with National Instruments (new library) support"
 	OFF)
 option(VRPN_USE_NIDAQ "Build with NIDAQ support ca. 1999" OFF)
 option(VRPN_USE_USDIGITAL

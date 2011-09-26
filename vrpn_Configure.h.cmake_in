@@ -389,7 +389,6 @@
 #define VRPN_GHOST_40_PATH      VRPN_SYSTEMDRIVE "/Program Files/SensAble/GHOST/v4.0/lib/"
 
 #define VRPN_NIDAQ_PATH         VRPN_SYSTEMDRIVE "/Program Files/National Instruments/NI-DAQ/Lib/"
-#define VRPN_NIDAQ_MX_PATH      VRPN_SYSTEMDRIVE "/Program Files/National Instruments/NI-DAQ/DAQmx ANSI C Dev/lib/msvc/"
 #define VRPN_USDIGITAL_PATH     VRPN_SYSTEMDRIVE "/Program Files/SEI Explorer/"
 
 #ifdef  vrpn_USE_MPI
@@ -478,9 +477,6 @@
 #ifdef	VRPN_USE_NATIONAL_INSTRUMENTS
 #pragma comment (lib, VRPN_NIDAQ_PATH "nidaq32.lib")
 #pragma comment (lib, VRPN_NIDAQ_PATH "nidex32.lib")
-#endif
-#ifdef	VRPN_USE_NATIONAL_INSTRUMENTS_MX
-#pragma comment (lib, VRPN_NIDAQ_MX_PATH "NIDAQmx.lib")
 #endif
 
 // Load US Digital libraries if we are using them.
