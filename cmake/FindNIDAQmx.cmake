@@ -21,7 +21,7 @@
 # http://www.boost.org/LICENSE_1_0.txt)
 
 find_library(NIDAQMX_LIBRARY
-	NAMES NIDAQmx.lib
+	NAMES NIDAQmx
 	PATHS
 	"C:/Program Files (x86)/National Instruments/NI-DAQ/DAQmx ANSI C Dev/lib/msvc"
 )
