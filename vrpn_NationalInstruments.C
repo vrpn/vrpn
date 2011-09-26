@@ -90,7 +90,7 @@ vrpn_National_Instruments_Server::vrpn_National_Instruments_Server (const char* 
 			  , ""							// Our nickname for the channel
 			  , terminalConfig				// Single-ended vs. differentil
 			  , min_val, max_val			// Range of values we expect to read
-			  , DAQmx_Val_Volts, NULL		// Units, no custom scale
+			  , DAQmx_Val_Volts, ""			// Units, no custom scale
 			);
 		  if (error == 0) {
 			  fprintf(stderr,"vrpn_National_Instruments_Server::vrpn_National_Instruments_Server(): Cannot create input voltage channel\n");
@@ -117,7 +117,7 @@ vrpn_National_Instruments_Server::vrpn_National_Instruments_Server (const char* 
 			  , portName					// Device name and port range
 			  , ""							// Our nickname for the channel
 			  , minOutVoltage, maxOutVoltage// Range of values we expect to write
-			  , DAQmx_Val_Volts, NULL		// Units, no custom scale
+			  , DAQmx_Val_Volts, ""			// Units, no custom scale
 			);
 		  if (error) {
 			  fprintf(stderr,"vrpn_National_Instruments_Server::vrpn_National_Instruments_Server(): Cannot create output voltage channel\n");
@@ -134,17 +134,18 @@ vrpn_National_Instruments_Server::vrpn_National_Instruments_Server (const char* 
 		  return;
 	  }
 
-	  // Set the output values to their minimums.  Also send these
-	  // values to the board.
+	  // Set the output values to zero or to the minimum if the minimum
+	  // is above 0.  Also send these values to the board.
 	  float64 outbuffer[vrpn_CHANNEL_MAX];
+	  float64 minval = 0.0;
+	  if (minval < minOutVoltage) { minval = minOutVoltage; }
 	  int i;
 	  for (i = 0; i < vrpn_Analog_Output::o_num_channel; i++) {
-		  vrpn_Analog_Output::o_channel[i] = minOutVoltage;
+		  vrpn_Analog_Output::o_channel[i] = minval;
 		  outbuffer[i] = vrpn_Analog_Output::o_channel[i];
 	  }
-	  int32 count;
 	  error = DAQmxWriteAnalogF64(d_analog_out_task_handle, 1, true, 1.0,
-		  DAQmx_Val_GroupByChannel, outbuffer, &count, NULL);
+		  DAQmx_Val_GroupByChannel, outbuffer, NULL, NULL);
 	  if (error) {
 		  fprintf(stderr,"vrpn_National_Instruments_Server::vrpn_National_Instruments_Server(): Cannot write output voltages\n");
 		  reportError(error);
@@ -387,9 +388,9 @@ int VRPN_CALLBACK vrpn_National_Instruments_Server::handle_request_message(void 
 	for (i = 0; i < me->vrpn_Analog_Output::o_num_channel ; i++) {
 	  outbuffer[i] = me->vrpn_Analog_Output::o_channel[i];
 	}
-	int32 error, count;
+	int32 error;
 	error = DAQmxWriteAnalogF64(me->d_analog_out_task_handle, 1, true, 1.0,
-	  DAQmx_Val_GroupByChannel, outbuffer, &count, NULL);
+	  DAQmx_Val_GroupByChannel, outbuffer, NULL, NULL);
 	if (error) {
 		me->send_text_message( "vrpn_National_Instruments_Server::handle_request_message(): Could not set value", p.msg_time, vrpn_TEXT_ERROR );
 	  me->reportError(error);
@@ -467,9 +468,9 @@ int vrpn_National_Instruments_Server::handle_request_channels_message(void* user
 	for (i = 0; i < me->vrpn_Analog_Output::o_num_channel ; i++) {
 	  outbuffer[i] = me->vrpn_Analog_Output::o_channel[i];
 	}
-	int32 error, count;
+	int32 error;
 	error = DAQmxWriteAnalogF64(me->d_analog_out_task_handle, 1, true, 1.0,
-	  DAQmx_Val_GroupByChannel, outbuffer, &count, NULL);
+	  DAQmx_Val_GroupByChannel, outbuffer, NULL, NULL);
 	if (error) {
 		me->send_text_message( "vrpn_National_Instruments_Server::handle_request_channels_message(): Could not set values", p.msg_time, vrpn_TEXT_ERROR );
 	  me->reportError(error);
