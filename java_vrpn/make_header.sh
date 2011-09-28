@@ -1,6 +1,7 @@
 #!/bin/csh
 javac vrpn/*.java
 
+javah -jni -classpath . vrpn.FunctionGeneratorRemote
 javah -jni -classpath . vrpn.AnalogOutputRemote
 javah -jni -classpath . vrpn.AnalogRemote
 javah -jni -classpath . vrpn.AuxiliaryLoggerRemote
