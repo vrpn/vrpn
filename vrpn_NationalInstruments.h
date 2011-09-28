@@ -38,7 +38,7 @@ public:
 			     bool outBipolar = false,      // Output parameters (D/A)
 			     double minOutVoltage = 0.0,
 			     double maxOutVoltage = 10.0);
-    virtual ~vrpn_National_Instruments_Server(void);
+    virtual ~vrpn_National_Instruments_Server();
 
     virtual void mainloop();
 
@@ -47,7 +47,7 @@ protected:
 #ifdef VRPN_USE_NATIONAL_INSTRUMENTS_MX
     TaskHandle    d_analog_task_handle;
     TaskHandle    d_analog_out_task_handle;
-	bool setValues(void);	// Transfer our internal values to the D/A
+	bool setValues();	// Transfer our internal values to the D/A
     void reportError(int32 errnumber, vrpn_bool exitProgram = vrpn_false);
 #else
     short   d_device_number;	      //< National Instruments device to use
