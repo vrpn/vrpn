@@ -234,7 +234,7 @@ vrpn_National_Instruments_Server::vrpn_National_Instruments_Server (const char* 
 }
 
 // virtual
-vrpn_National_Instruments_Server::~vrpn_National_Instruments_Server(void)
+vrpn_National_Instruments_Server::~vrpn_National_Instruments_Server()
 {
 #ifdef VRPN_USE_NATIONAL_INSTRUMENTS_MX
     if( d_analog_task_handle != 0 ) 
@@ -454,8 +454,8 @@ int vrpn_National_Instruments_Server::handle_request_channels_message(void* user
     return 0;
 }
 
-bool vrpn_National_Instruments_Server::setValues(void) {
 #if defined(VRPN_USE_NATIONAL_INSTRUMENTS_MX)
+bool vrpn_National_Instruments_Server::setValues() {
 	// Send all current values to the board, including the
 	// changed one.
 	float64 outbuffer[vrpn_CHANNEL_MAX];
@@ -477,11 +477,8 @@ bool vrpn_National_Instruments_Server::setValues(void) {
 	}
 	printf("\n");
 	*/
-	return true;
-#else
-	return false;
-#endif
 }
+#endif
 
 /* static */
 int VRPN_CALLBACK vrpn_National_Instruments_Server::handle_got_connection( void* userdata, vrpn_HANDLERPARAM )
