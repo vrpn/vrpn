@@ -477,6 +477,7 @@ bool vrpn_National_Instruments_Server::setValues() {
 	}
 	printf("\n");
 	*/
+        return true;
 }
 #endif
 
