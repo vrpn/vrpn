@@ -18,6 +18,7 @@
 #include <signal.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <cctype>
 #endif
 
 // malloc.h is deprecated;  all the functionality *should*
