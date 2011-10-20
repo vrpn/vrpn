@@ -121,6 +121,7 @@
 //  VC++ Directories entry.
 //    This will let the code find the right version when it compiles.
 //#define	VRPN_USE_DIRECTINPUT
+//#define   VRPN_USE_WINDOWS_XINPUT
 
 //-----------------------
 // Instructs VRPN library and server to include code that uses

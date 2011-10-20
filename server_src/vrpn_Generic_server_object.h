@@ -196,7 +196,9 @@ class vrpn_Generic_Server_Object
 #ifdef	VRPN_USE_DIRECTINPUT
     vrpn_DirectXFFJoystick   * DirectXJoys [VRPN_GSO_MAX_DIRECTXJOYS];
     vrpn_DirectXRumblePad    * RumblePads  [VRPN_GSO_MAX_RUMBLEPADS ];
+#ifdef VRPN_USE_WINDOWS_XINPUT
     vrpn_XInputGamepad       * XInputPads  [VRPN_GSO_MAX_XINPUTPADS ];
+#endif
 #endif
     int  num_DirectXJoys;
     int  num_RumblePads;
