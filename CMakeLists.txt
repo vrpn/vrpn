@@ -398,7 +398,7 @@ endif()
 ###
 # NIDAQMX
 ###
-find_package(NIDAQMX)
+find_package(NIDAQmx)
 option_requires(VRPN_USE_NATIONAL_INSTRUMENTS_MX
 	"Build with National Instruments NIDAQMX support"
 	${DEFAULT_OFF_IF_SUBPROJECT}

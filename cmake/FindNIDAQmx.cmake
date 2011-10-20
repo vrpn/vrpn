@@ -33,7 +33,7 @@ find_path(NIDAQMX_INCLUDE_DIR
 )
 
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(NIDAQMX
+find_package_handle_standard_args(NIDAQmx
 	DEFAULT_MSG
 	NIDAQMX_LIBRARY
 	NIDAQMX_INCLUDE_DIR)
