@@ -5337,7 +5337,7 @@ int vrpn_Connection_IP::connect_to_client (const char *machine, int port)
 
 	char msg [100];
 	sprintf(msg, "%s %d", machine, port);
-	printf("vrpn_Connection_IP::connect_to_client:  "
+	printf("vrpn_Connection_IP::connect_to_client: "
 	   "Connection request received: %s\n", msg);
 	endpoint->connect_tcp_to(msg);
 	if (endpoint->status != COOKIE_PENDING) {   // Something broke
@@ -5512,6 +5512,43 @@ void vrpn_Connection_IP::server_check_for_incoming_connections
       }
 
       printf("vrpn: Connection request received: %s\n", msg);
+
+      // Make sure that the request is well-formed.  That is, it
+      // has an ASCII string name of a host followed by an integer
+      // that is larger than 1024 (ports < 1024 are reserved for
+      // use by the root process).  If it is not well-formed, then
+      // don't go off trying to connect to it because this slows
+      // things down.  This was happening to one user who had a
+      // network device that was lobbing mal-formed UDP packets at
+      // the incoming port on his machine.
+      char *checkHost = new char[strlen(msg)+1];
+      int checkPort;
+      if (checkHost == NULL) {
+        fprintf(stderr,"server_check_for_incoming_connections(): Out of memory\n");
+        return;
+      }
+      if (sscanf(msg, "%s %d", checkHost, &checkPort) != 2) {
+        fprintf(stderr,"server_check_for_incoming_connections(): Malformed request\n");
+        delete [] checkHost;
+        return;
+      }
+      if (checkPort < 1024) {
+        fprintf(stderr,"server_check_for_incoming_connections(): Bad port\n");
+        delete [] checkHost;
+        return;
+      }
+      // Check all of the characters in the hostname to make sure they are
+      // either a letter, a digit, or a dot (.).
+      size_t checkLoop;
+      for (checkLoop = 0; checkLoop < strlen(checkHost); checkLoop++) {
+        char checkChar = checkHost[checkLoop];
+        if ( !isalnum(checkChar) && (checkChar != '.') ) {
+          fprintf(stderr,"server_check_for_incoming_connections(): Bad hostname\n");
+          delete [] checkHost;
+          return;
+        }
+      }
+      delete [] checkHost;
 
       // Make sure that we have room for a new connection
       if (which_end >= vrpn_MAX_ENDPOINTS) {
@@ -5847,7 +5884,7 @@ vrpn_Connection_IP::vrpn_Connection_IP
     // that asks to machine to call us back here.
     endpoint->remote_machine_name = vrpn_copy_machine_name(station_name);
     if (!endpoint->remote_machine_name) {
-      fprintf(stderr, "vrpn_Connection_IP: Can't ge remote machine name!\n");
+      fprintf(stderr, "vrpn_Connection_IP: Can't get remote machine name!\n");
       connectionStatus = BROKEN;
 //fprintf(stderr, "BROKEN - vrpn_Connection_IP::vrpn_Connection_IP.\n");
       return;
