@@ -58,7 +58,7 @@ protected:
     // Send forces to joystick, where forces range from -1 to 1 on X and Y axes.
     void  send_normalized_force(double fx, double fy);
 
-    HRESULT vrpn_DirectXFFJoystick::InitDirectJoystick( void );
+    HRESULT InitDirectJoystick( void );
     LPDIRECTINPUT8	  _DirectInput;   // Handle to Direct Input
     LPDIRECTINPUTDEVICE8  _Joystick;	  // Handle to the joystick we are using
     LPDIRECTINPUTEFFECT	  _ForceEffect;	  // Handle to the constant force effect
