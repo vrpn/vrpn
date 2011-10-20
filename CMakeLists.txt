@@ -27,6 +27,17 @@ include(OptionRequires)
 include(CTest)
 include(CreateDashboardScripts)
 
+
+if(NOT CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
+	set(SUBPROJECT TRUE)
+	set(DEFAULT_OFF_IF_SUBPROJECT OFF_BY_DEFAULT)
+	set(TRUE_UNLESS_SUBPROJECT FALSE)
+else()
+	set(SUBPROJECT FALSE)
+	set(DEFAULT_OFF_IF_SUBPROJECT)
+	set(TRUE_UNLESS_SUBPROJECT TRUE)
+endif()
+
 ###
 # On Windows 7, it does not work to install in the default location,
 # which is the Program Files directory, because you have to not only have
@@ -91,19 +102,21 @@ endif()
 #-----------------------------------------------------------------------------
 # Options that control what gets built and how.
 
-# We can build two configurations (passing defs to the compile lines) - which ones do we want?
-# Note that we can build both now, if desired!
-option(VRPN_BUILD_CLIENT_LIBRARY
-	"Build the vrpn library including only client code"
-	ON)
-option(VRPN_BUILD_SERVER_LIBRARY
-	"Build the vrpnserver library including client and server code"
-	ON)
+if(NOT SUBPROJECT)
+	# We can build two configurations (passing defs to the compile lines) - which ones do we want?
+	# Note that we can build both now, if desired!
+	option(VRPN_BUILD_CLIENT_LIBRARY
+		"Build the vrpn library including only client code"
+		ON)
+	option(VRPN_BUILD_SERVER_LIBRARY
+		"Build the vrpnserver library including client and server code"
+		ON)
 
-# Build various applications if we want them.
-option(VRPN_BUILD_CLIENTS "Build VRPN client apps and tests" ON)
-option(VRPN_BUILD_SERVERS "Build VRPN servers" ON)
-option(VRPN_BUILD_TEST_RPC_GENERATION "Build VRPN RPC generation" OFF)
+	# Build various applications if we want them.
+	option(VRPN_BUILD_CLIENTS "Build VRPN client apps and tests" ON)
+	option(VRPN_BUILD_SERVERS "Build VRPN servers" ON)
+	option(VRPN_BUILD_TEST_RPC_GENERATION "Build VRPN RPC generation" OFF)
+endif()
 
 # Development tools
 if(MSVC)
@@ -184,6 +197,7 @@ find_package(SWIG)
 find_package(PythonLibs)
 option_requires(VRPN_BUILD_PYTHON
 	"Build VRPN Python bindings"
+	${DEFAULT_OFF_IF_SUBPROJECT}
 	SWIG_FOUND
 	PYTHONLIBS_FOUND)
 
@@ -196,6 +210,7 @@ find_program(JAVAH_EXECUTABLE NAMES javah)
 mark_as_advanced(JAVAH_EXECUTABLE)
 option_requires(VRPN_BUILD_JAVA
 	"Build VRPN Java bindings"
+	${DEFAULT_OFF_IF_SUBPROJECT}
 	Java_JAVAC_EXECUTABLE
 	Java_JAR_EXECUTABLE
 	JNI_FOUND
@@ -221,6 +236,7 @@ endif()
 find_package(Libusb1)
 option_requires(VRPN_USE_LIBUSB_1_0
 	"Attempt to use LibUSB-1.0 to talk directly to USB devices."
+	${DEFAULT_OFF_IF_SUBPROJECT}
 	LIBUSB1_FOUND)
 
 if(VRPN_USE_LIBUSB_1_0)
@@ -244,12 +260,13 @@ endif()
 # variable, as included in the source list below, will also be set.
 option_requires(VRPN_USE_HID
 	"Build with support for HID devices using HIDAPI"
+	${DEFAULT_OFF_IF_SUBPROJECT}
 	HIDAPI_FOUND)
 
 if(VRPN_USE_HID)
 	include_directories(${HIDAPI_INCLUDE_DIRS})
 	list(APPEND SERVER_EXTRA_LIBS ${HIDAPI_LIBRARIES})
-	option(VRPN_BUILD_HID_GUI "Should we build a GUI for analyzing live HID streams?" ON)
+	option(VRPN_BUILD_HID_GUI "Should we build a GUI for analyzing live HID streams?" ${TRUE_UNLESS_SUBPROJECT})
 else()
 	# Clear this variable if they don't want HID after all.
 	message(STATUS "NOTE: You have VRPN_USE_LOCAL_HIDAPI enabled, but "
@@ -263,6 +280,7 @@ endif()
 find_package(OpenHaptics)
 option_requires(VRPN_USE_PHANTOM_SERVER
 	"Build with SensAble Phantom support"
+	${DEFAULT_OFF_IF_SUBPROJECT}
 	OPENHAPTICS_FOUND)
 
 if(VRPN_USE_PHANTOM_SERVER)
@@ -276,6 +294,7 @@ endif()
 find_package(WiiUse)
 option_requires(VRPN_USE_WIIUSE
 		"Build with WiiUse library support (makes servers GPL)"
+		${DEFAULT_OFF_IF_SUBPROJECT}
 		WIIUSE_FOUND)
 
 if(VRPN_USE_WIIUSE)
@@ -289,6 +308,7 @@ endif()
 find_package(JsonCpp)
 option_requires(VRPN_USE_JSONNET
 	"Build with JSONCPP (for Android widgets)"
+	${DEFAULT_OFF_IF_SUBPROJECT}
 	JSONCPP_FOUND)
 
 if(VRPN_USE_JSONNET)
@@ -308,6 +328,7 @@ endif()
 find_package(LibNifalcon)
 option_requires(VRPN_USE_LIBNIFALCON
 		"Build with libnifalcon support to access Novint Falcon devices"
+		${DEFAULT_OFF_IF_SUBPROJECT}
 		LIBNIFALCON_FOUND)
 
 if(VRPN_USE_LIBNIFALCON)
@@ -324,9 +345,11 @@ if(WIN32)
 	find_package(DirectShow)
 	option_requires(VRPN_USE_DIRECTSHOW
 			"Build with Microsoft DirectShow support"
+			${DEFAULT_OFF_IF_SUBPROJECT}
 			DIRECTSHOW_FOUND)
 	option_requires(VRPN_BUILD_DIRECTSHOW_VIDEO_SERVER
 			"Enable to build DirectShow Video Server (Windows)"
+			${DEFAULT_OFF_IF_SUBPROJECT}
 			DIRECTSHOW_FOUND)
 
 	if(VRPN_USE_DIRECTSHOW)
@@ -342,6 +365,7 @@ if(UNIX)
 	find_package(GPM)
 	option_requires(VRPN_USE_GPM_MOUSE
 		"Build with GPM Linux mouse interface support"
+		${DEFAULT_OFF_IF_SUBPROJECT}
 		GPM_FOUND)
 endif()
 
@@ -355,6 +379,7 @@ endif()
 find_package(NIDAQMX)
 option_requires(VRPN_USE_NATIONAL_INSTRUMENTS_MX
 	"Build with National Instruments NIDAQMX support"
+	${DEFAULT_OFF_IF_SUBPROJECT}
 	NIDAQMX_FOUND)
 
 if(NIDAQMX_FOUND)
@@ -447,6 +472,10 @@ endif()
 if(VRPN_BUILD_PROFILING_SUPPORT)
 	include(EnableProfiling)
 	globally_enable_profiling()
+endif()
+
+if(SUBPROJECT)
+	set(BUILD_TESTING FALSE)
 endif()
 
 
