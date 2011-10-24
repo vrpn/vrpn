@@ -54,8 +54,13 @@ if(VRPN_USE_LOCAL_HIDAPI)
 		set(HIDAPI_LIBRARIES ${MACHID_LIBRARIES})
 
 	elseif(WIN32)
-		list(APPEND HIDAPI_SOURCES "${PROJECT_SOURCE_DIR}/vrpn_Local_HIDAPI.C")
-		#list(APPEND HIDAPI_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/hidapi/windows/hid.cpp")
+		if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/hidapi/windows/hid.cpp)
+			# Old hidapi
+			list(APPEND HIDAPI_SOURCES "${PROJECT_SOURCE_DIR}/vrpn_Local_HIDAPI.C")
+		else()
+			# New hidapi
+			list(APPEND HIDAPI_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/hidapi/windows/hid.c")
+		endif()
 		set(HIDAPI_LIBRARIES ${WINHID_LIBRARIES} setupapi)
 
 	elseif(CMAKE_SYSTEM_NAME MATCHES "Linux")
