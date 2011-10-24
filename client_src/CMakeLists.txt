@@ -100,6 +100,15 @@ if(VRPN_BUILD_CLIENTS)
 
 			install(TARGETS testimager_client
 				RUNTIME DESTINATION bin COMPONENT tests)
+			option(VRPN_GLUT_IS_STATIC_FREEGLUT "Is the GLUT used for the imaging test client a static build of FreeGLUT?" NO)
+			mark_as_advanced(VRPN_GLUT_IS_STATIC_FREEGLUT)
+			if(VRPN_GLUT_IS_STATIC_FREEGLUT)
+				set_property(TARGET
+					testimager_client
+					PROPERTY
+					COMPILE_DEFINITIONS
+					"FREEGLUT_STATIC")
+			endif()
 		endif()
 
 	endif()
