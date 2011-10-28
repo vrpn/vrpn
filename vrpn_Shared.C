@@ -1194,9 +1194,24 @@ bool vrpn_Semaphore::init() {
     LocalFree( lpMsgBuf );
     return false;
   }
+#elif defined(__APPLE__)
+  // We need to use sem_open on the mac because sem_init is not implemented
+    int numMax = cResources;
+    if (numMax < 1) {
+      numMax = 1;
+    }
+    char *tempname = new char[100];
+    sprintf(tempname, "/tmp/vrpn_sem.XXXXXXX");
+    semaphore = sem_open(mktemp(tempname), O_CREAT, 0600, numMax);
+    if (semaphore == SEM_FAILED) {
+        perror("vrpn_Semaphore::vrpn_Semaphore: error opening semaphore");
+	delete [] tempname;
+        return false;
+    }
+    delete [] tempname;
 #else
   // Posix threads are the default.
-  // We use sem_init on both linux and mac (instead of sem_open).
+  // We use sem_init on linux (instead of sem_open).
     int numMax = cResources;
     if (numMax < 1) {
       numMax = 1;
@@ -1237,7 +1252,7 @@ bool vrpn_Semaphore::destroy() {
   }
 #else
   // Posix threads are the default.
-#ifdef MACOSX
+#ifdef __APPLE__
   if (sem_close(semaphore) != 0) {
       perror("vrpn_Semaphore::destroy: error destroying semaphore.");
       return false;
@@ -1580,7 +1595,7 @@ vrpn_Thread::~vrpn_Thread() {
 }
 
 // For the code to get the number of processor cores.
-#ifdef MACOSX
+#ifdef __APPLE__
 #include <sys/param.h>
 #include <sys/sysctl.h>
 #endif
@@ -1616,7 +1631,7 @@ unsigned vrpn_Thread::number_of_processors() {
   }
   return count;
 
-#elif MACOSX
+#elif __APPLE__
   int count;
   size_t size = sizeof(count);
   if (sysctlbyname("hw.ncpu",&count,&size,NULL,0)) {
