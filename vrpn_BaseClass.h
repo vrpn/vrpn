@@ -180,8 +180,6 @@ class VRPN_API vrpn_BaseClassUnique {
 	// message handlers.  It should be used rather than the connection's
 	// function because this one will remember to unregister all of its handlers
 	// at object deletion time.
-	// XXX In the future, should write an unregister function, in case
-	// someone wants it.
 	int register_autodeleted_handler(vrpn_int32 type,
 		vrpn_MESSAGEHANDLER handler, void *userdata,
 		vrpn_int32 sender = vrpn_ANY_SENDER);
