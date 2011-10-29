@@ -880,6 +880,8 @@ VRPN_API char * vrpn_copy_file_name (const char * filespecifier);
 //   x-vrpn://<hostname>
 //   x-vrpn://<hostname>:<port number>
 //   x-vrsh://<hostname>/<server program>,<comma-separated server arguments>
+// The caller is responsible for calling delete [] on the returned character
+// pointer if it is not NULL.
 VRPN_API char * vrpn_copy_machine_name (const char * hostspecifier);
 VRPN_API int vrpn_get_port_number (const char * hostspecifier);
 VRPN_API char * vrpn_copy_rsh_program (const char * hostspecifier);
