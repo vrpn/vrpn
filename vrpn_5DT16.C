@@ -153,9 +153,6 @@ void vrpn_5dt16::get_report (void)
   // ignore that packet.
   _expected_chars = 36;
 
-  // XXX This should be called when the first character of a report is read.
-  vrpn_gettimeofday(&timestamp, NULL);
-
   //--------------------------------------------------------------------
   // Read as many bytes of this report as we can, storing them
   // in the buffer.  We keep track of how many have been read so far
@@ -169,11 +166,25 @@ void vrpn_5dt16::get_report (void)
       _status = STATUS_RESETTING;
       return;
   }
-  _bufcount += l_ret;
 #ifdef	VERBOSE
   if (l_ret != 0) printf("... got %d characters (%d total)\n",l_ret, _bufcount);
 #endif
 
+  //--------------------------------------------------------------------
+  // The time of the report is the time at which the first character for
+  // the report is read.
+  //--------------------------------------------------------------------
+
+  if ( (l_ret > 0) && (_bufcount == 0) ) {
+	vrpn_gettimeofday(&timestamp, NULL);
+  }
+
+  //--------------------------------------------------------------------
+  // We keep track of how many characters we have received and keep
+  // going back until we get as many as we expect.
+  //--------------------------------------------------------------------
+
+  _bufcount += l_ret;
   if (_bufcount < _expected_chars) {	// Not done -- go back for more
       return;
   }
