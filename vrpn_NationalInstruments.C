@@ -551,8 +551,8 @@ vrpn_Analog_Output_Server_NI::vrpn_Analog_Output_Server_NI(const char* name, vrp
   for (i = 0; i < NI_num_channels; i++) {
       AO_Configure(NI_device_number, i, polarity, ref_source, ref_voltage,
 	  update_mode);
-/*XXX
-      fprintf(stderr,"XXX Configuring channel %d, polarity: %d, reference source: %d, reference_voltage: %lg, update_mode: %d\n",
+/*
+      fprintf(stderr,"Configuring channel %d, polarity: %d, reference source: %d, reference_voltage: %lg, update_mode: %d\n",
           i, polarity, ref_source, ref_voltage, update_mode);
 */
       AO_VWrite(NI_device_number, i, min_voltage);

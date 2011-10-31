@@ -70,7 +70,7 @@ vrpn_5dt::vrpn_5dt (const char * p_name, vrpn_Connection * p_c, const char * p_p
   //Init the mode
   _mode =  p_mode;
 
-  // XXX Sebastien Kuntz reports the following about the driver they have
+  // Sebastien Kuntz reports the following about the driver they have
   // written:  It works great except for one small detail :
   // for unknown reasons, there's an extra byte hanging around in the data
   // stream sent by the 5DT glove in stream mode.
@@ -292,8 +292,6 @@ void vrpn_5dt::get_report (void)
 {
   int  l_ret;		// Return value from function call to be checked
 
-  
-
   // XXX This should be called when the first character of a report is read.
   vrpn_gettimeofday(&timestamp, NULL);
 
@@ -306,17 +304,31 @@ void vrpn_5dt::get_report (void)
   l_ret = vrpn_read_available_characters (serial_fd, &_buffer [_bufcount],
                                           _expected_chars - _bufcount);
   if (l_ret == -1) {
-    _5DT_ERROR ("Error reading the glove");
-    _status = STATUS_RESETTING;
-    return;
+      _5DT_ERROR ("Error reading the glove");
+      _status = STATUS_RESETTING;
+      return;
   }
-  _bufcount += l_ret;
-#ifdef	VERBOSE
+#ifdef  VERBOSE
   if (l_ret != 0) printf("... got %d characters (%d total)\n",l_ret, _bufcount);
 #endif
 
-  if (_bufcount < _expected_chars) {	// Not done -- go back for more
-    return;
+  //--------------------------------------------------------------------
+  // The time of the report is the time at which the first character for
+  // the report is read.
+  //--------------------------------------------------------------------
+
+  if ( (l_ret > 0) && (_bufcount == 0) ) {
+	vrpn_gettimeofday(&timestamp, NULL);
+  }
+
+  //--------------------------------------------------------------------
+  // We keep track of how many characters we have received and keep
+  // going back until we get as many as we expect.
+  //--------------------------------------------------------------------
+
+  _bufcount += l_ret;
+  if (_bufcount < _expected_chars) {    // Not done -- go back for more
+      return;
   }
 
   //--------------------------------------------------------------------

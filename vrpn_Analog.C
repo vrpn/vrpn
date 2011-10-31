@@ -56,7 +56,6 @@ vrpn_int32 vrpn_Analog::encode_to(char *buf)
 {
   // Message includes: vrpn_float64 AnalogNum, vrpn_float64 state
   // Byte order of each needs to be reversed to match network standard
-  // XXX This is passing an int in the double for the num_channel
   
   vrpn_float64    double_chan = num_channel;
   int buflen = (vrpn_CHANNEL_MAX+1)*sizeof(vrpn_float64);

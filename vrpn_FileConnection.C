@@ -616,7 +616,7 @@ int vrpn_File_Connection::eof()
 //    0 for normal result (played one entry)
 int vrpn_File_Connection::playone()
 {
-    static timeval tvMAX = { LONG_MAX, LONG_MAX };
+    static timeval tvMAX = { LONG_MAX, 999999L };
 
     int ret = playone_to_filetime(tvMAX);
     if (ret != 0) {
@@ -758,8 +758,8 @@ timeval vrpn_File_Connection::get_highest_user_timestamp()
 
 void vrpn_File_Connection::find_superlative_user_times( )
 {
-    timeval high = {LONG_MIN, LONG_MIN};
-    timeval low = {LONG_MAX, LONG_MAX};
+    timeval high = {0, 0};
+    timeval low = {LONG_MAX, 999999L};
     
     // Remember where we were when we asked this question
     bool retval = store_stream_bookmark( );

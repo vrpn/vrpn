@@ -18,6 +18,7 @@
 #include <signal.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <cctype>
 #endif
 
 // malloc.h is deprecated;  all the functionality *should*
@@ -637,17 +638,13 @@ int vrpn_Log::saveLogSoFar(void) {
   for (lp = d_firstEntry; lp && !final_retval; lp = lp->prev) {
 
     // This used to be a horrible hack that wrote the size of the
-    // structure (which included a pointer) to the file.  this broke on
+    // structure (which included a pointer) to the file.  This broke on
     // 64-bit machines, but could also have broken on any architecture
     // that packed structures differently from the common packing.
     // Here, we pull out the entries in a way that avoids doing any
     // sign changes and then write the array of values to disk.
     // Unfortunately, to remain backward-compatible with earlier log
     // files, we need to write the empty pointer.
-    // XXX This involves one more copy of these six values than would
-    // be strictly needed, but this should be very small relative to the
-    // disk-write time.  To fix this would require changing the structure
-    // that stored the data.
     vrpn_int32  values[6];
     vrpn_int32  zero = 0;
     memcpy(&(values[0]), &lp->data.type, sizeof(vrpn_int32));
@@ -4692,9 +4689,6 @@ int vrpn_Connection::delete_endpoint (int endpointIndex) {
 
 /**
  * Makes sure the endpoint array is set up cleanly for the next pass through.
- * XXX HACK - this is fragile and bound to break.  Should replace with STL
- * or some other clean linked list that guarantees traversal in spite of
- * deletions.
  */
 
 int vrpn_Connection::compact_endpoints (void) {
@@ -5934,7 +5928,7 @@ vrpn_Connection_IP::vrpn_Connection_IP
     //
     // Let's do both, because otherwise connectionStatus is
     // never initialized, and doing_ok() returns FALSE sometimes.
-    connectionStatus = TRYING_TO_CONNECT;  // XXX jeff's addition
+    connectionStatus = TRYING_TO_CONNECT;
    
     // here is the line that Tom added
     endpoint->status = TRYING_TO_CONNECT;
@@ -6196,6 +6190,9 @@ static int header_len(const char *hostspecifier) {
   return 0;
 }
 
+// The caller is responsible for calling delete [] on the
+// returned pointer if it is not null.
+
 char * vrpn_copy_machine_name (const char * hostspecifier)
 {
   int nearoffset = 0;
@@ -6215,7 +6212,7 @@ char * vrpn_copy_machine_name (const char * hostspecifier)
   faroffset = strcspn(hostspecifier + nearoffset, ":/");
   len = 1 + faroffset;
 
-  tbuf = new char [len]; //XXX Memory leak, but a small one
+  tbuf = new char [len];
   if (!tbuf) {
     fprintf(stderr, "vrpn_copy_machine_name:  Out of memory!\n");
   } else {
