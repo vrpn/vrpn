@@ -535,7 +535,7 @@ int main (int argc, char * argv [])
 	delete b1;
 	delete b2;
 
-        printf("Deleting _Servers and connection\n");
+        printf("Deleting servers and connection\n");
         delete stkr;
         delete sbtn;
         delete sdial;

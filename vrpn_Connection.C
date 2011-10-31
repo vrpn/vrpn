@@ -5511,7 +5511,16 @@ void vrpn_Connection_IP::server_check_for_incoming_connections
               return;
       }
 
-      printf("vrpn: Connection request received: %s\n", msg);
+      // Because we sometimes use multiple NICs, we are ignoring the IP from the
+      // client, and filling in the NIC that the udp request arrived on.
+      char fromname[1024];
+      unsigned long addr_num = ntohl(from.sin_addr.s_addr);
+      sprintf(fromname, "%lu.%lu.%lu.%lu", 
+              (addr_num) >> 24,
+              (addr_num >> 16) & 0xff,
+              (addr_num >> 8) & 0xff,
+              addr_num & 0xff); 
+      printf("vrpn: Connection request received from %s: %s\n", fromname, msg);
 
       // Make sure that the request is well-formed.  That is, it
       // has an ASCII string name of a host followed by an integer
@@ -5600,13 +5609,7 @@ void vrpn_Connection_IP::server_check_for_incoming_connections
       // client, and filling in the NIC that the udp request arrived on.
       sscanf(msg, "%*s %d", &port);   // get the port
       //fill in NIC address
-      unsigned long addr_num = ntohl(from.sin_addr.s_addr);
-      sprintf(msg, "%lu.%lu.%lu.%lu %d", 
-              (addr_num) >> 24,
-              (addr_num >> 16) & 0xff,
-              (addr_num >> 8) & 0xff,
-              addr_num & 0xff, port); 
-      endpoint->remote_machine_name = msg;
+      endpoint->remote_machine_name = fromname;
       endpoint->connect_tcp_to(msg);
       handle_connection(which_end);
 
