@@ -58,13 +58,13 @@ endif()
 # the GUI if they don't like what we did.  If I knew how to do this only
 # happen on Windows 7, I'd make the if(WIN32) more specific.
 if (WIN32 AND NOT SUBPROJECT)
-	if (NOT ONCE_SET_CMAKE_INSTALL_PREFIX)
-		set(ONCE_SET_CMAKE_INSTALL_PREFIX true CACHE BOOL
+	if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT AND (NOT ONCE_SET_CMAKE_INSTALL_PREFIX))
+		set(ONCE_SET_CMAKE_INSTALL_PREFIX true CACHE INTERNAL
 			"Have we set the install prefix yet?" FORCE)
 		set(CMAKE_INSTALL_PREFIX C:/usr/local CACHE PATH
 		    "Install path prefix, prepended onto install directories"
 		    FORCE)
-	endif (NOT ONCE_SET_CMAKE_INSTALL_PREFIX)
+	endif()
 endif ()
 
 
