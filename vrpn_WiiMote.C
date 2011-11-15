@@ -397,7 +397,9 @@ vrpn_WiiMote::vrpn_WiiMote(const char *name, vrpn_Connection *c, unsigned which,
 	wiimote->useMS = useMS;
 	wiimote->useIR = useIR;
 	wiimote->reorderButtons = (reorderButtons != 0);
-	wiimote->bdaddr = std::string(bdaddr);
+	if (bdaddr) {
+		wiimote->bdaddr = std::string(bdaddr);
+	}
 #ifndef __linux
 	if (!wiimote->bdaddr.empty()) {
 		fprintf(stderr, "vrpn_WiiMote: Specifying the bluetooth address of the desired wiimote is only supported on Linux right now\n");

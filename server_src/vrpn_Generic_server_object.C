@@ -2717,7 +2717,7 @@ int vrpn_Generic_Server_Object::setup_RumblePad (char * & pch, char * line, FILE
 //================================
 int vrpn_Generic_Server_Object::setup_XInputPad (char * & pch, char * line, FILE * config_file)
 {
-#ifdef	VRPN_USE_DIRECTINPUT
+#if defined(VRPN_USE_DIRECTINPUT) && defined(VRPN_USE_WINDOWS_XINPUT)
   char s2 [LINESIZE];
   unsigned controller;
 
@@ -2747,7 +2747,7 @@ int vrpn_Generic_Server_Object::setup_XInputPad (char * & pch, char * line, FILE
 
   return 0;
 #else
-  fprintf (stderr, "vrpn_server: Can't open XInputGamepad: VRPN_USE_DIRECTINPUT not defined in vrpn_Configure.h!\n");
+  fprintf (stderr, "vrpn_server: Can't open XInputGamepad: VRPN_USE_DIRECTINPUT and/or VRPN_USE_WINDOWS_XINPUT not defined in vrpn_Configure.h!\n");
   return -1;
 #endif
 }
@@ -5006,11 +5006,12 @@ void  vrpn_Generic_Server_Object::mainloop (void)
   for (i = 0; i < num_RumblePads; i++) {
     RumblePads[i]->mainloop();
   }
-
+#ifdef VRPN_USE_WINDOWS_XINPUT
   // Let all the Xbox controller do their thing
   for (i = 0; i < num_XInputPads; i++) {
     XInputPads[i]->mainloop();
   }
+#endif
 #endif
 
 #ifdef	_WIN32

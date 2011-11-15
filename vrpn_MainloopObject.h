@@ -55,12 +55,12 @@ class vrpn_MainloopObject {
 
 		/// Templated wrapping function
 		template<class T>
-		static vrpn_MainloopObject * wrap(T * o);
+		static vrpn_MainloopObject * wrap(T o);
 
 		/// Templated wrapping function that can encourage the
 		/// wrapper to not destroy the wrapped object at destruction
 		template<class T>
-		static vrpn_MainloopObject * wrap(T * o, bool owner);
+		static vrpn_MainloopObject * wrap(T o, bool owner);
 	protected:
 		/// Internal function to return a typeless pointer of the contained
 		/// object, for comparison purposes.
@@ -85,10 +85,13 @@ inline bool operator!=(vrpn_MainloopObject const & lhs, vrpn_MainloopObject cons
 
 /// Namespace enclosing internal implementation details
 namespace detail {
+	template<class T>
+	class TypedMainloopObject;
+
 	/// Template class for holding generic VRPN objects with
 	/// type information.
 	template<class T>
-	class TypedMainloopObject : public vrpn_MainloopObject {
+	class TypedMainloopObject<T*> : public vrpn_MainloopObject {
 		public:
 			TypedMainloopObject(T * o, bool do_delete = true) :
 				_instance(o),
@@ -121,7 +124,7 @@ namespace detail {
 
 	/// Specialization for connections, since they're reference-counted.
 	template<>
-	class TypedMainloopObject<vrpn_Connection>: public vrpn_MainloopObject {
+	class TypedMainloopObject<vrpn_Connection *>: public vrpn_MainloopObject {
 		public:
 			TypedMainloopObject(vrpn_Connection * o) :
 				_instance(o) {
@@ -149,12 +152,12 @@ namespace detail {
 } // end of namespace detail
 
 template<class T>
-inline vrpn_MainloopObject * vrpn_MainloopObject::wrap(T * o) {
+inline vrpn_MainloopObject * vrpn_MainloopObject::wrap(T o) {
 	return new detail::TypedMainloopObject<T>(o);
 }
 
 template<class T>
-inline vrpn_MainloopObject * vrpn_MainloopObject::wrap(T * o, bool owner) {
+inline vrpn_MainloopObject * vrpn_MainloopObject::wrap(T o, bool owner) {
 	return new detail::TypedMainloopObject<T>(o, owner);
 }
 
