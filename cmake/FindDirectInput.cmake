@@ -88,8 +88,6 @@ find_path(DIRECTINPUT_INCLUDE_DIR
 	PATH_SUFFIXES
 	include)
 
-
-
 find_library(DIRECTINPUT_DXGUID_LIBRARY
 	NAMES
 	dxguid
@@ -128,6 +126,31 @@ find_library(DIRECTINPUT_DXERR_LIBRARY
 	"${DIRECTINPUT_ROOT_DIR}"
 	PATH_SUFFIXES
 	${_lib_suffixes})
+set(DIRECTINPUT_EXTRA_CHECK)
+if(DIRECTINPUT_INCLUDE_DIR)
+	if(MSVC80)
+		set(DXSDK_DEPRECATION_BUILD 1962)
+	endif()
+
+	if(DXSDK_DEPRECATION_BUILD)
+		include(CheckCSourceCompiles)
+		set(_dinput_old_includes ${CMAKE_REQUIRED_INCLUDES})
+		set(CMAKE_REQUIRED_INCLUDES "${DIRECTINPUT_INCLUDE_DIR}")
+		check_c_source_compiles(
+			"
+			#include <dxsdkver.h>
+			#if _DXSDK_BUILD_MAJOR >= ${DXSDK_DEPRECATION_BUILD}
+			#error
+			#else
+			int main(int argc, char * argv[]) {
+				return 0;
+			}
+			"
+			DIRECTINPUT_SDK_SUPPORTS_COMPILER)
+		set(DIRECTINPUT_EXTRA_CHECK DIRECTINPUT_SDK_SUPPORTS_COMPILER)
+		set(CMAKE_REQUIRED_INCLUDES "${_dinput_old_includes}")
+	endif()
+endif()
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(DirectInput
@@ -135,7 +158,8 @@ find_package_handle_standard_args(DirectInput
 	DIRECTINPUT_DINPUT_LIBRARY
 	DIRECTINPUT_DXGUID_LIBRARY
 	DIRECTINPUT_DXERR_LIBRARY
-	DIRECTINPUT_INCLUDE_DIR)
+	DIRECTINPUT_INCLUDE_DIR
+	${DIRECTINPUT_EXTRA_CHECK})
 
 if(DIRECTINPUT_FOUND)
 	set(DIRECTINPUT_LIBRARIES
