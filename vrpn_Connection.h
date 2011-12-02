@@ -407,9 +407,9 @@ class VRPN_API vrpn_Endpoint_IP : public vrpn_Endpoint {
       ///< when lobbing datagrams at the server and
       ///< waiting for it to call back.
 
-    char * remote_machine_name;	// Machine to call
-    int	d_remote_port_number;	// Port to connect to won remote machine
-    timeval d_last_connect_attempt;	// When the last lob occured
+    char *d_remote_machine_name;	// Machine to call
+    int	d_remote_port_number;	// Port to connect to on remote machine
+    timeval d_last_connect_attempt;	// When the last UDP lob occured
 
     vrpn_bool	d_tcp_only;
       ///< For connections made through firewalls or NAT with the

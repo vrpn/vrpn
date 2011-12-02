@@ -2604,7 +2604,7 @@ vrpn_Endpoint_IP::vrpn_Endpoint_IP (vrpn_TypeDispatcher * dispatcher,
     d_tcpSocket (INVALID_SOCKET),
     d_tcpListenSocket (INVALID_SOCKET),
     d_tcpListenPort (0),
-    remote_machine_name (NULL),
+    d_remote_machine_name (NULL),
     d_remote_port_number (0),
     d_tcp_only(vrpn_FALSE),
     d_udpOutboundSocket (INVALID_SOCKET),
@@ -2675,6 +2675,11 @@ vrpn_Endpoint_IP::~vrpn_Endpoint_IP (void) {
   // Delete the buffers created in the constructor
   if (d_tcpOutbuf) { delete [] d_tcpOutbuf; d_tcpOutbuf = NULL; }
   if (d_udpOutbuf) { delete [] d_udpOutbuf; d_udpOutbuf = NULL; }
+
+  // Delete the remote machine name, if it has been set
+  if (d_remote_machine_name) {
+	delete [] d_remote_machine_name; d_remote_machine_name = NULL;
+  } 
 }
 
 
@@ -2891,7 +2896,7 @@ int vrpn_Endpoint_IP::mainloop (timeval * timeout) {
         if (d_tcp_only) {
           if (time_to_try_again) {
             status = TRYING_TO_CONNECT;
-            if (connect_tcp_to(remote_machine_name, d_remote_port_number) == 0) {
+            if (connect_tcp_to(d_remote_machine_name, d_remote_port_number) == 0) {
       	      status = COOKIE_PENDING;
               if (setup_new_connection()) {
                 fprintf(stderr, "vrpn_Endpoint::mainloop: "
@@ -2934,7 +2939,7 @@ int vrpn_Endpoint_IP::mainloop (timeval * timeout) {
         // do BAD THINGS (TM).
 
       	if (time_to_try_again) {
-          if (vrpn_udp_request_lob_packet(remote_machine_name,
+          if (vrpn_udp_request_lob_packet(d_remote_machine_name,
 					  d_remote_port_number,
 					  d_tcpListenPort,
                                           d_NICaddress) == -1) {
@@ -3767,7 +3772,7 @@ void vrpn_Endpoint_IP::poll_for_cookie (const timeval * pTimeout) {
       fprintf(stderr,
               "vrpn_Endpoint::poll_for_cookie: cookie handling failed\n"
               "    while connecting to \"%s\"\n",
-              remote_machine_name);
+              d_remote_machine_name);
       return;
     }
 #ifdef VERBOSE3
@@ -5602,8 +5607,9 @@ void vrpn_Connection_IP::server_check_for_incoming_connections
       // Because we sometimes use multiple NICs, we are ignoring the IP from the
       // client, and filling in the NIC that the udp request arrived on.
       sscanf(msg, "%*s %d", &port);   // get the port
-      //fill in NIC address
-      endpoint->remote_machine_name = fromname;
+      // Fill in NIC address.  Copy the machine name so that we can delete it
+      // in the destructor.
+      endpoint->d_remote_machine_name = vrpn_copy_service_location(fromname);
       endpoint->connect_tcp_to(msg);
       handle_connection(which_end);
 
@@ -5879,8 +5885,8 @@ vrpn_Connection_IP::vrpn_Connection_IP
   if (!isrsh && !istcp) {
     // Open a connection to the station using a UDP request
     // that asks to machine to call us back here.
-    endpoint->remote_machine_name = vrpn_copy_machine_name(station_name);
-    if (!endpoint->remote_machine_name) {
+    endpoint->d_remote_machine_name = vrpn_copy_machine_name(station_name);
+    if (!endpoint->d_remote_machine_name) {
       fprintf(stderr, "vrpn_Connection_IP: Can't get remote machine name!\n");
       connectionStatus = BROKEN;
 //fprintf(stderr, "BROKEN - vrpn_Connection_IP::vrpn_Connection_IP.\n");
@@ -5912,7 +5918,7 @@ vrpn_Connection_IP::vrpn_Connection_IP
 
     // Lob a packet asking for a connection on that port.
     vrpn_gettimeofday(&endpoint->d_last_connect_attempt, NULL);
-    if (vrpn_udp_request_lob_packet(endpoint->remote_machine_name,
+    if (vrpn_udp_request_lob_packet(endpoint->d_remote_machine_name,
   			            endpoint->d_remote_port_number,
   			            endpoint->d_tcpListenPort,
                                     NIC_IPaddress) == -1) {
@@ -5967,8 +5973,8 @@ vrpn_Connection_IP::vrpn_Connection_IP
 
   // TCH OHS HACK
   if (istcp) {
-    endpoint->remote_machine_name = vrpn_copy_machine_name(station_name);
-    if (!endpoint->remote_machine_name) {
+    endpoint->d_remote_machine_name = vrpn_copy_machine_name(station_name);
+    if (!endpoint->d_remote_machine_name) {
       fprintf(stderr, "vrpn_Connection_IP: Can't get remote machine name for tcp: connection!\n");
       connectionStatus = BROKEN;
       return;
@@ -5987,7 +5993,7 @@ vrpn_Connection_IP::vrpn_Connection_IP
 
     // Set up the connection that we will connect with.
     // Blocks, doesn't it?
-    retval = endpoint->connect_tcp_to(endpoint->remote_machine_name, port);
+    retval = endpoint->connect_tcp_to(endpoint->d_remote_machine_name, port);
 
     if (retval == -1) {
 	fprintf(stderr,"vrpn_Connection_IP: Can't create TCP connection.\n");
