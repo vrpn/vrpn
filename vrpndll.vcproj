@@ -923,18 +923,6 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
-						CompileAs="2"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="vrpn_FunctionGenerator.C"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""
 						CompileAs="2"
@@ -947,14 +935,6 @@
 						Name="VCCLCompilerTool"
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""
-						CompileAs="2"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
 						CompileAs="2"
 					/>
 				</FileConfiguration>
@@ -2290,10 +2270,6 @@
 			</File>
 			<File
 				RelativePath="vrpn_Freespace.h"
-				>
-			</File>
-			<File
-				RelativePath="vrpn_FunctionGenerator.h"
 				>
 			</File>
 			<File
