@@ -626,6 +626,7 @@ set(VRPN_SERVER_SOURCES
 	vrpn_Tracker_SpacePoint.C
 	vrpn_Tracker_TrivisioColibri.C
 	vrpn_Tracker_WiimoteHead.C
+	vrpn_Tracker_zSight.C
 	vrpn_UNC_Joystick.C
 	vrpn_VPJoystick.C
 	vrpn_Wanda.C
@@ -693,7 +694,7 @@ set(VRPN_SERVER_PUBLIC_HEADERS
 	vrpn_Tracker_Crossbow.h
 	vrpn_Tracker_DTrack.h
 	vrpn_Tracker_Fastrak.h
-    vrpn_Tracker_GameTrak.h
+	vrpn_Tracker_GameTrak.h
 	vrpn_Tracker_isense.h
 	vrpn_Tracker_Isotrak.h
 	vrpn_Tracker_JsonNet.h
@@ -703,9 +704,10 @@ set(VRPN_SERVER_PUBLIC_HEADERS
 	vrpn_Tracker_NovintFalcon.h
 	vrpn_Tracker_PhaseSpace.h
 	vrpn_Tracker_RazerHydra.h
-    vrpn_Tracker_SpacePoint.h
+	vrpn_Tracker_SpacePoint.h
 	vrpn_Tracker_TrivisioColibri.h
 	vrpn_Tracker_WiimoteHead.h
+	vrpn_Tracker_zSight.h
 	vrpn_UNC_Joystick.h
 	vrpn_VPJoystick.h
 	vrpn_Wanda.h
