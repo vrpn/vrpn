@@ -120,7 +120,7 @@
 //    For Visual studio .NET, add to the top of the Projects and Solutions/
 //  VC++ Directories entry.
 //    This will let the code find the right version when it compiles.
-#define	VRPN_USE_DIRECTINPUT
+//#define	VRPN_USE_DIRECTINPUT
 //#define   VRPN_USE_WINDOWS_XINPUT
 
 //-----------------------
@@ -150,7 +150,7 @@
 // at the same level as the vrpn directory.  The isense.dll should
 // be put either in Windows/system32 or in the location where the
 // executable lives or somewhere on the path.
-#define VRPN_INCLUDE_INTERSENSE
+//#define VRPN_INCLUDE_INTERSENSE
 
 
 //-----------------------
@@ -260,7 +260,7 @@
 // file and library.
 // Note that the wiiuse.dll needs to be in the path when running a server
 // that uses WiiUse in Windows.
-#define VRPN_USE_WIIUSE
+//#define VRPN_USE_WIIUSE
 
 // Instructs VRPN to compile code to handle Hillcrest Labs' Freespace
 // devices such as the Loop, and FRCM.  You will also need the libfreespace
@@ -288,7 +288,7 @@
 // below point to the default installation locations on Windows.  Edit them 
 // if installed elsewhere.  Note that Trivisio.dll and pthreadVC2.dll need to be in 
 // the path when running the server on Windows
-#define VRPN_USE_TRIVISIOCOLIBRI
+//#define VRPN_USE_TRIVISIOCOLIBRI
 
 //------------------------
 // Instructs VRPN to attempt to use HID.  If you don't have libusb installed
