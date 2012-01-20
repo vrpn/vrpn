@@ -4424,7 +4424,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_TrivisioColibri (char * & pch, cha
   int numSensors, Hz, bufLen;
 
   next();
-  // Get the arguments (wiimote_name, controller index)
+  // Get the arguments
   if (sscanf (pch, "%511s%d%d%d", s2, &numSensors, &Hz, &bufLen) != 4) {
     fprintf (stderr, "Bad vrpn_Tracker_TrivisioColibri line: %s\n", line);
     return -1;
@@ -4453,7 +4453,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_TrivisioColibri (char * & pch, cha
 
   return 0;
 #else
-  fprintf (stderr, "vrpn_server: Can't open Trivisio Colibri: VRPN_USE_TRIVISIOCOLIBRI not defined in vrpn_Configure.h!\n");
+  fprintf (stderr, "vrpn_server: Can't open vrpn_Tracker_TrivisioColibri: VRPN_USE_TRIVISIOCOLIBRI not defined in vrpn_Configure.h!\n");
   return -1;
 #endif
 }
@@ -4591,6 +4591,45 @@ int vrpn_Generic_Server_Object::setup_Tracker_RazerHydra (char * &pch, char * li
 
 #else
   fprintf (stderr, "vrpn_Tracker_RazerHydra requires HID support.\n");
+  return -1;
+#endif
+}
+
+int vrpn_Generic_Server_Object::setup_Tracker_zSight (char * & pch, char * line, FILE * config_file)
+{
+#ifdef	VRPN_USE_DIRECTINPUT
+  char s2 [LINESIZE];
+
+  next();
+  // Get the arguments
+  if (sscanf (pch, "%511s%d%d%d", s2) != 1) {
+    fprintf (stderr, "Bad vrpn_Tracker_zSight line: %s\n", line);
+    return -1;
+  }
+
+  // Make sure there's room for a new tracker
+  if (num_trackers >= VRPN_GSO_MAX_TRACKERS) {
+    fprintf (stderr, "Too many trackers in config file");
+    return -1;
+  }
+
+  // Open the zSight if we can.
+  if (verbose) {
+    printf ("Opening vrpn_Tracker_zSight: %s", s2);
+  }
+
+  trackers[num_trackers] = new vrpn_Tracker_zSight (s2, connection);
+
+  if (NULL == trackers[num_trackers]) {
+    fprintf (stderr, "Failed to create new vrpn_Tracker_zSight\n");
+    return -1;
+  } else {
+    num_trackers++;
+  }
+
+  return 0;
+#else
+  fprintf (stderr, "vrpn_server: Can't open vrpn_Tracker_zSight: VRPN_USE_DIRECTINPUT not defined in vrpn_Configure.h!\n");
   return -1;
 #endif
 }
@@ -4884,6 +4923,8 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object (vrpn_Connection *connect
         CHECK (setup_Analog_5dtUSB_Glove14Right);
       } else if (isit ("vrpn_Tracker_RazerHydra")) {
         CHECK (setup_Tracker_RazerHydra);
+      } else if (isit ("vrpn_Tracker_zSight")) {
+        CHECK (setup_Tracker_zSight);
       }
 
 #ifdef VRPN_USE_JSONNET

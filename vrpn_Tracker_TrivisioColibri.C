@@ -23,9 +23,9 @@
 // test to fail because WIN32 has not been assigned a value.  #define WIN32 WIN32 will cause
 // #if WIN32 to produce a compiler error because WIN32 does not have an integer value.
 //
-// The correct thing to do would be to fix TravisioTypes.h to use #ifdef _WIN32, as _WIN32 is
+// The correct thing to do would be to fix TrivisioTypes.h to use #ifdef _WIN32, as _WIN32 is
 // always defined on Windows.  However, so that users don't have to manually edit the 
-// Travisio SDK source files, we redefine WIN32 to have a value of 1, include the Trivisio
+// Trivisio SDK source files, we redefine WIN32 to have a value of 1, include the Trivisio
 // headers, and then redefine WIN32 with no value, which is what windows.h does...
 //
 #ifdef _WIN32
@@ -140,9 +140,6 @@ vrpn_Tracker_TrivisioColibri::vrpn_Tracker_TrivisioColibri(const char* name, vrp
     for (int i = 0; i < num_sensors; i++) {
         colibriStart(imu[i]);
     }
-
-    // Go ahead and set the position to all zeros, as we don´t get position information
-    pos[0] = pos[1] = pos[2] = 0.0;
 }
 
 vrpn_Tracker_TrivisioColibri::~vrpn_Tracker_TrivisioColibri()
@@ -196,7 +193,7 @@ void vrpn_Tracker_TrivisioColibri::send_report()
         int len = encode_to(msgbuf);
         if (d_connection->pack_message(len, timestamp, position_m_id, d_sender_id, msgbuf, 
                                        vrpn_CONNECTION_LOW_LATENCY)) {
-			fprintf(stderr,"Tracker: cannot write message: tossing\n");
+			fprintf(stderr, "Tracker: cannot write message: tossing\n");
 		}
     }
 }

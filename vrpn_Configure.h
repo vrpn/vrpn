@@ -120,7 +120,7 @@
 //    For Visual studio .NET, add to the top of the Projects and Solutions/
 //  VC++ Directories entry.
 //    This will let the code find the right version when it compiles.
-//#define	VRPN_USE_DIRECTINPUT
+#define	VRPN_USE_DIRECTINPUT
 //#define   VRPN_USE_WINDOWS_XINPUT
 
 //-----------------------
@@ -150,7 +150,7 @@
 // at the same level as the vrpn directory.  The isense.dll should
 // be put either in Windows/system32 or in the location where the
 // executable lives or somewhere on the path.
-//#define VRPN_INCLUDE_INTERSENSE
+#define VRPN_INCLUDE_INTERSENSE
 
 
 //-----------------------
@@ -260,7 +260,7 @@
 // file and library.
 // Note that the wiiuse.dll needs to be in the path when running a server
 // that uses WiiUse in Windows.
-//#define VRPN_USE_WIIUSE
+#define VRPN_USE_WIIUSE
 
 // Instructs VRPN to compile code to handle Hillcrest Labs' Freespace
 // devices such as the Loop, and FRCM.  You will also need the libfreespace
@@ -288,7 +288,7 @@
 // below point to the default installation locations on Windows.  Edit them 
 // if installed elsewhere.  Note that Trivisio.dll and pthreadVC2.dll need to be in 
 // the path when running the server on Windows
-//#define VRPN_USE_TRIVISIOCOLIBRI
+#define VRPN_USE_TRIVISIOCOLIBRI
 
 //------------------------
 // Instructs VRPN to attempt to use HID.  If you don't have libusb installed
@@ -361,8 +361,8 @@
 
 #define VRPN_PHASESPACE_LIB_PATH "../../phasespace/"
 
-#define VRPN_WIIUSE_H "F:/taylorr/STM/src/wiiuse_v0.12/src/wiiuse.h"
-#define VRPN_WIIUSE_LIB_PATH "F:/taylorr/STM/src/wiiuse_v0.12/src"
+#define VRPN_WIIUSE_H "E:/borland/lib/wiiuse_v0.12_win/wiiuse.h"
+#define VRPN_WIIUSE_LIB_PATH "E:/borland/lib/wiiuse_v0.12_win"
 
 #if defined(VRPNDLL_EXPORTS) && !defined(VRPN_USE_SHARED_LIBRARY)
   #define VRPN_FREESPACE_LIB_PATH "../libfreespace/lib"
@@ -468,7 +468,7 @@
 #pragma comment (lib, "dxguid.lib")
 // Newer versions of the SDK have renamed this dxerr.lib;
 // dxerr9.lib has also been said to work.
-#pragma comment (lib, "dxerr8.lib")
+#pragma comment (lib, "dxerr.lib")
 #pragma comment (lib, "dinput8.lib")
 #endif
 

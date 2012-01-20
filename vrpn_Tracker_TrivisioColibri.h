@@ -13,21 +13,25 @@
 #ifndef VRPN_TRACKER_TRIVISIOCOLIBRI
 #define VRPN_TRACKER_TRIVISIOCOLIBRI
 
+#include "vrpn_Configure.h"
+#ifdef VRPN_USE_TRIVISIOCOLIBRI
+
 #include "vrpn_Tracker.h" 
 
 class vrpn_Tracker_TrivisioColibri : public vrpn_Tracker {
 public:
     // Constructor
     //
-    // name:        vrpn tracker name
+    // name:        VRPN tracker name
     //
-    // c:           vrpn connection to use
+    // c:           VRPN connection to use
     //
     // numSensors:  The number of devices to connect to
     //
     // Hz:          Update rate in Hertz
     //
-    // bufLen:      The buffer length for reading data.  
+    // bufLen:      The buffer length for reading data
+    //
     //              From the reference manual:
     //
     // An short buffer (0) ensures minimal delay until the sensor measurement is available at the risk
@@ -45,6 +49,7 @@ public:
 	virtual void mainloop();
 
 protected:
+    // VRPN tracker functions for generating and sending reports
     virtual void get_report();
     virtual void send_report();
 
@@ -53,4 +58,5 @@ protected:
 };
 
 
+#endif
 #endif
