@@ -1620,6 +1620,26 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="vrpn_Tracker_zSight.C"
+				>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath="vrpn_Tracker_AnalogFly.C"
 				>
 				<FileConfiguration
@@ -2422,6 +2442,10 @@
 			</File>
 			<File
 				RelativePath="vrpn_Tracker_3DMouse.h"
+				>
+			</File>
+			<File
+				RelativePath="vrpn_Tracker_zSight.h"
 				>
 			</File>
 			<File
