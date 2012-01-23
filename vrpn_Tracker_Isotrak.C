@@ -41,7 +41,6 @@
 #include "vrpn_Serial.h"
 #include "vrpn_Shared.h"
 
-typedef signed char   SBYTE;
 const int BINARY_RECORD_SIZE = 20;
 
 #define	FT_INFO(msg)	{ send_text_message(msg, timestamp, vrpn_TEXT_NORMAL) ; if (d_connection && d_connection->connected()) d_connection->send_pending_reports(); }
@@ -459,8 +458,8 @@ int vrpn_Tracker_Isotrak::get_report(void)
     int i;
     for(i = 0;  i<fullgroups;  i++)
     {
-        BYTE *group = &buffer[i * 8];
-        BYTE high = buffer[i * 8 + 7];
+        vrpn_uint8 *group = &buffer[i * 8];
+        vrpn_uint8 high = buffer[i * 8 + 7];
 
         for(int j=0;  j<7;  j++)
         {
@@ -475,8 +474,8 @@ int vrpn_Tracker_Isotrak::get_report(void)
 
     // We'll have X bytes left at the end
     int left = BINARY_RECORD_SIZE - fullgroups * 8;
-    BYTE *group = &buffer[fullgroups * 8];
-    BYTE high = buffer[fullgroups * 8 + left - 1];
+    vrpn_uint8 *group = &buffer[fullgroups * 8];
+    vrpn_uint8 high = buffer[fullgroups * 8 + left - 1];
 
     for(int j=0;  j<left-1;  j++)
     {
@@ -501,20 +500,20 @@ int vrpn_Tracker_Isotrak::get_report(void)
 
 
     // Extract the important information
-    BYTE *item = &decoded[3];
+    vrpn_uint8 *item = &decoded[3];
 
     // This is a scale factor from the Isotrak manual
     // This will convert the values to meters, the standard vrpn format
     double mul = 1.6632 / 32767.; 
     float div = 1.f / 32767.f;  // Fractional amount for angles
 
-    pos[0] = ( (SBYTE(item[1]) << 8) + item[0]) * mul;   item += 2;
-    pos[1] = ( (SBYTE(item[1]) << 8) + item[0]) * mul;   item += 2;
-    pos[2] = ( (SBYTE(item[1]) << 8) + item[0]) * mul;   item += 2;
-    d_quat[3] = ( (SBYTE(item[1]) << 8) + item[0]) * div;   item += 2;
-    d_quat[0] = ( (SBYTE(item[1]) << 8) + item[0]) * div;   item += 2;
-    d_quat[1] = ( (SBYTE(item[1]) << 8) + item[0]) * div;   item += 2;
-    d_quat[2] = ( (SBYTE(item[1]) << 8) + item[0]) * div;
+    pos[0] = ( (vrpn_int8(item[1]) << 8) + item[0]) * mul;   item += 2;
+    pos[1] = ( (vrpn_int8(item[1]) << 8) + item[0]) * mul;   item += 2;
+    pos[2] = ( (vrpn_int8(item[1]) << 8) + item[0]) * mul;   item += 2;
+    d_quat[3] = ( (vrpn_int8(item[1]) << 8) + item[0]) * div;   item += 2;
+    d_quat[0] = ( (vrpn_int8(item[1]) << 8) + item[0]) * div;   item += 2;
+    d_quat[1] = ( (vrpn_int8(item[1]) << 8) + item[0]) * div;   item += 2;
+    d_quat[2] = ( (vrpn_int8(item[1]) << 8) + item[0]) * div;
 
     //--------------------------------------------------------------------
     // If this sensor has button on it, decode the button values

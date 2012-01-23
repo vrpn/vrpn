@@ -1733,6 +1733,20 @@ int vrpn_Generic_Server_Object::setup_Tracker_Isotrak (char * & pch, char * line
         delete trackers[num_trackers];
         return -1;
       }
+
+        // CBO: Added support to Isotrak stylus
+        if (strcmp(lineCommand, "Stylus") == 0) {
+            if (mytracker->add_stylus_button(lineName, lineSensor)) {
+                fprintf(stderr,"Cannot set Stylus buttons for Isotrak (%s)\n",line);
+                delete trackers[num_trackers];
+                return -1;
+            }
+            printf(" ...added Stylus (%s) to sensor %d\n", lineName, lineSensor);
+        } else {
+            fprintf(stderr,"Unknown command in Stylus description for Isotrak (%s)\n",lineCommand);
+            delete trackers[num_trackers];
+            return -1;
+        }
     }
 
     num_trackers++;
