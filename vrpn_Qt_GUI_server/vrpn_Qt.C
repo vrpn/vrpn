@@ -57,6 +57,12 @@ vrpn_Qt::vrpn_Qt(const char* name, vrpn_Connection* c, QObject* parent, int upda
 
 
 void vrpn_Qt::AddWidget(QWidget* widget) {
+    // Ignore widgets called vrpn_Qt_ignore
+    if (widget->objectName() == "vrpn_Qt_ignore") {
+        return;
+    }
+
+
     // Check if widget is derived from abstract button
     if (qobject_cast<QAbstractButton*>(widget)) {
         QAbstractButton* button = qobject_cast<QAbstractButton*>(widget);

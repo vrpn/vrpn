@@ -31,11 +31,5 @@ SET_SOURCE_FILES_PROPERTIES( ${QT_SRC} PROPERTIES OBJECT_DEPENDS "${QT_UI_HEADER
 
 ADD_EXECUTABLE( vrpn_Qt_AppExample ${QT_HEADER} ${QT_SRC} ${QT_MOC_SRC} )
 ADD_DEPENDENCIES( vrpn_Qt_AppExample vrpn_Qt )
-TARGET_LINK_LIBRARIES( vrpn_Qt_AppExample vrpn_Qt )
-
-ADD_CUSTOM_COMMAND( TARGET vrpn_Qt_AppExample
-                    POST_BUILD
-                    COMMAND ${CMAKE_COMMAND} -E copy 
-                    ${vrpn_Qt_BINARY_DIR}/bin/Release/vrpn_Qt_AppExample.exe
-                    ${XVREXAMPLE_DIR} )	
+TARGET_LINK_LIBRARIES( vrpn_Qt_AppExample vrpn_Qt )	
 

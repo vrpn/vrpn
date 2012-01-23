@@ -4,6 +4,15 @@
 // to allow it to operate a Isotrack instead. The modifications are based
 // on the old version of the Isotrack driver.
 //	This version was written in the Spring 2006 by Bruno Herbelin.
+//
+// Revised by Charles B. Owen (cbowen@cse.msu.edu) 1-20-2012
+// Revisions:
+//
+// The version before was reporting in centimeters. Revised to report in Meters per VRPN requirements.
+// The version before negated the coordinates. I have no idea why. That has been fixed.
+// Now reads the binary format instead of ASCII. It's faster and supports the stylus button.
+// Now supports a stylus button for either channel.
+	
 
 #include <time.h>
 #include <math.h>
@@ -32,6 +41,8 @@
 #include "vrpn_Serial.h"
 #include "vrpn_Shared.h"
 
+const int BINARY_RECORD_SIZE = 20;
+
 #define	FT_INFO(msg)	{ send_text_message(msg, timestamp, vrpn_TEXT_NORMAL) ; if (d_connection && d_connection->connected()) d_connection->send_pending_reports(); }
 #define	FT_WARNING(msg)	{ send_text_message(msg, timestamp, vrpn_TEXT_WARNING) ; if (d_connection && d_connection->connected()) d_connection->send_pending_reports(); }
 #define	FT_ERROR(msg)	{ send_text_message(msg, timestamp, vrpn_TEXT_ERROR) ; if (d_connection && d_connection->connected()) d_connection->send_pending_reports(); }
@@ -49,6 +60,11 @@ vrpn_Tracker_Isotrak::vrpn_Tracker_Isotrak(const char *name, vrpn_Connection *c,
         } else {
                 strncpy(add_reset_cmd, additional_reset_commands, sizeof(add_reset_cmd)-1);
         }
+
+    // Initially, set to no buttons
+    for(int i=0; i<vrpn_ISOTRAK_MAX_STATIONS;  i++) {
+        stylus_buttons[i] = NULL;
+    }
 }
 
 vrpn_Tracker_Isotrak::~vrpn_Tracker_Isotrak()
@@ -56,27 +72,6 @@ vrpn_Tracker_Isotrak::~vrpn_Tracker_Isotrak()
 
 }
 
-
-/** This routine augments the standard Isotrack report 
-    It returns the number of characters total to expect for a report for the
-    given sensor.
-/// example report string :
-/// 01   28.57 -10.28  13.95-0.9713-0.0093 0.1473 0.1855
-
-/// Documentation ISOTRAK 2 USER's MANUAL p60
-*/
-
-int vrpn_Tracker_Isotrak::report_length(int /*sensor*/)
-{
-    int	len;
-
-    len = 3;	// Basic report, "0" + Isotrack station char + space separator
-    len += 3*7;	// + 3 x position string 
-    len += 4*7;	// + 4 x quaternion string
-    len += 1;   // + space at the end of report
-
-    return len;
-}
 
 /** This routine sets the device for position + quaternion
     It puts a space at the end so that we can check to make
@@ -89,8 +84,10 @@ int vrpn_Tracker_Isotrak::set_sensor_output_format(int /*sensor*/)
 {
     char    outstring[16];
 
-    /// Set output format for the station to be position, quaternion, and a space
-    sprintf(outstring, "O2,11,0\015");
+    // Set output format for the station to be position, quaternion
+    // Don't need the space anymore, though
+    sprintf(outstring, "O2,11\r");
+
     if (vrpn_write_characters(serial_fd, (const unsigned char *)outstring,
             strlen(outstring)) == (int)strlen(outstring)) {
         vrpn_SleepMsecs(50);	// Sleep for a bit to let command run
@@ -202,7 +199,7 @@ void vrpn_Tracker_Isotrak::reset()
     }
     else if ( (statusmsg[0]!='2') ) {
         int i;
-        statusmsg[21] = '\0';	// Null-terminate the string
+        statusmsg[22] = '\0';	// Null-terminate the string
         fprintf(stderr, "  Isotrack: bad status (");
         for (i = 0; i < ret; i++) {
             if (isprint(statusmsg[i])) {
@@ -226,11 +223,9 @@ void vrpn_Tracker_Isotrak::reset()
     // the user wants.
     //--------------------------------------------------------------------
     
-    // Set output format for each of the possible stations.
-    for (i = 0; i < num_stations; i++) {
-        if (set_sensor_output_format(i)) {
-            return;
-        }
+    // Set output format. This is done once for the Isotrak, not per channel.
+    if (set_sensor_output_format(0)) {
+        return;
     }
     
     // Enable filtering if the constructor parameter said to.
@@ -273,15 +268,6 @@ void vrpn_Tracker_Isotrak::reset()
             FT_WARNING("Isotrack reset BORESIGHT (this is good)");
     }
     
-    // Set data format to ASCII mode
-    if (vrpn_write_characters(serial_fd, (const unsigned char *) "F", 1) != 1) {
-            perror("  Isotrack write failed");
-            status = vrpn_TRACKER_FAIL;
-            return;
-    } else {
-            FT_WARNING("Isotrack set to ASCII mode (this is good)");
-    }
-    
     // Set data format to METRIC mode
     if (vrpn_write_characters(serial_fd, (const unsigned char *) "u", 1) != 1) {
             perror("  Isotrack write failed");
@@ -290,6 +276,8 @@ void vrpn_Tracker_Isotrak::reset()
     } else {
             FT_WARNING("Isotrack set to metric units (this is good)");
     }
+
+
 
     // Send the additional reset commands, if any, to the tracker.
     // These commands come in lines, with character \015 ending each
@@ -334,6 +322,16 @@ void vrpn_Tracker_Isotrak::reset()
         vrpn_SleepMsecs(1000.0*2);
         vrpn_flush_input_buffer(serial_fd);
     }
+
+    // Set data format to BINARY mode
+    // F = ASCII, f = binary
+    if (vrpn_write_characters(serial_fd, (const unsigned char *) "f", 1) != 1) {
+            perror("  Isotrack write failed");
+            status = vrpn_TRACKER_FAIL;
+            return;
+    } else {
+            FT_WARNING("Isotrack set to BINARY mode (this is good)");
+    }
     
     
     // Set tracker to continuous mode
@@ -351,31 +349,6 @@ void vrpn_Tracker_Isotrak::reset()
 
     // Ok, device is ready, we want to calibrate to sensor 1 current position/orientation
     while(get_report() != 1);
-
-    // CBO: I have commented out the following code, as it sets the alignment and boresight
-    // in a way that does not make sense. 
-
-    //// Set ALIGNMENT : current position as origin
-    //char    outstring[68];
-    //sprintf(outstring, "A1,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f\r", -pos[0], -pos[1], -pos[2], -pos[0] + 1.0, -pos[1], -pos[2], -pos[0], -pos[1] + 1.0, -pos[2]);
-    //
-    //if (vrpn_write_characters(serial_fd, (const unsigned char *)outstring, strlen(outstring)) == (int)strlen(outstring)) {
-    //        vrpn_SleepMsecs(50);	// Sleep for a bit to let command run
-    //} else {
-    //        FT_ERROR("  Isotrack write failed on set ALIGNMENT command");
-    //        status = vrpn_TRACKER_FAIL;
-    //        return;
-    //}
-    //
-    //// set BORESIGHT : current orientation as identity
-    //if (vrpn_write_characters(serial_fd, (const unsigned char *) "B1\r", 3) != 3) {
-    //        FT_ERROR("  Isotrack write failed on set BORESIGHT");
-    //        status = vrpn_TRACKER_FAIL;
-    //        return;
-    //} 
-
-    //FT_WARNING("Calibration Completed.");
-
 
     // Done with reset.
     vrpn_gettimeofday(&timestamp, NULL);	// Set watchdog now
@@ -407,80 +380,31 @@ int vrpn_Tracker_Isotrak::get_report(void)
 {
     char errmsg[512];	// Error message to send to VRPN
     int ret;		// Return value from function call to be checked
-    char *bufptr;	// Points into buffer at the current value to read
     
-    //--------------------------------------------------------------------
-    // Each report starts with an ASCII '0' character. If we're synching,
-    // read a byte at a time until we find a '0' character.
-    //--------------------------------------------------------------------
-    // example report string :
-    // 01   28.57 -10.30  13.98-0.9712-0.0091 0.1476 0.1857
-    //--------------------------------------------------------------------
+    // The first byte of a binary record has the high order bit set
     
     if (status == vrpn_TRACKER_SYNCING) {
         // Try to get a character.  If none, just return.
         if (vrpn_read_available_characters(serial_fd, buffer, 1) != 1) {
             return 0;
         }
-    
-        // If it is not an '0', we don't want it but we
-        // need to look at the next one, so just return and stay
-        // in Syncing mode so that we will try again next time through.
-        // Also, flush the buffer so that it won't take as long to catch up.
-        if ( buffer[0] != '0') {
-            sprintf(errmsg,"While syncing (looking for '0', "
-                    "got '%c')", buffer[0]);
+
+        // The first byte of a record has the high order bit set
+        if(!(buffer[0] & 0x80)) {
+            sprintf(errmsg,"While syncing (looking for byte with high order bit set, "
+                    "got '%x')", buffer[0]);
             FT_WARNING(errmsg);
             vrpn_flush_input_buffer(serial_fd);
     
             return 0;
         }
     
-        // Got the first character of a report -- go into AWAITING_STATION mode
-        // and record that we got one character at this time. The next
-        // bit of code will attempt to read the station.
-        // The time stored here is as close as possible to when the
-        // report was generated.  For the InterSense 900 in timestamp
-        // mode, this value will be overwritten later.
+        // Got the first byte of a report -- go into TRACKER_PARTIAL mode
+        // and record that we got one character at this time. 
         bufcount = 1;
         vrpn_gettimeofday(&timestamp, NULL);
-        status = vrpn_TRACKER_AWAITING_STATION;
-    }
-    
-    //--------------------------------------------------------------------
-    // The second character of each report is the station number.  Once
-    // we know this, we can compute how long the report should be for the
-    // given station, based on what values are in its report.
-    // The station number is converted into a VRPN sensor number, where
-    // the first Isotrack station is '1' and the first VRPN sensor is 0.
-    //--------------------------------------------------------------------
-    
-    if (status == vrpn_TRACKER_AWAITING_STATION) {
-        // Try to get a character.  If none, just return.
-        if (vrpn_read_available_characters(serial_fd, &buffer[bufcount], 1) != 1) {
-            return 0;
-        }
-    
-        d_sensor = buffer[1] - '1';	// Convert ASCII 1 to sensor 0 and so on.
-        if ( (d_sensor < 0) || (d_sensor >= num_stations) ) {
-            status = vrpn_TRACKER_SYNCING;
-            sprintf(errmsg,"Bad sensor # (%d) in record, re-syncing", d_sensor);
-            FT_WARNING(errmsg);
-            vrpn_flush_input_buffer(serial_fd);
-            return 0;
-        }
-    
-        // Figure out how long the current report should be based on the
-        // settings for this sensor.
-        REPORT_LEN = report_length(d_sensor);
-    
-        // Got the station report -- to into PARTIAL mode and record
-        // that we got one character at this time.  The next bit of code
-        // will attempt to read the rest of the report.
-        bufcount++;
         status = vrpn_TRACKER_PARTIAL;
     }
-    
     
     //--------------------------------------------------------------------
     // Read as many bytes of this report as we can, storing them
@@ -491,9 +415,8 @@ int vrpn_Tracker_Isotrak::get_report(void)
     // stopped sending characters).
     //--------------------------------------------------------------------
     
-    
     ret = vrpn_read_available_characters(serial_fd, &buffer[bufcount],
-                    REPORT_LEN-bufcount);
+                    BINARY_RECORD_SIZE - bufcount);
     if (ret == -1) {
             FT_ERROR("Error reading report");
             status = vrpn_TRACKER_FAIL;
@@ -502,77 +425,113 @@ int vrpn_Tracker_Isotrak::get_report(void)
     
     bufcount += ret;
     
-    if (bufcount < REPORT_LEN) {	// Not done -- go back for more
+    if (bufcount < BINARY_RECORD_SIZE) {	// Not done -- go back for more
             return 0;
     }
     
-    //--------------------------------------------------------------------
-    // We now have enough characters to make a full report. Check to make
-    // sure that its format matches what we expect. If it does, the next
-    // section will parse it. If it does not, we need to go back into
-    // synch mode and ignore this report. A well-formed report has the
-    // first character '0', the next character is the ASCII station
-    // number, and the third character is either a space or a letter.
-    //--------------------------------------------------------------------
-    
-    if (buffer[0] != '0') {
+    // We now have enough characters for a full report
+    // Check it to ensure we do not have a high bit set other
+    // than on the first byte
+    for(int i=1;  i<BINARY_RECORD_SIZE;  i++)
+    {
+        if (buffer[i] & 0x80) {
             status = vrpn_TRACKER_SYNCING;
-            
-            sprintf(errmsg,"Not '0' in record, re-syncing '%s'", buffer);
+        
+            sprintf(errmsg,"Unexpected sync character in record");
             FT_WARNING(errmsg);
 
             //FT_WARNING("Not '0' in record, re-syncing");
             vrpn_flush_input_buffer(serial_fd);
             return 0;
+        }
     }
     
-    // Sensor checking was handled when we received the character for it
-    if ( (buffer[2] != ' ') && !isalpha(buffer[2]) ) {
-            status = vrpn_TRACKER_SYNCING;
-            FT_WARNING("Bad 3rd char in record, re-syncing");
-            vrpn_flush_input_buffer(serial_fd);
-            return 0;
+    // Create a buffer for the decoded message
+    unsigned char decoded[BINARY_RECORD_SIZE];
+    int d = 0;
+
+    int fullgroups = BINARY_RECORD_SIZE / 8;
+
+    // The following decodes the Isotrak binary format. It consists of
+    // 7 byte values plus an extra byte of the high bit for these 
+    // 7 bytes. First, loop over the 7 byte ranges (8 bytes in binary)
+    int i;
+    for(i = 0;  i<fullgroups;  i++)
+    {
+        vrpn_uint8 *group = &buffer[i * 8];
+        vrpn_uint8 high = buffer[i * 8 + 7];
+
+        for(int j=0;  j<7;  j++)
+        {
+            decoded[d] = *group++;
+            if(high & 1) 
+                decoded[d] |= 0x80;
+
+            d++;
+            high >>= 1;
+        }
     }
-    
-    if (buffer[bufcount-1] != ' ') {
-            status = vrpn_TRACKER_SYNCING;
-            FT_WARNING("No space character at end of report, re-syncing");
-            vrpn_flush_input_buffer(serial_fd);
-            return 0;
+
+    // We'll have X bytes left at the end
+    int left = BINARY_RECORD_SIZE - fullgroups * 8;
+    vrpn_uint8 *group = &buffer[fullgroups * 8];
+    vrpn_uint8 high = buffer[fullgroups * 8 + left - 1];
+
+    for(int j=0;  j<left-1;  j++)
+    {
+        decoded[d] = *group++;
+        if(high & 1) 
+            decoded[d] |= 0x80;
+
+        d++;
+        high >>= 1;
     }
-    
+
+    // ASCII value of 1 == 49 subtracing 49 gives the sensor number
+    d_sensor = decoded[1] - 49;	// Convert ASCII 1 to sensor 0 and so on.
+    if ( (d_sensor < 0) || (d_sensor >= num_stations) ) {
+        status = vrpn_TRACKER_SYNCING;
+        sprintf(errmsg,"Bad sensor # (%d) in record, re-syncing", d_sensor);
+        FT_WARNING(errmsg);
+        vrpn_flush_input_buffer(serial_fd);
+        return 0;
+    }
+
+
+
+    // Extract the important information
+    vrpn_uint8 *item = &decoded[3];
+
+    // This is a scale factor from the Isotrak manual
+    // This will convert the values to meters, the standard vrpn format
+    double mul = 1.6632 / 32767.; 
+    float div = 1.f / 32767.f;  // Fractional amount for angles
+
+    pos[0] = ( (vrpn_int8(item[1]) << 8) + item[0]) * mul;   item += 2;
+    pos[1] = ( (vrpn_int8(item[1]) << 8) + item[0]) * mul;   item += 2;
+    pos[2] = ( (vrpn_int8(item[1]) << 8) + item[0]) * mul;   item += 2;
+    d_quat[3] = ( (vrpn_int8(item[1]) << 8) + item[0]) * div;   item += 2;
+    d_quat[0] = ( (vrpn_int8(item[1]) << 8) + item[0]) * div;   item += 2;
+    d_quat[1] = ( (vrpn_int8(item[1]) << 8) + item[0]) * div;   item += 2;
+    d_quat[2] = ( (vrpn_int8(item[1]) << 8) + item[0]) * div;
+
     //--------------------------------------------------------------------
-    // Decode the X,Y,Z of the position and the W,X,Y,Z of the quaternion
-    // (keeping in mind that we store quaternions as X,Y,Z, W).
+    // If this sensor has button on it, decode the button values
+    // into the button device and mainloop the button device so that
+    // it will report any changes.
     //--------------------------------------------------------------------
-    // The reports coming from the Isotrack should be in ASCII in this format :
-    // "01   28.57 -10.30  13.98-0.9712-0.0091 0.1476 0.1857 "
-    // which corresponds to 
-    //           X      Y      Z     Qx     Qy     Qz     Qw
-    // with 7 characters per number
-    char valuestring[8];
-    bufptr = (char *)&buffer;
-    q_xyz_quat_type data;
-    
-    strncpy(valuestring, &bufptr[3],  7);  /* x */  data.xyz[0] = (float) atof(valuestring);
-    strncpy(valuestring, &bufptr[10], 7);  /* y */  data.xyz[1] = (float) atof(valuestring);
-    strncpy(valuestring, &bufptr[17], 7);  /* z */  data.xyz[2] = (float) atof(valuestring);
-    
-    strncpy(valuestring, &bufptr[24], 7);  /* W */  data.quat[3] = (float) atof(valuestring);
-    strncpy(valuestring, &bufptr[31], 7);  /* X */  data.quat[0] = (float) atof(valuestring);
-    strncpy(valuestring, &bufptr[38], 7);  /* Y */  data.quat[1] = (float) atof(valuestring);
-    strncpy(valuestring, &bufptr[45], 7);  /* Z */  data.quat[2] = (float) atof(valuestring);
-    
-    // copy data to internal data structures : 
-    //memcpy(pos, data.xyz, sizeof(pos));
-    
-    pos[0] = - data.xyz[0];
-    pos[1] = - data.xyz[1];
-    pos[2] = - data.xyz[2];
-    
-    memcpy(d_quat, data.quat, sizeof(d_quat));
-    //q_invert(d_quat, data.quat);            // ! need to invert the quaternion (i don't know why)
-    
+
+    if(stylus_buttons[d_sensor] != NULL)
+    {
+        char button = decoded[2];
+        if(button == '@' || button == '*')
+        {
+            stylus_buttons[d_sensor]->set_button(0, button == '@');
+
+        }
+
+	    stylus_buttons[d_sensor]->mainloop();
+    }
     
     //--------------------------------------------------------------------
     // Done with the decoding, 
@@ -586,17 +545,27 @@ int vrpn_Tracker_Isotrak::get_report(void)
     #endif
     
     return 1;
-
-
-    // Got the first character of a report -- go into AWAITING_STATION mode
-    // and record that we got one character at this time. The next
-    // bit of code will attempt to read the station.
-    // The time stored here is as close as possible to when the
-    // report was generated.  For the InterSense 900 in timestamp
-    // mode, this value will be overwritten later.
-    bufcount = 1;
-    vrpn_gettimeofday(&timestamp, NULL);
-    status = vrpn_TRACKER_AWAITING_STATION;
 }
 
+
+// this routine is called when an "Stylus" button is encountered
+// by the tracker init string parser it sets up the VRPN button
+// device
+int vrpn_Tracker_Isotrak::add_stylus_button(const char *button_device_name, int sensor)
+{
+    // Make sure this is a valid sensor
+    if ( (sensor < 0) || (sensor >= num_stations) ) {
+	return -1;
+    }
+
+    // Add a new button device and set the pointer to point at it.
+    stylus_buttons[sensor] = new vrpn_Button_Server(button_device_name, d_connection, 1);
+    if (stylus_buttons[sensor] == NULL) 
+    {
+	    FT_ERROR("Cannot open button device");
+	    return -1;
+    }
+
+    return 0;
+}
 

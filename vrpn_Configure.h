@@ -361,8 +361,8 @@
 
 #define VRPN_PHASESPACE_LIB_PATH "../../phasespace/"
 
-#define VRPN_WIIUSE_H "F:/taylorr/STM/src/wiiuse_v0.12/src/wiiuse.h"
-#define VRPN_WIIUSE_LIB_PATH "F:/taylorr/STM/src/wiiuse_v0.12/src"
+#define VRPN_WIIUSE_H "E:/borland/lib/wiiuse_v0.12_win/wiiuse.h"
+#define VRPN_WIIUSE_LIB_PATH "E:/borland/lib/wiiuse_v0.12_win"
 
 #if defined(VRPNDLL_EXPORTS) && !defined(VRPN_USE_SHARED_LIBRARY)
   #define VRPN_FREESPACE_LIB_PATH "../libfreespace/lib"
@@ -468,7 +468,7 @@
 #pragma comment (lib, "dxguid.lib")
 // Newer versions of the SDK have renamed this dxerr.lib;
 // dxerr9.lib has also been said to work.
-#pragma comment (lib, "dxerr8.lib")
+#pragma comment (lib, "dxerr.lib")
 #pragma comment (lib, "dinput8.lib")
 #endif
 

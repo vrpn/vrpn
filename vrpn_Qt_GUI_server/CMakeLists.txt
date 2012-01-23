@@ -50,21 +50,13 @@ INCLUDE_DIRECTORIES( ${VRPN_INCLUDE_DIR} )
 
 
 #######################################
-# Point to the example XVR code
-#######################################
-
-FIND_PATH( XVREXAMPLE_DIR vrpn_Qt_GUI.exe
-           ${vrpn_Qt_SOURCE_DIR}/../../XVRTools/vrpn_Qt )
-
-
-#######################################
 # Build setup 
 #######################################
 
 ADD_LIBRARY( vrpn_Qt ${QT_HEADER} ${QT_SRC} ${QT_MOC_SRC} ${SRC} )
 TARGET_LINK_LIBRARIES( vrpn_Qt 
                        ${QT_LIBRARIES}
-			     ${VRPN_LIBRARY}
+			           ${VRPN_LIBRARY}
 )
 if(WIN32)	# MS-Windows, both 32 and 64 bits
 	target_link_libraries(vrpn_Qt  wsock32)
@@ -79,6 +71,6 @@ endif()
 # Include applications 
 #######################################
 
-ADD_SUBDIRECTORY( vrpn_Qt_GUI )
+ADD_SUBDIRECTORY( vrpn_Qt_AutoGUI )
 ADD_SUBDIRECTORY( vrpn_Qt_AppExample )
 
