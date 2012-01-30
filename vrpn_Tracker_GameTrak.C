@@ -93,10 +93,15 @@ void vrpn_Tracker_GameTrak::mainloop()
 
 void VRPN_CALLBACK vrpn_Tracker_GameTrak::handle_update(void *userdata, const vrpn_ANALOGCB info)
 {
-    // Code based on the comment by Gilles Pinault (gilles[AT]softkinetic.com) at:
-    // http://cb.nowan.net/blog/2006/09/25/gametrak-a-first-impression/
-    // This calculation makes a left handed y-up coordinate system.
-    // This will be fixed at the end.
+    /*
+     * The spherical->carthesian conversion code is based on the mail from: 
+     * Marc LE RENARD lerenard@esiea-ouest.fr, 
+     * ESIEA
+     * Laboratoire RVSE
+     * (Réalité Virtuelle et Systèmes Embarqués)
+     * 38 Rue des docteurs Calmette & Guérin
+     * 53000 LAVAL
+     */
 
     vrpn_Tracker_GameTrak *gametrak = (vrpn_Tracker_GameTrak *) userdata;
 
@@ -111,42 +116,30 @@ void VRPN_CALLBACK vrpn_Tracker_GameTrak::handle_update(void *userdata, const vr
     s2y = info.channel[gametrak->_mapping[4]];
     s2z = info.channel[gametrak->_mapping[5]];
 
-    vrpn_float64 coeffDist = 0.7258; // to have the distance in meters
-    vrpn_float64 calibDist = 1.56; // re-centering the distance to the middle of the cord
+    vrpn_float64 coef = (32.5 / 180.0) * M_PI;
 
-    // calculate distance from the base, with 0 in the middle of the cord
-    vrpn_float64 d1 = calibDist - (s1z / coeffDist);
-    vrpn_float64 d2 = calibDist - (s2z / coeffDist);
+    vrpn_float64 distance0 = 1.5 * (1 - s1z);
+    vrpn_float64 angleX0   = -s1x * coef;
+    vrpn_float64 angleY0   = -s1y * coef;
 
-    // to be able calculate angles in radians -> <-0.5, 0.5>
-    vrpn_float64 angle1x = s1x / 2.0;
-    vrpn_float64 angle1y = s1y / 2.0;
-    vrpn_float64 angle2x = s2x / 2.0;
-    vrpn_float64 angle2y = s2y / 2.0;
+    vrpn_float64 distance1 = 1.5 * (1 - s2z);
+    vrpn_float64 angleX1   = -s2x * coef;
+    vrpn_float64 angleY1   = -s2y * coef;
 
-    // sensor 0 (left one)
-    vrpn_float64 tanA1 = tan(angle1x);
-    vrpn_float64 tanB1 = tan(angle1y);
+    // printf("%3.3f %3.3f %3.3f     %3.3f %3.3f %3.3f\n", angleX0, angleY0, distance0, angleX1, angleY1, distance1);
 
-    s1y = sqrt((d1 * d1) / (1 + tanA1 * tanA1 + tanB1 * tanB1));
-    s1x = s1y * tanA1 - 0.065; // 6.5cm offset from the center of the GameTrak base
-    s1z = (s1y * tanB1);
+    gametrak->_sensor0[0] = sin(angleX0) * distance0 + 0.065;
+    gametrak->_sensor0[1] = cos(angleX0) * sin(angleY0) * distance0;
+    gametrak->_sensor0[2] = cos(angleX0) * cos(angleY0) * distance0;
 
-    // sensor 1 (right one)
-    vrpn_float64 tanA2 = tan(angle2x);
-    vrpn_float64 tanB2 = tan(angle2y);
+    gametrak->_sensor1[0] = sin(angleX1) * distance1 - 0.065;
+    gametrak->_sensor1[1] = cos(angleX1) * sin(angleY1) * distance1;
+    gametrak->_sensor1[2] = cos(angleX1) * cos(angleY1) * distance1;
 
-    s2y = sqrt((d2 * d2) / (1 + tanA2 * tanA2 + tanB2 * tanB2));
-    s2x = s2y * tanA2 + 0.065; // 6.5cm offset from the center of the GameTrak base
-    s2z = (s2y * tanB2);
+    //printf("    %3.3f %3.3f %3.3f     %3.3f %3.3f %3.3f\n", gametrak->_sensor0[0], gametrak->_sensor0[1],  gametrak->_sensor0[2],
+    //                                                    gametrak->_sensor1[0], gametrak->_sensor1[1],  gametrak->_sensor1[2]);
 
-    // copy sensor data and make it right-handed, z-up
-    gametrak->_sensor0[0] = -s1x;
-    gametrak->_sensor0[1] = s1z;
-    gametrak->_sensor0[2] = s1y;
-    gametrak->_sensor1[0] = -s2x;
-    gametrak->_sensor1[1] = s2z;
-    gametrak->_sensor1[2] = s2y;
     memcpy(&(gametrak->_timestamp), &(info.msg_time), sizeof(struct timeval));
     gametrak->_should_report = true;
 }
+
