@@ -783,8 +783,10 @@ else
                $(OBJECT_DIR)/libvrpn_g++.a \
                $(SLIB_OBJECTS) \
                $(ALIB_OBJECTS) \
+               $(GLIB_OBJECTS) \
                $(OBJECT_DIR)/libvrpnserver.a \
                $(OBJECT_DIR)/libvrpnatmel.a \
+               $(OBJECT_DIR)/libvrpngpsnmea.a \
                $(OBJECT_DIR)/libvrpnserver_g++.a \
                $(OBJECT_DIR)/.depend \
                $(OBJECT_DIR)/.depend-old
