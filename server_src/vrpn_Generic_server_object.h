@@ -78,6 +78,7 @@
 #include "vrpn_3DConnexion.h"
 #include "vrpn_Keyboard.h"
 #include "vrpn_Tracker_MotionNode.h"
+#include "vrpn_Tracker_GPS.h"
 #include "vrpn_Tracker_NDI_Polaris.h"
 #include "vrpn_WiiMote.h"
 #include "vrpn_Tracker_WiimoteHead.h"
@@ -318,6 +319,7 @@ class vrpn_Generic_Server_Object
     int setup_3DConnexion_SpaceExplorer (char * & pch, char * line, FILE * config_file) ;
     int setup_3DConnexion_SpaceBall5000 (char * & pch, char * line, FILE * config_file) ;
     int setup_Tracker_MotionNode (char * & pch, char * line, FILE * config_file);
+    int setup_Tracker_GPS (char * & pch, char * line, FILE * config_file);
     int setup_WiiMote (char * & pch, char * line, FILE * config_file);
     int setup_SpacePoint (char * & pch, char * line, FILE * config_file);
     int setup_Tracker_WiimoteHead (char * & pch, char * line, FILE * config_file);

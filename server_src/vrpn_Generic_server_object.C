@@ -4393,6 +4393,52 @@ int vrpn_Generic_Server_Object::setup_Tracker_MotionNode (char * & pch, char * l
   return 0;
 }
 
+int vrpn_Generic_Server_Object::setup_Tracker_GPS(char * & pch, char * line, FILE * config_file)
+{
+  unsigned num_sensors = 0;
+  char address[LINESIZE]="/dev/tty.someserialport";
+  
+  char trackerName[512];
+  int baud; 
+  int useUTM = 0;
+  
+  int argCount=0;
+  
+  
+  next();
+  // Get the arguments (class, tracker_name, sensors, rate)
+  argCount = sscanf(pch,"%511s%511s%u", trackerName, address, &baud);
+  //printf("tracker GPS values: %s, %s, %d\n", trackerName, address, baud);
+  if (3 != argCount)
+  {
+    fprintf(stderr, "Bad vrpn_Tracker_GPS line:\n %s\n\targCount is %d\n", line, argCount);
+    return -1;
+  }
+  
+  // Make sure there's room for a new tracker
+  if (num_trackers >= VRPN_GSO_MAX_TRACKERS) {
+    fprintf(stderr,"Too many trackers in config file");
+    return -1;
+  }
+  
+  // Open the tracker
+  if (verbose) {
+    printf("Opening vrpn_Tracker_GPS: %s with %u sensors, address %s, port %u\n",
+         trackerName, num_sensors, address, baud);
+  }
+  
+  //trackers[num_trackers] = new vrpn_Tracker_GPS(name, connection, num_sensors, address, port);
+  trackers[num_trackers] = new vrpn_Tracker_GPS(trackerName,connection, address, baud, useUTM, 0);
+  
+  if (NULL == trackers[num_trackers]) {
+    fprintf(stderr, "Failed to create new vrpn_Tracker_GPS\n");
+    return -1;
+  } else {
+    num_trackers++;
+  }
+  return 0;
+}
+
 int vrpn_Generic_Server_Object::setup_DreamCheeky (char * & pch, char * line, FILE * config_file)
 {
   char s2 [LINESIZE];
@@ -4901,6 +4947,8 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object (vrpn_Connection *connect
         CHECK (setup_3DConnexion_SpaceBall5000);
       } else if (isit ("vrpn_Tracker_MotionNode")) {
         CHECK (setup_Tracker_MotionNode);
+      } else if (isit("vrpn_Tracker_GPS")) {
+        CHECK(setup_Tracker_GPS);
       } else if (isit ("vrpn_WiiMote")) {
         CHECK (setup_WiiMote);
       } else if (isit ("vrpn_Tracker_WiimoteHead")) {

@@ -614,6 +614,7 @@ set(VRPN_SERVER_SOURCES
 	vrpn_Tracker_DTrack.C
 	vrpn_Tracker_Fastrak.C
 	vrpn_Tracker_GameTrak.C
+	vrpn_Tracker_GPS.C
 	vrpn_Tracker_isense.C
 	vrpn_Tracker_Isotrak.C
 	vrpn_Tracker_JsonNet.C
@@ -695,6 +696,7 @@ set(VRPN_SERVER_PUBLIC_HEADERS
 	vrpn_Tracker_DTrack.h
 	vrpn_Tracker_Fastrak.h
 	vrpn_Tracker_GameTrak.h
+	vrpn_Tracker_GPS.h
 	vrpn_Tracker_isense.h
 	vrpn_Tracker_Isotrak.h
 	vrpn_Tracker_JsonNet.h
@@ -743,6 +745,9 @@ if(VRPN_BUILD_SERVER_LIBRARY)
 		add_subdirectory(atmellib)
 		target_link_libraries(vrpnserver vrpn_atmel)
 	endif()
+
+	add_subdirectory(gpsnmealib)
+	target_link_libraries(vrpnserver gpsnmea)
 
 	install(TARGETS
 		vrpnserver

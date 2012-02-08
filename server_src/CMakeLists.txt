@@ -14,6 +14,7 @@ if(NOT VRPN_BUILD_SERVER_LIBRARY)
 endif()
 
 set(VRPN_SERVER_LIBRARY vrpnserver)
+set(VRPN_GPSNMEA_LIBRARY gpsnmea)
 
 if(NOT WIN32)
 	set(VRPN_ATMEL_LIBRARY vrpn_atmel)
@@ -137,6 +138,7 @@ target_link_libraries(vrpn_server
 	${VRPN_SERVER_LIBRARY}
 	vrpn_timecode_generator
 	${VRPN_ATMEL_LIBRARY}
+	${VRPN_GPSNMEA_LIBRARY}
 	${VRPNPHANTOMLIB})
 set_target_properties(vrpn_server PROPERTIES SOLUTION_FOLDER servers)
 set_property(TARGET
