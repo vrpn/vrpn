@@ -627,6 +627,7 @@ set(VRPN_SERVER_SOURCES
 	vrpn_Tracker_TrivisioColibri.C
 	vrpn_Tracker_WiimoteHead.C
 	vrpn_Tracker_zSight.C
+	vrpn_Tracker_ViewPoint.C
 	vrpn_UNC_Joystick.C
 	vrpn_VPJoystick.C
 	vrpn_Wanda.C
@@ -708,6 +709,7 @@ set(VRPN_SERVER_PUBLIC_HEADERS
 	vrpn_Tracker_TrivisioColibri.h
 	vrpn_Tracker_WiimoteHead.h
 	vrpn_Tracker_zSight.h
+	vrpn_Tracker_ViewPoint.h
 	vrpn_UNC_Joystick.h
 	vrpn_VPJoystick.h
 	vrpn_Wanda.h
