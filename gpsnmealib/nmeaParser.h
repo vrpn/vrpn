@@ -20,6 +20,8 @@ typedef unsigned int   uint_;
 
 #endif
 
+#include <string.h>
+
 // sj: #include <log4cpp/Category.hh>
 
 struct SatData

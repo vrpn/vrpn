@@ -196,7 +196,7 @@ LIB_DIR := ../$(OBJ_DIR)
 override CFLAGS := $(CFLAGS) -I./ -I../ -I../quat -I../../libfreespace/include $(DEBUG_FLAGS) $(CFLAGS) -DTRUE=true =DFALSE=false
 override CXXFLAGS := $(CXXFLAGS) -I./ -I../ -I../quat -I../../libfreespace/include $(DEBUG_FLAGS) $(CXXFLAGS)
 override LFLAGS := $(LFLAGS) -L$(LIB_DIR) -L../quat/$(HW_OS)$(OBJECT_DIR_SUFFIX) $(LDFLAGS)
-VRPN_LIBS = -lvrpnserver -lvrpnatmel -lpthread
+VRPN_LIBS = -lvrpnserver -lvrpnatmel -lvrpngpsnmea -lpthread
 
 # Uncomment the following section and point them at the
 # currect diretories to compile with HDAPI under Cygwin.

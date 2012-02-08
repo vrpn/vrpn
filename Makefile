@@ -238,13 +238,16 @@ ifeq ($(FORCE_GPP),1)
 OBJECT_DIR	 := $(HW_OS)$(OBJECT_DIR_SUFFIX)/g++
 SOBJECT_DIR      := $(HW_OS)$(OBJECT_DIR_SUFFIX)/g++/server
 AOBJECT_DIR      := $(HW_OS)$(OBJECT_DIR_SUFFIX)/atmellib
+GOBJECT_DIR      := $(HW_OS)$(OBJECT_DIR_SUFFIX)/gpsnmealib
 else
 UNQUAL_OBJECT_DIR := $(HW_OS)$(OBJECT_DIR_SUFFIX)
 UNQUAL_SOBJECT_DIR := $(HW_OS)$(OBJECT_DIR_SUFFIX)/server
 UNQUAL_AOBJECT_DIR := $(HW_OS)$(OBJECT_DIR_SUFFIX)/atmellib
+UNQUAL_GOBJECT_DIR := $(HW_OS)$(OBJECT_DIR_SUFFIX)/gpsnmealib
 OBJECT_DIR	 := $(HW_OS)$(OBJECT_DIR_SUFFIX)
 SOBJECT_DIR      := $(HW_OS)$(OBJECT_DIR_SUFFIX)/server
 AOBJECT_DIR      := $(HW_OS)$(OBJECT_DIR_SUFFIX)/atmellib
+GOBJECT_DIR      := $(HW_OS)$(OBJECT_DIR_SUFFIX)/gpsnmealib
 endif
 
 # directories that we can do an rm -f on because they only contain
@@ -334,9 +337,9 @@ endif
 # On the PC, place quatlib in the directory ./quat.  No actual system
 # includes should be needed.
 ifeq ($(HW_OS),pc_cygwin)
-  INCLUDE_FLAGS := -I. -I./quat -I./atmellib
+  INCLUDE_FLAGS := -I. -I./quat -I./atmellib -I./gpsnmealib
 else
-  INCLUDE_FLAGS := -I. $(SYS_INCLUDE) -I./quat -I../quat -I./atmellib
+  INCLUDE_FLAGS := -I. $(SYS_INCLUDE) -I./quat -I../quat -I./atmellib -I./gpsnmealib
 endif
 
 
@@ -416,15 +419,15 @@ override CXXFLAGS     := $(INCLUDE_FLAGS) $(DEBUG_FLAGS) $(CXXFLAGS)
 
 ifeq ($(HW_OS),sgi_irix)
   ifeq ($(SGI_ABI),32)
-all:	client server client_g++ server_g++ atmellib
+all:	client server client_g++ server_g++ atmellib gpsnmealib
   else
-all:	client server atmellib
+all:	client server atmellib gpsnmealib
   endif
 else
   ifeq ($(HW_OS),pc_cygwin)
-all:	client server atmellib
+all:	client server atmellib gpsnmealib
   else
-all:	client server atmellib
+all:	client server atmellib gpsnmealib
   endif
 endif
 
@@ -449,6 +452,10 @@ server: $(SOBJECT_DIR)
 atmellib: $(AOBJECT_DIR)
 	$(MAKE) $(OBJECT_DIR)/libvrpnatmel.a
 
+.PHONY: gpsnmealib
+gpsnmealib: $(GOBJECT_DIR)
+	$(MAKE) $(OBJECT_DIR)/libvrpngpsnmea.a
+
 $(OBJECT_DIR):
 	-mkdir -p $(OBJECT_DIR)
 
@@ -457,6 +464,9 @@ $(SOBJECT_DIR):
 
 $(AOBJECT_DIR):
 	-mkdir -p $(AOBJECT_DIR)
+
+$(GOBJECT_DIR):
+	-mkdir -p $(GOBJECT_DIR)
 
 #############################################################################
 #
@@ -633,6 +643,7 @@ SLIB_FILES =  $(LIB_FILES) \
 	vrpn_Tracker_NovintFalcon.C \
 	vrpn_Tracker_SpacePoint.C \
 	vrpn_Tracker_WiimoteHead.C \
+	vrpn_Tracker_GPS.C \
 	vrpn_UNC_Joystick.C \
 	vrpn_VPJoystick.C \
 	vrpn_Wanda.C \
@@ -702,6 +713,7 @@ SLIB_INCLUDES = $(LIB_INCLUDES) \
 	vrpn_Tracker_ViewPoint.h \
 	vrpn_Tracker_NovintFalcon.h \
 	vrpn_Tracker_WiimoteHead.h \
+	vrpn_Tracker_GPS.h \
 	vrpn_UNC_Joystick.h \
 	vrpn_VPJoystick.h \
 	vrpn_Wanda.h \
@@ -734,6 +746,27 @@ $(ALIB_OBJECTS):
 $(OBJECT_DIR)/libvrpnatmel.a: $(MAKEFILE) $(ALIB_OBJECTS)
 	$(AR) $(OBJECT_DIR)/libvrpnatmel.a $(ALIB_OBJECTS)
 	-$(RANLIB) $(OBJECT_DIR)/libvrpnatmel.a
+
+# gpsnmealib files.
+
+GLIB_FILES = \
+	gpsnmealib/latLonCoord.C \
+	gpsnmealib/nmeaParser.C \
+	gpsnmealib/typedCoord.C \
+	gpsnmealib/utmCoord.C
+
+GLIB_OBJECTS = $(patsubst %,$(GOBJECT_DIR)/../%,$(GLIB_FILES:.C=.o))
+
+GLIB_INCLUDES =  \
+	latLonCoord.h \
+	nmeaParser.h \
+	typeCoord.h \
+	utmCoord.h
+
+$(GLIB_OBJECTS):
+$(OBJECT_DIR)/libvrpngpsnmea.a: $(MAKEFILE) $(GLIB_OBJECTS)
+	$(AR) $(OBJECT_DIR)/libvrpngpsnmea.a $(GLIB_OBJECTS)
+	-$(RANLIB) $(OBJECT_DIR)/libvrpngpsnmea.a
 
 #############################################################################
 #
