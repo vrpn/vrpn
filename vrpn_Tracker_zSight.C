@@ -69,12 +69,11 @@ vrpn_Tracker_zSight::~vrpn_Tracker_zSight()
 
 void vrpn_Tracker_zSight::mainloop()
 {
-    get_report();
-  
     // Call the generic server mainloop, since we are a server
     server_mainloop();
 
-    return;
+    // Get latest data
+    get_report();
 }
 
 void vrpn_Tracker_zSight::get_report()
