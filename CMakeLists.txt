@@ -469,6 +469,9 @@ option(VRPN_USE_TRIVISIOCOLIBRI
 option(VRPN_USE_JSONNET
 	"Build with support JSON over UDP (for Android widgets)"
 	 OFF)
+option(VRPN_USE_VIEWPOINT
+	"Build with support for ViewPoint EyeTracker"
+	OFF)
 option(VRPN_BUILD_EXTRA_COMPILER_WARNINGS
 	"Build with flags to enable extra warnings."
 	OFF)

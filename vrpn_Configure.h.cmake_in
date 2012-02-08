@@ -362,6 +362,15 @@
 // JSON Network (UDP) mesages are used by the vrpn widgets for Android,
 #cmakedefine VRPN_USE_JSONNET
 
+//------------------------
+// Instructs VRPN to compile code to use the Arrington Research
+// ViewPoint EyeTracker.  You will also need to set VRPN_VIEWPOINT_H
+// and VRPN_VIEWPOINT_LIB_PATH below to point to the correct location
+// on your system.  Note that the VRPN server and ViewPoint calibration
+// software must use the same copy of the VPX_InterApp.dll
+//#define VRPN_USE_VIEWPOINT
+#cmakedefine VRPN_USE_VIEWPOINT
+
 //------------------------------------------------------------------//
 // SYSTEM CONFIGURATION SECTION                                     //
 // EDIT THESE DEFINITIONS TO POINT TO OPTIONAL LIBRARIES.  THEY ARE //

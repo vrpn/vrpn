@@ -629,6 +629,7 @@ SLIB_FILES =  $(LIB_FILES) \
 	vrpn_Tracker_PhaseSpace.C \
 	vrpn_Tracker_RazerHydra.C \
 	vrpn_Tracker_TrivisioColibri.C \
+	vrpn_Tracker_ViewPoint.C \
 	vrpn_Tracker_NovintFalcon.C \
 	vrpn_Tracker_SpacePoint.C \
 	vrpn_Tracker_WiimoteHead.C \
@@ -698,6 +699,7 @@ SLIB_INCLUDES = $(LIB_INCLUDES) \
 	vrpn_Tracker_RazerHydra.h \
 	vrpn_Tracker_SpacePoint.h \
 	vrpn_Tracker_TrivisioColibri.h \
+	vrpn_Tracker_ViewPoint.h \
 	vrpn_Tracker_NovintFalcon.h \
 	vrpn_Tracker_WiimoteHead.h \
 	vrpn_UNC_Joystick.h \
