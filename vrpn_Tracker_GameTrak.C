@@ -9,6 +9,8 @@
 
 #include "vrpn_Tracker_GameTrak.h"
 
+#include "quat.h"
+
 vrpn_Tracker_GameTrak::vrpn_Tracker_GameTrak(const char * name, vrpn_Connection * trackercon, const char *joystick_dev, int *mapping) :
     vrpn_Tracker(name, trackercon)
 {
@@ -116,7 +118,7 @@ void VRPN_CALLBACK vrpn_Tracker_GameTrak::handle_update(void *userdata, const vr
     s2y = info.channel[gametrak->_mapping[4]];
     s2z = info.channel[gametrak->_mapping[5]];
 
-    vrpn_float64 coef = (32.5 / 180.0) * M_PI;
+    vrpn_float64 coef = (32.5 / 180.0) * Q_PI;
 
     vrpn_float64 distance0 = 1.5 * (1 - s1z);
     vrpn_float64 angleX0   = -s1x * coef;

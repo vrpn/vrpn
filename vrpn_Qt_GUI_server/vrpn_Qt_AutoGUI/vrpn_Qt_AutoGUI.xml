@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<AUTOGUI>
+
+  <Column Text="Buttons"/>
+
+  <PushButton Name="pushButton" Text="Push Button"/>
+  <RadioButton Name="radioButton" Text="Radio Button 1" Checked="0"/>
+  <RadioButton Name="radioButton_2" Text="Radio Button 2" Checked="1"/>
+  <RadioButton Name="radioButton_3" Text="Radio Button 3" Checked="0"/>
+  <CheckBox Name="checkBox" Text="Check Box" Checked="1"/>
+
+  <Column Text="Analogs"/>
+
+  <SpinBox Name="spinbox" Text="Spin Box" Min="0" Max="99" Value="10" Step="5"/>
+  <DoubleSpinBox Name="doubleSpinBox" Text="Double Spin Box" Min="0.0" Max="6.28" Value="3.14" Step="0.01"/>
+  <Dial Name="dial" Text="Dial" Min="0" Max="99" Value="25" Step="1"/>
+  <ScrollBar Name="scrollBar" Text="Scroll Bar" Min="0" Max="99" Value="50" Step="1"/>
+  <Slider Name="slider" Text="Slider" Min="0" Max="99" Value="75" Step="1"/>
+
+</AUTOGUI>

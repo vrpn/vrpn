@@ -92,6 +92,7 @@
 #include "vrpn_Analog_5dtUSB.h"
 #include "vrpn_Tracker_RazerHydra.h"
 #include "vrpn_Tracker_zSight.h" // added by David Borland
+#include "vrpn_Tracker_ViewPoint.h" // added by David Borland
 
 // BUW additions
 #include "vrpn_Atmel.h"
@@ -335,6 +336,7 @@ class vrpn_Generic_Server_Object
     int setup_Analog_5dtUSB_Glove14Right (char * &pch, char * line, FILE * config_file);
     int setup_Tracker_RazerHydra (char * &pch, char * line, FILE * config_file);
     int setup_Tracker_zSight (char * &pch, char * line, FILE * config_file);
+    int setup_Tracker_ViewPoint (char * &pch, char * line, FILE * config_file);
 
     // BUW additions
     int setup_Atmel (char* &pch, char *line, FILE *config_file);

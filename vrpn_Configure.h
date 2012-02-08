@@ -351,6 +351,14 @@
 // JSON Network (UDP) mesages are used by the vrpn widgets for Android,
 //#define VRPN_USE_JSONNET
 
+//------------------------
+// Instructs VRPN to compile code to use the Arrington Research 
+// ViewPoint EyeTracker.  You will also need to set VRPN_VIEWPOINT_H
+// and VRPN_VIEWPOINT_LIB_PATH below to point to the correct location 
+// on your system.  Note that the VRPN server and ViewPoint calibration
+// software must use the same copy of the VPX_InterApp.dll
+//#define VRPN_USE_VIEWPOINT
+
 //------------------------------------------------------------------//
 // SYSTEM CONFIGURATION SECTION                                     //
 // EDIT THESE DEFINITIONS TO POINT TO OPTIONAL LIBRARIES.  THEY ARE //
@@ -372,6 +380,9 @@
 
 #define VRPN_TRIVISIOCOLIBRI_H          "C:/Program Files/Trivisio/Colibri/include/TrivisioColibri.h"
 #define VRPN_TRIVISIOCOLIBRI_LIB_PATH   "C:/Program Files/Trivisio/Colibri/lib/"
+
+#define VRPN_VIEWPOINT_H				"E:/borland/lib/ViewPoint 2.8.6.21/SDK/vpx.h"
+#define VRPN_VIEWPOINT_LIB_PATH			"E:/borland/lib/ViewPoint 2.8.6.21/SDK/"
 
 #ifdef linux
 #define VRPN_HDAPI_PATH         "/usr/lib64"
@@ -512,6 +523,11 @@
 // Load Trivisio Colibri library
 #ifdef  VRPN_USE_TRIVISIOCOLIBRI
 #pragma comment (lib, VRPN_TRIVISIOCOLIBRI_LIB_PATH "Trivisio.lib")
+#endif
+
+// Load Arrington Research ViewPoint EyeTracker library
+#ifdef  VRPN_USE_VIEWPOINT
+#pragma comment (lib, VRPN_VIEWPOINT_LIB_PATH "VPX_InterApp.lib")
 #endif
 
 #ifdef VRPN_USE_LIBUSB_1_0

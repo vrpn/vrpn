@@ -6,7 +6,7 @@
 //              Institut d'Investigacions Biomèdiques August Pi i Sunyer (IDIBAPS)
 //              Virtual Embodiment and Robotic Re-Embodiment (VERE) Project – 257695
 //
-// Description: VRPN tracker class for Trivisio Colibri device
+// Description: VRPN tracker class for Trivisio Colibri device.
 //
 /////////////////////////////////////////////////////////////////////////////////////////////// 
 
@@ -44,10 +44,6 @@ vrpn_Tracker_TrivisioColibri::vrpn_Tracker_TrivisioColibri(const char* name, vrp
                                                            int numSensors, int Hz, int bufLen) :
     vrpn_Tracker(name, c)
 {
-    // VRPN stuff
-    register_server_handlers();
-
-
     // Query the number of connected devices
     struct TrivisioSensor* sensorList = new TrivisioSensor[numSensors];
     int sensorCount = colibriGetDeviceList(sensorList, numSensors);
@@ -105,7 +101,6 @@ vrpn_Tracker_TrivisioColibri::vrpn_Tracker_TrivisioColibri(const char* name, vrp
         struct ColibriConfig conf;
 
         // Taken from sample code
-        // XXX: Which should be moved to the constructor?
         colibriGetConfig(imu[i], &conf);
 	    conf.raw = 0;
 	    conf.freq = Hz;
@@ -140,6 +135,10 @@ vrpn_Tracker_TrivisioColibri::vrpn_Tracker_TrivisioColibri(const char* name, vrp
     for (int i = 0; i < num_sensors; i++) {
         colibriStart(imu[i]);
     }
+
+    
+    // VRPN stuff
+    register_server_handlers();
 }
 
 vrpn_Tracker_TrivisioColibri::~vrpn_Tracker_TrivisioColibri()
@@ -154,12 +153,11 @@ vrpn_Tracker_TrivisioColibri::~vrpn_Tracker_TrivisioColibri()
 
 void vrpn_Tracker_TrivisioColibri::mainloop()
 {
-    get_report();
-  
     // Call the generic server mainloop, since we are a server
     server_mainloop();
 
-    return;
+    // Get latest data
+    get_report();
 }
 
 void vrpn_Tracker_TrivisioColibri::get_report()

@@ -4662,7 +4662,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_zSight (char * & pch, char * line,
 
   next();
   // Get the arguments
-  if (sscanf (pch, "%511s%d%d%d", s2) != 1) {
+  if (sscanf (pch, "%511s", s2) != 1) {
     fprintf (stderr, "Bad vrpn_Tracker_zSight line: %s\n", line);
     return -1;
   }
@@ -4690,6 +4690,47 @@ int vrpn_Generic_Server_Object::setup_Tracker_zSight (char * & pch, char * line,
   return 0;
 #else
   fprintf (stderr, "vrpn_server: Can't open vrpn_Tracker_zSight: VRPN_USE_DIRECTINPUT not defined in vrpn_Configure.h!\n");
+  return -1;
+#endif
+}
+
+int vrpn_Generic_Server_Object::setup_Tracker_ViewPoint (char * & pch, char * line, FILE * config_file)
+{
+#ifdef	VRPN_USE_VIEWPOINT
+  char s2 [LINESIZE];  // Get the arguments
+  int smoothedData;
+
+  next();
+  // Get the arguments
+  if (sscanf (pch, "%511s%d", s2, &smoothedData) != 2) {
+    fprintf (stderr, "Bad vrpn_Tracker_ViewPoint line: %s\n", line);
+    return -1;
+  }
+
+  // Make sure there's room for a new tracker
+  if (num_trackers >= VRPN_GSO_MAX_TRACKERS) {
+    fprintf (stderr, "Too many trackers in config file");
+    return -1;
+  }
+
+  // Open the ViewPoint EyeTracker if we can.
+  if (verbose) {
+    printf ("Opening vrpn_Tracker_ViewPoint: %s", s2);
+  }
+
+  bool smooth = smoothedData == 1;
+  trackers[num_trackers] = new vrpn_Tracker_ViewPoint (s2, connection, smooth);
+
+  if (NULL == trackers[num_trackers]) {
+    fprintf (stderr, "Failed to create new vrpn_Tracker_ViewPoint\n");
+    return -1;
+  } else {
+    num_trackers++;
+  }
+
+  return 0;
+#else
+  fprintf (stderr, "vrpn_server: Can't open vrpn_Tracker_ViewPoint: VRPN_USE_VIEWPOINT not defined in vrpn_Configure.h!\n");
   return -1;
 #endif
 }
@@ -4987,6 +5028,8 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object (vrpn_Connection *connect
         CHECK (setup_Tracker_RazerHydra);
       } else if (isit ("vrpn_Tracker_zSight")) {
         CHECK (setup_Tracker_zSight);
+      } else if (isit ("vrpn_Tracker_ViewPoint")) {
+        CHECK (setup_Tracker_ViewPoint);
       }
 
 #ifdef VRPN_USE_JSONNET
