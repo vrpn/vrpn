@@ -114,7 +114,8 @@ if(VRPN_BUILD_DIRECTSHOW_VIDEO_SERVER AND DIRECTSHOW_FOUND)
 		directshow_video_server/directx_camera_server.h)
 	target_link_libraries(directshow_video_server
 		${VRPN_SERVER_LIBRARY}
-		${DirectShow_LIBS})
+		${DirectShow_LIBS}
+		${DIRECTSHOW_LIBRARIES})
 	set_target_properties(directshow_video_server
 		PROPERTIES
 		FOLDER
