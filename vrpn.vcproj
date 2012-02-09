@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="8.00"
+	Version="9.00"
 	Name="vrpn"
 	ProjectGUID="{7EE1DB03-16A5-4465-9164-061BE0C88B8C}"
 	RootNamespace="vrpn"
+	TargetFrameworkVersion="131072"
 	>
 	<Platforms>
 		<Platform
@@ -1571,26 +1572,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="vrpn_Tracker_zSight.C"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						CompileAs="2"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						CompileAs="2"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath="vrpn_Tracker_AnalogFly.C"
 				>
 				<FileConfiguration
@@ -1972,6 +1953,26 @@
 			</File>
 			<File
 				RelativePath="vrpn_Tracker_WiimoteHead.C"
+				>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="vrpn_Tracker_zSight.C"
 				>
 				<FileConfiguration
 					Name="Release|Win32"
@@ -2436,10 +2437,6 @@
 				>
 			</File>
 			<File
-				RelativePath="vrpn_Tracker_zSight.h"
-				>
-			</File>
-			<File
 				RelativePath="vrpn_Tracker_AnalogFly.h"
 				>
 			</File>
@@ -2517,6 +2514,10 @@
 			</File>
 			<File
 				RelativePath="vrpn_Tracker_WiimoteHead.h"
+				>
+			</File>
+			<File
+				RelativePath="vrpn_Tracker_zSight.h"
 				>
 			</File>
 			<File
