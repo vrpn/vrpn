@@ -1711,6 +1711,26 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="vrpn_Tracker_GPS.C"
+				>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath="vrpn_Tracker_isense.C"
 				>
 				<FileConfiguration
@@ -2441,6 +2461,10 @@
 			</File>
 			<File
 				RelativePath="vrpn_Tracker_GameTrak.h"
+				>
+			</File>
+			<File
+				RelativePath="vrpn_Tracker_GPS.h"
 				>
 			</File>
 			<File
