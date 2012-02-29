@@ -33,6 +33,7 @@ vrpn_LUDL_USBMAC6000::vrpn_LUDL_USBMAC6000(const char *name, vrpn_Connection *c,
     fprintf(stderr,"vrpn_LUDL_USBMAC6000: can't init LibUSB\n");
     return;
   }
+  printf("dbg: Opening device\n");
   if ( (_device_handle = libusb_open_device_with_vid_pid(_context, LUDL_VENDOR, LUDL_USBMAC6000)) == NULL) {
     fprintf(stderr,"vrpn_LUDL_USBMAC6000: can't find any USBMac6000 devices\n");
 #ifdef  _WIN32
@@ -40,6 +41,7 @@ vrpn_LUDL_USBMAC6000::vrpn_LUDL_USBMAC6000(const char *name, vrpn_Connection *c,
 #endif
     return;
   }
+  printf("dbg: Claiming interface\n");
   if ( libusb_claim_interface(_device_handle, 0) != 0) {
     fprintf(stderr,"vrpn_LUDL_USBMAC6000: can't claim interface for this device\n");
 #ifdef linux
@@ -64,6 +66,7 @@ vrpn_LUDL_USBMAC6000::vrpn_LUDL_USBMAC6000(const char *name, vrpn_Connection *c,
   // Recenter if we have been asked to.  This takes a long time, during which the
   // constructor is locked up.
   if (do_recenter) {
+    printf("dbg: Recentering\n");
     recenter();
   }
 
