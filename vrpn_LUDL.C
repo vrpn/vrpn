@@ -33,15 +33,18 @@ vrpn_LUDL_USBMAC6000::vrpn_LUDL_USBMAC6000(const char *name, vrpn_Connection *c,
     fprintf(stderr,"vrpn_LUDL_USBMAC6000: can't init LibUSB\n");
     return;
   }
-  printf("dbg: Opening device\n");
+  //printf("dbg: Opening device\n");
   if ( (_device_handle = libusb_open_device_with_vid_pid(_context, LUDL_VENDOR, LUDL_USBMAC6000)) == NULL) {
     fprintf(stderr,"vrpn_LUDL_USBMAC6000: can't find any USBMac6000 devices\n");
 #ifdef  _WIN32
     fprintf(stderr,"                      (Did you install a Zadig.exe or other LibUSB-compatible driver?)\n");
 #endif
+#ifdef linux
+    fprintf(stderr,"                      (Did you remember to run as root?)\n");
+#endif
     return;
   }
-  printf("dbg: Claiming interface\n");
+  //printf("dbg: Claiming interface\n");
   if ( libusb_claim_interface(_device_handle, 0) != 0) {
     fprintf(stderr,"vrpn_LUDL_USBMAC6000: can't claim interface for this device\n");
 #ifdef linux
@@ -66,7 +69,7 @@ vrpn_LUDL_USBMAC6000::vrpn_LUDL_USBMAC6000(const char *name, vrpn_Connection *c,
   // Recenter if we have been asked to.  This takes a long time, during which the
   // constructor is locked up.
   if (do_recenter) {
-    printf("dbg: Recentering\n");
+    //printf("dbg: Recentering\n");
     recenter();
   }
 
@@ -128,7 +131,10 @@ bool vrpn_LUDL_USBMAC6000::check_for_data(void)
   }
 
   // Let libusb handle any outstanding events
-  libusb_handle_events(_context);
+  struct timeval	zerotime;
+  zerotime.tv_sec = 0;
+  zerotime.tv_usec = 0;
+  libusb_handle_events_timeout(_context, &zerotime);
 
   // Try to read as many characters as are left in the buffer from
   // the device.  Keep track of how many we get.
@@ -136,8 +142,10 @@ bool vrpn_LUDL_USBMAC6000::check_for_data(void)
   int chars_to_read = _INBUFFER_SIZE - _incount;
   int chars_read = 0;
   int ret;
-  ret = libusb_interrupt_transfer(_device_handle, _endpoint | LIBUSB_ENDPOINT_IN,
+  //printf("dbg: Starting bulk receive\n");
+  ret = libusb_bulk_transfer(_device_handle, _endpoint | LIBUSB_ENDPOINT_IN,
     &_inbuffer[_incount], chars_to_read, &chars_read, 1);
+  //printf("dbg: Finished bulk receive\n");
   if ( (ret != LIBUSB_SUCCESS) && (ret != LIBUSB_ERROR_TIMEOUT) ) {
 #ifdef libusb_strerror
     fprintf(stderr, "vrpn_LUDL_USBMAC6000::check_for_data(): Could not read data: %s\n",
@@ -161,7 +169,10 @@ void vrpn_LUDL_USBMAC6000::mainloop()
   }
 
   // Let libusb handle any outstanding events
-  libusb_handle_events(_context);
+  struct timeval	zerotime;
+  zerotime.tv_sec = 0;
+  zerotime.tv_usec = 0;
+  libusb_handle_events_timeout(_context, &zerotime);
 
   // If one of the axes is moving, check to see whether it has stopped.
   // If so, report its new position.
@@ -219,7 +230,10 @@ bool vrpn_LUDL_USBMAC6000::send_usbmac_command(unsigned device, unsigned command
   }
 
   // Let libusb handle any outstanding events
-  libusb_handle_events(_context);
+  struct timeval	zerotime;
+  zerotime.tv_sec = 0;
+  zerotime.tv_usec = 0;
+  libusb_handle_events_timeout(_context, &zerotime);
 
   char msg[1024];
   sprintf(msg, "can %u %u %u %i\n", device, command, index, value);
@@ -227,9 +241,11 @@ bool vrpn_LUDL_USBMAC6000::send_usbmac_command(unsigned device, unsigned command
   int sent_len = 0;
   msg[len-1] = 0xD;
 
-  int ret = libusb_interrupt_transfer(_device_handle, _endpoint | LIBUSB_ENDPOINT_OUT,
+  //printf("dbg: Starting bulk send command\n");
+  int ret = libusb_bulk_transfer(_device_handle, _endpoint | LIBUSB_ENDPOINT_OUT,
             static_cast<vrpn_uint8 *>(static_cast<void*>(msg)),
-            len, &sent_len, 0);
+            len, &sent_len, 50);
+  //printf("dbg: Finished bulk send command\n");
   if ((ret != 0) || (sent_len != len)) {
 #ifdef libusb_strerror
     fprintf(stderr,"vrpn_LUDL_USBMAC6000::send_usbmac_command(): Could not send: %s\n",
@@ -279,12 +295,15 @@ bool vrpn_LUDL_USBMAC6000::recenter(void)
   vrpn_SleepMsecs(500); // XXX Why sleep?
 
   // Let libusb handle any outstanding events
-  libusb_handle_events(_context);
+  struct timeval	zerotime;
+  zerotime.tv_sec = 0;
+  zerotime.tv_usec = 0;
+  libusb_handle_events_timeout(_context, &zerotime);
 
   flush_input_from_ludl();
   while(ludl_axis_moving(1)) {
     vrpn_SleepMsecs(10);
-    libusb_handle_events(_context);
+    libusb_handle_events_timeout(_context, &zerotime);
   }
 
   // Send the command to record the value at the center of the X axis as
@@ -305,12 +324,12 @@ bool vrpn_LUDL_USBMAC6000::recenter(void)
   vrpn_SleepMsecs(500); // XXX Why sleep?
 
   // Let libusb handle any outstanding events
-  libusb_handle_events(_context);
+  libusb_handle_events_timeout(_context, &zerotime);
 
   flush_input_from_ludl();
   while(ludl_axis_moving(2)) {
     vrpn_SleepMsecs(10);
-    libusb_handle_events(_context);
+    libusb_handle_events_timeout(_context, &zerotime);
   }
 
   // Send the command to record the value at the center of the Y axis as
