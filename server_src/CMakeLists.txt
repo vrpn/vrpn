@@ -155,10 +155,20 @@ install(TARGETS vrpn_server
 #-----------------------------------------------------------------------------
 # Install the vrpn.cfg file needed by the server.
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/vrpn.cfg" "${CMAKE_CURRENT_BINARY_DIR}/vrpn.cfg" @ONLY)
-install(FILES "${CMAKE_CURRENT_BINARY_DIR}/vrpn.cfg"
-	DESTINATION etc
-	COMPONENT mainserver)
+if(WIN32)
+	install(FILES "${CMAKE_CURRENT_BINARY_DIR}/vrpn.cfg"
+		DESTINATION bin
+		COMPONENT mainserver)
+else()
+	install(FILES "${CMAKE_CURRENT_BINARY_DIR}/vrpn.cfg"
+		DESTINATION etc
+		COMPONENT mainserver)
+endif()
 
+install(FILES "${CMAKE_CURRENT_BINARY_DIR}/vrpn.cfg"
+	DESTINATION share/vrpn-${BRIEF_VERSION}
+	RENAME vrpn.cfg.sample
+	COMPONENT mainserver)
 
 #-----------------------------------------------------------------------------
 # Declaration of the simple test applications that don't have extra files
