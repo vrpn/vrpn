@@ -103,7 +103,8 @@ vrpn_Tracker_RazerHydra::vrpn_Tracker_RazerHydra(const char * name, vrpn_Connect
 
 vrpn_Tracker_RazerHydra::~vrpn_Tracker_RazerHydra() {
 	if (status == HYDRA_REPORTING && _wasInGamepadMode) {
-		send_text_message(vrpn_TEXT_WARNING) << "Hydra was in gamepad mode when we started: switching back to gamepad mode.";
+		send_text_message(vrpn_TEXT_WARNING)
+		        << "Hydra was in gamepad mode when we started: switching back to gamepad mode.";
 		send_feature_report(HYDRA_GAMEPAD_COMMAND_LEN, HYDRA_GAMEPAD_COMMAND);
 
 		send_text_message() << "Waiting 2 seconds for mode change to complete.";
@@ -113,15 +114,16 @@ vrpn_Tracker_RazerHydra::~vrpn_Tracker_RazerHydra() {
 
 void vrpn_Tracker_RazerHydra::on_data_received(size_t bytes, vrpn_uint8 *buffer) {
 	if (bytes != 52) {
-		send_text_message(vrpn_TEXT_WARNING) << "Got input report of "
-		                                     << bytes << " bytes, expected 52! Discarding.";
+		send_text_message(vrpn_TEXT_WARNING)
+		        << "Got input report of " << bytes << " bytes, expected 52! Discarding.";
 		return;
 	}
 
 	if (status != HYDRA_REPORTING) {
 
-		send_text_message(vrpn_TEXT_WARNING) << "Got first motion controller report! This means everything is working properly now. "
-		                                     << "(Took " << _attempt << " attempt(s) to change modes.)";
+		send_text_message(vrpn_TEXT_WARNING)
+		        << "Got first motion controller report! This means everything is working properly now. "
+		        << "(Took " << _attempt << " attempt" << (_attempt > 1 ? "s" : "") << " to change modes.)";
 		status = HYDRA_REPORTING;
 	}
 
