@@ -370,6 +370,8 @@
 // software must use the same copy of the VPX_InterApp.dll
 //#define VRPN_USE_VIEWPOINT
 #cmakedefine VRPN_USE_VIEWPOINT
+#define VRPN_VIEWPOINT_H "vpx.h"
+#cmakedefine VRPN_VIEWPOINT_LIB_PATH "@VRPN_VIEWPOINT_LIB_PATH@"
 
 //------------------------------------------------------------------//
 // SYSTEM CONFIGURATION SECTION                                     //

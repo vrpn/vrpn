@@ -410,6 +410,24 @@ if(NIDAQMX_FOUND)
 endif()
 
 ###
+# Arrington Research ViewPoint EyeTracker
+###
+find_package(ViewPoint)
+option_requires(VRPN_USE_VIEWPOINT
+	"Build with support for ViewPoint EyeTracker"
+	${DEFAULT_OFF_IF_SUBPROJECT}
+	VIEWPOINT_FOUND)
+
+if(VIEWPOINT_FOUND)
+	include_directories(${VIEWPOINT_INCLUDE_DIRS})
+	list(APPEND SERVER_EXTRA_LIBS ${VIEWPOINT_LIBRARIES})
+
+	# Needed for the config file, apparently - it was added to the non-CMake one.
+	get_filename_component(VRPN_VIEWPOINT_LIB_PATH "${VIEWPOINT_LIBRARY}" PATH)
+	file(TO_CMAKE_PATH "${VRPN_VIEWPOINT_LIB_PATH}" VRPN_VIEWPOINT_LIB_PATH)
+endif()
+
+###
 # XXX Other libraries needing detection and handling (TODO)
 ###
 # possibly GHOST?
@@ -468,9 +486,6 @@ option(VRPN_USE_TRIVISIOCOLIBRI
 option(VRPN_USE_JSONNET
 	"Build with support JSON over UDP (for Android widgets)"
 	 OFF)
-option(VRPN_USE_VIEWPOINT
-	"Build with support for ViewPoint EyeTracker"
-	OFF)
 option(VRPN_BUILD_EXTRA_COMPILER_WARNINGS
 	"Build with flags to enable extra warnings."
 	OFF)
