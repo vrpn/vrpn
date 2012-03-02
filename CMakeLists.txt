@@ -413,7 +413,6 @@ endif()
 # XXX Other libraries needing detection and handling (TODO)
 ###
 # possibly GHOST?
-# DirectX (for DirectInput)
 # Adrienne time-code generator
 # InterSense Interface Libraries SDK
 # National Instruments Nidaq traditional
