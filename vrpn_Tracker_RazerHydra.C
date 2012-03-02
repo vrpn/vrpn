@@ -185,7 +185,6 @@ void vrpn_Tracker_RazerHydra::_listening_after_connect() {
 	struct timeval now;
 	vrpn_gettimeofday(&now, NULL);
 	if (duration(now, _connected) > MAXIMUM_INITIAL_WAIT_USEC) {
-		send_text_message() << "device apparently not in motion controller mode, attempting to change modes.";
 		_enter_motion_controller_mode();
 	}
 }
@@ -215,6 +214,11 @@ void vrpn_Tracker_RazerHydra::_enter_motion_controller_mode() {
 	printf("feature report 0:\n");
 	dumpReport(buf, bytes);
 	*/
+
+	send_text_message(vrpn_TEXT_WARNING)
+	        << "Hydra not in motion-controller mode - attempting to change modes. "
+	        << "Please be sure that the left and right sensors are to the left and "
+	        << "right sides of the base for automatic calibration to take place.";
 
 	/// Prompt to start streaming motion data
 	send_feature_report(HYDRA_FEATURE_REPORT_LEN, HYDRA_FEATURE_REPORT);
