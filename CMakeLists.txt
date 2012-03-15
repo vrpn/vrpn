@@ -275,7 +275,7 @@ else()
 endif()
 
 ###
-# OpenHaptics HDAPI/HLAPI
+# Sensable "OpenHaptics" HDAPI/HLAPI
 ###
 find_package(OpenHaptics)
 option_requires(VRPN_USE_PHANTOM_SERVER
