@@ -1,7 +1,7 @@
 /**	@file
 	@brief	Fake header to allow GHOST 4.09 use with MSVC 2005
 
-	@date	2010
+	@date	2012
 
 	@author
 	Ryan Pavlik
@@ -12,8 +12,3 @@
 */
 
 #pragma once
-
-#include <set>
-#include <functional>
-using std::set;
-using std::less;
