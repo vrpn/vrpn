@@ -286,6 +286,23 @@ if(VRPN_USE_HDAPI)
 	set(PHANTOM_POSSIBLE ON)
 endif()
 
+###
+# Sensable GHOST
+###
+if(NOT VRPN_USE_HDAPI)
+	find_package(GHOST)
+	option_requires(VRPN_USE_GHOST
+		"Allow SensAble Phantom support through GHOST - VRPN_USE_PHANTOM_SERVER must still be set"
+		${DEFAULT_OFF_IF_SUBPROJECT}
+		GHOST_FOUND)
+	if(VRPN_USE_GHOST)
+		if(NOT ${GHOST_LIBRARIES} MATCHES ".*40.*")
+			message(STATUS "GHOST pre-4.0 detected - calling it 3.1.")
+			set(VRPN_USE_GHOST_31 ON)
+		endif()
+		set(PHANTOM_POSSIBLE ON)
+	endif()
+endif()
 
 ###
 # Sensable PHANToM Support - Overall Option
@@ -299,8 +316,13 @@ if(VRPN_USE_PHANTOM_SERVER)
 	if(VRPN_USE_HDAPI)
 		include_directories(${OPENHAPTICS_INCLUDE_DIRS})
 		list(APPEND SERVER_EXTRA_LIBS ${OPENHAPTICS_LIBRARIES})
+	else()
+		# VRPN_USE_GHOST
+		include_directories(${GHOST_INCLUDE_DIRS})
+		list(APPEND SERVER_EXTRA_LIBS ${GHOST_LIBRARIES})
 	endif()
 endif()
+
 
 ###
 # WiiUse

@@ -447,22 +447,6 @@
 #pragma comment (lib, VRPN_PHASESPACE_LIB_PATH "libowlsock.lib")
 #endif
 
-// Load VRPN Phantom library if we are using phantom server as unified server
-// Load SensAble Technologies GHOST library to run the Phantom
-// NOTE: The paths to these libraries are set in the Settings/Link tab of
-// the various project files.  The paths to the include files are in the
-// Settings/C++/preprocessor tab.
-#ifdef VRPN_USE_PHANTOM_SERVER
-  #ifdef VRPN_USE_HDAPI
-  #else
-    #ifdef VRPN_USE_GHOST_31
-      #pragma comment (lib,VRPN_GHOST_31_PATH "GHOST31.lib")
-    #else
-      #pragma comment (lib,VRPN_GHOST_40_PATH "GHOST40.lib")
-    #endif
-  #endif
-#endif
-
 // Load National Instruments libraries if we are using them.
 // If this doesn't match where you have installed these libraries,
 // edit the following lines to point at the correct libraries.  Do
