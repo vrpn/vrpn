@@ -3,8 +3,13 @@
 // Written by Jason Bevins in 1998.  File is in the public domain.
 //
 
+#ifdef sgi
+#include <string.h>
+#include <stdlib.h>
+#else
 #include <cstring>
 #include <cstdlib>
+#endif
 #include "nmeaParser.h"
 #include <iostream>
 

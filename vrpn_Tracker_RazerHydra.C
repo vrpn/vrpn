@@ -27,8 +27,12 @@
 // - none
 
 // Standard includes
+#ifdef sgi
+#include <assert.h>
+#else
 #include <cassert>
 #include <sstream>
+#endif
 
 #ifdef VRPN_USE_HID
 

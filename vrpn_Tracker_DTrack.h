@@ -11,6 +11,10 @@
 #ifndef VRPN_TRACKER_DTRACK_H
 #define VRPN_TRACKER_DTRACK_H
 
+// There is a problem with linking on SGI related to the use of standard
+// libraries.
+#ifndef sgi
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <vector>
@@ -178,5 +182,5 @@ class VRPN_API vrpn_Tracker_DTrack : public vrpn_Tracker, public vrpn_Button, pu
 
 #endif
 
-
+#endif
 

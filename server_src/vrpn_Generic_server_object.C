@@ -137,12 +137,14 @@ void vrpn_Generic_Server_Object::closeDevices (void)
     }
     delete ghos[i];
   }
+#ifndef sgi
   for (i = 0; i < num_DTracks; i++) {
     if (verbose) {
       fprintf (stderr, "\nClosing DTrack %d ...", i);
     }
     delete DTracks[i];
   }
+#endif
   for (i = 0; i < num_analogouts; i++) {
     if (verbose) {
       fprintf (stderr, "\nClosing analogout %d ...", i);
@@ -2959,6 +2961,7 @@ int vrpn_Generic_Server_Object::setup_DTrack (char* &pch, char* line, FILE* conf
   int idbf[VRPN_GSO_MAX_TRACKERS];
   bool actTracing, act3DOFout;
 
+#ifndef sgi
   next();
 
   // Get the arguments:
@@ -3074,6 +3077,10 @@ int vrpn_Generic_Server_Object::setup_DTrack (char* &pch, char* line, FILE* conf
   num_DTracks++;
 
   return 0;
+#else
+  fprintf(stderr, "vrpn_Tracker_DTrack not supported on this arhitecture\n");
+  return -1;
+#endif
 }
 
 // This function will read one line of the vrpn_Poser_Analog configuration (matching
@@ -5171,10 +5178,12 @@ void  vrpn_Generic_Server_Object::mainloop (void)
   }
 #endif
 
+#ifndef sgi
   // Let all the DTracks do their thing
   for (i = 0; i < num_DTracks; i++) {
     DTracks[i]->mainloop();
   }
+#endif
 
   // Let all the Orbs do their thing
   for (i = 0; i < num_GlobalHapticsOrbs; i++) {

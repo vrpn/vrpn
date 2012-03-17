@@ -27,8 +27,12 @@
 // - none
 
 // Standard includes
+#ifdef sgi
+#include <assert.h>
+#else
 #include <cassert> // for assert
-#include <cstring> // for std::memcpy
+#endif
+#include <string.h> // for memcpy
 #include <stdio.h> // for fprintf, stderr
 
 #if !( defined(_WIN32) && defined(VRPN_USE_WINSOCK_SOCKETS) )
@@ -180,7 +184,7 @@ inline T vrpn_unbuffer(ByteT * & input) {
 	} value;
 
 	/// Copy bytes into union
-	std::memcpy(value.bytes, input, sizeof(T));
+	memcpy(value.bytes, input, sizeof(T));
 
 	/// Advance input pointer
 	input += sizeof(T);
@@ -219,7 +223,7 @@ namespace templated_buffer {
 		value.typed = hton(inVal);
 
 		/// Copy bytes into buffer
-		std::memcpy(*insertPt, value.bytes, sizeof(T));
+		memcpy(*insertPt, value.bytes, sizeof(T));
 
 		/// Advance insert pointer
 		*insertPt += sizeof(T);

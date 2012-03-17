@@ -23,7 +23,9 @@
   #include <sys/types.h>
   #include <fcntl.h>
   #include <unistd.h>
+#ifndef sgi
   #include <stdint.h>
+#endif
 #endif
 
 

@@ -18,7 +18,11 @@
 #include <signal.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#ifdef sgi
+#include <ctype.h>
+#else
 #include <cctype>
+#endif
 #endif
 
 // malloc.h is deprecated;  all the functionality *should*
@@ -5665,7 +5669,11 @@ void vrpn_Connection_IP::server_check_for_incoming_connections
 #ifdef VRPN_USE_WINSOCK_SOCKETS
     int peerlen = sizeof(peer);
 #else
+    #if defined(sgi)
+	int peerlen = sizeof(peer);
+    #else
 	socklen_t peerlen = sizeof(peer);
+    #endif
 #endif
     unsigned short peer_port = 0;
     if (getpeername(newSocket, static_cast<struct sockaddr *>(static_cast<void*>(&peer)), &peerlen) == 0) {

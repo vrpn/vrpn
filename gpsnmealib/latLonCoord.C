@@ -6,9 +6,15 @@
 
 #include "latLonCoord.h"
 
+#ifdef sgi
+#include <math.h>
+#include <stdio.h>
+#include <assert.h>
+#else
 #include <cmath>
 #include <cstdio>
 #include <cassert>
+#endif
 
 // Format strings for the degree-to-string conversion functions.
 // Note that east/west (EW) has a different set of format strings as north/

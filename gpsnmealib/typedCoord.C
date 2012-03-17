@@ -4,7 +4,11 @@
 //
 
 #include "typedCoord.h"
+#ifdef sgi
+#include <math.h>
+#else
 #include <cmath>
+#endif
 
 // Mmmmm, pi...
 static const double PI = 3.141592653589793;
