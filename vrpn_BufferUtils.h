@@ -16,6 +16,11 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
+// Tested in the context of vrpn_server and vrpn_print_devices running between
+// an SGI running Irix 6.5 MIPS 32-bit (big endian) and Mac OSX intel 64-bit
+// (little endian) machine with a NULL tracker and it worked using the SGI
+// repaired commits from 3/17/2012.
+
 #pragma once
 #ifndef INCLUDED_vrpn_BufferUtils_h_GUID_6a741cf1_9fa4_4064_8af0_fa0c6a16c810
 #define INCLUDED_vrpn_BufferUtils_h_GUID_6a741cf1_9fa4_4064_8af0_fa0c6a16c810
