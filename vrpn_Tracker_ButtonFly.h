@@ -118,7 +118,7 @@ class VRPN_API vrpn_Tracker_ButtonFly : public vrpn_Tracker {
     vrpn_Tracker_ButtonFly (const char * name, vrpn_Connection * trackercon,
 			    vrpn_Tracker_ButtonFlyParam * params,
                             float update_rate,
-                            vrpn_bool reportChanges = VRPN_FALSE);
+                            bool reportChanges = VRPN_FALSE);
 
     virtual ~vrpn_Tracker_ButtonFly (void);
 
@@ -133,7 +133,7 @@ class VRPN_API vrpn_Tracker_ButtonFly : public vrpn_Tracker {
 
     double	    d_update_interval;	//< How long to wait between sends
     struct timeval  d_prevtime;		//< Time of the previous report
-    vrpn_bool       d_reportChanges;	//< Report only when something changes?
+    bool       d_reportChanges;	//< Report only when something changes?
 
     vrpn_TBF_fullaxis	d_axes[vrpn_BUTTONFLY_MAXAXES];
     int			d_num_axes;
@@ -166,7 +166,7 @@ class VRPN_API vrpn_Tracker_ButtonFly : public vrpn_Tracker {
     void    update_matrix_based_on_values (double time_interval);
     void    convert_matrix_to_tracker (void);
 
-    vrpn_bool shouldReport (double elapsedInterval);
+    bool shouldReport (double elapsedInterval);
 
     int setup_channel(vrpn_TBF_fullaxis * full);
     int teardown_channel(vrpn_TBF_fullaxis * full);

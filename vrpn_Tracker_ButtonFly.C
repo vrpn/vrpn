@@ -19,7 +19,7 @@ static	double	duration(struct timeval t1, struct timeval t2)
 vrpn_Tracker_ButtonFly::vrpn_Tracker_ButtonFly
          (const char * name, vrpn_Connection * trackercon,
           vrpn_Tracker_ButtonFlyParam * params, float update_rate,
-	  vrpn_bool reportChanges) :
+	  bool reportChanges) :
 	vrpn_Tracker (name, trackercon),
 	d_vel_scale(NULL),
 	d_vel_scale_value(1.0),
@@ -457,7 +457,7 @@ void vrpn_Tracker_ButtonFly::convert_matrix_to_tracker (void)
   }
 }
 
-vrpn_bool vrpn_Tracker_ButtonFly::shouldReport
+bool vrpn_Tracker_ButtonFly::shouldReport
                   (double elapsedInterval) {
   int i;
   bool	found_any;
