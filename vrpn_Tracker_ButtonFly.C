@@ -68,7 +68,7 @@ vrpn_Tracker_ButtonFly::vrpn_Tracker_ButtonFly
 
     // Set up the callback handler
     if (d_vel_scale == NULL) {
-      fprintf(stderr,"vrpn_Tracker_AnalogFly: "
+      fprintf(stderr,"vrpn_Tracker_ButtonFly: "
            "Can't open Analog %s\n",params->vel_scale_name);
     } else {
       // Set up the callback handler for the channel
@@ -96,7 +96,7 @@ vrpn_Tracker_ButtonFly::vrpn_Tracker_ButtonFly
 
     // Set up the callback handler
     if (d_rot_scale == NULL) {
-      fprintf(stderr,"vrpn_Tracker_AnalogFly: "
+      fprintf(stderr,"vrpn_Tracker_ButtonFly: "
            "Can't open Analog %s\n",params->rot_scale_name);
     } else {
       // Set up the callback handler for the channel
