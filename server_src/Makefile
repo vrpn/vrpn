@@ -214,6 +214,14 @@ VRPN_LIBS = -lvrpnserver -lvrpnatmel -lvrpngpsnmea -lpthread
 #override LFLAGS += -L$(HDAPI_ROOT)/lib
 #SYSLIBS := $(SYSLIBS) -lHL -lHD -lHLU -lHDU
 
+# This is for the PHANToM/GHOST server on SGI (not tested on other plateform)
+# Put in comment if you don't want a PHANToM server.  GHOST expects SGI to
+# be defined during compile, whereas sgi seems to be the standard definition.
+override CFLAGS += -I/usr/local/SensAble/GHOST/v31/include -DSGI
+override CXXFLAGS += -I/usr/local/SensAble/GHOST/v31/include -DSGI
+override LFLAGS += -L/usr/local/SensAble/GHOST/v31/lib
+#SYSLIBS := $(SYSLIBS) -lghost31_32
+
 ifdef INTERSENSE
   ifeq ($(HW_OS),powerpc_macosx)
 #     CFLAGS = -g -I../ -I../../quat -I../../isense -DMACOSX

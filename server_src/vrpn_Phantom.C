@@ -400,7 +400,7 @@ vrpn_Phantom::vrpn_Phantom(char *name, vrpn_Connection *c, float hz, char * news
                  rootH(NULL),
                  hapticScene(NULL),
                  phantom(NULL),
-                 HHLRC(NULL),
+                 //HHLRC(NULL),
                  //trimesh(NULL),
 #endif
                  pointConstraint(NULL),
@@ -1498,9 +1498,17 @@ bool vrpn_Phantom::setObjectIsTouchable(vrpn_int32 objNum, vrpn_bool IsTouchable
   send_text_message("vrpn_Phantom::setObjectIsTouchable: Not supported under HDAPI",now, vrpn_TEXT_ERROR);
   return false;
 #else
+  #ifdef sgi
+    // For some reason, this function seems to be missing from GHOST 3.1 on the
+    // SGI architecture, even though it is described in the manual.
+    struct timeval now;
+    gettimeofday(&now, NULL);
+    send_text_message("vrpn_Phantom::setObjectIsTouchable: Not supported under SGI",now, vrpn_TEXT_ERROR);
+  #else
 	gstSeparator *obj=GetObject(objNum);
 	obj->setTouchableByPHANToM(IsTouchable) ;
 	return true;
+  #endif
 #endif
 }
 

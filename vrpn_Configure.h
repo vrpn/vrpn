@@ -76,6 +76,8 @@
 // things also fail).  At least we're rid of them now.  When you
 // uncomment it (to use GHOST), add the following to the include
 // directories for the vrpn_phantom project: $(SYSTEMDRIVE)\Program Files\SensAble\GHOST\v4.0\include,$(SYSTEMDRIVE)\Program Files\SensAble\GHOST\v4.0\external\stl,
+// On SGI, you need to uncomment the GHOST lines in the Makefile in
+// the server_src directory.
 #define VRPN_USE_HDAPI
 
 //------------------------
@@ -87,7 +89,7 @@
 // a Windows PC with Visual Studio, you will need to alter
 // server_src/vrpn_phantom.dsp to reference the Ghost 3.1 include
 // paths.)
-// #define VRPN_USE_GHOST_31
+//#define VRPN_USE_GHOST_31
 
 //-----------------------
 // Instructs VRPN to use the high-performance timer code on

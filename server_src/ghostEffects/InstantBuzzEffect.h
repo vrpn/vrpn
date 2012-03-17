@@ -14,29 +14,10 @@
 #define FALSE 0
 #endif
 
-#ifdef  linux
-typedef struct{long QuadPart,HighPart,LowPart;} LARGE_INTEGER;
-#endif
-
 // RMT I hate that this has to be here, but things blow up in the compilation
 // if it is not.
 #if defined(_WIN32) || defined(__CYGWIN__)
 #include <windows.h>
-#elif !defined(linux)
-// Jean SIMARD <jean.simard@limsi.fr>
-// Without <windows.h>, we need to define the type 'LARGE_INTEGER'.
-typedef union {
-	struct {
-		unsigned long int LowPart;
-		long int HighPart;
-	};
-	long long int QuadPart; // The 'long long int' is a 64 bit integer
-} LARGE_INTEGER, * PLARGE_INTEGER;
-// Jean SIMARD <jean.simard@limsi.fr>
-// Without <windows.h>, we don't have these two functions.
-// Because I don't really know their role, I made them inactive.
-#define QueryPerformanceFrequency(x) (true)
-#define QueryPerformanceCounter(x) (true)
 #endif
 
 #include <math.h>
@@ -78,8 +59,8 @@ public:
 	    fprintf(stderr, "unable to get performance counter frequency\n");
 	    currentPerformanceFrequency.QuadPart = 0;
 	}
-#endif
 	debut.QuadPart = 0;
+#endif
 #ifdef	VRPN_USE_HDAPI
 	active = FALSE;	  // XXX Should this be true?
 	time = 0;
@@ -174,17 +155,17 @@ public:
     // generate unexpectedly large forces.
     /// Start the application of forces based on the field.
     virtual vrpn_HapticBoolean start() { 
-	LARGE_INTEGER counter;
 	/*if (!active) { 
 	    printf("starting Buzz Effect\n"); 
 	}*/
 #ifdef _WIN32
+	LARGE_INTEGER counter;
         if (QueryPerformanceCounter(&counter) != TRUE){
 	    fprintf(stderr, "unable to get perfo counter\n");
 	    return FALSE;
 	}
-#endif
 	debut = counter;
+#endif
 	active = TRUE;
 	time = 0.0;
 	return TRUE;
@@ -224,7 +205,9 @@ public:
 protected:
     double		frequency, amplitude, duration;
     double		x,y,z;
+#ifdef _WIN32
     LARGE_INTEGER	currentPerformanceFrequency, debut;
+#endif
 #ifdef	VRPN_USE_HDAPI
     bool		active;
     double		time;
