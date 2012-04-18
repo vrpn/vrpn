@@ -71,57 +71,10 @@ if(VRPN_USE_PHANTOM_SERVER AND OPENGL_FOUND)
 	set(VRPNPHANTOMLIB vrpn_phantom)
 endif()
 
-#-----------------------------------------------------------------------------
-# DirectShow base-class library (if configured)
+#------------------------
+# DirectShow video server
 if(VRPN_BUILD_DIRECTSHOW_VIDEO_SERVER AND DIRECTSHOW_FOUND)
-	# Add this if you can't compile.  Otherwise, don't
-	# add_definitions(-DCOINIT_DISABLE_OLE1DDE=0x4)
-	add_library(DirectShow_baseclasses
-		${DirectShow_BASECLASS_DIR}/amextra.cpp
-		${DirectShow_BASECLASS_DIR}/amfilter.cpp
-		${DirectShow_BASECLASS_DIR}/amvideo.cpp
-		${DirectShow_BASECLASS_DIR}/combase.cpp
-		${DirectShow_BASECLASS_DIR}/cprop.cpp
-		${DirectShow_BASECLASS_DIR}/ctlutil.cpp
-		${DirectShow_BASECLASS_DIR}/ddmm.cpp
-		${DirectShow_BASECLASS_DIR}/dllentry.cpp
-		${DirectShow_BASECLASS_DIR}/dllsetup.cpp
-		${DirectShow_BASECLASS_DIR}/mtype.cpp
-		${DirectShow_BASECLASS_DIR}/outputq.cpp
-		${DirectShow_BASECLASS_DIR}/pstream.cpp
-		${DirectShow_BASECLASS_DIR}/pullpin.cpp
-		${DirectShow_BASECLASS_DIR}/refclock.cpp
-		${DirectShow_BASECLASS_DIR}/renbase.cpp
-		${DirectShow_BASECLASS_DIR}/schedule.cpp
-		${DirectShow_BASECLASS_DIR}/seekpt.cpp
-		${DirectShow_BASECLASS_DIR}/source.cpp
-		${DirectShow_BASECLASS_DIR}/strmctl.cpp
-		${DirectShow_BASECLASS_DIR}/sysclock.cpp
-		${DirectShow_BASECLASS_DIR}/transfrm.cpp
-		${DirectShow_BASECLASS_DIR}/transip.cpp
-		${DirectShow_BASECLASS_DIR}/videoctl.cpp
-		${DirectShow_BASECLASS_DIR}/vtrans.cpp
-		${DirectShow_BASECLASS_DIR}/winctrl.cpp
-		${DirectShow_BASECLASS_DIR}/winutil.cpp
-		${DirectShow_BASECLASS_DIR}/wxdebug.cpp
-		${DirectShow_BASECLASS_DIR}/wxlist.cpp
-		${DirectShow_BASECLASS_DIR}/wxutil.cpp)
-	set(DirectShow_LIBS DirectShow_baseclasses)
-
-	include_directories(${DirectShow_INCLUDE_DIRS})
-	add_executable(directshow_video_server
-		directshow_video_server/directx_video_imager_server.cpp
-		directshow_video_server/directx_camera_server.cpp
-		directshow_video_server/directx_camera_server.h)
-	target_link_libraries(directshow_video_server
-		${VRPN_SERVER_LIBRARY}
-		${DirectShow_LIBS}
-		${DIRECTSHOW_LIBRARIES})
-	set_target_properties(directshow_video_server
-		PROPERTIES
-		FOLDER
-		Servers)
-	install(TARGETS directshow_video_server RUNTIME DESTINATION bin COMPONENT servers)
+	add_subdirectory(directshow_video_server)
 endif()
 
 add_subdirectory(timecode_generator_server)
