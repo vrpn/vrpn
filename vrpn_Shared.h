@@ -246,7 +246,7 @@ protected:
   // the semaphore struct in the arena
   usema_t *ps;
   ulock_t l;
-  Boolean fUsingLock;
+  bool fUsingLock;
 #elif defined(_WIN32)
   HANDLE hSemaphore;
 #else

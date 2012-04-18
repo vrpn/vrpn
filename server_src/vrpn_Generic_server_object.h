@@ -216,7 +216,9 @@ class vrpn_Generic_Server_Object
     vrpn_Phantom	*phantoms[VRPN_GSO_MAX_PHANTOMS];
 #endif
     int		num_phantoms;
+#ifndef sgi
     vrpn_Tracker_DTrack *DTracks[VRPN_GSO_MAX_DTRACKS];
+#endif
     int num_DTracks;
     vrpn_Analog_Output	* analogouts [VRPN_GSO_MAX_ANALOG];
     int		num_analogouts;

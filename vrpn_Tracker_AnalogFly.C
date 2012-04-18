@@ -17,8 +17,8 @@ static	double	duration(struct timeval t1, struct timeval t2)
 vrpn_Tracker_AnalogFly::vrpn_Tracker_AnalogFly
          (const char * name, vrpn_Connection * trackercon,
           vrpn_Tracker_AnalogFlyParam * params, float update_rate,
-          vrpn_bool absolute, vrpn_bool reportChanges,
-          vrpn_bool worldFrame) :
+          bool absolute, bool reportChanges,
+          bool worldFrame) :
 	vrpn_Tracker (name, trackercon),
 	d_reset_button(NULL),
 	d_which_button (params->reset_which),
@@ -517,7 +517,7 @@ void vrpn_Tracker_AnalogFly::convert_matrix_to_tracker (void)
   }
 }
 
-vrpn_bool vrpn_Tracker_AnalogFly::shouldReport
+bool vrpn_Tracker_AnalogFly::shouldReport
                   (double elapsedInterval) const {
   
   // If we haven't had enough time pass yet, don't report.

@@ -165,11 +165,13 @@ else
     MAC_GCC := g++
     ifeq ($(MAC_OS_MIN_VERSION), 10.6)
       MAC_OS_SDK := MacOSX10.6.sdk
-    else ifeq ($(MAC_OS_MIN_VERSION), 10.5)
-      MAC_OS_SDK := MacOSX10.5.sdk
     else
-      MAC_OS_SDK := MacOSX10.4u.sdk
-      MAC_GCC := g++-4.0
+      ifeq ($(MAC_OS_MIN_VERSION), 10.5)
+        MAC_OS_SDK := MacOSX10.5.sdk
+      else
+        MAC_OS_SDK := MacOSX10.4u.sdk
+        MAC_GCC := g++-4.0
+      endif
     endif
   endif
 
@@ -207,7 +209,7 @@ else
       SGI_ARCH := mips3
    endif
    OBJECT_DIR_SUFFIX := .$(SGI_ABI).$(SGI_ARCH)
-   CC := CC -$(SGI_ABI) -$(SGI_ARCH)
+   CC := CC -$(SGI_ABI) -$(SGI_ARCH) -LANG:std
    RANLIB := :
   endif
 
@@ -357,7 +359,7 @@ LOAD_FLAGS := -L./$(HW_OS)$(OBJECT_DIR_SUFFIX) -L/usr/local/lib \
 		-L/usr/local/contrib/unmod/lib -L/usr/local/contrib/mod/lib $(DEBUG_FLAGS) $(LDFLAGS)
 
 ifeq ($(HW_OS),sgi_irix)
-	LOAD_FLAGS := $(LOAD_FLAGS) -old_ld
+	LOAD_FLAGS := $(LOAD_FLAGS) -old_ld -LANG:std
 endif
 
 ifeq ($(HW_OS),pc_linux)

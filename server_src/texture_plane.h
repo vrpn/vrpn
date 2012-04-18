@@ -98,7 +98,7 @@ public:
 			// coordinate system relative to the world coordinates has changed
 
 	// Get type of this class.  No instance needed.
-	static gstType	getClassTypeId() const { return PlaneClassTypeId; }
+	static gstType	getClassTypeId() { return PlaneClassTypeId; }
 
 	virtual gstType getTypeId() const { return PlaneClassTypeId;}
 
@@ -322,7 +322,7 @@ class DynamicPlane: public gstDynamic {
 	DynamicPlane();
 	~DynamicPlane() {};
 #ifndef	VRPN_USE_HDAPI
-	static gstType              getClassTypeId() const {return DynamicPlaneClassTypeId;};
+	static gstType              getClassTypeId() {return DynamicPlaneClassTypeId;};
 	virtual gstType             getTypeId() const {return DynamicPlaneClassTypeId;};
 	virtual vrpn_HapticBoolean  isOfType(gstType type) const {    
           if (type == DynamicPlaneClassTypeId) {
@@ -333,7 +333,7 @@ class DynamicPlane: public gstDynamic {
         }
   
 	// Allows subclasses to check if they are subclass of type.
-	static vrpn_HapticBoolean staticIsOfType(gstType type) const {
+	static vrpn_HapticBoolean staticIsOfType(gstType type) {
 		if (type == DynamicPlaneClassTypeId) return TRUE;
 		else return (gstDynamic::staticIsOfType(type));}
 	gstEvent getEvent() const {

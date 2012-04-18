@@ -3,6 +3,8 @@
 # Cache Variables: (probably not for direct use in your scripts)
 #  HDAPI_INCLUDE_DIR
 #  HDAPI_LIBRARY
+#  HDAPI_LIBRARY_RELEASE
+#  HDAPI_LIBRARY_DEBUG
 #  HDAPI_HDU_INCLUDE_DIR
 #  HDAPI_HDU_LIBRARY
 #  HDAPI_HDU_LIBRARY_RELEASE
@@ -72,8 +74,7 @@ include(CleanLibraryList)
 include(ProgramFilesGlob)
 
 set(_nest_targets)
-set(_incsearchdirs)
-set(_libsearchdirs)
+set(_incsearchdirs "C:/OpenHaptics/Academic/3.1/include" "C:/OpenHaptics/Academic/3.1/utilities/include")
 set(OPENHAPTICS_ENVIRONMENT)
 set(OPENHAPTICS_RUNTIME_LIBRARY_DIRS)
 
@@ -92,12 +93,14 @@ if(WIN32)
 			PREFIXES
 			"${OPENHAPTICS_ROOT_DIR}"
 			${_dirs}
+			"C:/OpenHaptics/Academic/3.1"
 			SUFFIXES
 			"/lib/x64")
 		list_combinations(_libsearch2
 			PREFIXES
 			"${OPENHAPTICS_ROOT_DIR}"
 			${_dirs}
+			"C:/OpenHaptics/Academic/3.1"
 			SUFFIXES
 			"/utilities/lib/x64")
 	else()
@@ -106,12 +109,14 @@ if(WIN32)
 			PREFIXES
 			"${OPENHAPTICS_ROOT_DIR}"
 			${_dirs}
+			"C:/OpenHaptics/Academic/3.1"
 			SUFFIXES
 			"/lib"
-			"/lib/win32")
+			"/lib/Win32")
 		list_combinations(_libsearch2
 			PREFIXES
 			"${OPENHAPTICS_ROOT_DIR}"
+			"C:/OpenHaptics/Academic/3.1"
 			${_dirs}
 			SUFFIXES
 			"/utilities/lib/Win32"
@@ -160,11 +165,25 @@ find_path(HDAPI_INCLUDE_DIR
 	HINTS
 	${_incsearchdirs})
 
-find_library(HDAPI_LIBRARY
+find_library(HDAPI_LIBRARY_RELEASE
 	NAMES
 	HD
+	PATH_SUFFIXES
+	ReleaseAcademicEdition
+	Release
 	HINTS
 	${_libsearchdirs})
+
+find_library(HDAPI_LIBRARY_DEBUG
+	NAMES
+	HD
+	PATH_SUFFIXES
+	DebugAcademicEdition
+	Debug
+	HINTS
+	${_libsearchdirs})
+
+select_library_configurations(HDAPI)
 
 ###
 # HDAPI: HDU
@@ -244,12 +263,25 @@ find_path(HLAPI_INCLUDE_DIR
 	HINTS
 	${_incsearchdirs})
 
-find_library(HLAPI_LIBRARY
+find_library(HLAPI_LIBRARY_RELEASE
 	NAMES
 	HL
+	PATH_SUFFIXES
+	ReleaseAcademicEdition
+	Release
 	HINTS
 	${_libsearchdirs})
 
+find_library(HLAPI_LIBRARY_DEBUG
+	NAMES
+	HL
+	PATH_SUFFIXES
+	DebugAcademicEdition
+	Debug
+	HINTS
+	${_libsearchdirs})
+
+select_library_configurations(HLAPI)
 
 ###
 # HLAPI: HLU
@@ -396,10 +428,12 @@ if(OPENHAPTICS_FOUND)
 	set(OPENHAPTICS_LIBRARY_DIRS)
 	foreach(_lib
 		${_deps_check}
-		HDAPI_LIBRARY
+		HDAPI_LIBRARY_RELEASE
+		HDAPI_LIBRARY_DEBUG
 		HDAPI_HDU_LIBRARY_RELEASE
 		HDAPI_HDU_LIBRARY_DEBUG
-		HLAPI_LIBRARY
+		HLAPI_LIBRARY_RELEASE
+		HLAPI_LIBRARY_DEBUG
 		HLAPI_HLU_LIBRARY_RELEASE
 		HLAPI_HLU_LIBRARY_DEBUG)
 		get_filename_component(_libdir ${${_lib}} PATH)

@@ -85,6 +85,8 @@
 #include "vrpn_Shared.h"
 #include "quat.h" 
 
+// There is a problem with linking on SGIs related to standard libraries.
+#ifndef sgi
 
 // --------------------------------------------------------------------------
 // Globals:
@@ -1389,4 +1391,5 @@ static int udp_receive(vrpn_Tracker_DTrack::socket_type sock, void *buffer, int 
 	}
 }
 
+#endif
 

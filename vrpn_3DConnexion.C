@@ -26,7 +26,7 @@ typedef struct input_devinfo {
 } XXX_should_have_been_in_system_includes;
 
 // USB vendor and product IDs for the models we support
-static const vrpn_uint16 vrpn_3DCONNEXION_VENDOR = 1133;
+static const vrpn_uint16 vrpn_3DCONNEXION_VENDOR = 0x046d; //1133;
 static const vrpn_uint16 vrpn_3DCONNEXION_TRAVELER = 50723;
 static const vrpn_uint16 vrpn_3DCONNEXION_NAVIGATOR = 50726;
 static const vrpn_uint16 vrpn_3DCONNEXION_SPACEEXPLORER = 0xc627;   // 50727
@@ -212,11 +212,12 @@ int vrpn_3DConnexion::set_led(int led_state)
 #if defined(VRPN_USE_HID)
 void vrpn_3DConnexion::decodePacket(size_t bytes, vrpn_uint8 *buffer)
 {
-#if defined(__APPLE__)
-  // force 2 byte button events on APPLE into 7 bytes like we get for axis
-  // XXX Why is this done?
-  if (bytes == 2) bytes = 7;
-#endif
+  // Force 'small' buffers (ie button under linux - 3 bytes - and apple - 2 bytes - into 7 bytes
+  // so we get through the report loop once.  XXX Problem: this is skipping 7 bytes per report
+  // regardless of how many bytes were in the report.  This is going to get us into trouble for
+  // multi-report packets.  Instead, we should go until we've parsed all characters and add the
+  // number characters parsed each time rather than a constant 7 reports.
+  if(bytes<7) bytes=7; 
   // Decode all full reports.
   // Full reports for all of the pro devices are 7 bytes long (the first
   // byte is the report type, because this device has multiple ones the

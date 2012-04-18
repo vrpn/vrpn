@@ -107,8 +107,8 @@ class VRPN_API vrpn_Tracker_AnalogFly : public vrpn_Tracker {
   public:
     vrpn_Tracker_AnalogFly (const char * name, vrpn_Connection * trackercon,
 			    vrpn_Tracker_AnalogFlyParam * params,
-                            float update_rate, vrpn_bool absolute = vrpn_FALSE,
-                            vrpn_bool reportChanges = VRPN_FALSE, vrpn_bool worldFrame = VRPN_FALSE);
+                            float update_rate, bool absolute = vrpn_FALSE,
+                            bool reportChanges = VRPN_FALSE, bool worldFrame = VRPN_FALSE);
 
     virtual ~vrpn_Tracker_AnalogFly (void);
 
@@ -124,9 +124,9 @@ class VRPN_API vrpn_Tracker_AnalogFly : public vrpn_Tracker {
 
     double	    d_update_interval;	//< How long to wait between sends
     struct timeval  d_prevtime;		//< Time of the previous report
-    vrpn_bool	    d_absolute;		//< Report absolute (vs. differential)?
-    vrpn_bool       d_reportChanges;
-    vrpn_bool       d_worldFrame;
+    bool	    d_absolute;		//< Report absolute (vs. differential)?
+    bool       d_reportChanges;
+    bool       d_worldFrame;
 
     vrpn_TAF_fullaxis	d_x, d_y, d_z, d_sx, d_sy, d_sz;
     vrpn_Button_Remote	* d_reset_button;
@@ -141,7 +141,7 @@ class VRPN_API vrpn_Tracker_AnalogFly : public vrpn_Tracker {
     void    update_matrix_based_on_values (double time_interval);
     void    convert_matrix_to_tracker (void);
 
-    vrpn_bool shouldReport (double elapsedInterval) const;
+    bool shouldReport (double elapsedInterval) const;
 
     int setup_channel (vrpn_TAF_fullaxis * full);
     int teardown_channel (vrpn_TAF_fullaxis * full);

@@ -124,11 +124,13 @@ ifneq (,$(findstring macosx,$(HW_OS)))
   MAC_GCC := gcc
   ifeq ($(MAC_OS_MIN_VERSION), 10.6)
     MAC_OS_SDK := MacOSX10.6.sdk
-  else ifeq ($(MAC_OS_MIN_VERSION), 10.5)
-    MAC_OS_SDK := MacOSX10.5.sdk
   else
-    MAC_OS_SDK := MacOSX10.4u.sdk
-    MAC_GCC := gcc-4.0
+    ifeq ($(MAC_OS_MIN_VERSION), 10.5)
+      MAC_OS_SDK := MacOSX10.5.sdk
+    else
+      MAC_OS_SDK := MacOSX10.4u.sdk
+      MAC_GCC := gcc-4.0
+    endif
   endif
 endif
 

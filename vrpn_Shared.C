@@ -1158,7 +1158,7 @@ bool vrpn_Semaphore::init() {
     fUsingLock=true;
     ps=NULL;
     // use lock instead of semaphore
-    if ((l = usnewlock(Semaphore::ppaArena)) == NULL) {
+    if ((l = usnewlock(vrpn_Semaphore::ppaArena)) == NULL) {
       fprintf(stderr,"vrpn_Semaphore::vrpn_Semaphore: error allocating lock from arena.\n");
       return false;
     }

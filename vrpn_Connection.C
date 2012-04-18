@@ -18,7 +18,11 @@
 #include <signal.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#ifdef sgi
+#include <ctype.h>
+#else
 #include <cctype>
+#endif
 #endif
 
 // malloc.h is deprecated;  all the functionality *should*
@@ -185,7 +189,7 @@ int gethostname (char *, int);
 // proposed strategy handles both partial major version compatibility as well
 // as accidental partial minor version incompatibility.
 //
-const char * vrpn_MAGIC = (const char *) "vrpn: ver. 07.29";
+const char * vrpn_MAGIC = (const char *) "vrpn: ver. 07.30";
 const char * vrpn_FILE_MAGIC = (const char *) "vrpn: ver. 04.00";
 const int vrpn_MAGICLEN = 16;  // Must be a multiple of vrpn_ALIGN bytes!
 
@@ -5665,7 +5669,11 @@ void vrpn_Connection_IP::server_check_for_incoming_connections
 #ifdef VRPN_USE_WINSOCK_SOCKETS
     int peerlen = sizeof(peer);
 #else
+    #if defined(sgi)
+	int peerlen = sizeof(peer);
+    #else
 	socklen_t peerlen = sizeof(peer);
+    #endif
 #endif
     unsigned short peer_port = 0;
     if (getpeername(newSocket, static_cast<struct sockaddr *>(static_cast<void*>(&peer)), &peerlen) == 0) {

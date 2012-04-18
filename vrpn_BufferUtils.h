@@ -16,6 +16,11 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
+// Tested in the context of vrpn_server and vrpn_print_devices running between
+// an SGI running Irix 6.5 MIPS 32-bit (big endian) and Mac OSX intel 64-bit
+// (little endian) machine with a NULL tracker and it worked using the SGI
+// repaired commits from 3/17/2012.
+
 #pragma once
 #ifndef INCLUDED_vrpn_BufferUtils_h_GUID_6a741cf1_9fa4_4064_8af0_fa0c6a16c810
 #define INCLUDED_vrpn_BufferUtils_h_GUID_6a741cf1_9fa4_4064_8af0_fa0c6a16c810
@@ -27,8 +32,12 @@
 // - none
 
 // Standard includes
+#ifdef sgi
+#include <assert.h>
+#else
 #include <cassert> // for assert
-#include <cstring> // for std::memcpy
+#endif
+#include <string.h> // for memcpy
 #include <stdio.h> // for fprintf, stderr
 
 #if !( defined(_WIN32) && defined(VRPN_USE_WINSOCK_SOCKETS) )
@@ -180,7 +189,7 @@ inline T vrpn_unbuffer(ByteT * & input) {
 	} value;
 
 	/// Copy bytes into union
-	std::memcpy(value.bytes, input, sizeof(T));
+	memcpy(value.bytes, input, sizeof(T));
 
 	/// Advance input pointer
 	input += sizeof(T);
@@ -219,7 +228,7 @@ namespace templated_buffer {
 		value.typed = hton(inVal);
 
 		/// Copy bytes into buffer
-		std::memcpy(*insertPt, value.bytes, sizeof(T));
+		memcpy(*insertPt, value.bytes, sizeof(T));
 
 		/// Advance insert pointer
 		*insertPt += sizeof(T);
