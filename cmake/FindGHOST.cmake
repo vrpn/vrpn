@@ -61,8 +61,10 @@ if(MSVC)
 			${_dirs}
 			HINTS
 			"${GHOST_ROOT_DIR}"
+			"${GHOST_INCLUDE_DIR}"
 			PATH_SUFFIXES
-			external/stl)
+			external/stl
+			stl)
 	endif()
 	set(_deps_check GHOST_STL_INCLUDE_DIR)
 else()
@@ -81,7 +83,6 @@ find_package_handle_standard_args(GHOST
 if(GHOST_FOUND)
 	set(GHOST_LIBRARIES "${GHOST_LIBRARY}")
 	set(GHOST_INCLUDE_DIRS
-		"${GHOST_STL_INCLUDE_DIR}"
 		"${GHOST_INCLUDE_DIR}")
 
 	mark_as_advanced(GHOST_ROOT_DIR)
