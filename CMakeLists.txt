@@ -376,8 +376,6 @@ endif()
 ###
 # DirectShow
 ###
-# Note: FindDirectShow.cmake still needs some TLC to bring it in line
-# with CMake standards and make it work in a variety of environments
 if(WIN32)
 	find_package(DirectShow)
 	option_requires(VRPN_USE_DIRECTSHOW
@@ -388,11 +386,6 @@ if(WIN32)
 			"Enable to build DirectShow Video Server (Windows)"
 			${DEFAULT_OFF_IF_SUBPROJECT}
 			DIRECTSHOW_FOUND)
-
-	if(VRPN_USE_DIRECTSHOW)
-		include_directories(${DirectShow_INCLUDE_DIRS})
-		# XXX What else should be done here?
-	endif()
 endif()
 
 ###
