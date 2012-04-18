@@ -204,8 +204,10 @@ set(SRV_TEST_SOURCES
 	test_vrpn.C
 	testimager_server.cpp
 	#text.C
-	vrpn_HID_device_watcher.cpp
 )
+if(VRPN_USE_HID)
+	list(APPEND SRV_TEST_SOURCES vrpn_HID_device_watcher.cpp)
+endif()
 
 set(SRV_SERVER_SOURCES
 	wiimote_head_tracker.C
