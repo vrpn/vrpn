@@ -40,6 +40,7 @@ find_path(GHOST_INCLUDE_DIR
 
 find_library(GHOST_LIBRARY
 	GHOST40
+	GHOST31
 	PATHS
 	${_dirs}
 	HINTS
@@ -47,20 +48,25 @@ find_library(GHOST_LIBRARY
 	PATH_SUFFIXES
 	lib)
 
-if(MSVC_VERSION GREATER 1300)
-	# .NET and newer: fake the STL headers
-	get_filename_component(_moddir "${CMAKE_CURRENT_LIST_FILE}" PATH)
-	set(GHOST_STL_INCLUDE_DIR "${_moddir}/ghost-fake-stl")
+if(MSVC)
+	if(MSVC_VERSION GREATER 1300)
+		# .NET and newer: fake the STL headers
+		get_filename_component(_moddir "${CMAKE_CURRENT_LIST_FILE}" PATH)
+		set(GHOST_STL_INCLUDE_DIR "${_moddir}/ghost-fake-stl")
+	else()
+		# 6.0 and earlier - use GHOST-provided STL
+		find_path(GHOST_STL_INCLUDE_DIR
+			vector.h
+			PATHS
+			${_dirs}
+			HINTS
+			"${GHOST_ROOT_DIR}"
+			PATH_SUFFIXES
+			external/stl)
+	endif()
+	set(_deps_check GHOST_STL_INCLUDE_DIR)
 else()
-	# 6.0 and earlier - use GHOST-provided STL
-	find_path(GHOST_STL_INCLUDE_DIR
-		vector.h
-		PATHS
-		${_dirs}
-		HINTS
-		"${GHOST_ROOT_DIR}"
-		PATH_SUFFIXES
-		external/stl)
+	set(_deps_check)
 endif()
 
 # handle the QUIETLY and REQUIRED arguments and set xxx_FOUND to TRUE if
@@ -69,7 +75,7 @@ include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(GHOST
 	DEFAULT_MSG
 	GHOST_LIBRARY
-	GHOST_STL_INCLUDE_DIR
+	${_deps_check}
 	GHOST_INCLUDE_DIR)
 
 if(GHOST_FOUND)

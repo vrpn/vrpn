@@ -79,7 +79,7 @@
 // things also fail).  At least we're rid of them now.  When you
 // uncomment it (to use GHOST), add the following to the include
 // directories for the vrpn_phantom project: $(SYSTEMDRIVE)\Program Files\SensAble\GHOST\v4.0\include,$(SYSTEMDRIVE)\Program Files\SensAble\GHOST\v4.0\external\stl,
-#define VRPN_USE_HDAPI
+#cmakedefine VRPN_USE_HDAPI
 
 //------------------------
 // Instructs vrpn to use Ghost 3.1 instead of Ghost 3.4.
@@ -90,7 +90,7 @@
 // a Windows PC with Visual Studio, you will need to alter
 // server_src/vrpn_phantom.dsp to reference the Ghost 3.1 include
 // paths.)
-// #define VRPN_USE_GHOST_31
+#cmakedefine VRPN_USE_GHOST_31
 
 //-----------------------
 // Instructs VRPN to use the high-performance timer code on
@@ -445,22 +445,6 @@
 // Load libowlsock.lib if we're using Phasespace.
 #ifdef	VRPN_INCLUDE_PHASESPACE
 #pragma comment (lib, VRPN_PHASESPACE_LIB_PATH "libowlsock.lib")
-#endif
-
-// Load VRPN Phantom library if we are using phantom server as unified server
-// Load SensAble Technologies GHOST library to run the Phantom
-// NOTE: The paths to these libraries are set in the Settings/Link tab of
-// the various project files.  The paths to the include files are in the
-// Settings/C++/preprocessor tab.
-#ifdef VRPN_USE_PHANTOM_SERVER
-  #ifdef VRPN_USE_HDAPI
-  #else
-    #ifdef VRPN_USE_GHOST_31
-      #pragma comment (lib,VRPN_GHOST_31_PATH "GHOST31.lib")
-    #else
-      #pragma comment (lib,VRPN_GHOST_40_PATH "GHOST40.lib")
-    #endif
-  #endif
 #endif
 
 // Load National Instruments libraries if we are using them.
