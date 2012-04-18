@@ -87,10 +87,11 @@ set(CPACK_SOURCE_PACKAGE_FILE_NAME
 # Compiler flags we got from Hans for Windows and from Sheldon Andrews
 # for other architectures.
 if(MSVC)	# MS-Windows Visual Studio, both 32 and 64 bits
-	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}   /fp:fast")
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /fp:fast")
+	if(MSVC_VERSION GREATER 1310) # Newer than VS.NET 2003 (7.1)
+		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}   /fp:fast")
+		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /fp:fast")
+	endif()
 	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /FIXED:NO")
-
 else()
 	# GCC compilers on 64-bit machines require -fPIC for shared libraries or libs
 	# linked into shared libraries.
