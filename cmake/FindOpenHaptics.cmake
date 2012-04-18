@@ -11,6 +11,8 @@
 #  HDAPI_HDU_LIBRARY_DEBUG
 #  HLAPI_INCLUDE_DIR
 #  HLAPI_LIBRARY
+#  HLAPI_LIBRARY_RELEASE
+#  HLAPI_LIBRARY_DEBUG
 #  HLAPI_HLU_INCLUDE_DIR
 #  HLAPI_HLU_LIBRARY
 #  HLAPI_HLU_LIBRARY_RELEASE
@@ -42,7 +44,7 @@
 #  CMake 2.6.3 (uses "unset")
 #
 # Original Author:
-# 2009-2010 Ryan Pavlik <rpavlik@iastate.edu> <abiryan@ryand.net>
+# 2009-2012 Ryan Pavlik <rpavlik@iastate.edu> <abiryan@ryand.net>
 # http://academic.cleardefinition.com
 # Iowa State University HCI Graduate Program/VRAC
 #
@@ -74,12 +76,25 @@ include(CleanLibraryList)
 include(ProgramFilesGlob)
 
 set(_nest_targets)
-set(_incsearchdirs "C:/OpenHaptics/Academic/3.1/include" "C:/OpenHaptics/Academic/3.1/utilities/include")
+set(_incsearchdirs)
+set(_libsearchdirs)
 set(OPENHAPTICS_ENVIRONMENT)
 set(OPENHAPTICS_RUNTIME_LIBRARY_DIRS)
 
+set(_dirs)
+if(NOT "$ENV{OH_SDK_BASE}" STREQUAL "")
+	list(APPEND _dirs "$ENV{OH_SDK_BASE}")
+elseif(NOT "$ENV{3DTOUCH_BASE}" STREQUAL "")
+	list(APPEND _dirs "$ENV{3DTOUCH_BASE}")
+endif()
 if(WIN32)
-	program_files_fallback_glob(_dirs "/Sensable/3DTouch*/")
+	program_files_fallback_glob(_pfdirs "/Sensable/3DTouch*/")
+	foreach(_OH_DEFAULT_LOCATION "C:/OpenHaptics/3.1" "C:/OpenHaptics/Academic/3.1")
+		if(EXISTS "${_OH_DEFAULT_LOCATION}")
+			list(APPEND _dirs "${_OH_DEFAULT_LOCATION}")
+		endif()
+	endforeach()
+	set(_dirs "${_dirs};${_pfdirs}")
 	if(MSVC60)
 		set(_vc "vc6")
 	elseif(MSVC70 OR MSVC71)
@@ -93,14 +108,12 @@ if(WIN32)
 			PREFIXES
 			"${OPENHAPTICS_ROOT_DIR}"
 			${_dirs}
-			"C:/OpenHaptics/Academic/3.1"
 			SUFFIXES
 			"/lib/x64")
 		list_combinations(_libsearch2
 			PREFIXES
 			"${OPENHAPTICS_ROOT_DIR}"
 			${_dirs}
-			"C:/OpenHaptics/Academic/3.1"
 			SUFFIXES
 			"/utilities/lib/x64")
 	else()
@@ -109,14 +122,12 @@ if(WIN32)
 			PREFIXES
 			"${OPENHAPTICS_ROOT_DIR}"
 			${_dirs}
-			"C:/OpenHaptics/Academic/3.1"
 			SUFFIXES
 			"/lib"
-			"/lib/Win32")
+			"/lib/win32")
 		list_combinations(_libsearch2
 			PREFIXES
 			"${OPENHAPTICS_ROOT_DIR}"
-			"C:/OpenHaptics/Academic/3.1"
 			${_dirs}
 			SUFFIXES
 			"/utilities/lib/Win32"
@@ -457,12 +468,14 @@ if(OPENHAPTICS_FOUND)
 endif()
 
 mark_as_advanced(HDAPI_INCLUDE_DIR
-	HDAPI_LIBRARY
+	HDAPI_LIBRARY_RELEASE
+	HDAPI_LIBRARY_DEBUG
 	HDAPI_HDU_INCLUDE_DIR
 	HDAPI_HDU_LIBRARY_RELEASE
 	HDAPI_HDU_LIBRARY_DEBUG
 	HLAPI_INCLUDE_DIR
-	HLAPI_LIBRARY
+	HLAPI_LIBRARY_RELEASE
+	HLAPI_LIBRARY_DEBUG
 	HLAPI_HLU_INCLUDE_DIR
 	HLAPI_HLU_LIBRARY_RELEASE
 	HLAPI_HLU_LIBRARY_DEBUG)
