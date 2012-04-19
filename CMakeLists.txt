@@ -374,9 +374,11 @@ if(VRPN_USE_LIBNIFALCON)
 endif()
 
 ###
-# DirectShow - header removal makes this much harder for VS10 and later.
+# DirectShow
 ###
-if(MSVC AND MSVC_VERSION LESS 1600)
+# Note that header removal makes this harder for VS10 and later - you need an earlier
+# version of MSVC also installed or an older Windows/Platform SDK with qedit.h in it.
+if(MSVC)
 	find_package(DirectShow)
 	option_requires(VRPN_USE_DIRECTSHOW
 			"Build with Microsoft DirectShow support"
