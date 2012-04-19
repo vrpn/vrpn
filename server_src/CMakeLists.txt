@@ -71,8 +71,8 @@ if(VRPN_USE_PHANTOM_SERVER AND OPENGL_FOUND)
 	set(VRPNPHANTOMLIB vrpn_phantom)
 endif()
 
-#------------------------
-# DirectShow video server
+#------------------------------------------------------------------
+# DirectShow video server - only for pre-VS10 due to header removal
 if(VRPN_BUILD_DIRECTSHOW_VIDEO_SERVER AND DIRECTSHOW_FOUND)
 	add_subdirectory(directshow_video_server)
 endif()

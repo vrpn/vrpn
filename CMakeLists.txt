@@ -374,9 +374,9 @@ if(VRPN_USE_LIBNIFALCON)
 endif()
 
 ###
-# DirectShow
+# DirectShow - header removal makes this much harder for VS10 and later.
 ###
-if(WIN32)
+if(MSVC AND MSVC_VERSION LESS 1600)
 	find_package(DirectShow)
 	option_requires(VRPN_USE_DIRECTSHOW
 			"Build with Microsoft DirectShow support"
