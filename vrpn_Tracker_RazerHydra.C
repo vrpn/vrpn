@@ -34,6 +34,176 @@
 #include <sstream>
 #endif
 
+#ifndef M_PI
+#define M_PI (3.14159265358979323846)
+#endif
+
+// "One Euro" filter for reducing jitter
+// http://hal.inria.fr/hal-00670496/
+
+class LowPassFilterVec
+{
+public:
+	LowPassFilterVec() : _firstTime(true) 
+	{
+	}
+
+	const vrpn_float64 *filter(const vrpn_float64 *x, vrpn_float64 alpha)
+	{
+		if(_firstTime)
+		{
+			_firstTime = false;
+			memcpy(_hatxprev, x, sizeof(vrpn_float64) * 3);
+		}
+
+		vrpn_float64 hatx[3];
+		hatx[0] = alpha * x[0] + (1 - alpha) * _hatxprev[0];
+		hatx[1] = alpha * x[1] + (1 - alpha) * _hatxprev[1];
+		hatx[2] = alpha * x[2] + (1 - alpha) * _hatxprev[2];
+
+		memcpy(_hatxprev, hatx, sizeof(vrpn_float64) * 3);
+		return _hatxprev;
+	}
+
+	const vrpn_float64 *hatxprev() { return _hatxprev; }
+
+private:
+	bool _firstTime;
+	vrpn_float64 _hatxprev[3];
+};
+
+class OneEuroFilterVec
+{
+public:
+	OneEuroFilterVec(vrpn_float64 rate, vrpn_float64 mincutoff, vrpn_float64 beta, LowPassFilterVec &xfilt, vrpn_float64 dcutoff, LowPassFilterVec &dxfilt) :
+		_firstTime(true), _xfilt(xfilt), _dxfilt(dxfilt),
+		_mincutoff(mincutoff), _beta(beta), _dcutoff(dcutoff), _rate(rate) {};
+
+	const vrpn_float64 *filter(const vrpn_float64 *x)
+	{
+		vrpn_float64 dx[3];
+
+		if(_firstTime)
+		{
+			_firstTime = false;
+			dx[0] = dx[1] = dx[2] = 0.0f;
+
+		} else {
+			const vrpn_float64 *filtered_prev = _xfilt.hatxprev();
+			dx[0] = (x[0] - filtered_prev[0]) * _rate;
+			dx[1] = (x[1] - filtered_prev[1]) * _rate;
+			dx[2] = (x[2] - filtered_prev[2]) * _rate;
+		}
+
+		const vrpn_float64 *edx = _dxfilt.filter(dx, alpha(_rate, _dcutoff));
+		vrpn_float64 norm = sqrt(edx[0]*edx[0] + edx[1]*edx[1] + edx[2]*edx[2]);
+		vrpn_float64 cutoff = _mincutoff + _beta * norm;
+
+		return _xfilt.filter(x, alpha(_rate, cutoff));
+	}
+
+private:
+	vrpn_float64 alpha(vrpn_float64 rate, vrpn_float64 cutoff)
+	{
+		vrpn_float64 tau = (vrpn_float64)(1.0f/(2.0f * M_PI * cutoff));
+		vrpn_float64 te  = 1.0f/rate;
+		return 1.0f/(1.0f + tau/te);
+	}
+
+	bool _firstTime;
+	vrpn_float64 _rate;
+	vrpn_float64 _mincutoff, _dcutoff;
+	vrpn_float64 _beta;
+	LowPassFilterVec &_xfilt, &_dxfilt;
+};
+
+class LowPassFilterQuat
+{
+public:
+	LowPassFilterQuat() : _firstTime(true) 
+	{
+	}
+
+	const double *filter(const q_type x, vrpn_float64 alpha)
+	{
+		if(_firstTime)
+		{
+			_firstTime = false;
+			q_copy(_hatxprev, x);
+		}
+
+		q_type hatx;
+		q_slerp(hatx, _hatxprev, x, alpha);
+		q_copy(_hatxprev, hatx);
+		return _hatxprev;
+	}
+
+	const double *hatxprev() { return _hatxprev; }
+
+private:
+	bool _firstTime;
+	q_type _hatxprev;
+};
+
+class OneEuroFilterQuat
+{
+public:
+	OneEuroFilterQuat(vrpn_float64 rate, vrpn_float64 mincutoff, vrpn_float64 beta, LowPassFilterQuat &xfilt, vrpn_float64 dcutoff, LowPassFilterQuat &dxfilt) :
+		_firstTime(true), _xfilt(xfilt), _dxfilt(dxfilt),
+		_mincutoff(mincutoff), _beta(beta), _dcutoff(dcutoff), _rate(rate) {};
+
+	const double *filter(const q_type x)
+	{
+		q_type dx;
+
+		if(_firstTime)
+		{
+			_firstTime = false;
+			dx[0] = dx[1] = dx[2] = 0;
+			dx[3] = 1;
+
+		} else {
+			q_type filtered_prev;
+			q_copy(filtered_prev, _xfilt.hatxprev());
+
+			q_type inverse_prev;
+			q_invert(inverse_prev, filtered_prev);
+			q_mult(dx, x, inverse_prev);
+		}
+
+		q_type edx;
+		q_copy(edx, _dxfilt.filter(dx, alpha(_rate, _dcutoff)));
+		
+		// avoid taking acos of an invalid number due to numerical errors
+		if(edx[Q_W] > 1.0) edx[Q_W] = 1.0;
+		if(edx[Q_W] < -1.0) edx[Q_W] = -1.0;		
+
+		double ax,ay,az,angle;
+		q_to_axis_angle(&ax, &ay, &az, &angle, edx);
+		
+		vrpn_float64 cutoff = _mincutoff + _beta * angle;
+
+		const double *result = _xfilt.filter(x, alpha(_rate, cutoff));
+
+		return result;
+	}
+
+private:
+	vrpn_float64 alpha(vrpn_float64 rate, vrpn_float64 cutoff)
+	{
+		vrpn_float64 tau = (vrpn_float64)(1.0f/(2.0f * M_PI * cutoff));
+		vrpn_float64 te  = 1.0f/rate;
+		return 1.0f/(1.0f + tau/te);
+	}
+
+	bool _firstTime;
+	vrpn_float64 _rate;
+	vrpn_float64 _mincutoff, _dcutoff;
+	vrpn_float64 _beta;
+	LowPassFilterQuat &_xfilt, &_dxfilt;
+};
+
+
 #ifdef VRPN_USE_HID
 
 const unsigned int HYDRA_VENDOR = 0x1532;
@@ -103,6 +273,38 @@ vrpn_Tracker_RazerHydra::vrpn_Tracker_RazerHydra(const char * name, vrpn_Connect
 	memset(lastbuttons, 0, sizeof(lastbuttons));
 	memset(channel, 0, sizeof(channel));
 	memset(last, 0, sizeof(last));
+
+	_old_position = new vrpn_float64[vrpn_Tracker::num_sensors * 3];
+	memset(_old_position, 0, sizeof(vrpn_float64) * vrpn_Tracker::num_sensors * 3);
+
+	_calibration_done = new bool[vrpn_Tracker::num_sensors];
+
+    _xfilters = new LowPassFilterVec *[vrpn_Tracker::num_sensors];
+    _dxfilters = new LowPassFilterVec *[vrpn_Tracker::num_sensors];
+    _filters = new OneEuroFilterVec *[vrpn_Tracker::num_sensors];
+
+    _qxfilters = new LowPassFilterQuat *[vrpn_Tracker::num_sensors];
+    _qdxfilters = new LowPassFilterQuat *[vrpn_Tracker::num_sensors];
+    _qfilters = new OneEuroFilterQuat *[vrpn_Tracker::num_sensors];
+
+	for(int i = 0; i < vrpn_Tracker::num_sensors; ++i) 
+	{
+		_calibration_done[i] = false;
+		
+		LowPassFilterVec *xfilt = new LowPassFilterVec;
+		LowPassFilterVec *dxfilt = new LowPassFilterVec;
+
+		_xfilters[i] = xfilt;
+		_dxfilters[i] = dxfilt;
+		_filters[i] = new OneEuroFilterVec(60, 0.01f, 0.5f, *xfilt, 0.1f, *dxfilt);
+
+		LowPassFilterQuat *qxfilt = new LowPassFilterQuat;
+		LowPassFilterQuat *qdxfilt = new LowPassFilterQuat;
+
+		_qxfilters[i] = qxfilt;
+		_qdxfilters[i] = qdxfilt;
+		_qfilters[i] = new OneEuroFilterQuat(60, 0.4f, 0.5f, *qxfilt, 0.9f, *qdxfilt);
+	}
 }
 
 vrpn_Tracker_RazerHydra::~vrpn_Tracker_RazerHydra() {
@@ -114,6 +316,28 @@ vrpn_Tracker_RazerHydra::~vrpn_Tracker_RazerHydra() {
 		send_text_message() << "Waiting 2 seconds for mode change to complete.";
 		vrpn_SleepMsecs(2000);
 	}
+
+	delete[] _old_position;
+	delete[] _calibration_done;
+
+	for(int i = 0; i < vrpn_Tracker::num_sensors; ++i) 
+	{
+		delete _xfilters[i];
+		delete _dxfilters[i];
+		delete _filters[i];
+
+		delete _qxfilters[i];
+		delete _qdxfilters[i];
+		delete _qfilters[i];
+	}
+
+    delete[] _xfilters;
+    delete[] _dxfilters;
+    delete[] _filters;
+
+    delete[] _qxfilters;
+    delete[] _qdxfilters;
+    delete[] _qfilters;
 }
 
 void vrpn_Tracker_RazerHydra::on_data_received(size_t bytes, vrpn_uint8 *buffer) {
@@ -264,12 +488,69 @@ void vrpn_Tracker_RazerHydra::_report_for_sensor(int sensorNum, vrpn_uint8 * dat
 	pos[1] = vrpn_unbuffer_from_little_endian<vrpn_int16>(data) * MM_PER_METER;
 	pos[2] = vrpn_unbuffer_from_little_endian<vrpn_int16>(data) * MM_PER_METER;
 
+	/*
+	if(sensorNum == 0)
+	{
+		static int count = 0;
+		fprintf(stderr, "%d    %3.3f %3.3f %3.3f \n", count++, pos[0], pos[1], pos[2]);
+	}
+	*/
+
+	// fix hemisphere transitions
+	if(_calibration_done[sensorNum])
+	{
+		double dist_direct = (pos[0] - _old_position[sensorNum * 3]) * (pos[0] - _old_position[sensorNum * 3]) + 
+                             (pos[1] - _old_position[sensorNum * 3 + 1]) * (pos[1] - _old_position[sensorNum * 3 + 1]) + 
+						     (pos[2] - _old_position[sensorNum * 3 + 2]) * (pos[2] - _old_position[sensorNum * 3 + 2]);
+
+   		double dist_mirror = (-pos[0] - _old_position[sensorNum * 3]) * (-pos[0] - _old_position[sensorNum * 3]) + 
+                             (-pos[1] - _old_position[sensorNum * 3 + 1]) * (-pos[1] - _old_position[sensorNum * 3 + 1]) + 
+						     (-pos[2] - _old_position[sensorNum * 3 + 2]) * (-pos[2] - _old_position[sensorNum * 3 + 2]);
+
+		// too big jump, likely hemisphere switch
+		// in that case the coordinates given are mirrored symmetrically across the base
+		if(dist_direct > dist_mirror)
+		{
+			pos[0] *= -1;
+			pos[1] *= -1;
+			pos[2] *= -1;
+		} 
+
+		_old_position[sensorNum * 3] = pos[0];
+		_old_position[sensorNum * 3 + 1] = pos[1];
+		_old_position[sensorNum * 3 + 2] = pos[2];
+	} else {
+		_calibration_done[sensorNum] = true;
+
+		// first start - assume that the controllers are on the base
+		// left one (sensor 0) should have negative x coordinate, right one (sensor 1) positive.
+		// if it isn't so, mirror them.
+
+		if((sensorNum == 0 && pos[0] > 0) ||
+			(sensorNum == 1 && pos[0] < 0))
+		{
+			pos[0] *= -1;
+			pos[1] *= -1;
+			pos[2] *= -1;
+		}
+	}
+
 	d_quat[Q_W] = vrpn_unbuffer_from_little_endian<vrpn_int16>(data) * SCALE_INT16_TO_FLOAT_PLUSMINUS_1;
 	d_quat[Q_X] = vrpn_unbuffer_from_little_endian<vrpn_int16>(data) * SCALE_INT16_TO_FLOAT_PLUSMINUS_1;
 	d_quat[Q_Y] = vrpn_unbuffer_from_little_endian<vrpn_int16>(data) * SCALE_INT16_TO_FLOAT_PLUSMINUS_1;
 	d_quat[Q_Z] = vrpn_unbuffer_from_little_endian<vrpn_int16>(data) * SCALE_INT16_TO_FLOAT_PLUSMINUS_1;
 	vrpn_uint8 buttonBits = vrpn_unbuffer_from_little_endian<vrpn_uint8>(data);
 
+	// jitter filtering
+	const vrpn_float64 *filtered = _filters[sensorNum]->filter(pos);
+	memcpy(pos, filtered, sizeof(vrpn_float64) * 3);	
+
+	const double *q_filtered = _qfilters[sensorNum]->filter(d_quat);
+	d_quat[Q_W] = q_filtered[Q_W];
+	d_quat[Q_X] = q_filtered[Q_X];
+	d_quat[Q_Y] = q_filtered[Q_Y];
+	d_quat[Q_Z] = q_filtered[Q_Z];
+	
 	/// "middle" button
 	buttons[0 + buttonOffset] = buttonBits & 0x20;
 

@@ -67,6 +67,12 @@
 	* 1 - joystick up/down: centered at 0, up is positive, in [-1, 1]
 	* 2 - analog trigger, in range 0 (not pressed) to 1 (fully pressed).
 */
+
+class OneEuroFilterVec;
+class LowPassFilterVec;
+class OneEuroFilterQuat;
+class LowPassFilterQuat;
+
 class VRPN_API vrpn_Tracker_RazerHydra: public vrpn_Analog, public vrpn_Button_Filter, public vrpn_Tracker, vrpn_HidInterface {
 	public:
 		vrpn_Tracker_RazerHydra(const char * name, vrpn_Connection * trackercon);
@@ -99,6 +105,17 @@ class VRPN_API vrpn_Tracker_RazerHydra: public vrpn_Analog, public vrpn_Button_F
 		struct timeval _timestamp;
 		struct timeval _connected;
 		struct timeval _set_feature;
+
+		bool *_calibration_done;
+		vrpn_float64 *_old_position;
+
+		OneEuroFilterVec **_filters;
+		LowPassFilterVec **_xfilters;
+		LowPassFilterVec **_dxfilters;
+
+		OneEuroFilterQuat **_qfilters;
+		LowPassFilterQuat **_qxfilters;
+		LowPassFilterQuat **_qdxfilters;
 };
 
 #endif
