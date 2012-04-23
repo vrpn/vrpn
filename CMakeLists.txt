@@ -731,6 +731,7 @@ set(VRPN_SERVER_PUBLIC_HEADERS
 	vrpn_NationalInstruments.h
 	vrpn_Nidaq.h
 	vrpn_nikon_controls.h
+	vrpn_OneEuroFilter.h
 	vrpn_Poser_Analog.h
 	vrpn_Poser.h
 	vrpn_Poser_Tek4662.h
