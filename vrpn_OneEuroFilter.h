@@ -69,13 +69,33 @@ template<int DIMENSION = 3, typename Scalar = vrpn_float64, typename MatchingLow
 class OneEuroFilter {
 	public:
 		typedef Scalar value_type;
+		typedef Scalar scalar_type;
 		typedef MatchingLowPassFilterType lpfilter_type;
 		OneEuroFilter(value_type mincutoff, value_type beta, value_type dcutoff) :
 			_firstTime(true),
 			_mincutoff(mincutoff), _beta(beta), _dcutoff(dcutoff), _rate(rate) {};
 
 		OneEuroFilter() : _firstTime(true) {};
-		void setParams(vrpn_float64 mincutoff, vrpn_float64 beta, vrpn_float64 dcutoff) {
+
+		void setMinCutoff(scalar_type mincutoff) {
+			_mincutoff = mincutoff;
+		}
+		scalar_type getMinCutoff() const {
+			return _mincutoff;
+		}
+		void setBeta(scalar_type beta) {
+			_beta = beta;
+		}
+		scalar_type getBeta() const {
+			return _beta;
+		}
+		void setDerivativeCutoff(scalar_type dcutoff) {
+			_dcutoff = dcutoff;
+		}
+		scalar_type getDerivativeCutoff() const {
+			return _dcutoff;
+		}
+		void setParams(scalar_type mincutoff, scalar_type beta, scalar_type dcutoff) {
 			_mincutoff = mincutoff;
 			_beta = beta;
 			_dcutoff = dcutoff;
