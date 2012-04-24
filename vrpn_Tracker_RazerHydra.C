@@ -347,7 +347,8 @@ void vrpn_Tracker_RazerHydra::_report_for_sensor(int sensorNum, vrpn_uint8 * dat
 
 	// jitter filtering
 	const vrpn_float64 *filtered = _f->_filters[sensorNum].filter(dt, pos);
-	memcpy(pos, filtered, sizeof(vrpn_float64) * 3);
+
+	q_vec_copy(pos, filtered);
 	/*
 		const double *q_filtered = _qfilters[sensorNum]->filter(dt, d_quat);
 		d_quat[Q_W] = q_filtered[Q_W];
