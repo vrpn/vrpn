@@ -216,15 +216,24 @@ class QuatFilterable {
 		}
 
 		static void computeDerivative(derivative_value_type dx, value_filter_return_type prev, const value_type current, scalar_type dt) {
-			static const q_type identity = Q_ID_QUAT;
+			scalar_type rate = 1.0 / dt;
+
 			q_type inverse_prev;
 			q_invert(inverse_prev, prev);
 			q_mult(dx, current, inverse_prev);
-			q_slerp(dx, identity, dx, 1.0 / dt); /// @todo make sure this line is right
+
+			// nlerp instead of slerp
+			dx[Q_X] *= rate;
+			dx[Q_Y] *= rate;
+			dx[Q_Z] *= rate;
+			dx[Q_W] = dx[Q_W] * rate + (1.0 - rate);
+			q_normalize(dx, dx);
+
+			//q_slerp(dx, identity, dx, 1.0 / dt);
 		}
 		static scalar_type computeDerivativeMagnitude(derivative_value_type const dx) {
-			/// @todo this isn't quite right
-			return dx[Q_W];
+			/// Should be safe since the quaternion we're given has been normalized.
+			return 2.0 * acos(dx[Q_W]);
 		}
 
 };
