@@ -320,7 +320,7 @@ void vrpn_Tracker_RazerHydra::_report_for_sensor(int sensorNum, vrpn_uint8 * dat
 
 		// too big jump, likely hemisphere switch
 		// in that case the coordinates given are mirrored symmetrically across the base
-		if (dist_direct > dist_mirror) {
+		if (dist_direct - dist_mirror > 10 * Q_EPSILON) {
 			pos[0] *= -1;
 			pos[1] *= -1;
 			pos[2] *= -1;
