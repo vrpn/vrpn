@@ -90,7 +90,11 @@ static inline double duration_seconds(struct timeval t1, struct timeval t2) {
 struct vrpn_Tracker_RazerHydra::FilterData {
 	FilterData() {
 		for (int i = 0; i < vrpn_Tracker_RazerHydra::POSE_CHANNELS; ++i) {
-			_filters[i].setParams(0.01f, 0.5f, 0.1f);
+			_filters[i].setMinCutoff(1.150);
+			_filters[i].setBeta(.5);
+			_filters[i].setDerivativeCutoff(1.2);
+
+			//_filters[i].setParams(0.01f, 0.5f, 0.1f);
 			_qfilters[i].setParams(0.4f, 0.5f, 0.9f);
 		}
 	}
