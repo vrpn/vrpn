@@ -83,6 +83,10 @@ static inline unsigned long duration(struct timeval t1, struct timeval t2) {
 	       1000000L * (t1.tv_sec - t2.tv_sec);
 }
 
+static inline double duration_seconds(struct timeval t1, struct timeval t2) {
+	return duration(t1, t2) / double(1000000L);
+}
+
 struct vrpn_Tracker_RazerHydra::FilterData {
 	FilterData() {
 		for (int i = 0; i < vrpn_Tracker_RazerHydra::POSE_CHANNELS; ++i) {
@@ -153,7 +157,7 @@ void vrpn_Tracker_RazerHydra::on_data_received(size_t bytes, vrpn_uint8 *buffer)
 	}
 
 	vrpn_gettimeofday(&_timestamp, NULL);
-	double dt = duration(_timestamp, vrpn_Button::timestamp);
+	double dt = duration_seconds(_timestamp, vrpn_Button::timestamp);
 	vrpn_Button::timestamp = _timestamp;
 	vrpn_Tracker::timestamp = _timestamp;
 	_report_for_sensor(0, buffer + 8, dt);
