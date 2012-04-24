@@ -90,6 +90,11 @@ class VRPN_API vrpn_Tracker_RazerHydra: public vrpn_Analog, public vrpn_Button_F
 			HYDRA_LISTENING_AFTER_SET_FEATURE,
 			HYDRA_REPORTING
 		};
+		enum {
+			ANALOG_CHANNELS = 6,
+			BUTTON_CHANNELS = 16,
+			POSE_CHANNELS = 2
+		};
 
 		void _waiting_for_connect();
 		void _listening_after_connect();
@@ -97,7 +102,7 @@ class VRPN_API vrpn_Tracker_RazerHydra: public vrpn_Analog, public vrpn_Button_F
 
 		void _enter_motion_controller_mode();
 
-		void _report_for_sensor(int sensorNum, vrpn_uint8 * data);
+		void _report_for_sensor(int sensorNum, vrpn_uint8 * data, double dt);
 
 		HydraStatus status;
 		bool _wasInGamepadMode;
@@ -106,16 +111,13 @@ class VRPN_API vrpn_Tracker_RazerHydra: public vrpn_Analog, public vrpn_Button_F
 		struct timeval _connected;
 		struct timeval _set_feature;
 
-		bool *_calibration_done;
-		vrpn_float64 *_old_position;
+		bool _calibration_done[POSE_CHANNELS];
+		q_vec_type _old_position[POSE_CHANNELS];
 
-		OneEuroFilterVec **_filters;
-		LowPassFilterVec **_xfilters;
-		LowPassFilterVec **_dxfilters;
+		struct FilterData;
 
-		OneEuroFilterQuat **_qfilters;
-		LowPassFilterQuat **_qxfilters;
-		LowPassFilterQuat **_qdxfilters;
+		FilterData * _f;
+
 };
 
 #endif

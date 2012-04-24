@@ -83,6 +83,17 @@ static inline unsigned long duration(struct timeval t1, struct timeval t2) {
 	       1000000L * (t1.tv_sec - t2.tv_sec);
 }
 
+struct vrpn_Tracker_RazerHydra::FilterData {
+	FilterData() {
+		for (int i = 0; i < vrpn_Tracker_RazerHydra::POSE_CHANNELS; ++i) {
+			_filters[i].setParams(0.01f, 0.5f, 0.1f);
+			_qfilters[i].setParams(0.4f, 0.5f, 0.9f);
+		}
+	}
+	OneEuroFilterVec _filters[vrpn_Tracker_RazerHydra::POSE_CHANNELS];
+	OneEuroFilterQuat _qfilters[vrpn_Tracker_RazerHydra::POSE_CHANNELS];
+};
+
 vrpn_Tracker_RazerHydra::vrpn_Tracker_RazerHydra(const char * name, vrpn_Connection * con)
 	: vrpn_Analog(name, con)
 	, vrpn_Button_Filter(name, con)
@@ -92,12 +103,13 @@ vrpn_Tracker_RazerHydra::vrpn_Tracker_RazerHydra(const char * name, vrpn_Connect
 	                        new vrpn_HidProductAcceptor(HYDRA_VENDOR, HYDRA_PRODUCT)))
 	, status(HYDRA_WAITING_FOR_CONNECT)
 	, _wasInGamepadMode(false) /// assume not - if we have to send a command, then set to true
-	, _attempt(0) {
+	, _attempt(0)
+	, _f(new FilterData()) {
 
 	/// Set up sensor counts
-	vrpn_Analog::num_channel = 6; /// 3 analog channels from each controller
-	vrpn_Button::num_buttons = 16; /// 7 for each controller, starting at a nice number for each
-	vrpn_Tracker::num_sensors = 2;
+	vrpn_Analog::num_channel = ANALOG_CHANNELS; /// 3 analog channels from each controller
+	vrpn_Button::num_buttons = BUTTON_CHANNELS; /// 7 for each controller, starting at a nice number for each
+	vrpn_Tracker::num_sensors = POSE_CHANNELS;
 
 	/// Initialize all data
 	memset(buttons, 0, sizeof(buttons));
@@ -105,36 +117,16 @@ vrpn_Tracker_RazerHydra::vrpn_Tracker_RazerHydra(const char * name, vrpn_Connect
 	memset(channel, 0, sizeof(channel));
 	memset(last, 0, sizeof(last));
 
-	_old_position = new vrpn_float64[vrpn_Tracker::num_sensors * 3];
-	memset(_old_position, 0, sizeof(vrpn_float64) * vrpn_Tracker::num_sensors * 3);
-
-	_calibration_done = new bool[vrpn_Tracker::num_sensors];
-
-    _xfilters = new LowPassFilterVec *[vrpn_Tracker::num_sensors];
-    _dxfilters = new LowPassFilterVec *[vrpn_Tracker::num_sensors];
-    _filters = new OneEuroFilterVec *[vrpn_Tracker::num_sensors];
-
-    _qxfilters = new LowPassFilterQuat *[vrpn_Tracker::num_sensors];
-    _qdxfilters = new LowPassFilterQuat *[vrpn_Tracker::num_sensors];
-    _qfilters = new OneEuroFilterQuat *[vrpn_Tracker::num_sensors];
+	vrpn_gettimeofday(&_timestamp, NULL);
 
 	for(int i = 0; i < vrpn_Tracker::num_sensors; ++i) 
 	{
 		_calibration_done[i] = false;
-		
-		LowPassFilterVec *xfilt = new LowPassFilterVec;
-		LowPassFilterVec *dxfilt = new LowPassFilterVec;
+		/*
+		_filters[i] = new OneEuroFilterVec(60, 0.01f, 0.5f, 0.1f);
 
-		_xfilters[i] = xfilt;
-		_dxfilters[i] = dxfilt;
-		_filters[i] = new OneEuroFilterVec(60, 0.01f, 0.5f, *xfilt, 0.1f, *dxfilt);
-
-		LowPassFilterQuat *qxfilt = new LowPassFilterQuat;
-		LowPassFilterQuat *qdxfilt = new LowPassFilterQuat;
-
-		_qxfilters[i] = qxfilt;
-		_qdxfilters[i] = qdxfilt;
-		_qfilters[i] = new OneEuroFilterQuat(60, 0.4f, 0.5f, *qxfilt, 0.9f, *qdxfilt);
+		_qfilters[i] = new OneEuroFilterQuat(60, 0.4f, 0.5f, 0.9f);
+		*/
 	}
 }
 
@@ -148,27 +140,15 @@ vrpn_Tracker_RazerHydra::~vrpn_Tracker_RazerHydra() {
 		vrpn_SleepMsecs(2000);
 	}
 
-	delete[] _old_position;
-	delete[] _calibration_done;
-
+/*
 	for(int i = 0; i < vrpn_Tracker::num_sensors; ++i) 
 	{
-		delete _xfilters[i];
-		delete _dxfilters[i];
 		delete _filters[i];
 
-		delete _qxfilters[i];
-		delete _qdxfilters[i];
 		delete _qfilters[i];
 	}
-
-    delete[] _xfilters;
-    delete[] _dxfilters;
-    delete[] _filters;
-
-    delete[] _qxfilters;
-    delete[] _qdxfilters;
-    delete[] _qfilters;
+	*/
+	delete _f;
 }
 
 void vrpn_Tracker_RazerHydra::on_data_received(size_t bytes, vrpn_uint8 *buffer) {
@@ -187,11 +167,11 @@ void vrpn_Tracker_RazerHydra::on_data_received(size_t bytes, vrpn_uint8 *buffer)
 	}
 
 	vrpn_gettimeofday(&_timestamp, NULL);
+	double dt = duration(_timestamp, vrpn_Button::timestamp);
 	vrpn_Button::timestamp = _timestamp;
 	vrpn_Tracker::timestamp = _timestamp;
-
-	_report_for_sensor(0, buffer + 8);
-	_report_for_sensor(1, buffer + 30);
+	_report_for_sensor(0, buffer + 8, dt);
+	_report_for_sensor(1, buffer + 30, dt);
 
 	vrpn_Analog::report_changes(vrpn_CONNECTION_LOW_LATENCY, _timestamp);
 	vrpn_Button::report_changes();
@@ -304,7 +284,7 @@ void vrpn_Tracker_RazerHydra::_enter_motion_controller_mode() {
 	vrpn_gettimeofday(&_set_feature, NULL);
 }
 
-void vrpn_Tracker_RazerHydra::_report_for_sensor(int sensorNum, vrpn_uint8 * data) {
+void vrpn_Tracker_RazerHydra::_report_for_sensor(int sensorNum, vrpn_uint8 * data, double dt) {
 	if (!d_connection) {
 		return;
 	}
@@ -328,28 +308,24 @@ void vrpn_Tracker_RazerHydra::_report_for_sensor(int sensorNum, vrpn_uint8 * dat
 	*/
 
 	// fix hemisphere transitions
-	if(_calibration_done[sensorNum])
-	{
-		double dist_direct = (pos[0] - _old_position[sensorNum * 3]) * (pos[0] - _old_position[sensorNum * 3]) + 
-                             (pos[1] - _old_position[sensorNum * 3 + 1]) * (pos[1] - _old_position[sensorNum * 3 + 1]) + 
-						     (pos[2] - _old_position[sensorNum * 3 + 2]) * (pos[2] - _old_position[sensorNum * 3 + 2]);
+	if (_calibration_done[sensorNum]) {
+		double dist_direct = (pos[0] - _old_position[sensorNum][0]) * (pos[0] - _old_position[sensorNum][0]) +
+		                     (pos[1] - _old_position[sensorNum][1]) * (pos[1] - _old_position[sensorNum][1]) +
+		                     (pos[2] - _old_position[sensorNum][2]) * (pos[2] - _old_position[sensorNum][2]);
 
-   		double dist_mirror = (-pos[0] - _old_position[sensorNum * 3]) * (-pos[0] - _old_position[sensorNum * 3]) + 
-                             (-pos[1] - _old_position[sensorNum * 3 + 1]) * (-pos[1] - _old_position[sensorNum * 3 + 1]) + 
-						     (-pos[2] - _old_position[sensorNum * 3 + 2]) * (-pos[2] - _old_position[sensorNum * 3 + 2]);
+		double dist_mirror = (-pos[0] - _old_position[sensorNum][0]) * (-pos[0] - _old_position[sensorNum][0]) +
+		                     (-pos[1] - _old_position[sensorNum][1]) * (-pos[1] - _old_position[sensorNum][1]) +
+		                     (-pos[2] - _old_position[sensorNum][2]) * (-pos[2] - _old_position[sensorNum][2]);
+
 
 		// too big jump, likely hemisphere switch
 		// in that case the coordinates given are mirrored symmetrically across the base
-		if(dist_direct > dist_mirror)
-		{
+		if (dist_direct > dist_mirror) {
 			pos[0] *= -1;
 			pos[1] *= -1;
 			pos[2] *= -1;
-		} 
-
-		_old_position[sensorNum * 3] = pos[0];
-		_old_position[sensorNum * 3 + 1] = pos[1];
-		_old_position[sensorNum * 3 + 2] = pos[2];
+		}
+		q_vec_copy(_old_position[sensorNum], pos);
 	} else {
 		_calibration_done[sensorNum] = true;
 
@@ -373,15 +349,15 @@ void vrpn_Tracker_RazerHydra::_report_for_sensor(int sensorNum, vrpn_uint8 * dat
 	vrpn_uint8 buttonBits = vrpn_unbuffer_from_little_endian<vrpn_uint8>(data);
 
 	// jitter filtering
-	const vrpn_float64 *filtered = _filters[sensorNum]->filter(pos);
-	memcpy(pos, filtered, sizeof(vrpn_float64) * 3);	
-
-	const double *q_filtered = _qfilters[sensorNum]->filter(d_quat);
-	d_quat[Q_W] = q_filtered[Q_W];
-	d_quat[Q_X] = q_filtered[Q_X];
-	d_quat[Q_Y] = q_filtered[Q_Y];
-	d_quat[Q_Z] = q_filtered[Q_Z];
-	
+	const vrpn_float64 *filtered = _f->_filters[sensorNum].filter(dt, pos);
+	memcpy(pos, filtered, sizeof(vrpn_float64) * 3);
+	/*
+		const double *q_filtered = _qfilters[sensorNum]->filter(dt, d_quat);
+		d_quat[Q_W] = q_filtered[Q_W];
+		d_quat[Q_X] = q_filtered[Q_X];
+		d_quat[Q_Y] = q_filtered[Q_Y];
+		d_quat[Q_Z] = q_filtered[Q_Z];
+	*/
 	/// "middle" button
 	buttons[0 + buttonOffset] = buttonBits & 0x20;
 
