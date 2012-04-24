@@ -35,17 +35,19 @@
 template<int DIMENSION = 3, typename Scalar = vrpn_float64>
 class LowPassFilter {
 	public:
-		typedef Scalar value_type;
+		typedef Scalar scalar_type;
+		typedef Scalar value_type[DIMENSION];
+		typedef const scalar_type * value_return_type;
 		LowPassFilter() : _firstTime(true) {
 		}
 
-		const value_type *filter(const value_type x[DIMENSION], value_type alpha) {
+		value_return_type filter(const value_type x, scalar_type alpha) {
 			if (_firstTime) {
 				_firstTime = false;
 				memcpy(_hatxprev, x, sizeof(_hatxprev));
 			}
 
-			value_type hatx[DIMENSION];
+			value_type hatx;
 			for (int i = 0; i < DIMENSION; ++i) {
 				hatx[i] = alpha * x[i] + (1 - alpha) * _hatxprev[i];
 			}
@@ -54,28 +56,66 @@ class LowPassFilter {
 			return _hatxprev;
 		}
 
-		const value_type *hatxprev() {
+		value_return_type hatxprev() {
 			return _hatxprev;
 		}
 
 	private:
 		bool _firstTime;
-		value_type _hatxprev[DIMENSION];
+		value_type _hatxprev;
 };
 
 typedef LowPassFilter<> LowPassFilterVec;
 
-template<int DIMENSION = 3, typename Scalar = vrpn_float64, typename MatchingLowPassFilterType = LowPassFilter<DIMENSION, Scalar> >
+template<int DIMENSION = 3, typename Scalar = vrpn_float64>
+class VectorFilterable {
+	public:
+		typedef	Scalar scalar_type;
+		typedef Scalar value_type[DIMENSION];
+		typedef value_type derivative_value_type;
+		typedef Scalar * value_ptr_type;
+		typedef value_type * derivative_value_ptr_type;
+		typedef LowPassFilter<DIMENSION, Scalar> value_filter_type;
+		typedef LowPassFilter<DIMENSION, Scalar> derivative_filter_type;
+		typedef typename LowPassFilter<DIMENSION, Scalar>::value_return_type value_return_type;
+
+		static void setDxIdentity(value_ptr_type dx) {
+			for (int i = 0; i < DIMENSION; ++i) {
+				dx[i] = 0;
+			}
+		}
+
+		static void computeDerivative(derivative_value_type dx, value_return_type prev, const value_type current, scalar_type dt) {
+			for (int i = 0; i < DIMENSION; ++i) {
+				dx[i] = (current[i] - prev[i]) / dt;
+			}
+		}
+		static scalar_type computeDerivativeMagnitude(derivative_value_type const dx) {
+			scalar_type sqnorm = 0;
+			for (int i = 0; i < DIMENSION; ++i) {
+				sqnorm += dx[i] * dx[i];
+			}
+			return sqrt(sqnorm);
+		}
+
+};
+template<typename Filterable = VectorFilterable<> >
 class OneEuroFilter {
 	public:
-		typedef Scalar value_type;
-		typedef Scalar scalar_type;
-		typedef MatchingLowPassFilterType lpfilter_type;
-		OneEuroFilter(value_type mincutoff, value_type beta, value_type dcutoff) :
-			_firstTime(true),
-			_mincutoff(mincutoff), _beta(beta), _dcutoff(dcutoff), _rate(rate) {};
+		typedef Filterable contents;
+		typedef typename Filterable::scalar_type scalar_type;
+		typedef typename Filterable::value_type value_type;
+		typedef typename Filterable::derivative_value_type derivative_value_type;
+		typedef typename Filterable::value_ptr_type value_ptr_type;
+		typedef typename Filterable::derivative_filter_type derivative_filter_type;
+		typedef typename Filterable::value_filter_type value_filter_type;
+		typedef typename Filterable::value_return_type value_return_type;
 
-		OneEuroFilter() : _firstTime(true) {};
+		OneEuroFilter(scalar_type mincutoff, scalar_type beta, scalar_type dcutoff) :
+			_firstTime(true),
+			_mincutoff(mincutoff), _beta(beta), _dcutoff(dcutoff) {};
+
+		OneEuroFilter() : _firstTime(true), _mincutoff(1), _beta(0.5), _dcutoff(1) {};
 
 		void setMinCutoff(scalar_type mincutoff) {
 			_mincutoff = mincutoff;
@@ -100,48 +140,37 @@ class OneEuroFilter {
 			_beta = beta;
 			_dcutoff = dcutoff;
 		}
-		const value_type *filter(value_type dt, const value_type x[DIMENSION]) {
-			value_type dx[DIMENSION];
+		const value_return_type filter(scalar_type dt, const value_type x) {
+			derivative_value_type dx;
 
 			if (_firstTime) {
 				_firstTime = false;
-				for (int i = 0; i < DIMENSION; ++i) {
-					dx[i] = value_type(0);
-				}
+				Filterable::setDxIdentity(dx);
 
 			} else {
-				const value_type *filtered_prev = _xfilt.hatxprev();
-
-				for (int i = 0; i < DIMENSION; ++i) {
-					dx[i] = (x[i] - filtered_prev[i]) * 1.0 / dt;
-				}
+				Filterable::computeDerivative(dx, _xfilt.hatxprev(), x, dt);
 			}
 
-			const value_type *edx = _dxfilt.filter(dx, alpha(dt, _dcutoff));
-			value_type sqnorm = 0;
-			for (int i = 0; i < DIMENSION; ++i) {
-				sqnorm += edx[i] * edx[i];
-			}
-			value_type norm = sqrt(sqnorm);
-			value_type cutoff = _mincutoff + _beta * norm;
+			scalar_type derivative_magnitude = Filterable::computeDerivativeMagnitude(_dxfilt.filter(dx, alpha(dt, _dcutoff)));
+			scalar_type cutoff = _mincutoff + _beta * derivative_magnitude;
 
 			return _xfilt.filter(x, alpha(dt, cutoff));
 		}
 
 	private:
-		static value_type alpha(value_type dt, value_type cutoff) {
-			value_type tau = value_type(1) / (value_type(2) * Q_PI * cutoff);
-			return value_type(1) / (value_type(1) + tau / dt);
+		static scalar_type alpha(scalar_type dt, scalar_type cutoff) {
+			scalar_type tau = scalar_type(1) / (scalar_type(2) * Q_PI * cutoff);
+			return scalar_type(1) / (scalar_type(1) + tau / dt);
 		}
 
 		bool _firstTime;
-		//value_type _rate;
-		value_type _mincutoff, _dcutoff;
-		value_type _beta;
-		lpfilter_type _xfilt, _dxfilt;
+		scalar_type _mincutoff, _dcutoff;
+		scalar_type _beta;
+		value_filter_type _xfilt;
+		derivative_filter_type _dxfilt;
 };
 
-typedef OneEuroFilter<3, vrpn_float64> OneEuroFilterVec;
+typedef OneEuroFilter<> OneEuroFilterVec;
 
 class LowPassFilterQuat {
 	public:
