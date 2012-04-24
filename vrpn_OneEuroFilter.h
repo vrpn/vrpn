@@ -113,11 +113,11 @@ class OneEuroFilter {
 				const value_type *filtered_prev = _xfilt.hatxprev();
 
 				for (int i = 0; i < DIMENSION; ++i) {
-					dx[i] = (x[i] - filtered_prev[i]) * _rate;
+					dx[i] = (x[i] - filtered_prev[i]) * 1.0 / dt;
 				}
 			}
 
-			const value_type *edx = _dxfilt.filter(dx, alpha(_rate, _dcutoff));
+			const value_type *edx = _dxfilt.filter(dx, alpha(dt, _dcutoff));
 			value_type sqnorm = 0;
 			for (int i = 0; i < DIMENSION; ++i) {
 				sqnorm += edx[i] * edx[i];
@@ -135,7 +135,7 @@ class OneEuroFilter {
 		}
 
 		bool _firstTime;
-		value_type _rate;
+		//value_type _rate;
 		value_type _mincutoff, _dcutoff;
 		value_type _beta;
 		lpfilter_type _xfilt, _dxfilt;
