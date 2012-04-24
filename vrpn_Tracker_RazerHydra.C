@@ -94,8 +94,9 @@ struct vrpn_Tracker_RazerHydra::FilterData {
 			_filters[i].setBeta(.5);
 			_filters[i].setDerivativeCutoff(1.2);
 
-			//_filters[i].setParams(0.01f, 0.5f, 0.1f);
-			_qfilters[i].setParams(0.4f, 0.5f, 0.9f);
+			_qfilters[i].setMinCutoff(1.5);
+			_qfilters[i].setBeta(.5);
+			_qfilters[i].setDerivativeCutoff(1.2);
 		}
 	}
 	OneEuroFilterVec _filters[vrpn_Tracker_RazerHydra::POSE_CHANNELS];
@@ -349,10 +350,10 @@ void vrpn_Tracker_RazerHydra::_report_for_sensor(int sensorNum, vrpn_uint8 * dat
 	const vrpn_float64 *filtered = _f->_filters[sensorNum].filter(dt, pos);
 
 	q_vec_copy(pos, filtered);
-	/*
-	const double *q_filtered = _f->_qfilters[sensorNum]->filter(dt, d_quat);
-	q_copy(d_quat, q_filtered);
-	*/
+
+	const double *q_filtered = _f->_qfilters[sensorNum].filter(dt, d_quat);
+	q_normalize(d_quat, q_filtered);
+
 	/// "middle" button
 	buttons[0 + buttonOffset] = buttonBits & 0x20;
 
