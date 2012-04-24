@@ -291,8 +291,9 @@ void vrpn_Tracker_RazerHydra::_report_for_sensor(int sensorNum, vrpn_uint8 * dat
 	const int buttonOffset = sensorNum * 8;
 
 	d_sensor = sensorNum;
+	/// @todo Why do we sometimes have to invert the y axis to get right-handed behavior?
 	pos[0] = vrpn_unbuffer_from_little_endian<vrpn_int16>(data) * MM_PER_METER * _mirror[sensorNum];
-	pos[1] = vrpn_unbuffer_from_little_endian<vrpn_int16>(data) * MM_PER_METER * _mirror[sensorNum] * -1.0; // ensure right-handed
+	pos[1] = vrpn_unbuffer_from_little_endian<vrpn_int16>(data) * MM_PER_METER * _mirror[sensorNum];
 	pos[2] = vrpn_unbuffer_from_little_endian<vrpn_int16>(data) * MM_PER_METER * _mirror[sensorNum];
 
 	d_quat[Q_W] = vrpn_unbuffer_from_little_endian<vrpn_int16>(data) * SCALE_INT16_TO_FLOAT_PLUSMINUS_1;
