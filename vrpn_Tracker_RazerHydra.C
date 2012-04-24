@@ -326,7 +326,6 @@ void vrpn_Tracker_RazerHydra::_report_for_sensor(int sensorNum, vrpn_uint8 * dat
 			pos[2] *= -1;
 			_mirror[sensorNum] *= -1;
 		}
-		q_vec_copy(_old_position[sensorNum], pos);
 	} else {
 		_calibration_done[sensorNum] = true;
 
@@ -342,6 +341,7 @@ void vrpn_Tracker_RazerHydra::_report_for_sensor(int sensorNum, vrpn_uint8 * dat
 			_mirror[sensorNum] = -1;
 		}
 	}
+	q_vec_copy(_old_position[sensorNum], pos);
 
 	vrpn_uint8 buttonBits = vrpn_unbuffer_from_little_endian<vrpn_uint8>(data);
 
