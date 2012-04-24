@@ -119,14 +119,8 @@ vrpn_Tracker_RazerHydra::vrpn_Tracker_RazerHydra(const char * name, vrpn_Connect
 
 	vrpn_gettimeofday(&_timestamp, NULL);
 
-	for(int i = 0; i < vrpn_Tracker::num_sensors; ++i) 
-	{
+	for (int i = 0; i < vrpn_Tracker::num_sensors; ++i) {
 		_calibration_done[i] = false;
-		/*
-		_filters[i] = new OneEuroFilterVec(60, 0.01f, 0.5f, 0.1f);
-
-		_qfilters[i] = new OneEuroFilterQuat(60, 0.4f, 0.5f, 0.9f);
-		*/
 	}
 }
 
@@ -140,14 +134,6 @@ vrpn_Tracker_RazerHydra::~vrpn_Tracker_RazerHydra() {
 		vrpn_SleepMsecs(2000);
 	}
 
-/*
-	for(int i = 0; i < vrpn_Tracker::num_sensors; ++i) 
-	{
-		delete _filters[i];
-
-		delete _qfilters[i];
-	}
-	*/
 	delete _f;
 }
 
@@ -333,9 +319,8 @@ void vrpn_Tracker_RazerHydra::_report_for_sensor(int sensorNum, vrpn_uint8 * dat
 		// left one (sensor 0) should have negative x coordinate, right one (sensor 1) positive.
 		// if it isn't so, mirror them.
 
-		if((sensorNum == 0 && pos[0] > 0) ||
-			(sensorNum == 1 && pos[0] < 0))
-		{
+		if ((sensorNum == 0 && pos[0] > 0) ||
+		        (sensorNum == 1 && pos[0] < 0)) {
 			pos[0] *= -1;
 			pos[1] *= -1;
 			pos[2] *= -1;

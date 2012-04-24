@@ -22,6 +22,7 @@
 
 // Internal Includes
 #include "vrpn_Configure.h"
+#include "quat.h"
 #include "vrpn_HumanInterface.h"
 #include "vrpn_Analog.h"
 #include "vrpn_Button.h"
@@ -68,11 +69,6 @@
 	* 2 - analog trigger, in range 0 (not pressed) to 1 (fully pressed).
 */
 
-class OneEuroFilterVec;
-class LowPassFilterVec;
-class OneEuroFilterQuat;
-class LowPassFilterQuat;
-
 class VRPN_API vrpn_Tracker_RazerHydra: public vrpn_Analog, public vrpn_Button_Filter, public vrpn_Tracker, vrpn_HidInterface {
 	public:
 		vrpn_Tracker_RazerHydra(const char * name, vrpn_Connection * trackercon);
@@ -83,17 +79,17 @@ class VRPN_API vrpn_Tracker_RazerHydra: public vrpn_Analog, public vrpn_Button_F
 
 		virtual void on_data_received(size_t bytes, vrpn_uint8 *buffer);
 
-	protected:
+	private:
 		enum HydraStatus {
-			HYDRA_WAITING_FOR_CONNECT,
-			HYDRA_LISTENING_AFTER_CONNECT,
-			HYDRA_LISTENING_AFTER_SET_FEATURE,
-			HYDRA_REPORTING
+		    HYDRA_WAITING_FOR_CONNECT,
+		    HYDRA_LISTENING_AFTER_CONNECT,
+		    HYDRA_LISTENING_AFTER_SET_FEATURE,
+		    HYDRA_REPORTING
 		};
 		enum {
-			ANALOG_CHANNELS = 6,
-			BUTTON_CHANNELS = 16,
-			POSE_CHANNELS = 2
+		    ANALOG_CHANNELS = 6,
+		    BUTTON_CHANNELS = 16,
+		    POSE_CHANNELS = 2
 		};
 
 		void _waiting_for_connect();
@@ -117,7 +113,6 @@ class VRPN_API vrpn_Tracker_RazerHydra: public vrpn_Analog, public vrpn_Button_F
 		struct FilterData;
 
 		FilterData * _f;
-
 };
 
 #endif
