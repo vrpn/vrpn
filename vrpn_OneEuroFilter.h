@@ -37,11 +37,12 @@ class LowPassFilter {
 	public:
 		typedef Scalar scalar_type;
 		typedef Scalar value_type[DIMENSION];
-		typedef const scalar_type * value_return_type;
+		typedef const scalar_type * return_type;
+
 		LowPassFilter() : _firstTime(true) {
 		}
 
-		value_return_type filter(const value_type x, scalar_type alpha) {
+		return_type filter(const value_type x, scalar_type alpha) {
 			if (_firstTime) {
 				_firstTime = false;
 				memcpy(_hatxprev, x, sizeof(_hatxprev));
@@ -56,7 +57,7 @@ class LowPassFilter {
 			return _hatxprev;
 		}
 
-		value_return_type hatxprev() {
+		return_type hatxprev() {
 			return _hatxprev;
 		}
 
@@ -74,10 +75,9 @@ class VectorFilterable {
 		typedef Scalar value_type[DIMENSION];
 		typedef value_type derivative_value_type;
 		typedef Scalar * value_ptr_type;
-		typedef value_type * derivative_value_ptr_type;
 		typedef LowPassFilter<DIMENSION, Scalar> value_filter_type;
 		typedef LowPassFilter<DIMENSION, Scalar> derivative_filter_type;
-		typedef typename LowPassFilter<DIMENSION, Scalar>::value_return_type value_return_type;
+		typedef typename value_filter_type::return_type value_filter_return_type;
 
 		static void setDxIdentity(value_ptr_type dx) {
 			for (int i = 0; i < DIMENSION; ++i) {
@@ -85,7 +85,7 @@ class VectorFilterable {
 			}
 		}
 
-		static void computeDerivative(derivative_value_type dx, value_return_type prev, const value_type current, scalar_type dt) {
+		static void computeDerivative(derivative_value_type dx, value_filter_return_type prev, const value_type current, scalar_type dt) {
 			for (int i = 0; i < DIMENSION; ++i) {
 				dx[i] = (current[i] - prev[i]) / dt;
 			}
@@ -109,7 +109,7 @@ class OneEuroFilter {
 		typedef typename Filterable::value_ptr_type value_ptr_type;
 		typedef typename Filterable::derivative_filter_type derivative_filter_type;
 		typedef typename Filterable::value_filter_type value_filter_type;
-		typedef typename Filterable::value_return_type value_return_type;
+		typedef typename value_filter_type::return_type value_filter_return_type;
 
 		OneEuroFilter(scalar_type mincutoff, scalar_type beta, scalar_type dcutoff) :
 			_firstTime(true),
@@ -140,7 +140,7 @@ class OneEuroFilter {
 			_beta = beta;
 			_dcutoff = dcutoff;
 		}
-		const value_return_type filter(scalar_type dt, const value_type x) {
+		const value_filter_return_type filter(scalar_type dt, const value_type x) {
 			derivative_value_type dx;
 
 			if (_firstTime) {
