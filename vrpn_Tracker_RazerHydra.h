@@ -108,6 +108,7 @@ class VRPN_API vrpn_Tracker_RazerHydra: public vrpn_Analog, public vrpn_Button_F
 		struct timeval _set_feature;
 
 		bool _calibration_done[POSE_CHANNELS];
+		int _mirror[POSE_CHANNELS];
 		q_vec_type _old_position[POSE_CHANNELS];
 
 		struct FilterData;

@@ -129,6 +129,7 @@ vrpn_Tracker_RazerHydra::vrpn_Tracker_RazerHydra(const char * name, vrpn_Connect
 
 	for (int i = 0; i < vrpn_Tracker::num_sensors; ++i) {
 		_calibration_done[i] = false;
+		_mirror[i] = 1;
 	}
 }
 
@@ -289,9 +290,9 @@ void vrpn_Tracker_RazerHydra::_report_for_sensor(int sensorNum, vrpn_uint8 * dat
 	const int buttonOffset = sensorNum * 8;
 
 	d_sensor = sensorNum;
-	pos[0] = vrpn_unbuffer_from_little_endian<vrpn_int16>(data) * MM_PER_METER;
-	pos[1] = vrpn_unbuffer_from_little_endian<vrpn_int16>(data) * MM_PER_METER;
-	pos[2] = vrpn_unbuffer_from_little_endian<vrpn_int16>(data) * MM_PER_METER;
+	pos[0] = vrpn_unbuffer_from_little_endian<vrpn_int16>(data) * MM_PER_METER * _mirror[sensorNum];
+	pos[1] = vrpn_unbuffer_from_little_endian<vrpn_int16>(data) * MM_PER_METER * _mirror[sensorNum] * -1.0; // ensure right-handed
+	pos[2] = vrpn_unbuffer_from_little_endian<vrpn_int16>(data) * MM_PER_METER * _mirror[sensorNum];
 
 	/*
 	if(sensorNum == 0)
@@ -318,6 +319,7 @@ void vrpn_Tracker_RazerHydra::_report_for_sensor(int sensorNum, vrpn_uint8 * dat
 			pos[0] *= -1;
 			pos[1] *= -1;
 			pos[2] *= -1;
+			_mirror[sensorNum] *= -1;
 		}
 		q_vec_copy(_old_position[sensorNum], pos);
 	} else {
@@ -332,6 +334,7 @@ void vrpn_Tracker_RazerHydra::_report_for_sensor(int sensorNum, vrpn_uint8 * dat
 			pos[0] *= -1;
 			pos[1] *= -1;
 			pos[2] *= -1;
+			_mirror[sensorNum] = -1;
 		}
 	}
 
