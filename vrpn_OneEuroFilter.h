@@ -174,10 +174,12 @@ typedef OneEuroFilter<> OneEuroFilterVec;
 
 class LowPassFilterQuat {
 	public:
+		typedef const double * return_type;
+
 		LowPassFilterQuat() : _firstTime(true) {
 		}
 
-		const double *filter(const q_type x, vrpn_float64 alpha) {
+		return_type filter(const q_type x, vrpn_float64 alpha) {
 			if (_firstTime) {
 				_firstTime = false;
 				q_copy(_hatxprev, x);
@@ -189,7 +191,7 @@ class LowPassFilterQuat {
 			return _hatxprev;
 		}
 
-		const double *hatxprev() {
+		return_type hatxprev() {
 			return _hatxprev;
 		}
 
@@ -198,65 +200,36 @@ class LowPassFilterQuat {
 		q_type _hatxprev;
 };
 
-class OneEuroFilterQuat {
+class QuatFilterable {
 	public:
+		typedef	double scalar_type;
+		typedef q_type value_type;
+		typedef q_type derivative_value_type;
+		typedef q_type value_ptr_type;
+		typedef LowPassFilterQuat value_filter_type;
+		typedef LowPassFilterQuat derivative_filter_type;
+		typedef value_filter_type::return_type value_filter_return_type;
 
-		typedef double value_type;
-		OneEuroFilterQuat() : _firstTime(true) {};
-		OneEuroFilterQuat(vrpn_float64 mincutoff, vrpn_float64 beta, vrpn_float64 dcutoff) :
-			_firstTime(true),
-			_mincutoff(mincutoff), _beta(beta), _dcutoff(dcutoff) {};
-
-		void setParams(vrpn_float64 mincutoff, vrpn_float64 beta, vrpn_float64 dcutoff) {
-			_mincutoff = mincutoff;
-			_beta = beta;
-			_dcutoff = dcutoff;
-		}
-		const value_type *filter(value_type dt, const q_type x) {
-			q_type dx;
-
-			if (_firstTime) {
-				_firstTime = false;
-				dx[0] = dx[1] = dx[2] = 0;
-				dx[3] = 1;
-
-			} else {
-				q_type inverse_prev;
-				q_invert(inverse_prev, _xfilt.hatxprev());
-				q_mult(dx, x, inverse_prev);
-			}
-
-			q_type edx;
-			q_copy(edx, _dxfilt.filter(dx, alpha(dt, _dcutoff)));
-			/*
-			// avoid taking acos of an invalid number due to numerical errors
-			if(edx[Q_W] > 1.0) edx[Q_W] = 1.0;
-			if(edx[Q_W] < -1.0) edx[Q_W] = -1.0;
-			double ax,ay,az,angle;
-			q_to_axis_angle(&ax, &ay, &az, &angle, edx);
-			*/
-
-			vrpn_float64 cutoff = _mincutoff + _beta * edx[Q_W];
-
-			q_normalize(_normalizedResult, _xfilt.filter(x, alpha(dt, cutoff)));
-
-
-			return _normalizedResult;
+		static void setDxIdentity(value_ptr_type dx) {
+			dx[Q_X] = dx[Q_Y] = dx[Q_Z] = 0;
+			dx[Q_W] = 1;
 		}
 
-	private:
-		static vrpn_float64 alpha(vrpn_float64 dt, vrpn_float64 cutoff) {
-			vrpn_float64 tau = (vrpn_float64)(1.0f / (2.0f * Q_PI * cutoff));
-			return 1.0f / (1.0f + tau / dt);
+		static void computeDerivative(derivative_value_type dx, value_filter_return_type prev, const value_type current, scalar_type dt) {
+			static const q_type identity = Q_ID_QUAT;
+			q_type inverse_prev;
+			q_invert(inverse_prev, prev);
+			q_mult(dx, current, inverse_prev);
+			q_slerp(dx, identity, dx, 1.0 / dt); /// @todo make sure this line is right
+		}
+		static scalar_type computeDerivativeMagnitude(derivative_value_type const dx) {
+			/// @todo this isn't quite right
+			return dx[Q_W];
 		}
 
-		bool _firstTime;
-		value_type _mincutoff, _dcutoff;
-		value_type _beta;
-		value_type _normalizedResult[4];
-		LowPassFilter<4, double> _xfilt, _dxfilt;
 };
 
+typedef OneEuroFilter<QuatFilterable> OneEuroFilterQuat;
 
 #endif // INCLUDED_vrpn_OneEuroFilter_h_GUID_C56A0525_3809_44B7_AA16_98711638E762
 
