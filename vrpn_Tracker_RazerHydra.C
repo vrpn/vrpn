@@ -350,11 +350,8 @@ void vrpn_Tracker_RazerHydra::_report_for_sensor(int sensorNum, vrpn_uint8 * dat
 
 	q_vec_copy(pos, filtered);
 	/*
-		const double *q_filtered = _qfilters[sensorNum]->filter(dt, d_quat);
-		d_quat[Q_W] = q_filtered[Q_W];
-		d_quat[Q_X] = q_filtered[Q_X];
-		d_quat[Q_Y] = q_filtered[Q_Y];
-		d_quat[Q_Z] = q_filtered[Q_Z];
+	const double *q_filtered = _f->_qfilters[sensorNum]->filter(dt, d_quat);
+	q_copy(d_quat, q_filtered);
 	*/
 	/// "middle" button
 	buttons[0 + buttonOffset] = buttonBits & 0x20;
