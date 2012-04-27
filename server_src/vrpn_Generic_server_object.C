@@ -4839,7 +4839,7 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object (vrpn_Connection *connect
       }
 
       // copy for strtok work
-      strncpy (scrap, line, LINESIZE);
+      strncpy (scrap, line, LINESIZE - 1);
       // Figure out the device from the name and handle appropriately
 
       // WARNING: SUBSTRINGS WILL MATCH THE EARLIER STRING, SO
