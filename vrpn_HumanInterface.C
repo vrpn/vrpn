@@ -173,6 +173,10 @@ void vrpn_HidInterface::send_feature_report(size_t bytes, const vrpn_uint8 *buff
 	int ret = hid_send_feature_report(_device, buffer, bytes);
 	if (ret == -1) {
 		fprintf(stderr, "vrpn_HidInterface::send_feature_report(): failed to send feature report\n");
+		const wchar_t * errmsg = hid_error(_device);
+		if (errmsg) {
+			fprintf(stderr, "vrpn_HidInterface::send_feature_report(): error message: %ls\n", errmsg);
+		}
 	} else {
 		//fprintf(stderr, "vrpn_HidInterface::send_feature_report(): sent feature report, %d bytes\n", static_cast<int>(bytes));
 	}
@@ -187,6 +191,10 @@ int vrpn_HidInterface::get_feature_report(size_t bytes, vrpn_uint8 *buffer) {
 	int ret = hid_get_feature_report(_device, buffer, bytes);
 	if (ret == -1) {
 		fprintf(stderr, "vrpn_HidInterface::get_feature_report(): failed to get feature report\n");
+		const wchar_t * errmsg = hid_error(_device);
+		if (errmsg) {
+			fprintf(stderr, "vrpn_HidInterface::get_feature_report(): error message: %ls\n", errmsg);
+		}
 	} else {
 		//fprintf(stderr, "vrpn_HidInterface::get_feature_report(): got feature report, %d bytes\n", static_cast<int>(bytes));
 	}
