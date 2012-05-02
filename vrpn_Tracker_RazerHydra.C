@@ -22,6 +22,7 @@
 #include "quat.h"
 #include "vrpn_BufferUtils.h"
 #include "vrpn_SendTextMessageStreamProxy.h"
+#include "vrpn_OneEuroFilter.h"
 
 // Library/third-party includes
 // - none
@@ -82,6 +83,26 @@ static inline unsigned long duration(struct timeval t1, struct timeval t2) {
 	       1000000L * (t1.tv_sec - t2.tv_sec);
 }
 
+static inline double duration_seconds(struct timeval t1, struct timeval t2) {
+	return duration(t1, t2) / double(1000000L);
+}
+
+struct vrpn_Tracker_RazerHydra::FilterData {
+	FilterData() {
+		for (int i = 0; i < vrpn_Tracker_RazerHydra::POSE_CHANNELS; ++i) {
+			_filters[i].setMinCutoff(1.150);
+			_filters[i].setBeta(.5);
+			_filters[i].setDerivativeCutoff(1.2);
+
+			_qfilters[i].setMinCutoff(1.5);
+			_qfilters[i].setBeta(.5);
+			_qfilters[i].setDerivativeCutoff(1.2);
+		}
+	}
+	OneEuroFilterVec _filters[vrpn_Tracker_RazerHydra::POSE_CHANNELS];
+	OneEuroFilterQuat _qfilters[vrpn_Tracker_RazerHydra::POSE_CHANNELS];
+};
+
 vrpn_Tracker_RazerHydra::vrpn_Tracker_RazerHydra(const char * name, vrpn_Connection * con)
 	: vrpn_Analog(name, con)
 	, vrpn_Button_Filter(name, con)
@@ -91,18 +112,26 @@ vrpn_Tracker_RazerHydra::vrpn_Tracker_RazerHydra(const char * name, vrpn_Connect
 	                        new vrpn_HidProductAcceptor(HYDRA_VENDOR, HYDRA_PRODUCT)))
 	, status(HYDRA_WAITING_FOR_CONNECT)
 	, _wasInGamepadMode(false) /// assume not - if we have to send a command, then set to true
-	, _attempt(0) {
+	, _attempt(0)
+	, _f(new FilterData()) {
 
 	/// Set up sensor counts
-	vrpn_Analog::num_channel = 6; /// 3 analog channels from each controller
-	vrpn_Button::num_buttons = 16; /// 7 for each controller, starting at a nice number for each
-	vrpn_Tracker::num_sensors = 2;
+	vrpn_Analog::num_channel = ANALOG_CHANNELS; /// 3 analog channels from each controller
+	vrpn_Button::num_buttons = BUTTON_CHANNELS; /// 7 for each controller, starting at a nice number for each
+	vrpn_Tracker::num_sensors = POSE_CHANNELS;
 
 	/// Initialize all data
 	memset(buttons, 0, sizeof(buttons));
 	memset(lastbuttons, 0, sizeof(lastbuttons));
 	memset(channel, 0, sizeof(channel));
 	memset(last, 0, sizeof(last));
+
+	vrpn_gettimeofday(&_timestamp, NULL);
+
+	for (int i = 0; i < vrpn_Tracker::num_sensors; ++i) {
+		_calibration_done[i] = false;
+		_mirror[i] = 1;
+	}
 }
 
 vrpn_Tracker_RazerHydra::~vrpn_Tracker_RazerHydra() {
@@ -114,6 +143,8 @@ vrpn_Tracker_RazerHydra::~vrpn_Tracker_RazerHydra() {
 		send_text_message() << "Waiting 2 seconds for mode change to complete.";
 		vrpn_SleepMsecs(2000);
 	}
+
+	delete _f;
 }
 
 void vrpn_Tracker_RazerHydra::on_data_received(size_t bytes, vrpn_uint8 *buffer) {
@@ -132,11 +163,11 @@ void vrpn_Tracker_RazerHydra::on_data_received(size_t bytes, vrpn_uint8 *buffer)
 	}
 
 	vrpn_gettimeofday(&_timestamp, NULL);
+	double dt = duration_seconds(_timestamp, vrpn_Button::timestamp);
 	vrpn_Button::timestamp = _timestamp;
 	vrpn_Tracker::timestamp = _timestamp;
-
-	_report_for_sensor(0, buffer + 8);
-	_report_for_sensor(1, buffer + 30);
+	_report_for_sensor(0, buffer + 8, dt);
+	_report_for_sensor(1, buffer + 30, dt);
 
 	vrpn_Analog::report_changes(vrpn_CONNECTION_LOW_LATENCY, _timestamp);
 	vrpn_Button::report_changes();
@@ -249,7 +280,7 @@ void vrpn_Tracker_RazerHydra::_enter_motion_controller_mode() {
 	vrpn_gettimeofday(&_set_feature, NULL);
 }
 
-void vrpn_Tracker_RazerHydra::_report_for_sensor(int sensorNum, vrpn_uint8 * data) {
+void vrpn_Tracker_RazerHydra::_report_for_sensor(int sensorNum, vrpn_uint8 * data, double dt) {
 	if (!d_connection) {
 		return;
 	}
@@ -260,15 +291,69 @@ void vrpn_Tracker_RazerHydra::_report_for_sensor(int sensorNum, vrpn_uint8 * dat
 	const int buttonOffset = sensorNum * 8;
 
 	d_sensor = sensorNum;
-	pos[0] = vrpn_unbuffer_from_little_endian<vrpn_int16>(data) * MM_PER_METER;
-	pos[1] = vrpn_unbuffer_from_little_endian<vrpn_int16>(data) * MM_PER_METER;
-	pos[2] = vrpn_unbuffer_from_little_endian<vrpn_int16>(data) * MM_PER_METER;
+	/// @todo Why do we sometimes have to invert the y axis to get right-handed behavior?
+	pos[0] = vrpn_unbuffer_from_little_endian<vrpn_int16>(data) * MM_PER_METER * _mirror[sensorNum];
+	pos[1] = vrpn_unbuffer_from_little_endian<vrpn_int16>(data) * MM_PER_METER * _mirror[sensorNum];
+	pos[2] = vrpn_unbuffer_from_little_endian<vrpn_int16>(data) * MM_PER_METER * _mirror[sensorNum];
 
 	d_quat[Q_W] = vrpn_unbuffer_from_little_endian<vrpn_int16>(data) * SCALE_INT16_TO_FLOAT_PLUSMINUS_1;
 	d_quat[Q_X] = vrpn_unbuffer_from_little_endian<vrpn_int16>(data) * SCALE_INT16_TO_FLOAT_PLUSMINUS_1;
 	d_quat[Q_Y] = vrpn_unbuffer_from_little_endian<vrpn_int16>(data) * SCALE_INT16_TO_FLOAT_PLUSMINUS_1;
 	d_quat[Q_Z] = vrpn_unbuffer_from_little_endian<vrpn_int16>(data) * SCALE_INT16_TO_FLOAT_PLUSMINUS_1;
+	q_normalize(d_quat, d_quat);
+	/*
+	if(sensorNum == 0)
+	{
+		static int count = 0;
+		fprintf(stderr, "%d    %3.3f %3.3f %3.3f \n", count++, pos[0], pos[1], pos[2]);
+	}
+	*/
+
+	// fix hemisphere transitions
+	if (_calibration_done[sensorNum]) {
+		double dist_direct = (pos[0] - _old_position[sensorNum][0]) * (pos[0] - _old_position[sensorNum][0]) +
+		                     (pos[1] - _old_position[sensorNum][1]) * (pos[1] - _old_position[sensorNum][1]) +
+		                     (pos[2] - _old_position[sensorNum][2]) * (pos[2] - _old_position[sensorNum][2]);
+
+		double dist_mirror = (-pos[0] - _old_position[sensorNum][0]) * (-pos[0] - _old_position[sensorNum][0]) +
+		                     (-pos[1] - _old_position[sensorNum][1]) * (-pos[1] - _old_position[sensorNum][1]) +
+		                     (-pos[2] - _old_position[sensorNum][2]) * (-pos[2] - _old_position[sensorNum][2]);
+
+
+		// too big jump, likely hemisphere switch
+		// in that case the coordinates given are mirrored symmetrically across the base
+		if (dist_direct - dist_mirror > 10 * Q_EPSILON) {
+			pos[0] *= -1;
+			pos[1] *= -1;
+			pos[2] *= -1;
+			_mirror[sensorNum] *= -1;
+		}
+	} else {
+		_calibration_done[sensorNum] = true;
+
+		// first start - assume that the controllers are on the base
+		// left one (sensor 0) should have negative x coordinate, right one (sensor 1) positive.
+		// if it isn't so, mirror them.
+
+		if ((sensorNum == 0 && pos[0] > 0) ||
+		        (sensorNum == 1 && pos[0] < 0)) {
+			pos[0] *= -1;
+			pos[1] *= -1;
+			pos[2] *= -1;
+			_mirror[sensorNum] = -1;
+		}
+	}
+	q_vec_copy(_old_position[sensorNum], pos);
+
 	vrpn_uint8 buttonBits = vrpn_unbuffer_from_little_endian<vrpn_uint8>(data);
+
+	// jitter filtering
+	const vrpn_float64 *filtered = _f->_filters[sensorNum].filter(dt, pos);
+
+	q_vec_copy(pos, filtered);
+
+	const double *q_filtered = _f->_qfilters[sensorNum].filter(dt, d_quat);
+	q_normalize(d_quat, q_filtered);
 
 	/// "middle" button
 	buttons[0 + buttonOffset] = buttonBits & 0x20;

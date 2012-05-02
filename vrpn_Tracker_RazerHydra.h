@@ -22,6 +22,7 @@
 
 // Internal Includes
 #include "vrpn_Configure.h"
+#include "quat.h"
 #include "vrpn_HumanInterface.h"
 #include "vrpn_Analog.h"
 #include "vrpn_Button.h"
@@ -67,6 +68,7 @@
 	* 1 - joystick up/down: centered at 0, up is positive, in [-1, 1]
 	* 2 - analog trigger, in range 0 (not pressed) to 1 (fully pressed).
 */
+
 class VRPN_API vrpn_Tracker_RazerHydra: public vrpn_Analog, public vrpn_Button_Filter, public vrpn_Tracker, vrpn_HidInterface {
 	public:
 		vrpn_Tracker_RazerHydra(const char * name, vrpn_Connection * trackercon);
@@ -77,12 +79,17 @@ class VRPN_API vrpn_Tracker_RazerHydra: public vrpn_Analog, public vrpn_Button_F
 
 		virtual void on_data_received(size_t bytes, vrpn_uint8 *buffer);
 
-	protected:
+	private:
 		enum HydraStatus {
-			HYDRA_WAITING_FOR_CONNECT,
-			HYDRA_LISTENING_AFTER_CONNECT,
-			HYDRA_LISTENING_AFTER_SET_FEATURE,
-			HYDRA_REPORTING
+		    HYDRA_WAITING_FOR_CONNECT,
+		    HYDRA_LISTENING_AFTER_CONNECT,
+		    HYDRA_LISTENING_AFTER_SET_FEATURE,
+		    HYDRA_REPORTING
+		};
+		enum {
+		    ANALOG_CHANNELS = 6,
+		    BUTTON_CHANNELS = 16,
+		    POSE_CHANNELS = 2
 		};
 
 		void _waiting_for_connect();
@@ -91,7 +98,7 @@ class VRPN_API vrpn_Tracker_RazerHydra: public vrpn_Analog, public vrpn_Button_F
 
 		void _enter_motion_controller_mode();
 
-		void _report_for_sensor(int sensorNum, vrpn_uint8 * data);
+		void _report_for_sensor(int sensorNum, vrpn_uint8 * data, double dt);
 
 		HydraStatus status;
 		bool _wasInGamepadMode;
@@ -99,6 +106,14 @@ class VRPN_API vrpn_Tracker_RazerHydra: public vrpn_Analog, public vrpn_Button_F
 		struct timeval _timestamp;
 		struct timeval _connected;
 		struct timeval _set_feature;
+
+		bool _calibration_done[POSE_CHANNELS];
+		int _mirror[POSE_CHANNELS];
+		q_vec_type _old_position[POSE_CHANNELS];
+
+		struct FilterData;
+
+		FilterData * _f;
 };
 
 #endif
