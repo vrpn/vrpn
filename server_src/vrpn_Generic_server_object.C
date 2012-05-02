@@ -487,8 +487,8 @@ int vrpn_Generic_Server_Object::setup_Tracker_AnalogFly (char * & pch, char * li
   int i1;
   float f1;
   vrpn_Tracker_AnalogFlyParam     p;
-  vrpn_bool    absolute;
-  vrpn_bool    worldFrame = VRPN_FALSE;
+  bool    absolute;
+  bool    worldFrame = VRPN_FALSE;
 
   next();
 
@@ -607,7 +607,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_AnalogFly (char * & pch, char * li
     }
   }
 
-  trackers[num_trackers] = new vrpn_Tracker_AnalogFly (s2, connection, &p, f1, absolute, VRPN_FALSE, worldFrame);
+  trackers[num_trackers] = new vrpn_Tracker_AnalogFly (s2, connection, &p, f1, absolute, false, worldFrame);
 
   if (!trackers[num_trackers]) {
     fprintf (stderr, "Can't create new vrpn_Tracker_AnalogFly\n");
