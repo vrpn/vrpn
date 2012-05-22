@@ -258,6 +258,13 @@ void vrpn_Tracker_RazerHydra::mainloop() {
 
 void vrpn_Tracker_RazerHydra::reconnect() {
 	status = HYDRA_WAITING_FOR_CONNECT;
+
+	// Reset calibration if we have to reconnect.
+	for (int i = 0; i < vrpn_Tracker::num_sensors; ++i) {
+		_calibration_done[i] = false;
+		_mirror[i] = 1;
+	}
+
 	vrpn_HidInterface::reconnect();
 	_ctrl->reconnect();
 }
