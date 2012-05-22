@@ -297,17 +297,8 @@ void vrpn_Tracker_RazerHydra::_listening_after_set_feature() {
 		send_text_message(vrpn_TEXT_WARNING)
 		        << "Really sleepy device - won't start motion controller reports despite our earlier "
 		        << _attempt << " attempt" << (_attempt > 1 ? ". " : "s. ")
-		        << " Will give it another try.";
-#ifdef _WIN32
-		send_text_message(vrpn_TEXT_WARNING)
-		        << "IMPORTANT (Windows-only): you need the Hydra driver from http://www.razersupport.com/ "
-		        << "installed for us to be able to control the device mode. If you haven't installed it, "
-		        << "that's why you're getting these errors. Quit this server and install the driver, "
-		        << "then try again.";
-#else
-		send_text_message(vrpn_TEXT_WARNING)
+		        << " Will give it another try. "
 		        << "If this doesn't work, unplug and replug device and restart the VRPN server.";
-#endif
 		_enter_motion_controller_mode();
 	}
 }
