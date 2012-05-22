@@ -78,8 +78,10 @@ void vrpn_HidInterface::reconnect() {
             serial = loop->serial_number;
             path = loop->path;
             found = true;
+#ifdef VRPN_HID_DEBUGGING
             fprintf(stderr,"vrpn_HidInterface::reconnect(): Found %ls %ls (%04hx:%04hx) at path %s - will attempt to to open.\n",
 				loop->manufacturer_string, loop->product_string, _vendor, _product, loop->path);
+#endif
           }
           loop = loop->next;
         }
@@ -111,7 +113,10 @@ void vrpn_HidInterface::reconnect() {
 		fprintf(stderr,"vrpn_HidInterface::reconnect(): Could not set device to nonblocking\n");
                 return;
         }
-	fprintf(stderr,"vrpn_HidInterface::reconnect(): Device successfully opened.");
+
+#ifdef VRPN_HID_DEBUGGING
+	fprintf(stderr,"vrpn_HidInterface::reconnect(): Device successfully opened.\n");
+#endif
 	_working = true;
 }
 
