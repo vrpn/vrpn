@@ -113,9 +113,10 @@ class OneEuroFilter {
 
 		OneEuroFilter(scalar_type mincutoff, scalar_type beta, scalar_type dcutoff) :
 			_firstTime(true),
-			_mincutoff(mincutoff), _beta(beta), _dcutoff(dcutoff) {};
+			_mincutoff(mincutoff), _dcutoff(dcutoff),
+			_beta(beta) {};
 
-		OneEuroFilter() : _firstTime(true), _mincutoff(1), _beta(0.5), _dcutoff(1) {};
+		OneEuroFilter() : _firstTime(true), _mincutoff(1), _dcutoff(1), _beta(0.5) {};
 
 		void setMinCutoff(scalar_type mincutoff) {
 			_mincutoff = mincutoff;
