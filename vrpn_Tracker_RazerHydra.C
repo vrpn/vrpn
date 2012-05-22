@@ -32,6 +32,7 @@
 #include <assert.h>
 #else
 #include <cassert>
+#include <string>
 #include <sstream>
 #endif
 
@@ -40,6 +41,7 @@
 const unsigned int HYDRA_VENDOR = 0x1532;
 const unsigned int HYDRA_PRODUCT = 0x0300;
 const unsigned int HYDRA_INTERFACE = 0x0;
+const unsigned int HYDRA_CONTROL_INTERFACE = 0x1;
 
 /// Feature report 0 to set to enter motion controller mode
 static const vrpn_uint8 HYDRA_FEATURE_REPORT[] = {
@@ -87,6 +89,60 @@ static inline double duration_seconds(struct timeval t1, struct timeval t2) {
 	return duration(t1, t2) / double(1000000L);
 }
 
+class vrpn_Tracker_RazerHydra::ControlInterface : vrpn_HidInterface {
+	public:
+		ControlInterface()
+			: vrpn_HidInterface(new vrpn_HidBooleanAndAcceptor(
+			                        new vrpn_HidInterfaceNumberAcceptor(HYDRA_CONTROL_INTERFACE),
+			                        new vrpn_HidProductAcceptor(HYDRA_VENDOR, HYDRA_PRODUCT)))
+		{}
+
+		void on_data_received(size_t bytes, vrpn_uint8 */*buffer*/) {
+			fprintf(stderr, "Unexpected receipt of %d bytes on Hydra control interface!\n", static_cast<int>(bytes));
+		}
+
+		std::string getSerialNumber() {
+			if (connected()) {
+				char buf[256];
+				memset(buf, 0, sizeof(buf));
+				int bytes = get_feature_report(sizeof(buf) - 1, reinterpret_cast<vrpn_uint8*>(buf));
+				if (bytes > 0) {
+					return std::string(buf + 218, 15);
+				} else {
+					return "[FAILED TO GET FEATURE REPORT]";
+				}
+			} else {
+				return "[HYDRA CONTROL INTERFACE NOT CONNECTED]";
+			}
+		}
+
+		void setMotionControllerMode() {
+			/// Prompt to start streaming motion data
+			send_feature_report(HYDRA_FEATURE_REPORT_LEN, HYDRA_FEATURE_REPORT);
+
+			vrpn_uint8 buf[91] = {0};
+			buf[0] = 0;
+			get_feature_report(91, buf);
+		}
+
+		void setGamepadMode() {
+			/// Prompt to stop streaming motion data
+			send_feature_report(HYDRA_GAMEPAD_COMMAND_LEN, HYDRA_GAMEPAD_COMMAND);
+		}
+
+		bool connected() {
+			return vrpn_HidInterface::connected();
+		}
+
+		void reconnect() {
+			return vrpn_HidInterface::reconnect();
+		}
+
+		void update() {
+			vrpn_HidInterface::update();
+		}
+};
+
 struct vrpn_Tracker_RazerHydra::FilterData {
 	FilterData() {
 		for (int i = 0; i < vrpn_Tracker_RazerHydra::POSE_CHANNELS; ++i) {
@@ -113,7 +169,8 @@ vrpn_Tracker_RazerHydra::vrpn_Tracker_RazerHydra(const char * name, vrpn_Connect
 	, status(HYDRA_WAITING_FOR_CONNECT)
 	, _wasInGamepadMode(false) /// assume not - if we have to send a command, then set to true
 	, _attempt(0)
-	, _f(new FilterData()) {
+	, _f(new FilterData())
+	, _ctrl(new ControlInterface) {
 
 	/// Set up sensor counts
 	vrpn_Analog::num_channel = ANALOG_CHANNELS; /// 3 analog channels from each controller
@@ -138,12 +195,13 @@ vrpn_Tracker_RazerHydra::~vrpn_Tracker_RazerHydra() {
 	if (status == HYDRA_REPORTING && _wasInGamepadMode) {
 		send_text_message(vrpn_TEXT_WARNING)
 		        << "Hydra was in gamepad mode when we started: switching back to gamepad mode.";
-		send_feature_report(HYDRA_GAMEPAD_COMMAND_LEN, HYDRA_GAMEPAD_COMMAND);
+		_ctrl->setGamepadMode();
 
 		send_text_message() << "Waiting 2 seconds for mode change to complete.";
 		vrpn_SleepMsecs(2000);
 	}
 
+	delete _ctrl;
 	delete _f;
 }
 
@@ -187,6 +245,7 @@ void vrpn_Tracker_RazerHydra::mainloop() {
 
 		// device update
 		update();
+		_ctrl->update();
 
 		// Check/update listening state during connection/handshaking
 		if (status == HYDRA_LISTENING_AFTER_CONNECT) {
@@ -200,17 +259,13 @@ void vrpn_Tracker_RazerHydra::mainloop() {
 void vrpn_Tracker_RazerHydra::reconnect() {
 	status = HYDRA_WAITING_FOR_CONNECT;
 	vrpn_HidInterface::reconnect();
+	_ctrl->reconnect();
 }
 
 void vrpn_Tracker_RazerHydra::_waiting_for_connect() {
 	assert(status == HYDRA_WAITING_FOR_CONNECT);
-	if (connected()) {
-		char buf[256];
-		memset(buf, 0, sizeof(buf));
-		int bytes = get_feature_report(sizeof(buf)-1, reinterpret_cast<vrpn_uint8*>(buf));
-		if (bytes > 0) {
-			send_text_message() << "Device returned " << bytes << " for feature report 0. Serial number: " << std::string(buf + 218, 15);
-		}
+	if (connected() && _ctrl->connected()) {
+		send_text_message(vrpn_TEXT_WARNING) << "Connected to Hydra with serial number " << _ctrl->getSerialNumber();
 
 		status = HYDRA_LISTENING_AFTER_CONNECT;
 		vrpn_gettimeofday(&_connected, NULL);
@@ -225,16 +280,17 @@ void vrpn_Tracker_RazerHydra::_waiting_for_connect() {
 
 void vrpn_Tracker_RazerHydra::_listening_after_connect() {
 	assert(status == HYDRA_LISTENING_AFTER_CONNECT);
-	assert(connected());
+	assert(connected() && _ctrl->connected());
 	struct timeval now;
 	vrpn_gettimeofday(&now, NULL);
 	if (duration(now, _connected) > MAXIMUM_INITIAL_WAIT_USEC) {
 		_enter_motion_controller_mode();
 	}
 }
+
 void vrpn_Tracker_RazerHydra::_listening_after_set_feature() {
 	assert(status == HYDRA_LISTENING_AFTER_SET_FEATURE);
-	assert(connected());
+	assert(connected() && _ctrl->connected());
 	struct timeval now;
 	vrpn_gettimeofday(&now, NULL);
 	if (duration(now, _set_feature) > MAXIMUM_WAIT_USEC) {
@@ -277,11 +333,7 @@ void vrpn_Tracker_RazerHydra::_enter_motion_controller_mode() {
 	        << "right sides of the base for automatic calibration to take place.";
 
 	/// Prompt to start streaming motion data
-	send_feature_report(HYDRA_FEATURE_REPORT_LEN, HYDRA_FEATURE_REPORT);
-
-	vrpn_uint8 buf[91] = {0};
-	buf[0] = 0;
-	get_feature_report(91, buf);
+	_ctrl->setMotionControllerMode();
 
 	status = HYDRA_LISTENING_AFTER_SET_FEATURE;
 	vrpn_gettimeofday(&_set_feature, NULL);

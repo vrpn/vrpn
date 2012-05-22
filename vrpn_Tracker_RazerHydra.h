@@ -114,6 +114,9 @@ class VRPN_API vrpn_Tracker_RazerHydra: public vrpn_Analog, public vrpn_Button_F
 		struct FilterData;
 
 		FilterData * _f;
+
+		class ControlInterface;
+		ControlInterface * _ctrl;
 };
 
 #endif
