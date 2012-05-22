@@ -33,3 +33,7 @@ config.log
 .anjuta_sym_db.db
 
 docs/
+*.vcproj.*.user
+*.ncb
+*.suo
+/pc_win32/
