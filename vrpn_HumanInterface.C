@@ -60,6 +60,7 @@ void vrpn_HidInterface::reconnect() {
         struct hid_device_info  *loop = devs;
         bool found = false;
         const wchar_t *serial;
+        const char * path;
         while ((loop != NULL) && !found) {
           vrpn_HIDDEVINFO device_info;
           device_info.vendor = loop->vendor_id;
@@ -75,7 +76,10 @@ void vrpn_HidInterface::reconnect() {
             _product = loop->product_id;
             _interface = loop->interface_number;
             serial = loop->serial_number;
+            path = loop->path;
             found = true;
+            fprintf(stderr,"vrpn_HidInterface::reconnect(): Found %ls %ls (%04hx:%04hx) at %s - will attempt to to open\n",
+				loop->manufacturer_string, loop->product_string, _vendor, _product, loop->path);
           }
           loop = loop->next;
         }
@@ -84,8 +88,8 @@ void vrpn_HidInterface::reconnect() {
 		return;
         }
 
-	// Initialize the HID interface and open the device.
-        _device = hid_open(_vendor, _product, const_cast<wchar_t *>(serial));
+		// Initialize the HID interface and open the device.
+		_device = hid_open_path(path);
         if (_device == NULL) {
 		fprintf(stderr,"vrpn_HidInterface::reconnect(): Could not open device\n");
 #ifdef linux
