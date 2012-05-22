@@ -107,7 +107,7 @@ class vrpn_Tracker_RazerHydra::ControlInterface : vrpn_HidInterface {
 				memset(buf, 0, sizeof(buf));
 				int bytes = get_feature_report(sizeof(buf) - 1, reinterpret_cast<vrpn_uint8*>(buf));
 				if (bytes > 0) {
-					return std::string(buf + 218, 15);
+					return std::string(buf + 216, 17);
 				} else {
 					return "[FAILED TO GET FEATURE REPORT]";
 				}
