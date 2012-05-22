@@ -265,7 +265,7 @@ void vrpn_Tracker_RazerHydra::reconnect() {
 void vrpn_Tracker_RazerHydra::_waiting_for_connect() {
 	assert(status == HYDRA_WAITING_FOR_CONNECT);
 	if (connected() && _ctrl->connected()) {
-		send_text_message(vrpn_TEXT_WARNING) << "Connected to Hydra with serial number " << _ctrl->getSerialNumber();
+		send_text_message(vrpn_TEXT_WARNING) << "Connected to Razer Hydra with serial number " << _ctrl->getSerialNumber();
 
 		status = HYDRA_LISTENING_AFTER_CONNECT;
 		vrpn_gettimeofday(&_connected, NULL);
