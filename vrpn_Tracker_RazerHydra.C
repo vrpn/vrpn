@@ -205,6 +205,13 @@ void vrpn_Tracker_RazerHydra::reconnect() {
 void vrpn_Tracker_RazerHydra::_waiting_for_connect() {
 	assert(status == HYDRA_WAITING_FOR_CONNECT);
 	if (connected()) {
+		char buf[256];
+		memset(buf, 0, sizeof(buf));
+		int bytes = get_feature_report(sizeof(buf)-1, reinterpret_cast<vrpn_uint8*>(buf));
+		if (bytes > 0) {
+			send_text_message() << "Device returned " << bytes << " for feature report 0. Serial number: " << std::string(buf + 218, 15);
+		}
+
 		status = HYDRA_LISTENING_AFTER_CONNECT;
 		vrpn_gettimeofday(&_connected, NULL);
 		send_text_message() << "Listening to see if device is in motion controller mode.";
