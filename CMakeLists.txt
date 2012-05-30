@@ -268,6 +268,10 @@ if(VRPN_USE_HID)
 	include_directories(${HIDAPI_INCLUDE_DIRS})
 	list(APPEND SERVER_EXTRA_LIBS ${HIDAPI_LIBRARIES})
 	option(VRPN_BUILD_HID_GUI "Should we build a GUI for analyzing live HID streams?" ${TRUE_UNLESS_SUBPROJECT})
+	option(VRPN_HID_DEBUGGING "Should verbose debugging messages be displayed during HID interactions?" off)
+	if(VRPN_HID_DEBUGGING)
+		add_definitions(-DVRPN_HID_DEBUGGING)
+	endif()
 else()
 	# Clear this variable if they don't want HID after all.
 	message(STATUS "NOTE: You have VRPN_USE_LOCAL_HIDAPI enabled, but "

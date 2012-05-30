@@ -81,16 +81,17 @@ class VRPN_API vrpn_Tracker_RazerHydra: public vrpn_Analog, public vrpn_Button_F
 
 	private:
 		enum HydraStatus {
-		    HYDRA_WAITING_FOR_CONNECT,
-		    HYDRA_LISTENING_AFTER_CONNECT,
-		    HYDRA_LISTENING_AFTER_SET_FEATURE,
-		    HYDRA_REPORTING
+			HYDRA_WAITING_FOR_CONNECT,
+			HYDRA_LISTENING_AFTER_CONNECT,
+			HYDRA_LISTENING_AFTER_SET_FEATURE,
+			HYDRA_REPORTING
 		};
 		enum {
-		    ANALOG_CHANNELS = 6,
-		    BUTTON_CHANNELS = 16,
-		    POSE_CHANNELS = 2
+			ANALOG_CHANNELS = 6,
+			BUTTON_CHANNELS = 16,
+			POSE_CHANNELS = 2
 		};
+
 
 		void _waiting_for_connect();
 		void _listening_after_connect();
@@ -114,6 +115,9 @@ class VRPN_API vrpn_Tracker_RazerHydra: public vrpn_Analog, public vrpn_Button_F
 		struct FilterData;
 
 		FilterData * _f;
+
+		class ControlInterface;
+		ControlInterface * _ctrl;
 };
 
 #endif
