@@ -208,7 +208,13 @@ vrpn_Tracker_RazerHydra::~vrpn_Tracker_RazerHydra() {
 void vrpn_Tracker_RazerHydra::on_data_received(size_t bytes, vrpn_uint8 *buffer) {
 	if (bytes != 52) {
 		send_text_message(vrpn_TEXT_WARNING)
-		        << "Got input report of " << bytes << " bytes, expected 52! Discarding.";
+		        << "Got input report of " << bytes << " bytes, expected 52! Discarding, and re-connecting to Hydra."
+#ifdef _WIN32
+		        << " Please make sure that you have completely quit the Hydra Configurator software and the Hydra system tray icon,"
+		        << " since this usually indicates that the Razer software has changed the Hydra's mode behind our back."
+#endif
+		        ;
+		reconnect();
 		return;
 	}
 
