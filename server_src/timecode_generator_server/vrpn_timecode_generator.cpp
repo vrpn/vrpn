@@ -2,6 +2,26 @@
 
 #ifdef	VRPN_INCLUDE_TIMECODE_SERVER
 
+
+/* This library is C code. When programming in C++, there may be a problem with
+   decorated names of the library, C++ can't recognize the C names in a library. */
+#ifndef VRPN_ADRIENNE_INCLUDE_FILENAME
+// If we don't have nice customized stuff from CMake, fall back to
+// original include style.
+# define VRPN_ADRIENNE_INCLUDE_FILENAME "aecinttc.h"
+#endif
+
+#ifndef VRPN_ADRIENNE_INCLUDE_HAS_EXTERN_C
+extern "C"{
+#endif
+
+	// PROTOTYPES OF THE AECPC-TC.DLL FUNCTIONS
+	#include VRPN_ADRIENNE_INCLUDE_FILENAME
+
+#ifndef VRPN_ADRIENNE_INCLUDE_HAS_EXTERN_C
+}
+#endif
+
 /*
 //Function Prototypes
 int		FindAllBoards(void);

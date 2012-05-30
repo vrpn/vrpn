@@ -464,6 +464,21 @@ if(VIEWPOINT_FOUND)
 endif()
 
 ###
+# Adrienne timecode boards
+###
+if(WIN32 OR CYGWIN)
+	find_package(Adrienne)
+	option_requires(VRPN_INCLUDE_TIMECODE_SERVER
+		"Build with support for Adrienne timecode server"
+		${DEFAULT_OFF_IF_SUBPROJECT}
+		ADRIENNE_FOUND)
+	if(VRPN_INCLUDE_TIMECODE_SERVER)
+		set(VRPN_ADRIENNE_INCLUDE_FILENAME "${ADRIENNE_INCLUDE_FILENAME}")
+		set(VRPN_ADRIENNE_INCLUDE_HAS_EXTERN_C ${ADRIENNE_INCLUDE_HAS_EXTERN_C})
+	endif()
+endif()
+
+###
 # XXX Other libraries needing detection and handling (TODO)
 ###
 # possibly GHOST?
@@ -491,9 +506,6 @@ add_definitions(-DVRPN_USING_CMAKE)
 # Configuration options controlling what gets included in the build.
 # These are the default options - if a library is detected above it will
 # be pre-set to ON instead.
-option(VRPN_INCLUDE_TIMECODE_SERVER
-	"Build with Adrienne time-code server support"
-	OFF)
 option(VRPN_INCLUDE_INTERSENSE
 	"Build with InterSense native library support"
 	OFF)

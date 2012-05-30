@@ -146,6 +146,8 @@
 // code to find it.
 //#define	VRPN_INCLUDE_TIMECODE_SERVER
 #cmakedefine VRPN_INCLUDE_TIMECODE_SERVER
+#cmakedefine VRPN_ADRIENNE_INCLUDE_FILENAME "@VRPN_ADRIENNE_INCLUDE_FILENAME@"
+#cmakedefine VRPN_ADRIENNE_INCLUDE_HAS_EXTERN_C
 
 //-----------------------
 // Compiles the InterSense Tracker using the
@@ -406,16 +408,6 @@
 #ifdef  vrpn_USE_MPI
 #pragma comment (lib, VRPN_SYSTEMDRIVE "/Program Files/MPICH2/lib/mpi.lib")
 #endif
-
-// Load Adrienne libraries if we are using the timecode generator.
-// If this doesn't match where you have installed these libraries,
-// edit the following lines to point at the correct libraries.  Do
-// this here rather than in the project settings so that it can be
-// turned on and off using the definition above.
-#ifdef	VRPN_INCLUDE_TIMECODE_SERVER
-#pragma comment (lib, "../../Adrienne/AEC_DLL/AEC_NTTC.lib")
-#endif
-
 #ifdef VRPN_USE_MOTIONNODE
 #pragma comment(lib, "libMotionNodeSDK.lib")
 #endif

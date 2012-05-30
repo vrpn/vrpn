@@ -1,6 +1,7 @@
 # XXX TODO:
-# Correctly configure so that aec_nttc.lib is linked and AECiNTTC.H is found
-# and setting VRPN_INCLUDE_TIMECODE_SERVER
+# Do something reasonable with the runtime DLL.
+
+include_directories(${ADRIENNE_INCLUDE_DIRS})
 
 set(TIMECODE_GENSERV_SOURCES
 	vrpn_timecode_generator.cpp)
@@ -17,6 +18,7 @@ set_property(TARGET
 	PUBLIC_HEADER
 	${TIMECODE_GENSERV_PUBLIC_HEADERS})
 
+target_link_libraries(vrpn_timecode_generator ${ADRIENNE_LIBRARIES})
 set_target_properties(vrpn_timecode_generator PROPERTIES FOLDER "Main Server")
 
 install(TARGETS
