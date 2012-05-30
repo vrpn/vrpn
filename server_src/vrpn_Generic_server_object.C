@@ -96,7 +96,7 @@ void vrpn_Generic_Server_Object::closeDevices (void)
     delete dials[i];
   }
 #ifdef VRPN_INCLUDE_TIMECODE_SERVER
-  for (i = 0; i < num_timecode_generators; i++) {
+  for (i = 0; i < num_generators; i++) {
     if (verbose) {
       fprintf (stderr, "\nClosing timecode_generator %d ...", i);
     }
