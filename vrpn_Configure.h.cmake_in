@@ -405,9 +405,6 @@
 #define VRPN_NIDAQ_PATH         VRPN_SYSTEMDRIVE "/Program Files/National Instruments/NI-DAQ/Lib/"
 #define VRPN_USDIGITAL_PATH     VRPN_SYSTEMDRIVE "/Program Files/SEI Explorer/"
 
-#ifdef  vrpn_USE_MPI
-#pragma comment (lib, VRPN_SYSTEMDRIVE "/Program Files/MPICH2/lib/mpi.lib")
-#endif
 #ifdef VRPN_USE_MOTIONNODE
 #pragma comment(lib, "libMotionNodeSDK.lib")
 #endif
@@ -415,15 +412,6 @@
 //---------------------------------------------------------------//
 // DO NOT EDIT BELOW THIS LINE FOR NORMAL CONFIGURATION SETTING. //
 //---------------------------------------------------------------//
-
-// Load the library for WiiUse.
-#ifdef  VRPN_USE_WIIUSE
-  #ifdef	_DEBUG
-//    #pragma comment(lib, VRPN_WIIUSE_LIB_PATH "/msvc/Debug/wiiuse.lib")
-  #else
-//    #pragma comment(lib, VRPN_WIIUSE_LIB_PATH "/msvc/Release/wiiuse.lib")
-  #endif
-#endif
 
 #ifdef  VRPN_USE_FREESPACE
   #ifdef	_DEBUG
