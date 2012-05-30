@@ -39,9 +39,30 @@
 /** @brief Device supporting the Razer Hydra game controller as a tracker,
 	analog device, and button device, using the USB HID protocol directly
 
-	The left wand (the one with LB and LT on its "end" buttons) is sensor 0.
-	Be sure to have the wands resting in their positions on the base when
-	starting - haven't figured out how to do the calibration yet.
+	The left wand (the one with LB and LT on its "end" buttons - look from above)
+	is sensor 0, and the right wand (with RB and RT on it) is sensor 1.
+	The "front" of the base is the side opposite the cables: there's a small
+	logo on it. You can have the base in any orientation you want, but the info
+	that follows assumes you have the base sitting on a desk, with the front toward you.
+	If you have the base in a different coordinate frame in the world, please make
+	the appropriate mental transformations yourself. :)
+
+	When starting the VRPN server, make sure that the left wand is somewhere to
+	the left of the base, and the right wand somewhere right of the base -
+	they do not need to be placed on the base or any more complicated homing/calibration
+	procedure. This is for the hemisphere tracking: it needs to have an "initial state"
+	that is roughly known, so it uses the sign of the X coordinate position.
+
+	(If you can't do this for whatever reason, modification of the driver code for an
+	alternate calibration procedure is possible.)
+
+	If using the Hydra on Windows, the server will work with or without the official
+	Razer Hydra drivers installed. If you are only using the device with VRPN, don't
+	install the official drivers. However, if you do have them installed, make sure that
+	the "Hydra Configurator" and the Hydra system tray icon are closed to avoid unexpected
+	failure (their software can switch the device out of the mode that VRPN uses).
+
+	Works great on Linux (regardless of endianness) - no drivers needed, thanks to USB HID.
 
 	The base coordinate system is right-handed with the axes:
 	* X - out the right of the base
