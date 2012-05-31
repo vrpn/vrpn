@@ -17,9 +17,9 @@
 #ifndef VRPN_TRACKER_ZSIGHT
 #define VRPN_TRACKER_ZSIGHT
 
-// Make sure Direct Input is being used
+// Make sure Direct Input is being used and atlbase is available for CComPtr.
 #include "vrpn_Configure.h"
-#if defined(_WIN32) && defined(VRPN_USE_DIRECTINPUT)
+#if defined(_WIN32) && defined(VRPN_USE_DIRECTINPUT) && defined(VRPN_HAVE_ATLBASE)
 
 #include "vrpn_Tracker.h"
 

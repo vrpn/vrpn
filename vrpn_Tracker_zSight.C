@@ -16,7 +16,7 @@
 
 #include "vrpn_Tracker_zSight.h"
 
-#if defined(_WIN32) && defined(VRPN_USE_DIRECTINPUT)
+#if defined(_WIN32) && defined(VRPN_USE_DIRECTINPUT) && defined(VRPN_HAVE_ATLBASE)
 
 // Convert from 2's complement, as per the Sensics zSight documentation
 short FromTwos(unsigned short x) {

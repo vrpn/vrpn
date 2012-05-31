@@ -125,6 +125,10 @@
 //#define	VRPN_USE_DIRECTINPUT
 //#define   VRPN_USE_WINDOWS_XINPUT
 
+// The DirectInput-based zSight tracker requires ATL for smart pointers,
+// which sadly isn't everywhere (VC Express, MXE cross compiling, ...).
+//#define VRPN_HAVE_ATLBASE
+
 //-----------------------
 // Instructs VRPN library and server to include code that uses
 // the DirectShow SDK.  If you set this, you may to edit the

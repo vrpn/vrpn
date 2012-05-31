@@ -414,6 +414,9 @@ if(WIN32)
 			set(VRPN_USE_WINDOWS_XINPUT FALSE)
 		endif()
 	endif()
+
+	include(CheckIncludeFileCXX)
+	check_include_file_cxx(atlbase.h VRPN_HAVE_ATLBASE)
 endif()
 
 ###
