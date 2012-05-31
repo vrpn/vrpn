@@ -4664,7 +4664,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_RazerHydra (char * &pch, char * li
 
 int vrpn_Generic_Server_Object::setup_Tracker_zSight (char * & pch, char * line, FILE * config_file)
 {
-#ifdef	VRPN_USE_DIRECTINPUT
+#if defined(_WIN32) && defined(VRPN_USE_DIRECTINPUT) && defined(VRPN_HAVE_ATLBASE)
   char s2 [LINESIZE];
 
   next();
@@ -4696,7 +4696,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_zSight (char * & pch, char * line,
 
   return 0;
 #else
-  fprintf (stderr, "vrpn_server: Can't open vrpn_Tracker_zSight: VRPN_USE_DIRECTINPUT not defined in vrpn_Configure.h!\n");
+  fprintf (stderr, "vrpn_server: Can't open vrpn_Tracker_zSight: VRPN_USE_DIRECTINPUT and/or VRPN_HAVE_ATLBASE not defined in vrpn_Configure.h!\n");
   return -1;
 #endif
 }
