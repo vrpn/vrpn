@@ -484,8 +484,6 @@ endif()
 ###
 # XXX Other libraries needing detection and handling (TODO)
 ###
-# possibly GHOST?
-# Adrienne time-code generator
 # InterSense Interface Libraries SDK
 # National Instruments Nidaq traditional
 # US Digital SEI/A2
