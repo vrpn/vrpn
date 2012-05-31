@@ -60,21 +60,25 @@ vrpn_Tracker_Serial(name,c,port,baud)
   sprintf(testfilename, "GPS-data.txt"); 				
   
   // This allow people to set an external flag whether they want to use real GPS or not
-  if (testFileFlag == 1) 
-  {
+  if (testFileFlag == 1) {
 	//MessageBox(NULL, "CFG file flag set to use sample GPS data","FYI",0);
     testfile = fopen(testfilename,"r"); //comment this line out to get real data
-  } 
-  else 
-  {
+  } else {
 	//MessageBox(NULL, temp,"Live GPS data",0);
     testfile = NULL; 
   }
   useUTM = utmFlag;
-  if (strlen(startSentence) > 0)
-	  nmeaParser.setStartSentence((char*)startSentence);
+  if (strlen(startSentence) > 0) {
+	nmeaParser.setStartSentence((char*)startSentence);
+  }
+
+  // Set the hardware flow-control on the serial line in case
+  // the GPS unit requires it (some do).
+  if (serial_fd >= 0) {
+	vrpn_set_rts(serial_fd);
+  }
 	
-	 register_server_handlers(); //-eb
+  register_server_handlers(); //-eb
 	
 }
 

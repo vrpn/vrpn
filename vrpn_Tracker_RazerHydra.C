@@ -97,7 +97,7 @@ class vrpn_Tracker_RazerHydra::ControlInterface : vrpn_HidInterface {
 			                        new vrpn_HidProductAcceptor(HYDRA_VENDOR, HYDRA_PRODUCT)))
 		{}
 
-		void on_data_received(size_t bytes, vrpn_uint8 */*buffer*/) {
+		void on_data_received(size_t bytes, vrpn_uint8 * /*buffer*/) {
 			fprintf(stderr, "Unexpected receipt of %d bytes on Hydra control interface!\n", static_cast<int>(bytes));
 		}
 
