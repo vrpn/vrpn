@@ -63,6 +63,7 @@
 #include "vrpn_nikon_controls.h"
 #include "vrpn_Poser_Tek4662.h"
 #include "vrpn_Mouse.h"
+#include "vrpn_DevInput.h"
 #include "vrpn_Tracker_Crossbow.h"
 #include "vrpn_3DMicroscribe.h"
 #include "vrpn_5DT16.h"
@@ -138,6 +139,7 @@ const int VRPN_GSO_MAX_PHANTOMS =             10;
 const int VRPN_GSO_MAX_DTRACKS =              5;
 const int VRPN_GSO_MAX_POSER =	              8;
 const int VRPN_GSO_MAX_MOUSES =	              8;
+const int VRPN_GSO_MAX_DEV_INPUTS =           16;
 const int VRPN_GSO_MAX_KEYBOARD =             1;
 const int VRPN_GSO_MAX_LOGGER =               10;
 const int VRPN_GSO_MAX_IMAGE_STREAM =         10;
@@ -226,6 +228,10 @@ class vrpn_Generic_Server_Object
     int		num_posers;
     vrpn_Mouse	* mouses [VRPN_GSO_MAX_MOUSES];
     int		num_mouses;
+#ifdef VRPN_USE_DEV_INPUT
+    vrpn_DevInput       * dev_inputs [VRPN_GSO_MAX_DEV_INPUTS];
+#endif
+    int		num_dev_inputs;
     vrpn_Keyboard * Keyboards [VRPN_GSO_MAX_KEYBOARD];
     int		num_Keyboards;
     vrpn_Auxiliary_Logger_Server_Generic * loggers [VRPN_GSO_MAX_LOGGER];
@@ -300,6 +306,7 @@ class vrpn_Generic_Server_Object
     int setup_JoyFly (char * & pch, char * line, FILE * config_file);
     int setup_Tracker_3DMouse (char * & pch, char * line, FILE * config_file);
     int setup_Mouse (char * & pch, char * line, FILE * config_file);
+    int setup_DevInput (char * & pch, char * line, FILE * config_file);
     int setup_Tracker_Crossbow (char * & pch, char * line, FILE * config_file);
     int setup_3DMicroscribe (char * & pch, char * line, FILE * config_file);
     int setup_5dt16 (char * & pch, char * line, FILE * config_file);

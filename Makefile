@@ -780,6 +780,15 @@ SLIB_INCLUDES = $(LIB_INCLUDES) \
 	vrpn_Xkeys.h \
 	vrpn_Zaber.h
 
+ifeq ($(HW_OS), pc_linux64)
+	SLIB_FILES += vrpn_DevInput.C
+	SLIB_INCLUDES += vrpn_DevInput.h
+endif
+ifeq ($(HW_OS), pc_linux)
+	SLIB_FILES += vrpn_DevInput.C
+	SLIB_INCLUDES += vrpn_DevInput.h
+endif
+
 $(SLIB_OBJECTS):
 $(OBJECT_DIR)/libvrpnserver.a: $(MAKEFILE) $(SLIB_OBJECTS)
 	$(AR) $(OBJECT_DIR)/libvrpnserver.a $(SLIB_OBJECTS)

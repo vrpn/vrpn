@@ -365,6 +365,12 @@
 // software must use the same copy of the VPX_InterApp.dll
 //#define VRPN_USE_VIEWPOINT
 
+//------------------------
+// Use DevInput devices.
+#if defined(linux) && !defined(__APPLE__)
+#define VRPN_USE_DEV_INPUT
+#endif
+
 //------------------------------------------------------------------//
 // SYSTEM CONFIGURATION SECTION                                     //
 // EDIT THESE DEFINITIONS TO POINT TO OPTIONAL LIBRARIES.  THEY ARE //

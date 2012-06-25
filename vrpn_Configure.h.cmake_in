@@ -379,6 +379,13 @@
 #define VRPN_VIEWPOINT_H "vpx.h"
 #cmakedefine VRPN_VIEWPOINT_LIB_PATH "@VRPN_VIEWPOINT_LIB_PATH@"
 
+//------------------------
+// Use DevInput devices.
+//#if defined(linux) && !defined(__APPLE__)
+//#define VRPN_USE_DEV_INPUT
+//#endif
+#cmakedefine VRPN_USE_DEV_INPUT
+
 //------------------------------------------------------------------//
 // SYSTEM CONFIGURATION SECTION                                     //
 // EDIT THESE DEFINITIONS TO POINT TO OPTIONAL LIBRARIES.  THEY ARE //
