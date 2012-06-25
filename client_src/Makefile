@@ -23,6 +23,8 @@
 #HW_OS := powerpc_aix
 #HW_OS := powerpc_macosx
 #HW_OS := universal_macosx
+#HW_OS := macosx_32_64
+#HW_OS := macosx_64
 ##########################
 
 INSTALL_DIR := /usr/local
