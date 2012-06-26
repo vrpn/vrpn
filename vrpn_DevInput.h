@@ -8,42 +8,25 @@
 // independent interfaces.
 ///////////////////////////////////////////////////////////////////////////
 
-/* file:	vrpn_DevInput.h
- * author:	Mike Weiblen mew@mew.cx 2004-01-14
- * copyright:	(C) 2003,2004 Michael Weiblen
- * license:	Released to the Public Domain.
- * depends:	gpm 1.19.6, VRPN 06_04
- * tested on:	Linux w/ gcc 2.95.4
- * references:  http://mew.cx/ http://vrpn.org/
- *              http://linux.schottelius.org/gpm/
+/* file:    vrpn_DevInput.h
+ * author:    Damien Touraine vrpn-python@limsi.fr 2012-06-20
+ * copyright:    (C) 2012 Damien TOUraine
+ * license:    Released to the Public Domain.
+ * depends:    VRPN 07_30
+ * tested on:    Linux w/ gcc 4.6.1
+ * references:
 */
 
 ///////////////////////////////////////////////////////////////////////////
 // vrpn_DevInput is a VRPN server class to publish events from the PC's input.
-// It provides a 2-channel vrpn_Analog for X & Y input motion, and a
-// 3-channel vrpn_Button for the input buttons.
+// It provides a many channels or buttons provided by mice, keyboards and whatever HID device that can be connected found in the /dev/input/event*.
 //
 // vrpn_DevInput makes it easy to use the diverse array of commodity input
-// devices that masquerade as a input, such as PS/2 trackballs, gyroscopic
-// free-space pointers, and force-sensing touchpads.
+// devices that are managed by Linux through /proc/bus/input/devices
 //
-// This version includes a Linux-specific implementation that leverages the Linux GPM
-// (General Purpose DevInput) server to handle the low-level hardware interfaces
-// and device protocols.  GPM is commonly included in Linux distributions.
-// The GPM homepage is http://linux.schottelius.org/gpm/
+// vrpn_DevInput can be run from X-window term or console.
 //
-// It also includes a Windows interface to the input. (XXX Really?)
-//
-// The interface reports input position in fraction of the screen.
-// The previous version of the Windows implementation had reported them
-// in pixels, but this has been changed to match on both platforms.
-// 
-// vrpn_DevInput must be run on a Linux console, not an xterm.  Rationale:
-// 1) Since the console environment doesn't presume the existance of a input,
-//    it avoids issues about mapping input events to window focus, etc.
-// 2) With the input movement controlled by a different user, it's really
-//    not possible to also use a input-based user interface anyway.
-// 3) My VRPN server machine is headless, and doesn't even have an X server.
+// Beware that keyboards are not mapped in locale setting (ie. regional keyboards)
 ///////////////////////////////////////////////////////////////////////////
 
 #include "vrpn_Analog.h"
