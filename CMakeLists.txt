@@ -555,11 +555,7 @@ endif()
 if (UNIX AND NOT APPLE)
 	option(VRPN_USE_DEV_INPUT
 		"Build with flags to enable the use of DevInput."
-		ON)
-else()
-	option(VRPN_USE_DEV_INPUT
-		"Build with flags to enable the use of DevInput."
-		OFF)
+		${TRUE_UNLESS_SUBPROJECT})
 endif()
 
 if(VRPN_BUILD_EXTRA_COMPILER_WARNINGS)
