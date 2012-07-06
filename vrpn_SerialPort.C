@@ -110,7 +110,7 @@ std::string vrpn_SerialPort::read_available_characters(int count) {
 	int needed = BUFSIZE - 1;
 	do {
 		if (count > -1) {
-			needed = std::min(count - numRead, BUFSIZE - 1);
+			needed = (std::min)(count - numRead, BUFSIZE - 1);
 		}
 		thisRead = read_available_characters(buf, needed);
 		if (thisRead != 0) {
