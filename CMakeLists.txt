@@ -599,6 +599,7 @@ set(VRPN_CLIENT_SOURCES
 	vrpn_Poser.C
 	vrpn_RedundantTransmission.C
 	vrpn_Serial.C
+	vrpn_SerialPort.C
 	vrpn_Shared.C
 	vrpn_SharedObject.C
 	vrpn_Sound.C
@@ -628,6 +629,7 @@ set(VRPN_CLIENT_PUBLIC_HEADERS
 	vrpn_Mutex.h
 	vrpn_SendTextMessageStreamProxy.h
 	vrpn_Serial.h
+	vrpn_SerialPort.h
 	vrpn_Shared.h
 	vrpn_SharedObject.h
 	vrpn_Sound.h
