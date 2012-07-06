@@ -85,7 +85,7 @@ int vrpn_SerialPort::write(std::string const& buffer) {
 int vrpn_SerialPort::write(const unsigned char * buffer, int bytes) {
 	requiresOpen();
 	int ret = vrpn_write_characters(_comm, buffer, bytes);
-	if (ret = -1) {
+	if (ret == -1) {
 		throw WriteFailure();
 	}
 	return ret;
