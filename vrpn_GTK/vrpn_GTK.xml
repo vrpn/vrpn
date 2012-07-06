@@ -1,0 +1,615 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <!-- interface-requires gtk+ 3.0 -->
+  <object class="GtkListStore" id="Frequencies">
+    <columns>
+      <!-- column-name Display -->
+      <column type="gchararray"/>
+      <!-- column-name Frequency -->
+      <column type="gfloat"/>
+    </columns>
+    <data>
+      <row>
+        <col id="0" translatable="yes">Stop</col>
+        <col id="1">0</col>
+      </row>
+      <row>
+        <col id="0">0,5 Hz</col>
+        <col id="1">0.5</col>
+      </row>
+      <row>
+        <col id="0">1 Hz</col>
+        <col id="1">1</col>
+      </row>
+      <row>
+        <col id="0">10 Hz</col>
+        <col id="1">10</col>
+      </row>
+      <row>
+        <col id="0">20 Hz</col>
+        <col id="1">20</col>
+      </row>
+      <row>
+        <col id="0">50 Hz</col>
+        <col id="1">50</col>
+      </row>
+      <row>
+        <col id="0">100 Hz</col>
+        <col id="1">100</col>
+      </row>
+      <row>
+        <col id="0">200 Hz</col>
+        <col id="1">200</col>
+      </row>
+      <row>
+        <col id="0">500 Hz</col>
+        <col id="1">500</col>
+      </row>
+    </data>
+  </object>
+  <object class="GtkWindow" id="analog">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="title" translatable="yes">Analog</property>
+    <child>
+      <object class="GtkBox" id="box3">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="orientation">vertical</property>
+        <property name="homogeneous">True</property>
+        <child>
+          <object class="GtkScale" id="analog 1">
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="adjustment">v analog 1</property>
+            <property name="round_digits">1</property>
+            <property name="value_pos">left</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkScale" id="analog 2">
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="adjustment">v analog 2</property>
+            <property name="round_digits">1</property>
+            <property name="value_pos">left</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">1</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkScale" id="analog 3">
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="adjustment">v analog 3</property>
+            <property name="round_digits">1</property>
+            <property name="value_pos">left</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">2</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkScale" id="analog 4">
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="adjustment">v analog 4</property>
+            <property name="round_digits">1</property>
+            <property name="value_pos">left</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">3</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkScale" id="analog 5">
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="adjustment">v analog 5</property>
+            <property name="round_digits">1</property>
+            <property name="value_pos">left</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">4</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkScale" id="analog 6">
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="adjustment">v analog 6</property>
+            <property name="round_digits">1</property>
+            <property name="value_pos">left</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">5</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkScale" id="analog 7">
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="adjustment">v analog 7</property>
+            <property name="round_digits">1</property>
+            <property name="value_pos">left</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">6</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkScale" id="analog 8">
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="adjustment">v analog 8</property>
+            <property name="round_digits">1</property>
+            <property name="value_pos">left</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">7</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkScale" id="analog 9">
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="adjustment">v analog 9</property>
+            <property name="round_digits">1</property>
+            <property name="value_pos">left</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">8</property>
+          </packing>
+        </child>
+      </object>
+    </child>
+  </object>
+  <object class="GtkWindow" id="button">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="title" translatable="yes">Button</property>
+    <child>
+      <object class="GtkGrid" id="grid1">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="row_homogeneous">True</property>
+        <property name="column_homogeneous">True</property>
+        <child>
+          <object class="GtkToggleButton" id="button 1">
+            <property name="label" translatable="yes">Button 1</property>
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="receives_default">True</property>
+            <property name="use_action_appearance">False</property>
+          </object>
+          <packing>
+            <property name="left_attach">0</property>
+            <property name="top_attach">0</property>
+            <property name="width">1</property>
+            <property name="height">1</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkToggleButton" id="button 2">
+            <property name="label" translatable="yes">Button 2</property>
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="receives_default">True</property>
+            <property name="use_action_appearance">False</property>
+          </object>
+          <packing>
+            <property name="left_attach">1</property>
+            <property name="top_attach">0</property>
+            <property name="width">1</property>
+            <property name="height">1</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkToggleButton" id="button 3">
+            <property name="label" translatable="yes">Button 3</property>
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="receives_default">True</property>
+            <property name="use_action_appearance">False</property>
+          </object>
+          <packing>
+            <property name="left_attach">2</property>
+            <property name="top_attach">0</property>
+            <property name="width">1</property>
+            <property name="height">1</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkToggleButton" id="button 4">
+            <property name="label" translatable="yes">Button 4</property>
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="receives_default">True</property>
+            <property name="use_action_appearance">False</property>
+          </object>
+          <packing>
+            <property name="left_attach">0</property>
+            <property name="top_attach">1</property>
+            <property name="width">1</property>
+            <property name="height">1</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkToggleButton" id="button 5">
+            <property name="label" translatable="yes">Button 5</property>
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="receives_default">True</property>
+            <property name="use_action_appearance">False</property>
+          </object>
+          <packing>
+            <property name="left_attach">1</property>
+            <property name="top_attach">1</property>
+            <property name="width">1</property>
+            <property name="height">1</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkToggleButton" id="button 6">
+            <property name="label" translatable="yes">Button 6</property>
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="receives_default">True</property>
+            <property name="use_action_appearance">False</property>
+          </object>
+          <packing>
+            <property name="left_attach">2</property>
+            <property name="top_attach">1</property>
+            <property name="width">1</property>
+            <property name="height">1</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkToggleButton" id="button 7">
+            <property name="label" translatable="yes">Button 7</property>
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="receives_default">True</property>
+            <property name="use_action_appearance">False</property>
+          </object>
+          <packing>
+            <property name="left_attach">0</property>
+            <property name="top_attach">2</property>
+            <property name="width">1</property>
+            <property name="height">1</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkToggleButton" id="button 8">
+            <property name="label" translatable="yes">Button 8</property>
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="receives_default">True</property>
+            <property name="use_action_appearance">False</property>
+          </object>
+          <packing>
+            <property name="left_attach">1</property>
+            <property name="top_attach">2</property>
+            <property name="width">1</property>
+            <property name="height">1</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkToggleButton" id="button 9">
+            <property name="label" translatable="yes">Button 9</property>
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="receives_default">True</property>
+            <property name="use_action_appearance">False</property>
+          </object>
+          <packing>
+            <property name="left_attach">2</property>
+            <property name="top_attach">2</property>
+            <property name="width">1</property>
+            <property name="height">1</property>
+          </packing>
+        </child>
+      </object>
+    </child>
+  </object>
+  <object class="GtkAdjustment" id="target">
+    <property name="upper">10</property>
+    <property name="step_increment">1</property>
+    <property name="page_increment">1</property>
+  </object>
+  <object class="GtkWindow" id="tracker">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="title" translatable="yes">Tracker</property>
+    <child>
+      <object class="GtkBox" id="box1">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="orientation">vertical</property>
+        <property name="homogeneous">True</property>
+        <child>
+          <object class="GtkBox" id="box2">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <child>
+              <object class="GtkLabel" id="label2">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="label" translatable="yes">Frequency:</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkComboBox" id="Frequency box">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="model">Frequencies</property>
+                <property name="has_entry">True</property>
+                <property name="entry_text_column">0</property>
+                <property name="id_column">1</property>
+                <child internal-child="entry">
+                  <object class="GtkEntry" id="combobox-entry">
+                    <property name="can_focus">False</property>
+                    <property name="invisible_char">●</property>
+                  </object>
+                </child>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkButton" id="reset">
+                <property name="label" translatable="yes">Reset the values</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+                <property name="use_action_appearance">False</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">2</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel" id="label1">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="label" translatable="yes">Sensor number:</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">3</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkSpinButton" id="spinbutton1">
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="invisible_char">●</property>
+                <property name="invisible_char_set">True</property>
+                <property name="adjustment">target</property>
+                <property name="numeric">True</property>
+                <property name="wrap">True</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">4</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkScale" id="scale1">
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="adjustment">x position</property>
+            <property name="round_digits">1</property>
+            <property name="value_pos">left</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">1</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkScale" id="scale2">
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="adjustment">y position</property>
+            <property name="round_digits">1</property>
+            <property name="value_pos">left</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">2</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkScale" id="scale3">
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="adjustment">z position</property>
+            <property name="round_digits">1</property>
+            <property name="value_pos">left</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">3</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkScale" id="scale4">
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="adjustment">x orientation</property>
+            <property name="round_digits">1</property>
+            <property name="value_pos">left</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">4</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkScale" id="scale5">
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="adjustment">y orientation</property>
+            <property name="round_digits">1</property>
+            <property name="value_pos">left</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">5</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkScale" id="scale6">
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="adjustment">z orientation</property>
+            <property name="round_digits">1</property>
+            <property name="value_pos">left</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">6</property>
+          </packing>
+        </child>
+      </object>
+    </child>
+  </object>
+  <object class="GtkAdjustment" id="v analog 1">
+    <property name="lower">-1</property>
+    <property name="upper">1</property>
+    <property name="step_increment">1</property>
+    <property name="page_increment">1</property>
+  </object>
+  <object class="GtkAdjustment" id="v analog 2">
+    <property name="lower">-1</property>
+    <property name="upper">1</property>
+    <property name="step_increment">1</property>
+    <property name="page_increment">1</property>
+  </object>
+  <object class="GtkAdjustment" id="v analog 3">
+    <property name="lower">-1</property>
+    <property name="upper">1</property>
+    <property name="step_increment">1</property>
+    <property name="page_increment">1</property>
+  </object>
+  <object class="GtkAdjustment" id="v analog 4">
+    <property name="lower">-1</property>
+    <property name="upper">1</property>
+    <property name="step_increment">1</property>
+    <property name="page_increment">1</property>
+  </object>
+  <object class="GtkAdjustment" id="v analog 5">
+    <property name="lower">-1</property>
+    <property name="upper">1</property>
+    <property name="step_increment">1</property>
+    <property name="page_increment">1</property>
+  </object>
+  <object class="GtkAdjustment" id="v analog 6">
+    <property name="lower">-1</property>
+    <property name="upper">1</property>
+    <property name="step_increment">1</property>
+    <property name="page_increment">1</property>
+  </object>
+  <object class="GtkAdjustment" id="v analog 7">
+    <property name="lower">-1</property>
+    <property name="upper">1</property>
+    <property name="step_increment">1</property>
+    <property name="page_increment">1</property>
+  </object>
+  <object class="GtkAdjustment" id="v analog 8">
+    <property name="lower">-1</property>
+    <property name="upper">1</property>
+    <property name="step_increment">1</property>
+    <property name="page_increment">1</property>
+  </object>
+  <object class="GtkAdjustment" id="v analog 9">
+    <property name="lower">-1</property>
+    <property name="upper">1</property>
+    <property name="step_increment">1</property>
+    <property name="page_increment">1</property>
+  </object>
+  <object class="GtkAdjustment" id="x orientation">
+    <property name="lower">-3.1415926000000001</property>
+    <property name="upper">3.1415926000000001</property>
+    <property name="step_increment">0.10000000000000001</property>
+    <property name="page_increment">1</property>
+  </object>
+  <object class="GtkAdjustment" id="x position">
+    <property name="lower">-3</property>
+    <property name="upper">3</property>
+    <property name="step_increment">0.10000000000000001</property>
+    <property name="page_increment">1</property>
+  </object>
+  <object class="GtkAdjustment" id="y orientation">
+    <property name="lower">-3.1415926000000001</property>
+    <property name="upper">3.1415926000000001</property>
+    <property name="step_increment">0.10000000000000001</property>
+    <property name="page_increment">1</property>
+  </object>
+  <object class="GtkAdjustment" id="y position">
+    <property name="lower">-3</property>
+    <property name="upper">3</property>
+    <property name="step_increment">0.10000000000000001</property>
+    <property name="page_increment">1</property>
+  </object>
+  <object class="GtkAdjustment" id="z orientation">
+    <property name="lower">-3.1415926000000001</property>
+    <property name="upper">3.1415926000000001</property>
+    <property name="step_increment">0.10000000000000001</property>
+    <property name="page_increment">1</property>
+  </object>
+  <object class="GtkAdjustment" id="z position">
+    <property name="lower">-3</property>
+    <property name="upper">3</property>
+    <property name="step_increment">0.10000000000000001</property>
+    <property name="page_increment">1</property>
+  </object>
+</interface>

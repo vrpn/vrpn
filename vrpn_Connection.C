@@ -6095,6 +6095,13 @@ vrpn_Connection_IP::~vrpn_Connection_IP (void) {
     d_NIC_IP = NULL;
   }
 
+  for (i = 0; i < d_numEndpoints; i++) {
+    if (d_endpoints[i]) {
+      d_endpoints[i]->drop_connection();
+      delete d_endpoints[i];
+    }
+  }
+
 #ifdef VRPN_USE_WINSOCK_SOCKETS
 
   if (WSACleanup() == SOCKET_ERROR) {
@@ -6104,13 +6111,6 @@ vrpn_Connection_IP::~vrpn_Connection_IP (void) {
   }
 
 #endif  // VRPN_USE_WINSOCK_SOCKETS
-
-  for (i = 0; i < d_numEndpoints; i++) {
-    if (d_endpoints[i]) {
-      d_endpoints[i]->drop_connection();
-      delete d_endpoints[i];
-    }
-  }
 }
 
 

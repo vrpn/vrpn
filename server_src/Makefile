@@ -21,6 +21,8 @@
 #HW_OS := powerpc_aix
 #HW_OS := powerpc_macosx
 #HW_OS := universal_macosx
+#HW_OS := macosx_32_64
+#HW_OS := macosx_64
 ##########################
 
 ##########################
@@ -32,7 +34,8 @@
 #MAC_OS_MIN_VERSION := 10.4
 #MAC_OS_MIN_VERSION := 10.5
 #MAC_OS_MIN_VERSION := 10.6
-
+#MAC_OS_MIN_VERSION := 10.7
+#MAC_OS_MIN_VERSION := 10.8
 
 ##########################
 # Directories for installation
@@ -79,7 +82,13 @@ endif
 
     # Select which compiler and MAC OS X SDK to use
     MAC_GCC := g++
-    ifeq ($(MAC_OS_MIN_VERSION), 10.6)
+    ifeq ($(MAC_OS_MIN_VERSION), 10.8)
+      MAC_OS_SDK := MacOSX10.8.sdk
+    else
+    ifeq ($(MAC_OS_MIN_VERSION), 10.7)
+      MAC_OS_SDK := MacOSX10.7.sdk
+    else
+   ifeq ($(MAC_OS_MIN_VERSION), 10.6)
       MAC_OS_SDK := MacOSX10.6.sdk
     else
       ifeq ($(MAC_OS_MIN_VERSION), 10.5)
@@ -90,6 +99,8 @@ endif
       endif
     endif
   endif
+ endif
+endif
 
 CC := g++
 ifeq ($(HW_OS),pc_cygwin)
@@ -116,11 +127,29 @@ ifeq ($(HW_OS), powerpc_macosx)
 endif
 
 ifeq ($(HW_OS),universal_macosx)
-        CC := $(MAC_GCC) -arch i386 -isysroot /Developer/SDKs/$(MAC_OS_SDK) -mmacosx-version-min=$(MAC_OS_MIN_VERSION)
+        CC := $(MAC_GCC) -arch ppc -arch i386 -arch x86_64 -isysroot /Developer/SDKs/$(MAC_OS_SDK) -mmacosx-version-min=$(MAC_OS_MIN_VERSION)
 	RANLIB := :
 	AR := libtool -static -o
 	SYSLIBS := -framework CoreFoundation -framework IOKit -framework System
 endif
+
+   ifeq ($(HW_OS), macosx_32_64)
+        CC := $(MAC_GCC) -arch i386 -arch x86_64 -isysroot /Developer/SDKs/$(MAC_OS_SDK) -mmacosx-version-min=$(MAC_OS_MIN_VERSION)
+        RANLIB := :
+        AR := libtool -static -o
+	SYSLIBS := -framework CoreFoundation -framework IOKit -framework System
+  endif
+  
+    ifeq ($(HW_OS), macosx_64)
+  		 ifeq ($(MAC_OS_SDK), MacOSX10.6.sdk)
+    		CC := $(MAC_GCC) -arch x86_64 -isysroot /Developer/SDKs/$(MAC_OS_SDK) -mmacosx-version-min=$(MAC_OS_MIN_VERSION)
+       else
+     		CC := $(MAC_GCC) -arch x86_64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/$(MAC_OS_SDK) -mmacosx-version-min=$(MAC_OS_MIN_VERSION)
+       endif
+        RANLIB := :
+        AR := libtool -static -o
+		SYSLIBS := -framework CoreFoundation -framework IOKit -framework System
+    endif
 
 ifeq ($(HW_OS),pc_linux_ia64)
 	CC := g++
@@ -217,9 +246,9 @@ VRPN_LIBS = -lvrpnserver -lvrpnatmel -lvrpngpsnmea -lpthread
 # This is for the PHANToM/GHOST server on SGI (not tested on other plateform)
 # Put in comment if you don't want a PHANToM server.  GHOST expects SGI to
 # be defined during compile, whereas sgi seems to be the standard definition.
-override CFLAGS += -I/usr/local/SensAble/GHOST/v31/include -DSGI
-override CXXFLAGS += -I/usr/local/SensAble/GHOST/v31/include -DSGI
-override LFLAGS += -L/usr/local/SensAble/GHOST/v31/lib
+#override CFLAGS += -I/usr/local/SensAble/GHOST/v31/include -DSGI
+#override CXXFLAGS += -I/usr/local/SensAble/GHOST/v31/include -DSGI
+#override LFLAGS += -L/usr/local/SensAble/GHOST/v31/lib
 #SYSLIBS := $(SYSLIBS) -lghost31_32
 
 ifdef INTERSENSE
@@ -234,6 +263,7 @@ ifdef INTERSENSE
      override CFLAGS += -I../../isense -DMACOSX
      override CXXFLAGS += -I../../isense -DMACOSX
      override LFLAGS += ../../isense/MacOSX/dlcompat.o
+	
   endif
 endif
 

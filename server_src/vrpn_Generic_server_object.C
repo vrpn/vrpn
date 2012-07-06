@@ -2216,6 +2216,56 @@ int vrpn_Generic_Server_Object::setup_Button_PinchGlove (char* &pch, char *line,
 }
 
 //================================
+int vrpn_Generic_Server_Object::setup_DevInput (char * & pch, char * line, FILE * config_file) {
+  char s2 [LINESIZE], s3 [LINESIZE] , s4 [LINESIZE];
+    int int_param = 0;
+    next();
+
+    // Get the arguments (class, dev_input_name)
+    if (sscanf(pch,"%511s \"%[^\"]\" %s %d",s2, s3, s4, &int_param) != 4) {
+        if (sscanf(pch,"%511s \"%[^\"]\" %s",s2, s3, s4) != 3) {
+            fprintf(stderr,"Bad vrpn_DevInput line: %s\n",line);
+	    return -1;
+	}
+    }
+
+#ifdef VRPN_USE_DEV_INPUT
+    vrpn_DevInput * dev_input;
+
+    // Make sure there's room for a new dev_input
+    if (num_dev_inputs >= VRPN_GSO_MAX_DEV_INPUTS) {
+        fprintf(stderr,"Too many dev_inputs (mice) in config file");
+        return -1;
+    }
+
+    // Open the box
+    if (verbose)
+        printf("Opening vrpn_DevInput: %s\n",s2);
+
+    try {
+      dev_input = new vrpn_DevInput(s2, connection, s3, s4, int_param);
+    }
+    catch (char *&error) {
+        fprintf( stderr, "could not create vrpn_DevInput : %s\n", error );
+	return -1;
+    }
+    catch (...) {
+	fprintf( stderr, "could not create vrpn_DevInput\n" );
+	return -1;
+    }
+    if (NULL == dev_input) {
+        fprintf(stderr,"Can't create new vrpn_DevInput\n");
+        return -1;
+    }
+    dev_inputs[num_dev_inputs++] = dev_input;
+    return 0;
+#else
+    fprintf(stderr,"vrpn_DevInput support not compiled in\n");
+    return -1;
+#endif
+}
+
+//================================
 int vrpn_Generic_Server_Object::setup_Joylin (char * & pch, char * line, FILE * config_file)
 {
   char s2[LINESIZE];
@@ -4768,6 +4818,7 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object (vrpn_Connection *connect
   num_analogouts (0),
   num_DTracks (0),
   num_posers (0),
+  num_dev_inputs(0),
   num_mouses (0)
   , num_inertiamouses (0)
   , num_Keyboards (0)
@@ -4925,6 +4976,8 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object (vrpn_Connection *connect
         CHECK (setup_Wanda);
       } else if (isit ("vrpn_Mouse")) {
         CHECK (setup_Mouse);
+      } else if (isit("vrpn_DevInput")) {
+	CHECK(setup_DevInput);
       } else if (isit ("vrpn_Tng3")) {
         CHECK (setup_Tng3);
       } else if (isit ("vrpn_TimeCode_Generator")) {
@@ -5199,6 +5252,13 @@ void  vrpn_Generic_Server_Object::mainloop (void)
   for (i = 0; i < num_mouses; i++) {
     mouses[i]->mainloop();
   }
+
+#ifdef VRPN_USE_DEV_INPUT
+  // Let all the dev input devices do their thing
+  for (i=0; i< num_dev_inputs; i++) {
+    dev_inputs[i]->mainloop();
+  }
+#endif
 
   // Let all the Loggers do their thing
   for (i = 0; i < num_loggers; i++) {

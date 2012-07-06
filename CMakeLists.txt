@@ -552,6 +552,16 @@ elseif(UNIX)
 		OFF)
 endif()
 
+if (UNIX AND NOT APPLE)
+	option(VRPN_USE_DEV_INPUT
+		"Build with flags to enable the use of DevInput."
+		ON)
+else()
+	option(VRPN_USE_DEV_INPUT
+		"Build with flags to enable the use of DevInput."
+		OFF)
+endif()
+
 if(VRPN_BUILD_EXTRA_COMPILER_WARNINGS)
 	include(EnableExtraCompilerWarnings)
 	globally_enable_extra_compiler_warnings()
@@ -640,6 +650,7 @@ set(VRPN_SERVER_SOURCES
 	vrpn_Button_NI_DIO24.C
 	vrpn_Button_USB.cpp
 	vrpn_CerealBox.C
+	vrpn_DevInput.C
 	vrpn_DirectXFFJoystick.C
 	vrpn_DirectXRumblePad.C
 	vrpn_DreamCheeky.C
@@ -720,6 +731,7 @@ set(VRPN_SERVER_PUBLIC_HEADERS
 	vrpn_Button_NI_DIO24.h
 	vrpn_Button_USB.h
 	vrpn_CerealBox.h
+	vrpn_DevInput.h
 	vrpn_DirectXFFJoystick.h
 	vrpn_DirectXRumblePad.h
 	vrpn_DreamCheeky.h
