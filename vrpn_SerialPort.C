@@ -107,7 +107,7 @@ std::string vrpn_SerialPort::read_available_characters(int count) {
 	unsigned int thisRead = 0;
 	static const unsigned int BUFSIZE = 256;
 	unsigned char buf[BUFSIZE];
-	int needed = BUFSIZE - 1;
+	unsigned int needed = BUFSIZE - 1;
 	do {
 		if (count > -1) {
 			needed = (std::min)(count - numRead, BUFSIZE - 1);
@@ -117,7 +117,7 @@ std::string vrpn_SerialPort::read_available_characters(int count) {
 			retString.append(&(buf[0]), &(buf[0]) + thisRead);
 			numRead += thisRead;
 		}
-	} while (thisRead != 0 && (numRead < count || count == -1));
+	} while (thisRead != 0 && (static_cast<int>(numRead) < count || count == -1));
 	return retString;
 }
 
