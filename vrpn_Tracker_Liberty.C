@@ -489,8 +489,6 @@ int vrpn_Tracker_Liberty::get_report(void)
        return 0;
      }
 
- 
-
       // If it is not 'LY' or 'PA' or 'LU' , we don't want it but we
       // need to look at the next one, so just return and stay
       // in Syncing mode so that we will try again next time through.
@@ -504,7 +502,7 @@ int vrpn_Tracker_Liberty::get_report(void)
       ) 
       {
       	sprintf(errmsg,"While syncing (looking for 'LY' or 'PA' or 'LU', "
-		"got '%c')", buffer[0]);
+		"got '%c%c')", buffer[0], buffer[1]);
 	FT_INFO(errmsg);
 	vrpn_flush_input_buffer(serial_fd);
 	if (DEBUG) fprintf(stderr,"[DEBUGA]: Getting Report - Not LY or PA or LU, Got Character %c %c \n",buffer[0],buffer[1]);
@@ -558,7 +556,6 @@ int vrpn_Tracker_Liberty::get_report(void)
       // will attempt to read the rest of the report.
       bufcount++;
       status = vrpn_TRACKER_PARTIAL;
-
    }
    
    //--------------------------------------------------------------------
@@ -615,12 +612,9 @@ int vrpn_Tracker_Liberty::get_report(void)
 	   if (DEBUGA) fprintf(stderr,"[DEBUG]: Don't have space at end of report, got (%c) sensor %i\n",buffer[bufcount-1], d_sensor);
 
 	   return 0;
-
    }
 
-
    //Decode the error status and output a debug message
-
    if (buffer[4] != ' ') {
      // An error has been flagged
      if (DEBUGA) fprintf(stderr,"[DEBUG]:Error Flag %i\n",buffer[4]);
@@ -662,7 +656,6 @@ int vrpn_Tracker_Liberty::get_report(void)
    // seconds.
    //--------------------------------------------------------------------
 
-
        struct timeval delta_time;   // Time since the clock was reset
 
        // Read the integer value of the time from the record.
@@ -677,7 +670,6 @@ int vrpn_Tracker_Liberty::get_report(void)
        timestamp = vrpn_TimevalSum(liberty_zerotime, delta_time);
        vrpn_gettimeofday(&watchdog_timestamp, NULL);	// Set watchdog now       
  
-
    //--------------------------------------------------------------------
    // If this sensor has button on it, decode the button values
    // into the button device and mainloop the button device so that
