@@ -693,6 +693,7 @@ SLIB_FILES =  $(LIB_FILES) \
 	vrpn_Tracker_isense.C \
 	vrpn_Tracker_Isotrak.C \
 	vrpn_Tracker_Liberty.C \
+	vrpn_Tracker_PDI.C \
 	vrpn_Tracker_MotionNode.C \
 	vrpn_Tracker_NDI_Polaris.C \
 	vrpn_Tracker_PhaseSpace.C \
@@ -763,6 +764,7 @@ SLIB_INCLUDES = $(LIB_INCLUDES) \
 	vrpn_Tracker_isense.h \
 	vrpn_Tracker_Isotrak.h \
 	vrpn_Tracker_Liberty.h \
+	vrpn_Tracker_PDI.h \
 	vrpn_Tracker_MotionNode.h \
 	vrpn_Tracker_NDI_Polaris.h \
 	vrpn_Tracker_PhaseSpace.h \

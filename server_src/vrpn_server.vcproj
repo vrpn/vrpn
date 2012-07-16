@@ -45,7 +45,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;$(SYSTEMDRIVE)\Program Files\Microsoft Platform SDK for Windows Server 2003 R2\Include&quot;;../../dtrack;&quot;$(SYSTEMDRIVE)\Program Files\National Instruments\NI-DAQ\Include&quot;;&quot;$(SYSTEMDRIVE)/Program Files/SensAble/3DTouch/include&quot;;&quot;$(SYSTEMDRIVE)/Program Files/SensAble/3DTouch/utilities/include&quot;;../../isense;..;../quat;../../Dtrack;../../libfreespace/include;&quot;$(SYSTEMDRIVE)\Program Files\libusb-1.0\libusb&quot;"
+				AdditionalIncludeDirectories="&quot;$(SYSTEMDRIVE)\Program Files\Microsoft Platform SDK for Windows Server 2003 R2\Include&quot;;../../dtrack;&quot;$(SYSTEMDRIVE)\Program Files\National Instruments\NI-DAQ\Include&quot;;&quot;$(SYSTEMDRIVE)/Program Files/SensAble/3DTouch/include&quot;;&quot;$(SYSTEMDRIVE)/Program Files/SensAble/3DTouch/utilities/include&quot;;../../isense;..;../quat;../../Dtrack;../../libfreespace/include;&quot;$(SYSTEMDRIVE)\Program Files\libusb-1.0\libusb&quot;;&quot;C:\Program Files (x86)\Polhemus\PDI\PDI_90\Inc&quot;"
 				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE"
 				RuntimeLibrary="3"
 				PrecompiledHeaderFile=".\../pc_win32/server_src/vrpn_server/Debug/vrpn_server.pch"
@@ -136,7 +136,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="&quot;$(SYSTEMDRIVE)\Program Files\Microsoft Platform SDK for Windows Server 2003 R2\Include&quot;;../../dtrack;&quot;$(SYSTEMDRIVE)\Program Files\National Instruments\NI-DAQ\Include&quot;;&quot;$(SYSTEMDRIVE)/Program Files/SensAble/3DTouch/include&quot;;&quot;$(SYSTEMDRIVE)/Program Files/SensAble/3DTouch/utilities/include&quot;;../../isense;..;../quat;../../Dtrack;../../libfreespace/include;&quot;$(SYSTEMDRIVE)\Program Files\libusb-1.0\libusb&quot;"
+				AdditionalIncludeDirectories="&quot;$(SYSTEMDRIVE)\Program Files\Microsoft Platform SDK for Windows Server 2003 R2\Include&quot;;../../dtrack;&quot;$(SYSTEMDRIVE)\Program Files\National Instruments\NI-DAQ\Include&quot;;&quot;$(SYSTEMDRIVE)/Program Files/SensAble/3DTouch/include&quot;;&quot;$(SYSTEMDRIVE)/Program Files/SensAble/3DTouch/utilities/include&quot;;../../isense;..;../quat;../../Dtrack;../../libfreespace/include;&quot;$(SYSTEMDRIVE)\Program Files\libusb-1.0\libusb&quot;;&quot;C:\Program Files (x86)\Polhemus\PDI\PDI_90\Inc&quot;"
 				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="true"
 				RuntimeLibrary="2"

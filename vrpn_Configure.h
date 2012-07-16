@@ -376,6 +376,14 @@
 #define VRPN_USE_DEV_INPUT
 #endif
 
+//------------------------
+// Instructs VRPN to compile code to use the Polhemus Developer
+// (PDI) library to enable opening several of their trackers using
+// this interface (the G4 was the original one this was written
+// for, but new versions are available for the Fastrak and Liberty).
+//#define VRPN_USE_PDI
+
+
 //------------------------------------------------------------------//
 // SYSTEM CONFIGURATION SECTION                                     //
 // EDIT THESE DEFINITIONS TO POINT TO OPTIONAL LIBRARIES.  THEY ARE //

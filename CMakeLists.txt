@@ -562,6 +562,17 @@ else()
 		OFF)
 endif()
 
+option(VRPN_USE_PDI
+	"Build with flags to enable the use of Polhemus DVI library."
+	OFF)
+
+if(VRPN_USE_PDI)
+	# Generalize this to use a FindPDI.cmake.
+	# Make this also work with debug (use PDID)
+	include_directories("C:\Program Files (x86)\Polhemus\PDI\PDI_90\Inc")
+	list(APPEND SERVER_EXTRA_LIBS "C:\Program Files (x86)\Polhemus\PDI\PDI_90\Lib\Win32\PDI")
+endif()
+
 if(VRPN_BUILD_EXTRA_COMPILER_WARNINGS)
 	include(EnableExtraCompilerWarnings)
 	globally_enable_extra_compiler_warnings()
@@ -696,6 +707,7 @@ set(VRPN_SERVER_SOURCES
 	vrpn_Tracker_Isotrak.C
 	vrpn_Tracker_JsonNet.C
 	vrpn_Tracker_Liberty.C
+	vrpn_Tracker_PDI.C
 	vrpn_Tracker_MotionNode.C
 	vrpn_Tracker_NDI_Polaris.C
 	vrpn_Tracker_NovintFalcon.C
@@ -781,6 +793,7 @@ set(VRPN_SERVER_PUBLIC_HEADERS
 	vrpn_Tracker_Isotrak.h
 	vrpn_Tracker_JsonNet.h
 	vrpn_Tracker_Liberty.h
+	vrpn_Tracker_PDI.h
 	vrpn_Tracker_MotionNode.h
 	vrpn_Tracker_NDI_Polaris.h
 	vrpn_Tracker_NovintFalcon.h
