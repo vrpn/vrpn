@@ -5302,7 +5302,6 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object (vrpn_Connection *connect
         CHECK (setup_Tracker_ViewPoint);
       }
 // Polhemus additions
-#ifdef VRPN_USE_PDI
       else if (isit ("vrpn_Tracker_G4")) { 
         CHECK(setup_Tracker_G4); 
       } else if (isit ("vrpn_Tracker_LibertyPDI")) { 
@@ -5310,7 +5309,6 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object (vrpn_Connection *connect
       } else if (isit ("vrpn_Tracker_FastrakPDI")) { 
         CHECK(setup_Tracker_FastrakPDI); 
       }
-#endif
 #ifdef VRPN_USE_JSONNET
       else if (isit ("vrpn_Tracker_JsonNet")) {
         CHECK (setup_Tracker_JsonNet);
