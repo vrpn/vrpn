@@ -101,6 +101,11 @@
 #include "vrpn_Event_Mouse.h"
 //#include "vrpn_Cirque_Extended.h"
 
+// Polhemus additions
+#ifdef VRPN_USE_PDI
+#include "vrpn_Tracker_PDI.h"
+#endif
+
 #ifdef VRPN_USE_JSONNET
 #include "vrpn_Tracker_JsonNet.h"
 #endif
@@ -353,9 +358,11 @@ class vrpn_Generic_Server_Object
     int setup_inertiamouse (char * & pch, char * line, FILE * config_file);
 
     // Polhemus additions
+#ifdef  VRPN_USE_PDI
     int setup_Tracker_G4(char* &pch, char* line, FILE* config_file); 
     int setup_Tracker_LibertyPDI(char* &pch, char* line, FILE* config_file); 
     int setup_Tracker_FastrakPDI(char* &pch, char* line, FILE* config_file); 
+#endif
 
 #ifdef VRPN_USE_JSONNET
     int setup_Tracker_JsonNet (char* &pch, char* line, FILE* config_file);
