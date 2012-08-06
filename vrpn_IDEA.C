@@ -81,17 +81,67 @@ bool vrpn_IDEA::send_command(const char *cmd)
     (const unsigned char *)((void*)(buf)), strlen(buf)) == strlen(buf) );
 }
 
+//   Commands		  Responses	           Meanings
+//    M                     None                      Move to position
+// Params:
+//  distance: distance in 1/64th steps
+//  run speed: steps/second
+//  start speed: steps/second
+//  end speed: steps/second
+//  accel rate: steps/second/second
+//  decel rate: steps/second/second
+//  run current: milliamps
+//  hold current: milliamps
+//  accel current: milliamps
+//  decel current: milliamps
+//  delay: milliseconds, waiting to drop to hold current
+//  step mode: inverse step size: 4 is 1/4 step.
+
+bool  vrpn_IDEA::send_move_request(vrpn_float64 location_in_steps)
+{
+  char  cmd[512];
+  long steps_64th = static_cast<long>(location_in_steps*64);
+  int run_speed = 3200;
+  int start_speed = 1200;
+  int end_speed = 2000;
+  int accel_rate = 40000;
+  int decel_rate = 100000;
+  int run_current = 290;
+  int hold_current = 290;
+  int accel_current = 290;
+  int decel_current = 290;
+  int delay = 50;
+  int step = 8;
+  sprintf(cmd, "M%ld,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d",
+    steps_64th,
+    run_speed,
+    start_speed,
+    end_speed,
+    accel_rate,
+    decel_rate,
+    run_current,
+    hold_current,
+    accel_current,
+    decel_current,
+    delay,
+    step);
+  return send_command(cmd);
+}
+
 // This routine will reset the IDEA drive.
 //   Commands		  Responses	            Meanings
 //    l                     `l<value>[cr]`l#[cr]      Location of the drive
 
-bool  vrpn_IDEA::convert_report_to_value(unsigned char *buf, vrpn_int32 *value)
+bool  vrpn_IDEA::convert_report_to_value(unsigned char *buf, vrpn_float64 *value)
 {
   int  data;
   if (sscanf((char *)(buf), "`l%d\r`l#\r", &data) != 1) {
     return false;
   }
-  (*value) = static_cast<vrpn_int32>(data);
+
+  // The location of the drive is in 64th-of-a-tick units, so need
+  // to divide by 64 to find the actual location.
+  (*value) = data/64.0;
   return true;
 }
 
@@ -179,14 +229,13 @@ int	vrpn_IDEA::reset(void)
         }
         inbuf[ret] = '\0';
 
-        vrpn_int32 position;
+        vrpn_float64 position;
         if (!convert_report_to_value(inbuf, &position)) {
           fprintf(stderr,"vrpn_IDEA::reset(): Bad position report: %s\n", inbuf);
           IDEA_ERROR("Bad position report");
           return -1;
         }
         channel[0] = position;
-        o_channel[0] = position;
 
 	//-----------------------------------------------------------------------
         // Ask for the position of the drive so that it will start sending.
@@ -263,7 +312,7 @@ int vrpn_IDEA::get_report(void)
    // have a complete report yet and so return.
    //--------------------------------------------------------------------
 
-   vrpn_int32 value;
+   vrpn_float64 value;
    if (!convert_report_to_value(d_buffer, &value)) {
      return 0;
    }
@@ -274,6 +323,7 @@ int vrpn_IDEA::get_report(void)
    //--------------------------------------------------------------------
 
    channel[0] = value;
+
 #ifdef	VERBOSE
    printf("got a complete report (%d)!\n", d_bufcount);
 #endif
@@ -317,9 +367,8 @@ int vrpn_IDEA::handle_request_message(void *userdata, vrpn_HANDLERPARAM p)
       me->send_text_message(msg, me->d_timestamp, vrpn_TEXT_ERROR);
       return 0;
     }
-    me->channel[chan_num] = value;
-    // XXX
-    //me->send_command(static_cast<unsigned char>(chan_num+1),20,(vrpn_int32)value);
+    // This will get set when we read from the motoer me->channel[chan_num] = value;
+    me->send_move_request(value);
 
     return 0;
 }
@@ -344,8 +393,7 @@ int vrpn_IDEA::handle_request_channels_message(void* userdata, vrpn_HANDLERPARAM
     }
     for (i = 0; i < num; i++) {
         vrpn_unbuffer(&bufptr, &(me->o_channel[i]));
-        // XXXX
-//	me->send_command(static_cast<unsigned char>(i+1),20,(vrpn_int32)me->o_channel[i]);
+        me->send_move_request(me->o_channel[i]);
     }
 
     return 0;

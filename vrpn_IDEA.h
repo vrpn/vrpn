@@ -14,6 +14,8 @@
 #include "vrpn_Analog.h"
 #include "vrpn_Analog_Output.h"
 
+// XXX Add two buttons to the device, for the limit switches.
+
 class VRPN_API vrpn_IDEA: public vrpn_Serial_Analog, public vrpn_Analog_Output
 {
 public:
@@ -38,8 +40,11 @@ public:
         // on failure.
         bool send_command(const char *cmd);
 
+        /// Request a move from the motor to the specified location.
+        bool send_move_request(vrpn_float64 location_in_steps);
+
         /// Parses a position report.  Returns false on failure.
-	bool convert_report_to_value(unsigned char *buf, vrpn_int32 *value);
+	bool convert_report_to_value(unsigned char *buf, vrpn_float64 *value);
 
 	/// send report iff changed
         virtual void report_changes
