@@ -665,6 +665,7 @@ SLIB_FILES =  $(LIB_FILES) \
 	vrpn_FunctionGenerator.C \
 	vrpn_GlobalHapticsOrb.C \
 	vrpn_HumanInterface.C \
+	vrpn_IDEA.C \
 	vrpn_Imager_Stream_Buffer.C \
 	vrpn_ImmersionBox.C \
 	vrpn_inertiamouse.C \
@@ -737,6 +738,7 @@ SLIB_INCLUDES = $(LIB_INCLUDES) \
 	vrpn_Freespace.h \
 	vrpn_GlobalHapticsOrb.h \
 	vrpn_HumanInterface.h \
+	vrpn_IDEA.h \
 	vrpn_Imager_Stream_Buffer.h \
 	vrpn_ImmersionBox.h \
 	vrpn_inertiamouse.h \

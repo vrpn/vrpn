@@ -725,6 +725,7 @@ set(VRPN_SERVER_SOURCES
 	vrpn_XInputGamepad.C
 	vrpn_Xkeys.C
 	vrpn_Zaber.C
+	vrpn_IDEA.C
 	server_src/vrpn_Generic_server_object.C
 	${HIDAPI_SOURCES})
 
@@ -811,6 +812,7 @@ set(VRPN_SERVER_PUBLIC_HEADERS
 	vrpn_XInputGamepad.h
 	vrpn_Xkeys.h
 	vrpn_Zaber.h
+	vrpn_IDEA.h
 	server_src/vrpn_Generic_server_object.h)
 
 if(VRPN_BUILD_SERVER_LIBRARY)
