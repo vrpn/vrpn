@@ -2198,6 +2198,26 @@
 					/>
 				</FileConfiguration>
 			</File>
+			<File
+				RelativePath="vrpn_IDEA.C"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -2621,6 +2641,10 @@
 			</File>
 			<File
 				RelativePath="vrpn_Zaber.h"
+				>
+			</File>
+			<File
+				RelativePath="vrpn_IDEA.h"
 				>
 			</File>
 		</Filter>
