@@ -425,7 +425,7 @@ endif()
 if(UNIX)
 	find_package(GPM)
 	option_requires(VRPN_USE_GPM_MOUSE
-		"Build with GPM Linux mouse interface support"
+		"Build with GPM Linux mouse interface support (makes servers GPL)"
 		${DEFAULT_OFF_IF_SUBPROJECT}
 		GPM_FOUND)
 endif()
@@ -939,7 +939,9 @@ endif()
 
 # What flags cause us to link against GPL libraries?
 set(ALL_GPL_SERVER_FLAGS
-		VRPN_USE_WIIUSE)
+	VRPN_USE_GPM_MOUSE # GPL2+
+	VRPN_USE_WIIUSE # GPL3
+)
 
 set(GPL_SERVER_FLAGS)
 foreach(POSSIBLE_GPL_FLAG ${ALL_GPL_SERVER_FLAGS})
@@ -950,7 +952,8 @@ endforeach()
 
 # What flags cause us to link against GPL-incompatible libraries?
 set(ALL_GPLINCOMPAT_SERVER_FLAGS
-		VRPN_USE_PHANTOM_SERVER)
+	VRPN_INCLUDE_TIMECODE_SERVER
+	VRPN_USE_PHANTOM_SERVER)
 
 set(GPLINCOMPAT_SERVER_FLAGS)
 foreach(POSSIBLE_GPLINCOMPAT_FLAG ${ALL_GPLINCOMPAT_SERVER_FLAGS})
