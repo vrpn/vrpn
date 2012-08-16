@@ -2278,6 +2278,7 @@ int vrpn_Generic_Server_Object::setup_Joylin (char * & pch, char * line, FILE * 
     return -1;
   }
 
+#ifdef VRPN_USE_JOYLIN
   // Make sure there's room for a new joystick server
   if (num_analogs >= VRPN_GSO_MAX_ANALOG) {
     fprintf (stderr, "Too many analog devices in config file");
@@ -2296,6 +2297,10 @@ int vrpn_Generic_Server_Object::setup_Joylin (char * & pch, char * line, FILE * 
     num_analogs++;
   }
   return 0;
+#else
+    fprintf(stderr,"vrpn_Joylin support not compiled in\n");
+    return -1;
+#endif
 }
 
 //================================
