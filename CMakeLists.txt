@@ -26,7 +26,7 @@ include(SetDefaultBuildType)
 include(OptionRequires)
 include(CTest)
 include(CreateDashboardScripts)
-
+include(CheckIncludeFileCXX)
 
 if((NOT CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR) OR VRPN_SUBPROJECT_BUILD)
 	set(SUBPROJECT TRUE)
@@ -479,6 +479,17 @@ if(WIN32 OR CYGWIN)
 		set(VRPN_ADRIENNE_INCLUDE_FILENAME "${ADRIENNE_INCLUDE_FILENAME}")
 		set(VRPN_ADRIENNE_INCLUDE_HAS_EXTERN_C ${ADRIENNE_INCLUDE_HAS_EXTERN_C})
 	endif()
+endif()
+
+###
+# Linux kernel joystick interface
+###
+if(${CMAKE_SYSTEM_NAME} STREQUAL Linux)
+	check_include_file_cxx(linux/joystick.h HAVE_LINUX_JOYSTICK_H)
+	option_requires(VRPN_USE_JOYLIN
+		"Build with support for Linux kernel joystick interface (makes servers GPL)"
+		${DEFAULT_OFF_IF_SUBPROJECT}
+		HAVE_LINUX_JOYSTICK_H)
 endif()
 
 ###
@@ -939,6 +950,7 @@ endif()
 
 # What flags cause us to link against GPL libraries?
 set(ALL_GPL_SERVER_FLAGS
+	VRPN_USE_JOYLIN # Kernel header: GPL2
 	VRPN_USE_GPM_MOUSE # GPL2+
 	VRPN_USE_WIIUSE # GPL3
 )

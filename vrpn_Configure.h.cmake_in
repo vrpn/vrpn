@@ -386,6 +386,12 @@
 //#endif
 #cmakedefine VRPN_USE_DEV_INPUT
 
+//-------------------------
+// Use Linux kernel joystick support:
+// note that using this kernel header
+// makes the GPL apply to the server!
+#cmakedefine VRPN_USE_JOYLIN
+
 //------------------------------------------------------------------//
 // SYSTEM CONFIGURATION SECTION                                     //
 // EDIT THESE DEFINITIONS TO POINT TO OPTIONAL LIBRARIES.  THEY ARE //

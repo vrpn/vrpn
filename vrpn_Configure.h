@@ -371,6 +371,14 @@
 #define VRPN_USE_DEV_INPUT
 #endif
 
+//-------------------------
+// Use Linux kernel joystick support:
+// note that using this kernel header
+// makes the GPL apply to the server!
+#if defined(linux)
+#define VRPN_USE_JOYLIN
+#endif
+
 //------------------------------------------------------------------//
 // SYSTEM CONFIGURATION SECTION                                     //
 // EDIT THESE DEFINITIONS TO POINT TO OPTIONAL LIBRARIES.  THEY ARE //

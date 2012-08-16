@@ -13,9 +13,6 @@
 #include "vrpn_Analog.h"
 #include "vrpn_Button.h"
 
-#ifdef linux
-#include <linux/joystick.h>
-#endif
 
 class VRPN_API vrpn_Joylin :public vrpn_Analog, public vrpn_Button {
 public:
