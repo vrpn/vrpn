@@ -484,10 +484,10 @@ endif()
 ###
 # Linux kernel joystick interface
 ###
-if(${CMAKE_SYSTEM_NAME} STREQUAL Linux)
+if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
 	check_include_file_cxx(linux/joystick.h HAVE_LINUX_JOYSTICK_H)
 	option_requires(VRPN_USE_JOYLIN
-		"Build with support for Linux kernel joystick interface (makes servers GPL)"
+		"Build with support for Linux kernel joystick interface (Uses kernel header - may make servers GPL)"
 		${DEFAULT_OFF_IF_SUBPROJECT}
 		HAVE_LINUX_JOYSTICK_H)
 endif()
