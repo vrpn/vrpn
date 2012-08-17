@@ -954,9 +954,15 @@ endif()
 # Do a little check for GPL and GPL-incompatible libraries
 
 # What flags cause us to link against GPL libraries?
+
+# TODO: Figure out about the kernel headers we use.
+# Conflicting stories:
+# ML post by Linus: https://lkml.org/lkml/2003/12/5/13
+# Interview of Linus: http://www.itworld.com/open-source/140916/android-sued-microsoft-not-linux
+
 set(ALL_GPL_SERVER_FLAGS
-	VRPN_USE_DEV_INPUT # Kernel header: GPL2
-	VRPN_USE_JOYLIN # Kernel header: GPL2
+	#VRPN_USE_DEV_INPUT # Kernel header: GPL2
+	#VRPN_USE_JOYLIN # Kernel header: GPL2
 	VRPN_USE_GPM_MOUSE # GPL2+
 	VRPN_USE_WIIUSE # GPL3
 )
