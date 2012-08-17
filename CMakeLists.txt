@@ -493,6 +493,17 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
 endif()
 
 ###
+# /dev/input kernel joystick interface
+###
+if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+	check_include_file_cxx(linux/input.h HAVE_LINUX_INPUT_H)
+	option(VRPN_USE_DEV_INPUT
+		"Build with flags to enable the use of DevInput. (Uses kernel header - may make servers GPL)"
+		${DEFAULT_OFF_IF_SUBPROJECT}
+		HAVE_LINUX_INPUT_H)
+endif()
+
+###
 # XXX Other libraries needing detection and handling (TODO)
 ###
 # InterSense Interface Libraries SDK
@@ -561,12 +572,6 @@ elseif(UNIX)
 	option(VRPN_BUILD_PROFILING_SUPPORT
 		"Build with flags to enable profiling."
 		OFF)
-endif()
-
-if (UNIX AND NOT APPLE)
-	option(VRPN_USE_DEV_INPUT
-		"Build with flags to enable the use of DevInput."
-		${TRUE_UNLESS_SUBPROJECT})
 endif()
 
 if(VRPN_BUILD_EXTRA_COMPILER_WARNINGS)
@@ -950,6 +955,7 @@ endif()
 
 # What flags cause us to link against GPL libraries?
 set(ALL_GPL_SERVER_FLAGS
+	VRPN_USE_DEV_INPUT # Kernel header: GPL2
 	VRPN_USE_JOYLIN # Kernel header: GPL2
 	VRPN_USE_GPM_MOUSE # GPL2+
 	VRPN_USE_WIIUSE # GPL3
