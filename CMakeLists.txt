@@ -252,7 +252,7 @@ endif()
 
 # Setting up the local HIDAPI was handled above, in the submodules directory
 if(NOT VRPN_USE_LOCAL_HIDAPI)
-	find_package(HIDAPI)	
+	find_package(HIDAPI)
 endif()
 
 # HID requires either local or system-installed HIDAPI
