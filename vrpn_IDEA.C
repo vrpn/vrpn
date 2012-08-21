@@ -160,6 +160,8 @@ int	vrpn_IDEA::reset(void)
 
 	//-----------------------------------------------------------------------
 	// Drain the input buffer to make sure we start with a fresh slate.
+	// Also wait a bit to let things clear out.
+        vrpn_SleepMsecs(250);
 	vrpn_flush_input_buffer(serial_fd);
 
 	//-----------------------------------------------------------------------
