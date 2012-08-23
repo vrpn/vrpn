@@ -43,6 +43,7 @@
 #include "vrpn_ImmersionBox.h"
 #include "vrpn_Analog_Radamec_SPI.h"
 #include "vrpn_Zaber.h"
+#include "vrpn_IDEA.h"
 #include "vrpn_Wanda.h"
 #include "vrpn_Analog_5dt.h"
 #include "vrpn_Tng3.h"
@@ -100,6 +101,9 @@
 #include "vrpn_inertiamouse.h"
 #include "vrpn_Event_Mouse.h"
 //#include "vrpn_Cirque_Extended.h"
+
+// Polhemus additions
+#include "vrpn_Tracker_PDI.h"
 
 #ifdef VRPN_USE_JSONNET
 #include "vrpn_Tracker_JsonNet.h"
@@ -271,6 +275,7 @@ class vrpn_Generic_Server_Object
     int setup_Spaceball (char * & pch, char * line, FILE * config_file);
     int setup_Radamec_SPI (char * & pch, char * line, FILE * config_file);
     int setup_Zaber (char * & pch, char * line, FILE * config_file);
+    int setup_IDEA (char * & pch, char * line, FILE * config_file);
     int setup_NationalInstruments (char * & pch, char * line, FILE * config_file);
     int setup_NationalInstrumentsOutput (char * & pch, char * line, FILE * config_file);
     int setup_ImmersionBox (char * & pch, char * line, FILE * config_file);
@@ -351,6 +356,12 @@ class vrpn_Generic_Server_Object
     int setup_Atmel (char* &pch, char *line, FILE *config_file);
     int setup_Event_Mouse (char* &pch, char *line, FILE *config_file);
     int setup_inertiamouse (char * & pch, char * line, FILE * config_file);
+
+    // Polhemus additions
+    int setup_Tracker_G4(char* &pch, char* line, FILE* config_file); 
+    int setup_Tracker_LibertyPDI(char* &pch, char* line, FILE* config_file); 
+    int setup_Tracker_FastrakPDI(char* &pch, char* line, FILE* config_file); 
+
 #ifdef VRPN_USE_JSONNET
     int setup_Tracker_JsonNet (char* &pch, char* line, FILE* config_file);
 #endif

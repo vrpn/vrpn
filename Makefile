@@ -665,6 +665,7 @@ SLIB_FILES =  $(LIB_FILES) \
 	vrpn_FunctionGenerator.C \
 	vrpn_GlobalHapticsOrb.C \
 	vrpn_HumanInterface.C \
+	vrpn_IDEA.C \
 	vrpn_Imager_Stream_Buffer.C \
 	vrpn_ImmersionBox.C \
 	vrpn_inertiamouse.C \
@@ -693,6 +694,7 @@ SLIB_FILES =  $(LIB_FILES) \
 	vrpn_Tracker_isense.C \
 	vrpn_Tracker_Isotrak.C \
 	vrpn_Tracker_Liberty.C \
+	vrpn_Tracker_PDI.C \
 	vrpn_Tracker_MotionNode.C \
 	vrpn_Tracker_NDI_Polaris.C \
 	vrpn_Tracker_PhaseSpace.C \
@@ -736,6 +738,7 @@ SLIB_INCLUDES = $(LIB_INCLUDES) \
 	vrpn_Freespace.h \
 	vrpn_GlobalHapticsOrb.h \
 	vrpn_HumanInterface.h \
+	vrpn_IDEA.h \
 	vrpn_Imager_Stream_Buffer.h \
 	vrpn_ImmersionBox.h \
 	vrpn_inertiamouse.h \
@@ -763,6 +766,7 @@ SLIB_INCLUDES = $(LIB_INCLUDES) \
 	vrpn_Tracker_isense.h \
 	vrpn_Tracker_Isotrak.h \
 	vrpn_Tracker_Liberty.h \
+	vrpn_Tracker_PDI.h \
 	vrpn_Tracker_MotionNode.h \
 	vrpn_Tracker_NDI_Polaris.h \
 	vrpn_Tracker_PhaseSpace.h \

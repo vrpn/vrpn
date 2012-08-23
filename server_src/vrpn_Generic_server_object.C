@@ -1016,6 +1016,38 @@ int vrpn_Generic_Server_Object::setup_Zaber (char * & pch, char * line, FILE * c
   return 0;
 }
 
+int vrpn_Generic_Server_Object::setup_IDEA (char * & pch, char * line, FILE * config_file)
+{
+  char s2 [LINESIZE], s3 [LINESIZE];
+
+  next();
+  // Get the arguments (class, Radamec_name, port, baud
+  if (sscanf (pch, "%511s%511s", s2, s3) != 2) {
+    fprintf (stderr, "Bad vrpn_IDEA: %s\n", line);
+    return -1;
+  }
+
+  // Make sure there's room for a new analog
+  if (num_analogs >= VRPN_GSO_MAX_ANALOG) {
+    fprintf (stderr, "Too many Analogs in config file");
+    return -1;
+  }
+
+  // Open the device
+  if (verbose) {
+    printf ("Opening vrpn_IDEA: %s on port %s\n", s2, s3);
+  }
+  if ( (analogs[num_analogs] =
+          new vrpn_IDEA (s2, connection, s3)) == NULL) {
+    fprintf (stderr, "Can't create new vrpn_IDEA\n");
+    return -1;
+  } else {
+    num_analogs++;
+  }
+
+  return 0;
+}
+
 int vrpn_Generic_Server_Object::setup_NationalInstrumentsOutput (char * & pch, char * line, FILE * config_file)
 {
 
@@ -4797,6 +4829,215 @@ int vrpn_Generic_Server_Object::setup_Tracker_ViewPoint (char * & pch, char * li
 #endif
 }
 
+int vrpn_Generic_Server_Object::setup_Tracker_G4(char * &pch, char * line, FILE * config_file) {
+#ifdef  VRPN_USE_PDI
+  const int LINESIZE = 512;
+  char name [LINESIZE], filepath [LINESIZE];
+  vrpn_Tracker_G4 *mytracker;
+  int numparms;
+  int Hz = 10;
+  char rcmd[5000];
+
+	next();
+	// Get the arguments (class, tracker_name)
+	numparms = sscanf(pch,"%511s%d",name,&Hz);
+	if(numparms==0)
+		return -1;
+
+	if(name[strlen(name)-1] == '\\' ){
+		name[strlen(name)-1] = '\0';
+	}
+
+	printf("\n%s Connecting with .g4c file located at:\n",name);
+
+	//get the filepath to the .g4c file
+	if (fgets(line, LINESIZE, config_file) == NULL) {
+            fprintf(stderr,"Ran past end of config file in G4 description\n");
+                return -1;
+    }
+
+	filepath[0] = 0;
+	strncat(filepath, line, LINESIZE);
+
+	if(filepath[strlen(filepath)-2] == '\\' ){
+		filepath[strlen(filepath)-2] = '\0';
+	}else 
+		filepath[strlen(filepath)-1] = '\0';
+
+	printf("%s\n",filepath);
+
+	// Make sure there's room for a new tracker
+	if (num_trackers >= 100) {
+		fprintf(stderr,"Too many trackers in config file");
+	return -1;
+	}
+
+	// If the last character in the line is a backslash, '\', then
+    // the following line is an additional command to send to the
+    // G4 at reset time. So long as we find lines with slashes
+    // at the ends, we add them to the command string to send. Note
+    // that there is a newline at the end of the line, following the
+    // backslash.
+	rcmd[0] = 0;
+    while (line[strlen(line)-2] == '\\') {
+        // Read the next line
+        if (fgets(line, LINESIZE, config_file) == NULL) {
+            fprintf(stderr,"Ran past end of config file in G4 description\n");
+                return -1;
+        }
+
+        // Copy the line into the remote command,
+        // then replace \ with \0
+        strncat(rcmd, line, LINESIZE);
+
+    }
+
+    if (strlen(rcmd) > 0) {
+            printf("Additional reset commands found\n");
+    }
+
+	if ( (trackers[num_trackers] = mytracker =
+	new vrpn_Tracker_G4(name, connection, filepath, Hz, rcmd)) == NULL) {
+		fprintf(stderr,"Can't create new vrpn_Tracker_G4\n");
+		return -1;
+	}
+
+	num_trackers = num_trackers+1;
+
+	return 0;
+#else
+  fprintf (stderr, "vrpn_server: Can't open vrpn_Tracker_G4: VRPN_USE_PDI not defined in vrpn_Configure.h!\n");
+  return -1;
+#endif
+}
+
+int vrpn_Generic_Server_Object::setup_Tracker_FastrakPDI(char * &pch, char * line, FILE * config_file) {
+#ifdef  VRPN_USE_PDI
+	const int LINESIZE = 512;
+	char name [LINESIZE];
+	vrpn_Tracker_FastrakPDI *mytracker;
+	int Hz = 10;
+	char rcmd[5000];     // reset commands to send to Liberty
+	next();
+	// Get the arguments (class(already taken), tracker_name, reports per second)
+	sscanf(pch,"%511s%d",name,&Hz);
+	
+	// Make sure there's room for a new tracker
+	if (num_trackers >= VRPN_GSO_MAX_TRACKERS) {
+		fprintf(stderr,"Too many trackers in config file");
+		return -1;
+	}
+
+	// remove the '\' from the end of the name, if it has one
+	if(name[strlen(name)-1] == '\\' ){
+		name[strlen(name)-1] = '\0';
+	}
+
+	printf("New FastrakPDI of name: %s\r\n",name);
+	printf(" ...additional reset commands follow:\r\n");
+
+	// If the last character in the line is a backslash, '\', then
+	// the following line is an additional command to send to the
+	// FastrakPDI at reset time. So long as we find lines with slashes
+	// at the ends, we add them to the command string to send. Note
+	// that there is a newline at the end of the line, following the
+	// backslash.
+	rcmd[0] = 0;
+	while (line[strlen(line)-2] == '\\'){
+		// Read the next line
+		if (fgets(line, LINESIZE, config_file) == NULL){
+			fprintf(stderr, "Ran past end of config file in FastrakPDI description\r\n");
+			return -1;
+		}
+
+		// Copy the line into rcmd if it is not a comment, or the tracker name line
+		if (line[0] != '#' && (line[0] != 'v' && line[1] != 'r'))
+			strncat(rcmd, line, LINESIZE);
+	}
+
+	if (rcmd[0] == 0)
+		printf(" no additional commands found\r\n");
+
+	if ( (trackers[num_trackers] = mytracker =
+	new vrpn_Tracker_FastrakPDI(name, connection, Hz, rcmd))
+		== NULL) {
+		fprintf(stderr," can't create new vrpn_Tracker_FastrakPDI\r\n");
+		return -1;
+	}
+
+	num_trackers++;
+
+	return 0;
+#else
+  fprintf (stderr, "vrpn_server: Can't open vrpn_Tracker_FastrakPDI: VRPN_USE_PDI not defined in vrpn_Configure.h!\n");
+  return -1;
+#endif
+}
+
+int vrpn_Generic_Server_Object::setup_Tracker_LibertyPDI(char * &pch, char * line, FILE * config_file) {
+#ifdef  VRPN_USE_PDI
+  const int LINESIZE = 512;
+  char name [LINESIZE];
+  vrpn_Tracker_LibertyPDI *mytracker;
+  int Hz = 10;
+  char rcmd[5000];     // reset commands to send to Liberty
+
+  next();
+  // Get the arguments (class(already taken), tracker_name, reports per second)
+  sscanf(pch,"%511s%d",name,&Hz);
+	
+	 // Make sure there's room for a new tracker
+	if (num_trackers >= VRPN_GSO_MAX_TRACKERS) {
+		fprintf(stderr,"Too many trackers in config file");
+		return -1;
+	}
+
+	// remove the '\' from the end of the name, if it has one
+	if(name[strlen(name)-1] == '\\' ){
+		name[strlen(name)-1] = '\0';
+	}
+
+	printf("New LibertyPDI of name: %s\r\n",name);
+	printf(" ...additional reset commands follow:\r\n");
+
+	// If the last character in the line is a backslash, '\', then
+	// the following line is an additional command to send to the
+	// LibertyPDI at reset time. So long as we find lines with slashes
+	// at the ends, we add them to the command string to send. Note
+	// that there is a newline at the end of the line, following the
+	// backslash.
+	rcmd[0] = 0;
+	while (line[strlen(line)-2] == '\\'){
+		// Read the next line
+		if (fgets(line, LINESIZE, config_file) == NULL){
+			fprintf(stderr, "Ran past end of config file in LibertyPDI description\r\n");
+			return -1;
+		}
+
+		// Copy the line into rcmd if it is not a comment, or the tracker name line
+		if (line[0] != '#' && line[0] != 'v' && line[1] != 'r')
+			strncat(rcmd, line, LINESIZE);
+	}
+
+	if (rcmd[0] == 0)
+		printf(" no additional commands found\r\n");
+
+	if ( (trackers[num_trackers] = mytracker =
+	new vrpn_Tracker_LibertyPDI(name, connection, Hz, rcmd))
+		== NULL) {
+		fprintf(stderr," can't create new vrpn_Tracker_LibertyPDI\r\n");
+		return -1;
+	}
+
+	num_trackers++;
+
+	return 0;
+#else
+  fprintf (stderr, "vrpn_server: Can't open vrpn_Tracker_LibertyPDI: VRPN_USE_PDI not defined in vrpn_Configure.h!\n");
+  return -1;
+#endif
+}
+
 vrpn_Generic_Server_Object::vrpn_Generic_Server_Object (vrpn_Connection *connection_to_use, const char *config_file_name, int port, bool be_verbose, bool bail_on_open_error) :
   connection (connection_to_use),
   d_doing_okay (true),
@@ -4941,6 +5182,8 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object (vrpn_Connection *connect
         CHECK (setup_Radamec_SPI);
       } else if (isit ("vrpn_Zaber")) {
         CHECK (setup_Zaber);
+      } else if (isit ("vrpn_IDEA")) {
+        CHECK (setup_IDEA);
       } else if (isit ("vrpn_5dt")) {
         CHECK (setup_5dt);
       } else if (isit ("vrpn_5dt16")) {
@@ -5069,8 +5312,9 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object (vrpn_Connection *connect
         CHECK (setup_SpacePoint);
       } else if (isit ("vrpn_Tracker_GameTrak")) {
         CHECK (setup_Tracker_GameTrak);
+      }
 // BUW additions
-      } else if (isit ("vrpn_Atmel")) {
+      else if (isit ("vrpn_Atmel")) {
         CHECK (setup_Atmel);
       } else if (isit ("vrpn_inertiamouse")) {
         CHECK (setup_inertiamouse);
@@ -5096,7 +5340,14 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object (vrpn_Connection *connect
       } else if (isit ("vrpn_Tracker_ViewPoint")) {
         CHECK (setup_Tracker_ViewPoint);
       }
-
+// Polhemus additions
+      else if (isit ("vrpn_Tracker_G4")) { 
+        CHECK(setup_Tracker_G4); 
+      } else if (isit ("vrpn_Tracker_LibertyPDI")) { 
+        CHECK(setup_Tracker_LibertyPDI); 
+      } else if (isit ("vrpn_Tracker_FastrakPDI")) { 
+        CHECK(setup_Tracker_FastrakPDI); 
+      }
 #ifdef VRPN_USE_JSONNET
       else if (isit ("vrpn_Tracker_JsonNet")) {
         CHECK (setup_Tracker_JsonNet);

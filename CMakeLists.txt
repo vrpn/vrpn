@@ -574,6 +574,17 @@ elseif(UNIX)
 		OFF)
 endif()
 
+option(VRPN_USE_PDI
+	"Build with flags to enable the use of Polhemus DVI library."
+	OFF)
+
+if(VRPN_USE_PDI)
+	# Generalize this to use a FindPDI.cmake.
+	# Make this also work with debug (use PDID)
+	include_directories("C:\Program Files (x86)\Polhemus\PDI\PDI_90\Inc")
+	list(APPEND SERVER_EXTRA_LIBS "C:\Program Files (x86)\Polhemus\PDI\PDI_90\Lib\Win32\PDI")
+endif()
+
 if(VRPN_BUILD_EXTRA_COMPILER_WARNINGS)
 	include(EnableExtraCompilerWarnings)
 	globally_enable_extra_compiler_warnings()

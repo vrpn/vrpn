@@ -63,7 +63,12 @@
 //-----------------------
 // Instructs VRPN to use phantom library to construct a unified
 // server, using phantom as a common device, and phantom
-// configuration in .cfg file.
+// configuration in .cfg file.  This will not build (at least
+// on Visual Studio 2008) with the 3.1 version of OpenHaptics.
+// There will be problems with  #include and library directories,
+// and then a failure to link due to undefined symbol.  Use CMAKE
+// if you want to compile with a Phantom -- that version works
+// on VS2008 and 3.1 at least.
 //#define	VRPN_USE_PHANTOM_SERVER
 
 //------------------------
@@ -378,6 +383,13 @@
 #if defined(linux)
 #define VRPN_USE_JOYLIN
 #endif
+
+//------------------------
+// Instructs VRPN to compile code to use the Polhemus Developer
+// (PDI) library to enable opening several of their trackers using
+// this interface (the G4 was the original one this was written
+// for, but new versions are available for the Fastrak and Liberty).
+//#define VRPN_USE_PDI
 
 //------------------------------------------------------------------//
 // SYSTEM CONFIGURATION SECTION                                     //
