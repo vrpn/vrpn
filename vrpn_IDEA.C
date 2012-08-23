@@ -134,6 +134,16 @@ bool  vrpn_IDEA::send_move_request(vrpn_float64 location_in_steps)
 
 bool  vrpn_IDEA::convert_report_to_value(unsigned char *buf, vrpn_float64 *value)
 {
+  // Make sure that the last character is [cr] and that we
+  // have enough characters.
+  if (strlen((char *)(buf)) < 8) {
+	return false;
+  }
+  if (buf[strlen((char *)(buf))-1] != '\r') {
+	return false;
+  }
+
+  // See if we can convert the number to the value we expect.
   int  data;
   if (sscanf((char *)(buf), "`l%d\r`l#\r", &data) != 1) {
     return false;
@@ -315,6 +325,7 @@ int vrpn_IDEA::get_report(void)
    //--------------------------------------------------------------------
 
    vrpn_float64 value;
+   d_buffer[d_bufcount] = '\0';
    if (!convert_report_to_value(d_buffer, &value)) {
      return 0;
    }
