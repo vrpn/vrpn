@@ -143,9 +143,12 @@ bool  vrpn_IDEA::convert_report_to_value(unsigned char *buf, vrpn_float64 *value
 	return false;
   }
 
-  // See if we can convert the number to the value we expect.
+  // See if we can convert the number.
   int  data;
   if (sscanf((char *)(buf), "`l%d\r`l#\r", &data) != 1) {
+    char msg[2048];
+    sprintf(msg, "Could not convert value: %s", (char*)(buf));
+    IDEA_ERROR(msg);
     return false;
   }
 
@@ -345,7 +348,6 @@ int vrpn_IDEA::get_report(void)
 	status = STATUS_RESETTING;
 	return 0;
     }
-
 
    //--------------------------------------------------------------------
    // Done with the decoding, send the reports and go back to syncing
