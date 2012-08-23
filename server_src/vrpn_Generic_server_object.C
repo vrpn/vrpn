@@ -1052,7 +1052,7 @@ int vrpn_Generic_Server_Object::setup_NationalInstrumentsOutput (char * & pch, c
 {
 
 #ifndef	VRPN_USE_NATIONAL_INSTRUMENTS
-  fprintf (stderr, "Attemting to use National Instruments board, but not compiled in\n");
+  fprintf (stderr, "Attempting to use National Instruments board, but not compiled in\n");
   fprintf (stderr, "  (Define VRPN_USE_NATIONAL_INSTRUMENTS in vrpn_Configuration.h\n");
 #else
   fprintf (stderr, "Warning: vrpn_NI_Analog_Output is deprecated: use vrpn_National_Instruments instead\n");
@@ -1132,7 +1132,7 @@ int vrpn_Generic_Server_Object::setup_NationalInstruments (char * & pch, char * 
     num_analogs++;
   }
 #else
-  fprintf (stderr, "Attemting to use National Instruments board, but not compiled in\n");
+  fprintf (stderr, "Attempting to use National Instruments board, but not compiled in\n");
   fprintf (stderr, "  (Define VRPN_USE_NATIONAL_INSTRUMENTS in vrpn_Configuration.h\n");
 #endif
 

@@ -345,7 +345,7 @@
 
 	* AnalogOutputRemote.java:
 	(requestValueChange_native):  new, the native functions
-	(requestValueChange):  these are now java functions that aquire
+	(requestValueChange):  these are now java functions that acquire
 	the library-wide lock before calling the native functions.
 	* vrpn_AnalogOutputRemote.cpp:  renames the requestValueChange 
 	functions to match the new declarations, as above.
@@ -535,7 +535,7 @@
 2002-08-13  David Marshburn  <marshbur@cs.unc.edu>
 
 	* AnalogRemoteListener.java:  cosmetic & comment changes
-	* ButtonRemoteListener.java:  changes exactly corresponsing to
+	* ButtonRemoteListener.java:  changes exactly corresponding to
 	those committed for AnalogRemoteListener.java on 2002-08-12
 	* ForceDeviceRemoteListener.java:  same
 	* TrackerRemoteListener.java:  same

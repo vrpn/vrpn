@@ -134,7 +134,7 @@ PowToTwo( unsigned int Exponent )
 
 
 /***************************************************************************************************/
-/* valid adress byte to the specified register                   */
+/* valid address byte to the specified register                   */
 /* the MSB data bit is set to zero                               */
 /***************************************************************************************************/
 unsigned char

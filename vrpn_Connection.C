@@ -141,7 +141,7 @@ int gethostname (char *, int);
 // o If everything up to the last period matches, then a second check is
 // preformed on everything after the last period (the minor version number).
 // If the minor version numbers differ, a connection is still made, but a
-// warning is printed to stderr.  There is currently no way to supress this
+// warning is printed to stderr.  There is currently no way to suppress this
 // warning message if the minor versions differ between the server and the
 // client..
 //
@@ -2278,7 +2278,7 @@ int vrpn_get_a_TCP_socket (SOCKET * listen_sock, int * listen_portnum,
  * connection request. If so, it will accept a connection on the accept
  * socket and set TCP_NODELAY on that socket. The attempt will timeout
  * in the amount of time specified.  If the accept and set are
- * successfull, it returns 1. If there is nothing asking for a connection,
+ * successful, it returns 1. If there is nothing asking for a connection,
  * it returns 0. If there is an error along the way, it returns -1.
  */
 

@@ -333,7 +333,7 @@ void vrpn_File_Connection::FileTime_Accumulator::reset_at_time(
 // {{{ -- comment
 
 // [juliano 10/11/99] the problem described below is now fixed
-// [juliano 8/26/99]  I beleive there to be a bug in mainloop.
+// [juliano 8/26/99]  I believe there to be a bug in mainloop.
 //     
 //     Essentially, the computation of end_time is sample-and-hold
 //     integration, using the value of d_rate at the end of the integration

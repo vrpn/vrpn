@@ -341,7 +341,7 @@ vrpn_Atmel::mainloop_serial_io()
       else {
 
         fprintf(stderr,"vrpn_Atmel: mainloop_serial_io()\n");
-        fprintf(stderr,"  writen down value, channel: %d\n",i);
+        fprintf(stderr,"  written down value, channel: %d\n",i);
       }
       
       // no error

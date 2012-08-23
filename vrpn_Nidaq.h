@@ -33,7 +33,7 @@ class VRPN_API vrpn_Nidaq : public vrpn_Analog {
 public:
 	// see daq.h for more info on the args
 	// fNice says whether these threads should use 100% of the cpu or
-	// whether they should sleep for 1 ms each time thru their loops
+	// whether they should sleep for 1 ms each time through their loops
 	// (the net effect is that they add 1 ms of uncertainty to the
 	// existing 1 or 1/2 ms of uncertainty in time-stamps across a
 	// synchronized vrpn connection).  If fNice is set, then 

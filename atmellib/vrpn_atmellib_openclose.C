@@ -106,7 +106,7 @@ openPort (const char* tty , const int baud, struct termios * init_param)
 }
 
 /***************************************************************************************************/
-/* close the specified port and reset the parameter to the inital values */
+/* close the specified port and reset the parameter to the initial values */
 /***************************************************************************************************/
 /* extern */ error_t
 closePort (handle_t fd , struct termios * init_param)

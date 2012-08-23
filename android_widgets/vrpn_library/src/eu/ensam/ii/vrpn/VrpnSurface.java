@@ -148,7 +148,7 @@ public class VrpnSurface extends android.view.SurfaceView implements
 		final float h = getHeight();
 
 		if (x < 0 || x > w || y < 0 || y > h) {
-			// dragging the touch point may trigger values outside the wiew
+			// dragging the touch point may trigger values outside the view
 			// dimensions
 			return false;
 		}

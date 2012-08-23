@@ -198,12 +198,12 @@ int vrpn_Joystick::get_report() {
 
 /****************************************************************************/
 /* Decodes bytes as follows:
-     First byte of set recieved (from high order bit down):
+     First byte of set received (from high order bit down):
         -bit == 0 to signify first byte
         -empty bit
         -3 bit channel label
         -3 bits (out of 10) of channel reading (high-order bits)
-     Second byte of set recieved (from high order bit down):
+     Second byte of set received (from high order bit down):
         -bit == 1 to signify second byte
         -7 bits (out of 10) of channel reading (low-order bits)
 */

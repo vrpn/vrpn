@@ -113,7 +113,7 @@ public class ButtonRemoteListener implements ButtonRemote.ButtonChangeListener
 	
 	/**
 	 * @return The last (most recent, latest) ButtonUpdate received.  This function 
-	 * returns <code>null</code> if no updates have been recieved.  Note that
+	 * returns <code>null</code> if no updates have been received.  Note that
 	 * successive calls to getLastButtonUpdate() may return the same ButtonUpdate
 	 * if no updates were received in the interim.
 	 */

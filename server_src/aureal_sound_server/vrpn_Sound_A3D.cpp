@@ -684,7 +684,7 @@ void vrpn_Sound_Server_A3D::loadModelLocal(const char * filename) {
 				a3dgeom->PushMatrix();
 				a3dgeom->Begin(A3D_SUB_QUADS);
 				a3dgeom->Tag(num);
-				a3dgeom->SetOpeningFactorf(subopeningval); // make sure to call this before specifiying vertices
+				a3dgeom->SetOpeningFactorf(subopeningval); // make sure to call this before specifying vertices
 
 				// read in 4 vertices
 				for (int i(0); i<4; i++) {
@@ -777,7 +777,7 @@ void vrpn_Sound_Server_A3D::loadModelLocal(const char * filename) {
 				a3dgeom->PushMatrix();
 				a3dgeom->Begin(A3D_SUB_TRIANGLES);
 				a3dgeom->Tag(num);
-				a3dgeom->SetOpeningFactorf(subopeningval); // make sure to call this before specifiying vertices
+				a3dgeom->SetOpeningFactorf(subopeningval); // make sure to call this before specifying vertices
 
 				// read in 3 vertices
 				for (int i(0); i<3; i++) {

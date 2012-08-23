@@ -49,7 +49,7 @@ endif()
 # variable and never tells the poor user what happened (the GUI location
 # looks standard but the files end up somewhere else).  If we make it a
 # non-forced cache variable, it already has a value so does not change.
-# If we make it a forced cache variable, it gets overwritten everytime
+# If we make it a forced cache variable, it gets overwritten every time
 # and the user cannot change it on the GUI.  So we have a workaround here.
 # We make a cache variable that records whether we have ever forced the
 # install prefix.  If not, we force it.  If so, we don't force it again.

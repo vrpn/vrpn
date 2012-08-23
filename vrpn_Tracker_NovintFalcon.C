@@ -453,7 +453,7 @@ protected:
     double m_cutoff;            /// force cutoff radius
     d_vector m_origin;          /// origin of effect
     d_vector m_addforce;        /// additional constant force
-    double m_jacobian[3][3];    /// describes increase in force away from origin in differnt directions.
+    double m_jacobian[3][3];    /// describes increase in force away from origin in different directions.
     double m_newcut;            /// new force cutoff radius
     d_vector m_neworig;         /// new effect origin handed over at update
     d_vector m_newadd;          /// new additional constant force

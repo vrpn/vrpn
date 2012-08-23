@@ -2,7 +2,7 @@
 //
 // Advanced Realtime Tracking GmbH's (http://www.ar-tracking.de) DTrack/DTrack2 client
 
-// developped by David Nahon for Virtools VR Pack (http://www.virtools.com)
+// developed by David Nahon for Virtools VR Pack (http://www.virtools.com)
 // (07/20/2004) improved by Advanced Realtime Tracking GmbH (http://www.ar-tracking.de)
 // (07/02/2007, 06/29/2009) upgraded by Advanced Realtime Tracking GmbH to support new devices
 // (08/25/2010) a correction added by Advanced Realtime Tracking GmbH
@@ -663,7 +663,7 @@ int vrpn_Tracker_DTrack::dtrack2vrpn_flystickanalogs(int id, int id_dtrack,
 //
 // udpport (i): UDP port number to receive data from DTrack
 //
-// return value (o): initialization was successfull (boolean)
+// return value (o): initialization was successful (boolean)
 
 bool vrpn_Tracker_DTrack::dtrack_init(int udpport)
 {
@@ -715,7 +715,7 @@ bool vrpn_Tracker_DTrack::dtrack_init(int udpport)
 
 // Deinitializing communication with DTrack:
 //
-// return value (o): deinitialization was successfull (boolean)
+// return value (o): deinitialization was successful (boolean)
 
 bool vrpn_Tracker_DTrack::dtrack_exit(void)
 {
@@ -739,7 +739,7 @@ bool vrpn_Tracker_DTrack::dtrack_exit(void)
 // ---------------------------------------------------------------------------------------------------
 // Receive and process one DTrack data packet (UDP; ASCII protocol):
 //
-// return value (o): receiving was successfull (boolean)
+// return value (o): receiving was successful (boolean)
 
 bool vrpn_Tracker_DTrack::dtrack_receive(void)
 {
@@ -1328,7 +1328,7 @@ static int udp_exit(vrpn_Tracker_DTrack::socket_type sock)
 // buffer (o): buffer for UDP data
 // maxlen (i): length of buffer
 // tout_us (i): timeout in us (micro sec)
-// return value (o): number of received bytes, <0 if error/timeout occured
+// return value (o): number of received bytes, <0 if error/timeout occurred
 
 // Don't tell us about the FD_SET causing a conditional expression to be constant
 #ifdef	_WIN32

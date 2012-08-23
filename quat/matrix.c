@@ -185,7 +185,7 @@ void q_matrix_mult(q_matrix_type resultMatrix, const q_matrix_type leftMatrix,
     *  multiplicand
     */
    for ( r = 0; r < 4; r++ )
-      /* multiply each colum of the multiplicand by row r of the multiplier   */
+      /* multiply each column of the multiplicand by row r of the multiplier   */
       for ( c = 0; c < 4; c++ )
       {
          tmpResultMatrix[r][c] = 0.0;

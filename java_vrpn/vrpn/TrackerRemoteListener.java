@@ -284,7 +284,7 @@ public class TrackerRemoteListener
 	
 	/**
 	 * @return The last (most recent, latest) TrackerUpdate received.  This function 
-	 * returns <code>null</code> if no updates have been recieved.  Note that
+	 * returns <code>null</code> if no updates have been received.  Note that
 	 * successive calls to getLastTrackerUpdate() may return the same TrackerUpdate
 	 * if no updates were received in the interim.
 	 */
@@ -299,7 +299,7 @@ public class TrackerRemoteListener
 	
 	/**
 	 * @return The last (most recent, latest) VelocityUpdate received.  This function 
-	 * returns <code>null</code> if no updates have been recieved.  Note that
+	 * returns <code>null</code> if no updates have been received.  Note that
 	 * successive calls to getLastVelocityUpdate() may return the same VelocityUpdate
 	 * if no updates were received in the interim.
 	 */
@@ -314,7 +314,7 @@ public class TrackerRemoteListener
 	
 	/**
 	 * @return The last (most recent, latest) AccelerationUpdate received.  This function 
-	 * returns <code>null</code> if no updates have been recieved.  Note that
+	 * returns <code>null</code> if no updates have been received.  Note that
 	 * successive calls to getLastAccelerationUpdate() may return the same 
 	 * AccelerationUpdate if no updates were received in the interim.
 	 */

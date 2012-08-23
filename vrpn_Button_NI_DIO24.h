@@ -4,7 +4,7 @@
 // DIO-24, a PCMCIA card, which provides 24-bit digital I/O.  
 // The I/O is accessed in 3 "ports" with 8 bits per port,
 // though the user is protected from that detail.  The
-// user of this class need only request inputs 1 thru 24.
+// user of this class need only request inputs 1 through 24.
 //
 // Unlike the other National Instrument devices currently
 // in vrpn, this uses their new "mx" library.  To access

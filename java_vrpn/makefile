@@ -4,7 +4,7 @@
 # supported.  It should be possible to build simultaneously on multiple
 # architectures.
 #
-# On the sgi, both g++ and CC verisons are built by default.
+# On the sgi, both g++ and CC versions are built by default.
 #
 # Author: Russ Taylor, 10/2/1997
 #

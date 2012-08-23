@@ -60,8 +60,8 @@ class VRPN_API vrpn_Tracker : public vrpn_BaseClass {
   // . You can specify a different config file in the constructor. When
   // you do this, you must also specify a vrpn_Connection. Pass in NULL
   // if you don't have one. This awkwardness is because C++ requires that
-  //only the rightmost arguements can use the default values, and that the
-  //order of arguements must match the base class :(
+  //only the rightmost arguments can use the default values, and that the
+  //order of arguments must match the base class :(
    vrpn_Tracker (const char * name, vrpn_Connection * c = NULL,
 		 const char * tracker_cfg_file_name = NULL);
 

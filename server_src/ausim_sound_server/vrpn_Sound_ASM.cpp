@@ -891,7 +891,7 @@ void vrpn_Sound_Server_ASM::mainloop() {
 	vrpn_Sound::d_connection->mainloop();
 	
 	vrpn_SoundDef temp;
-	temp.volume = 0.0f; // supress VC6 initialization warning with this
+	temp.volume = 0.0f; // suppress VC6 initialization warning with this
 	// check if we need to repeat any sounds
 	for(int i=0; i<g_numSounds; i++){
 		if(g_Sound[i].repeat != 0) {

@@ -201,7 +201,7 @@ int vrpn_Spaceball::get_report(void)
   // pending packets we're trying to process.
   if (num > 0) {
     for (i=0; i<num; i++) {
-      /* process potentially occuring escaped character sequences */
+      /* process potentially occurring escaped character sequences */
       if (rawbuf[i] == '^') {
         if (!escapedchar) {
           escapedchar = 1;
