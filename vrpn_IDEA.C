@@ -135,13 +135,12 @@ bool  vrpn_IDEA::send_move_request(vrpn_float64 location_in_steps)
 bool  vrpn_IDEA::convert_report_to_value(unsigned char *buf, vrpn_float64 *value)
 {
   // Make sure that the last character is [cr] and that we
-  // have enough characters.
-  if (strlen((char *)(buf)) < 8) {
-	return false;
-  }
-  if (buf[strlen((char *)(buf))-1] != '\r') {
-	return false;
-  }
+  // have another [cr] in the record somewhere (there should be
+  // two).  This makes sure that we have a complete report.
+  char *firstindex = strchr((char*)(buf), '\r');
+  char *lastindex = strrchr((char*)(buf), '\r');
+  if (buf[strlen((char*)(buf))-1] != '\r') { return false; }
+  if (firstindex == lastindex) { return false; }
 
   // See if we can convert the number.
   int  data;
