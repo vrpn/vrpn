@@ -636,7 +636,6 @@ SLIB_FILES =  $(LIB_FILES) \
 	vrpn_Tracker_isense.C \
 	vrpn_Tracker_Isotrak.C \
 	vrpn_Tracker_Liberty.C \
-	vrpn_Tracker_LibertyHS.C \
 	vrpn_Tracker_MotionNode.C \
 	vrpn_Tracker_NDI_Polaris.C \
 	vrpn_Tracker_PhaseSpace.C \
@@ -652,6 +651,7 @@ SLIB_FILES =  $(LIB_FILES) \
 	vrpn_Wanda.C \
 	vrpn_WiiMote.C \
 	vrpn_Xkeys.C \
+	vrpn_Tracker_LibertyHS.C \
 	vrpn_Zaber.C
 
 SLIB_OBJECTS = $(patsubst %,$(SOBJECT_DIR)/%,$(SLIB_FILES:.C=.o))
@@ -707,7 +707,6 @@ SLIB_INCLUDES = $(LIB_INCLUDES) \
 	vrpn_Tracker_isense.h \
 	vrpn_Tracker_Isotrak.h \
 	vrpn_Tracker_Liberty.h \
-	vrpn_Tracker_LibertyHS.h \
 	vrpn_Tracker_MotionNode.h \
 	vrpn_Tracker_NDI_Polaris.h \
 	vrpn_Tracker_PhaseSpace.h \
@@ -723,6 +722,7 @@ SLIB_INCLUDES = $(LIB_INCLUDES) \
 	vrpn_Wanda.h \
 	vrpn_WiiMote.h \
 	vrpn_Xkeys.h \
+	vrpn_Tracker_LibertyHS.h \
 	vrpn_Zaber.h
 
 $(SLIB_OBJECTS):
