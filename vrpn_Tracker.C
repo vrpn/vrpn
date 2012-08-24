@@ -931,6 +931,8 @@ void vrpn_Tracker_Serial::mainloop()
    }
 }
 
+#if defined(VRPN_USE_LIBUSB_1_0)
+
 vrpn_Tracker_USB::vrpn_Tracker_USB
                (const char * name, vrpn_Connection * c, 
                 vrpn_uint16 vendor, vrpn_uint16 product, long baud) :
@@ -1086,6 +1088,9 @@ void vrpn_Tracker_USB::mainloop()
 	break;
    }
 }
+
+// End of LIBUSB
+#endif
 
 #endif  // VRPN_CLIENT_ONLY
 

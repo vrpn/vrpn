@@ -1886,6 +1886,99 @@ int vrpn_Generic_Server_Object::setup_Tracker_Liberty (char * & pch, char * line
   return 0;
 }
 
+int vrpn_Generic_Server_Object::setup_Tracker_LibertyHS (char * & pch, char * line, FILE * config_file)
+{
+#if defined(VRPN_USE_LIBUSB_1_0)
+  char s2 [LINESIZE];
+  int i1, i2, i3;
+  vrpn_Tracker_LibertyHS *mytracker;
+  int numparms;
+
+  char    rcmd[5000];     // Reset command to send to LibertyHS
+  next();
+  // Get the arguments (class, tracker_name, num_sensors, baud, [whoami_len])
+  numparms = sscanf (pch, "%511s%d%d", s2, &i1, &i2, &i3);
+  if (numparms < 3) {
+    fprintf (stderr, "Bad vrpn_Tracker_LibertyHS line: %s\n", line);
+    return -1;
+  }
+
+  // Make sure there's room for a new tracker
+  if (num_trackers >= VRPN_GSO_MAX_TRACKERS) {
+    fprintf (stderr, "Too many trackers in config file");
+    return -1;
+  }
+
+  // If the last character in the line is a backslash, '\', then
+  // the following line is an additional command to send to the
+  // LibertyHS at reset time. So long as we find lines with slashes
+  // at the ends, we add them to the command string to send. Note
+  // that there is a newline at the end of the line, following the
+  // backslash.
+  rcmd[0] = 0;
+  while (line[strlen (line) - 2] == '\\') {
+    // Read the next line
+    if (fgets (line, LINESIZE, config_file) == NULL) {
+      fprintf (stderr, "Ran past end of config file in LibertyHS description\n");
+      return -1;
+    }
+
+    // Copy the line into the remote command,
+    // then replace \ with \015 if present
+    // In any case, make sure we terminate with \015.
+    strncat (rcmd, line, LINESIZE);
+    if (rcmd[strlen (rcmd) - 2] == '\\') {
+      rcmd[strlen (rcmd) - 2] = '\015';
+      rcmd[strlen (rcmd) - 1] = '\0';
+    } else if (rcmd[strlen (rcmd) - 2] == '/') {
+      rcmd[strlen (rcmd) - 2] = '\015';
+      rcmd[strlen (rcmd) - 1] = '\0';
+    } else if (rcmd[strlen (rcmd) - 1] == '\n') {
+      rcmd[strlen (rcmd) - 1] = '\015';
+    } else {        // Add one, we reached the EOF before CR
+      rcmd[strlen (rcmd) + 1] = '\0';
+      rcmd[strlen (rcmd)] = '\015';
+    }
+
+  }
+
+  if (strlen (rcmd) > 0) {
+    printf ("... additional reset commands follow:\n");
+    printf ("%s\n", rcmd);
+  }
+
+  // Open the tracker
+  if (verbose) printf (
+      "Opening vrpn_Tracker_LibertyHS: %s on USB port, baud %d\n",
+      s2, i2);
+
+  if (numparms == 3) {
+    if ( (trackers[num_trackers] = mytracker =
+                                     new vrpn_Tracker_LibertyHS (s2, connection, i2, 0, i1, 1, rcmd))
+         == NULL) {
+
+      fprintf (stderr, "Can't create new vrpn_Tracker_LibertyHS\n");
+      return -1;
+    }
+  } else {
+    if ( (trackers[num_trackers] = mytracker =
+                                     new vrpn_Tracker_LibertyHS (s2, connection, i2, 0, i1, 1, rcmd, i3))
+         == NULL) {
+
+      fprintf (stderr, "Can't create new vrpn_Tracker_LibertyHS\n");
+      return -1;
+    }
+  }
+
+  num_trackers++;
+#else
+  printf ("Can't create new vrpn_Tracker_LibertyHS: Server not compiled with VRPN_USE_LIBUSB_1_0 defined.\n");
+  return -1;
+#endif
+
+  return 0;
+}
+
 int vrpn_Generic_Server_Object::setup_Tracker_3Space (char * & pch, char * line, FILE * config_file)
 {
 
@@ -4905,6 +4998,8 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object (vrpn_Connection *connect
         CHECK (setup_Tracker_NDI_Polaris);
       } else if (isit ("vrpn_Tracker_Liberty")) {
         CHECK (setup_Tracker_Liberty);
+      } else if (isit ("vrpn_Tracker_LibertyHS")) {
+        CHECK (setup_Tracker_LibertyHS);
       } else if (isit ("vrpn_Tracker_3Space")) {
         CHECK (setup_Tracker_3Space);
       } else if (isit ("vrpn_Tracker_Flock")) {

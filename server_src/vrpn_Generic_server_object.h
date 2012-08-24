@@ -23,6 +23,7 @@
 #include "vrpn_Tracker_Fastrak.h"
 #include "vrpn_Tracker_Isotrak.h"
 #include "vrpn_Tracker_Liberty.h"
+#include "vrpn_Tracker_LibertyHS.h"
 #include "vrpn_Tracker_3DMouse.h"
 #include "vrpn_Flock.h"
 #include "vrpn_Flock_Parallel.h"
@@ -274,6 +275,7 @@ class vrpn_Generic_Server_Object
     int setup_Tracker_Fastrak (char * & pch, char * line, FILE * config_file);
     int setup_Tracker_Isotrak (char * & pch, char * line, FILE * config_file);
     int setup_Tracker_Liberty (char * & pch, char * line, FILE * config_file);
+    int setup_Tracker_LibertyHS (char * & pch, char * line, FILE * config_file);
     int setup_Tracker_3Space (char * & pch, char * line, FILE * config_file);
     int setup_Tracker_Flock (char * & pch, char * line, FILE * config_file);
     int setup_Tracker_Flock_Parallel (char * & pch, char * line, FILE * config_file);
