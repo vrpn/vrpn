@@ -860,10 +860,10 @@ vrpn_HapticVector TexturePlane::computeNormal(double x, double z) const
 	vrpn_HapticVector normal;
 
 	if (r != 0){
-		normal = gstVector(texAmp*x*k*sin(k*r)/r, 1.0, texAmp*z*k*sin(k*r)/r);
+		normal = vrpn_HapticVector(texAmp*x*k*sin(k*r)/r, 1.0, texAmp*z*k*sin(k*r)/r);
 	}
 	else{
-		normal = gstVector(0, 1.0, 0);
+		normal = vrpn_HapticVector(0, 1.0, 0);
 	}
 	return normal;
 	

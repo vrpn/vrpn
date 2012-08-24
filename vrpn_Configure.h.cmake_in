@@ -79,7 +79,7 @@
 // things also fail).  At least we're rid of them now.  When you
 // uncomment it (to use GHOST), add the following to the include
 // directories for the vrpn_phantom project: $(SYSTEMDRIVE)\Program Files\SensAble\GHOST\v4.0\include,$(SYSTEMDRIVE)\Program Files\SensAble\GHOST\v4.0\external\stl,
-#define VRPN_USE_HDAPI
+#cmakedefine VRPN_USE_HDAPI
 
 //------------------------
 // Instructs vrpn to use Ghost 3.1 instead of Ghost 3.4.
@@ -90,7 +90,7 @@
 // a Windows PC with Visual Studio, you will need to alter
 // server_src/vrpn_phantom.dsp to reference the Ghost 3.1 include
 // paths.)
-// #define VRPN_USE_GHOST_31
+#cmakedefine VRPN_USE_GHOST_31
 
 //-----------------------
 // Instructs VRPN to use the high-performance timer code on
@@ -127,6 +127,10 @@
 #cmakedefine VRPN_USE_DIRECTINPUT
 #cmakedefine VRPN_USE_WINDOWS_XINPUT
 
+// The DirectInput-based zSight tracker requires ATL for smart pointers,
+// which sadly isn't everywhere (VC Express, MXE cross compiling, ...).
+#cmakedefine VRPN_HAVE_ATLBASE
+
 //-----------------------
 // Instructs VRPN library and server to include code that uses
 // the DirectShow SDK.  If you set this, you may to edit the
@@ -146,6 +150,8 @@
 // code to find it.
 //#define	VRPN_INCLUDE_TIMECODE_SERVER
 #cmakedefine VRPN_INCLUDE_TIMECODE_SERVER
+#cmakedefine VRPN_ADRIENNE_INCLUDE_FILENAME "@VRPN_ADRIENNE_INCLUDE_FILENAME@"
+#cmakedefine VRPN_ADRIENNE_INCLUDE_HAS_EXTERN_C
 
 //-----------------------
 // Compiles the InterSense Tracker using the
@@ -202,14 +208,14 @@
 //
 // In Linux:
 // The PhaseSpace header files (owl.h, etc) and libraries (libowlsock)
-// should be placed in the phasespace directory at the same level as 
+// should be placed in the phasespace directory at the same level as
 // the vrpn folder.  Also, PHASESPACE needs to be uncommented in the
-// server_src/Makefile so that the libraries are properly linked.  
+// server_src/Makefile so that the libraries are properly linked.
 // libowlsock.so will need to be present in the directory of the
 // final executable or in the default library path such as /usr/lib
 //
-// In Windows: 
-// The PhaseSpace header files (owl.h, etc) should be placed in the 
+// In Windows:
+// The PhaseSpace header files (owl.h, etc) should be placed in the
 // phasespace directory at the same level as the vrpn folder.
 // libowlsock.lib will need to be located there as well.
 // libowlsock.dll will need to be in the path or with the executable
@@ -275,14 +281,14 @@
 //#define VRPN_USE_WIIUSE
 #cmakedefine VRPN_USE_WIIUSE
 
-// Instructs VRPN to compile code to handle Hillcrest Labs' Freespace 
+// Instructs VRPN to compile code to handle Hillcrest Labs' Freespace
 // devices such as the Loop, and FRCM.  You will also need the libfreespace
 // library which is available at http://libfreespace.hillcrestlabs.com/content/download.
-// There are prebuilt binaries for Windows, and source available that should work 
+// There are prebuilt binaries for Windows, and source available that should work
 // on Windows, Linux or OS X.  You will need to make sure the header files
 // and library are accessible to the compiler.  libfreespace is released under
 // the LGPL and we (Hillcrest Labs) view static and dynamic linking as the same.
-// We (Hillcrest Labs) do not require code linked to libfreespace (statically or 
+// We (Hillcrest Labs) do not require code linked to libfreespace (statically or
 // dynamically) to be released under any particular license.
 //#define VRPN_USE_FREESPACE
 #cmakedefine VRPN_USE_FREESPACE
@@ -303,11 +309,11 @@
 
 //------------------------
 // Instructs VRPN to compile code to use Trivisio's Colibri inertial
-// tracker.  You will also need the SDK, which is available at 
+// tracker.  You will also need the SDK, which is available at
 // http://www.trivisio.com/products/motiontracking/colibri#download
 // (tested on Windows).  VRPN_TRIVISIOCOLIBRI_H and VRPN_TRIVISIOCOLIBRI_LIB_PATH
-// below point to the default installation locations on Windows.  Edit them 
-// if installed elsewhere.  Note that Trivisio.dll and pthreadVC2.dll need to be in 
+// below point to the default installation locations on Windows.  Edit them
+// if installed elsewhere.  Note that Trivisio.dll and pthreadVC2.dll need to be in
 // the path when running the server on Windows
 //#define VRPN_USE_TRIVISIOCOLIBRI
 #cmakedefine VRPN_USE_TRIVISIOCOLIBRI
@@ -373,6 +379,22 @@
 #define VRPN_VIEWPOINT_H "vpx.h"
 #cmakedefine VRPN_VIEWPOINT_LIB_PATH "@VRPN_VIEWPOINT_LIB_PATH@"
 
+//------------------------
+// Use DevInput devices.
+//#if defined(linux) && !defined(__APPLE__)
+//#define VRPN_USE_DEV_INPUT
+//#endif
+#cmakedefine VRPN_USE_DEV_INPUT
+
+//------------------------
+// Instructs VRPN to compile code to use the Polhemus Developer
+// (PDI) library to enable opening several of their trackers using
+// this interface (the G4 was the original one this was written
+// for, but new versions are available for the Fastrak and Liberty).
+//#define VRPN_USE_PDI
+#cmakedefine VRPN_USE_PDI
+
+
 //------------------------------------------------------------------//
 // SYSTEM CONFIGURATION SECTION                                     //
 // EDIT THESE DEFINITIONS TO POINT TO OPTIONAL LIBRARIES.  THEY ARE //
@@ -403,19 +425,6 @@
 #define VRPN_NIDAQ_PATH         VRPN_SYSTEMDRIVE "/Program Files/National Instruments/NI-DAQ/Lib/"
 #define VRPN_USDIGITAL_PATH     VRPN_SYSTEMDRIVE "/Program Files/SEI Explorer/"
 
-#ifdef  vrpn_USE_MPI
-#pragma comment (lib, VRPN_SYSTEMDRIVE "/Program Files/MPICH2/lib/mpi.lib")
-#endif
-
-// Load Adrienne libraries if we are using the timecode generator.
-// If this doesn't match where you have installed these libraries,
-// edit the following lines to point at the correct libraries.  Do
-// this here rather than in the project settings so that it can be
-// turned on and off using the definition above.
-#ifdef	VRPN_INCLUDE_TIMECODE_SERVER
-#pragma comment (lib, "../../Adrienne/AEC_DLL/AEC_NTTC.lib")
-#endif
-
 #ifdef VRPN_USE_MOTIONNODE
 #pragma comment(lib, "libMotionNodeSDK.lib")
 #endif
@@ -423,15 +432,6 @@
 //---------------------------------------------------------------//
 // DO NOT EDIT BELOW THIS LINE FOR NORMAL CONFIGURATION SETTING. //
 //---------------------------------------------------------------//
-
-// Load the library for WiiUse.
-#ifdef  VRPN_USE_WIIUSE
-  #ifdef	_DEBUG
-//    #pragma comment(lib, VRPN_WIIUSE_LIB_PATH "/msvc/Debug/wiiuse.lib")
-  #else
-//    #pragma comment(lib, VRPN_WIIUSE_LIB_PATH "/msvc/Release/wiiuse.lib")
-  #endif
-#endif
 
 #ifdef  VRPN_USE_FREESPACE
   #ifdef	_DEBUG
@@ -445,22 +445,6 @@
 // Load libowlsock.lib if we're using Phasespace.
 #ifdef	VRPN_INCLUDE_PHASESPACE
 #pragma comment (lib, VRPN_PHASESPACE_LIB_PATH "libowlsock.lib")
-#endif
-
-// Load VRPN Phantom library if we are using phantom server as unified server
-// Load SensAble Technologies GHOST library to run the Phantom
-// NOTE: The paths to these libraries are set in the Settings/Link tab of
-// the various project files.  The paths to the include files are in the
-// Settings/C++/preprocessor tab.
-#ifdef VRPN_USE_PHANTOM_SERVER
-  #ifdef VRPN_USE_HDAPI
-  #else
-    #ifdef VRPN_USE_GHOST_31
-      #pragma comment (lib,VRPN_GHOST_31_PATH "GHOST31.lib")
-    #else
-      #pragma comment (lib,VRPN_GHOST_40_PATH "GHOST40.lib")
-    #endif
-  #endif
 #endif
 
 // Load National Instruments libraries if we are using them.
@@ -488,7 +472,7 @@
 #pragma comment (lib, VRPN_USDIGITAL_PATH "SEIDrv32.lib")
 #endif
 
-// Load Microscribe-3D SDK libraries 
+// Load Microscribe-3D SDK libraries
 // If this doesn't match where you have installed these libraries,
 // edit the following lines to point at the correct libraries.  Do
 // this here rather than in the project settings so that it can be
@@ -520,7 +504,7 @@
 #pragma comment (lib, "wsock32.lib")  // VRPN requires the Windows Sockets library.
 #ifdef VRPN_USE_SHARED_LIBRARY
 #ifdef VRPNDLL_EXPORTS
-#define  VRPN_API		 __declspec(dllexport) 
+#define  VRPN_API		 __declspec(dllexport)
 #else
 #define  VRPN_API		 __declspec(dllimport)
 #endif

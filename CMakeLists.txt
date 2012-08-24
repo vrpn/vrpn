@@ -87,10 +87,11 @@ set(CPACK_SOURCE_PACKAGE_FILE_NAME
 # Compiler flags we got from Hans for Windows and from Sheldon Andrews
 # for other architectures.
 if(MSVC)	# MS-Windows Visual Studio, both 32 and 64 bits
-	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}   /fp:fast")
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /fp:fast")
+	if(MSVC_VERSION GREATER 1310) # Newer than VS.NET 2003 (7.1)
+		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}   /fp:fast")
+		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /fp:fast")
+	endif()
 	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /FIXED:NO")
-
 else()
 	# GCC compilers on 64-bit machines require -fPIC for shared libraries or libs
 	# linked into shared libraries.
@@ -267,6 +268,10 @@ if(VRPN_USE_HID)
 	include_directories(${HIDAPI_INCLUDE_DIRS})
 	list(APPEND SERVER_EXTRA_LIBS ${HIDAPI_LIBRARIES})
 	option(VRPN_BUILD_HID_GUI "Should we build a GUI for analyzing live HID streams?" ${TRUE_UNLESS_SUBPROJECT})
+	option(VRPN_HID_DEBUGGING "Should verbose debugging messages be displayed during HID interactions?" off)
+	if(VRPN_HID_DEBUGGING)
+		add_definitions(-DVRPN_HID_DEBUGGING)
+	endif()
 else()
 	# Clear this variable if they don't want HID after all.
 	message(STATUS "NOTE: You have VRPN_USE_LOCAL_HIDAPI enabled, but "
@@ -275,18 +280,54 @@ else()
 endif()
 
 ###
-# OpenHaptics HDAPI/HLAPI
+# Sensable "OpenHaptics" HDAPI/HLAPI
 ###
 find_package(OpenHaptics)
+option_requires(VRPN_USE_HDAPI
+	"Allow SensAble Phantom support through HDAPI/HLAPI - VRPN_USE_PHANTOM_SERVER must still be set"
+	${DEFAULT_OFF_IF_SUBPROJECT}
+	OPENHAPTICS_FOUND)
+if(VRPN_USE_HDAPI)
+	set(PHANTOM_POSSIBLE ON)
+endif()
+
+###
+# Sensable GHOST
+###
+if(NOT VRPN_USE_HDAPI)
+	find_package(GHOST)
+	option_requires(VRPN_USE_GHOST
+		"Allow SensAble Phantom support through GHOST - VRPN_USE_PHANTOM_SERVER must still be set"
+		${DEFAULT_OFF_IF_SUBPROJECT}
+		GHOST_FOUND)
+	if(VRPN_USE_GHOST)
+		if(NOT ${GHOST_LIBRARIES} MATCHES ".*40.*")
+			message(STATUS "GHOST pre-4.0 detected - calling it 3.1.")
+			set(VRPN_USE_GHOST_31 ON)
+		endif()
+		set(PHANTOM_POSSIBLE ON)
+	endif()
+endif()
+
+###
+# Sensable PHANToM Support - Overall Option
+###
 option_requires(VRPN_USE_PHANTOM_SERVER
 	"Build with SensAble Phantom support"
 	${DEFAULT_OFF_IF_SUBPROJECT}
-	OPENHAPTICS_FOUND)
+	PHANTOM_POSSIBLE)
 
 if(VRPN_USE_PHANTOM_SERVER)
-	include_directories(${OPENHAPTICS_INCLUDE_DIRS})
-	list(APPEND SERVER_EXTRA_LIBS ${OPENHAPTICS_LIBRARIES})
+	if(VRPN_USE_HDAPI)
+		include_directories(${OPENHAPTICS_INCLUDE_DIRS})
+		list(APPEND SERVER_EXTRA_LIBS ${OPENHAPTICS_LIBRARIES})
+	else()
+		# VRPN_USE_GHOST
+		include_directories(${GHOST_INCLUDE_DIRS})
+		list(APPEND SERVER_EXTRA_LIBS ${GHOST_LIBRARIES})
+	endif()
 endif()
+
 
 ###
 # WiiUse
@@ -339,9 +380,9 @@ endif()
 ###
 # DirectShow
 ###
-# Note: FindDirectShow.cmake still needs some TLC to bring it in line
-# with CMake standards and make it work in a variety of environments
-if(WIN32)
+# Note that header removal makes this harder for VS10 and later - you need an earlier
+# version of MSVC also installed or an older Windows/Platform SDK with qedit.h in it.
+if(MSVC)
 	find_package(DirectShow)
 	option_requires(VRPN_USE_DIRECTSHOW
 			"Build with Microsoft DirectShow support"
@@ -351,33 +392,31 @@ if(WIN32)
 			"Enable to build DirectShow Video Server (Windows)"
 			${DEFAULT_OFF_IF_SUBPROJECT}
 			DIRECTSHOW_FOUND)
-
-	if(VRPN_USE_DIRECTSHOW)
-		include_directories(${DirectShow_INCLUDE_DIRS})
-		# XXX What else should be done here?
-	endif()
 endif()
 
 ###
 # DirectInput
 ###
 if(WIN32)
-	find_package(DirectInput)
+	find_package(DirectX)
 	option_requires(VRPN_USE_DIRECTINPUT
 			"Build with Microsoft DirectInput support"
 			${DEFAULT_OFF_IF_SUBPROJECT}
-			DIRECTINPUT_FOUND)
+			DIRECTX_FOUND)
 	if(VRPN_USE_DIRECTINPUT)
-		include_directories(${DIRECTINPUT_INCLUDE_DIRS})
-		list(APPEND SERVER_EXTRA_LIBS ${DIRECTINPUT_LIBRARIES})
-		find_path(DIRECTINPUT_XINPUT_INCLUDE_DIR xinput.h HINTS ${DIRECTINPUT_INCLUDE_DIRS})
-		mark_as_advanced(DIRECTINPUT_XINPUT_INCLUDE_DIR)
-		if(DIRECTINPUT_XINPUT_INCLUDE_DIR)
+		include_directories(${DIRECTX_INCLUDE_DIRS})
+		list(APPEND SERVER_EXTRA_LIBS ${DIRECTX_DXGUID_LIBRARY} ${DIRECTX_DXERR_LIBRARY} ${DIRECTX_DINPUT_LIBRARY})
+		find_path(DIRECTX_XINPUT_INCLUDE_DIR xinput.h HINTS ${DIRECTX_INCLUDE_DIRS})
+		if(DIRECTX_XINPUT_INCLUDE_DIR)
+			mark_as_advanced(DIRECTX_XINPUT_INCLUDE_DIR)
 			set(VRPN_USE_WINDOWS_XINPUT TRUE)
 		else()
 			set(VRPN_USE_WINDOWS_XINPUT FALSE)
 		endif()
 	endif()
+
+	include(CheckIncludeFileCXX)
+	check_include_file_cxx(atlbase.h VRPN_HAVE_ATLBASE)
 endif()
 
 ###
@@ -428,10 +467,23 @@ if(VIEWPOINT_FOUND)
 endif()
 
 ###
+# Adrienne timecode boards
+###
+if(WIN32 OR CYGWIN)
+	find_package(Adrienne)
+	option_requires(VRPN_INCLUDE_TIMECODE_SERVER
+		"Build with support for Adrienne timecode server"
+		${DEFAULT_OFF_IF_SUBPROJECT}
+		ADRIENNE_FOUND)
+	if(VRPN_INCLUDE_TIMECODE_SERVER)
+		set(VRPN_ADRIENNE_INCLUDE_FILENAME "${ADRIENNE_INCLUDE_FILENAME}")
+		set(VRPN_ADRIENNE_INCLUDE_HAS_EXTERN_C ${ADRIENNE_INCLUDE_HAS_EXTERN_C})
+	endif()
+endif()
+
+###
 # XXX Other libraries needing detection and handling (TODO)
 ###
-# possibly GHOST?
-# Adrienne time-code generator
 # InterSense Interface Libraries SDK
 # National Instruments Nidaq traditional
 # US Digital SEI/A2
@@ -455,9 +507,6 @@ add_definitions(-DVRPN_USING_CMAKE)
 # Configuration options controlling what gets included in the build.
 # These are the default options - if a library is detected above it will
 # be pre-set to ON instead.
-option(VRPN_INCLUDE_TIMECODE_SERVER
-	"Build with Adrienne time-code server support"
-	OFF)
 option(VRPN_INCLUDE_INTERSENSE
 	"Build with InterSense native library support"
 	OFF)
@@ -501,6 +550,27 @@ elseif(UNIX)
 	option(VRPN_BUILD_PROFILING_SUPPORT
 		"Build with flags to enable profiling."
 		OFF)
+endif()
+
+if (UNIX AND NOT APPLE)
+	option(VRPN_USE_DEV_INPUT
+		"Build with flags to enable the use of DevInput."
+		ON)
+else()
+	option(VRPN_USE_DEV_INPUT
+		"Build with flags to enable the use of DevInput."
+		OFF)
+endif()
+
+option(VRPN_USE_PDI
+	"Build with flags to enable the use of Polhemus DVI library."
+	OFF)
+
+if(VRPN_USE_PDI)
+	# Generalize this to use a FindPDI.cmake.
+	# Make this also work with debug (use PDID)
+	include_directories("C:\Program Files (x86)\Polhemus\PDI\PDI_90\Inc")
+	list(APPEND SERVER_EXTRA_LIBS "C:\Program Files (x86)\Polhemus\PDI\PDI_90\Lib\Win32\PDI")
 endif()
 
 if(VRPN_BUILD_EXTRA_COMPILER_WARNINGS)
@@ -591,6 +661,7 @@ set(VRPN_SERVER_SOURCES
 	vrpn_Button_NI_DIO24.C
 	vrpn_Button_USB.cpp
 	vrpn_CerealBox.C
+	vrpn_DevInput.C
 	vrpn_DirectXFFJoystick.C
 	vrpn_DirectXRumblePad.C
 	vrpn_DreamCheeky.C
@@ -636,6 +707,7 @@ set(VRPN_SERVER_SOURCES
 	vrpn_Tracker_Isotrak.C
 	vrpn_Tracker_JsonNet.C
 	vrpn_Tracker_Liberty.C
+	vrpn_Tracker_PDI.C
 	vrpn_Tracker_MotionNode.C
 	vrpn_Tracker_NDI_Polaris.C
 	vrpn_Tracker_NovintFalcon.C
@@ -654,6 +726,7 @@ set(VRPN_SERVER_SOURCES
 	vrpn_Xkeys.C
 	vrpn_Tracker_LibertyHS.C
 	vrpn_Zaber.C
+	vrpn_IDEA.C
 	server_src/vrpn_Generic_server_object.C
 	${HIDAPI_SOURCES})
 
@@ -672,6 +745,7 @@ set(VRPN_SERVER_PUBLIC_HEADERS
 	vrpn_Button_NI_DIO24.h
 	vrpn_Button_USB.h
 	vrpn_CerealBox.h
+	vrpn_DevInput.h
 	vrpn_DirectXFFJoystick.h
 	vrpn_DirectXRumblePad.h
 	vrpn_DreamCheeky.h
@@ -700,6 +774,7 @@ set(VRPN_SERVER_PUBLIC_HEADERS
 	vrpn_NationalInstruments.h
 	vrpn_Nidaq.h
 	vrpn_nikon_controls.h
+	vrpn_OneEuroFilter.h
 	vrpn_Poser_Analog.h
 	vrpn_Poser.h
 	vrpn_Poser_Tek4662.h
@@ -720,6 +795,7 @@ set(VRPN_SERVER_PUBLIC_HEADERS
 	vrpn_Tracker_Isotrak.h
 	vrpn_Tracker_JsonNet.h
 	vrpn_Tracker_Liberty.h
+	vrpn_Tracker_PDI.h
 	vrpn_Tracker_MotionNode.h
 	vrpn_Tracker_NDI_Polaris.h
 	vrpn_Tracker_NovintFalcon.h
@@ -738,6 +814,7 @@ set(VRPN_SERVER_PUBLIC_HEADERS
 	vrpn_Xkeys.h
 	vrpn_Tracker_LibertyHS.h
 	vrpn_Zaber.h
+	vrpn_IDEA.h
 	server_src/vrpn_Generic_server_object.h)
 
 if(VRPN_BUILD_SERVER_LIBRARY)

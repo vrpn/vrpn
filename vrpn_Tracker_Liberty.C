@@ -112,7 +112,6 @@ int vrpn_Tracker_Liberty::set_sensor_output_format(int sensor)
 		return -1;
     }
 
-
     return 0;
  }
 
@@ -275,6 +274,7 @@ void vrpn_Tracker_Liberty::reset()
      return;
    } else {
      FT_WARNING("Liberty/Isense gives status (this is good)");
+printf("LIBERTY LATUS STATUS (whoami):\n%s\n\n",statusmsg);
      numResets = 0; 	// Success, use simple reset next time
    }
 
@@ -463,6 +463,7 @@ int vrpn_Tracker_Liberty::get_report(void)
    // read a byte at a time until we find a 'LY' characters.
    //--------------------------------------------------------------------
    // For the Patriot this is 'PA'.
+   // For the (high speed) Liberty Latus this is 'LU'.
 
    if (status == vrpn_TRACKER_SYNCING) {
 
@@ -488,9 +489,7 @@ int vrpn_Tracker_Liberty::get_report(void)
        return 0;
      }
 
- 
-
-      // If it is not an 'LY', we don't want it but we
+      // If it is not 'LY' or 'PA' or 'LU' , we don't want it but we
       // need to look at the next one, so just return and stay
       // in Syncing mode so that we will try again next time through.
       // Also, flush the buffer so that it won't take as long to catch up.
@@ -498,17 +497,19 @@ int vrpn_Tracker_Liberty::get_report(void)
       ((( buffer[0] == 'L') && (buffer[1] == 'Y')) != 1) 
       && 
       ((( buffer[0] == 'P') && (buffer[1] == 'A')) != 1)
+      && 
+      ((( buffer[0] == 'L') && (buffer[1] == 'U')) != 1)
       ) 
       {
-      	sprintf(errmsg,"While syncing (looking for 'LY' or 'PA', "
-		"got '%c')", buffer[0]);
+      	sprintf(errmsg,"While syncing (looking for 'LY' or 'PA' or 'LU', "
+		"got '%c%c')", buffer[0], buffer[1]);
 	FT_INFO(errmsg);
 	vrpn_flush_input_buffer(serial_fd);
-	if (DEBUG) fprintf(stderr,"[DEBUGA]: Getting Report - Not LY or PA, Got Character %c %c \n",buffer[0],buffer[1]);
+	if (DEBUG) fprintf(stderr,"[DEBUGA]: Getting Report - Not LY or PA or LU, Got Character %c %c \n",buffer[0],buffer[1]);
       	return 0;
       }
 
-        if (DEBUG) fprintf(stderr,"[DEBUG]: Getting Report - Got LY or PA\n");
+        if (DEBUG) fprintf(stderr,"[DEBUG]: Getting Report - Got LY or PA or LU\n");
 
       // Got the first character of a report -- go into AWAITING_STATION mode
       // and record that we got one character at this time. The next
@@ -555,7 +556,6 @@ int vrpn_Tracker_Liberty::get_report(void)
       // will attempt to read the rest of the report.
       bufcount++;
       status = vrpn_TRACKER_PARTIAL;
-
    }
    
    //--------------------------------------------------------------------
@@ -595,10 +595,12 @@ int vrpn_Tracker_Liberty::get_report(void)
    ((buffer[0] != 'L') || (buffer[1] != 'Y'))
    && 
    ((buffer[0] != 'P') || (buffer[1] != 'A'))
+   && 
+   ((buffer[0] != 'L') || (buffer[1] != 'U'))
    ) {
-     if (DEBUGA)	fprintf(stderr,"[DEBUG]: Don't have LY or PA at beginning");
+     if (DEBUGA)	fprintf(stderr,"[DEBUG]: Don't have LY or PA or 'LU' at beginning");
 	   status = vrpn_TRACKER_SYNCING;
-	   FT_INFO("Not 'LY' or 'PA' in record, re-syncing");
+	   FT_INFO("Not 'LY' or 'PA' or 'LU' in record, re-syncing");
 	   vrpn_flush_input_buffer(serial_fd);
 	   return 0;
    }
@@ -610,12 +612,9 @@ int vrpn_Tracker_Liberty::get_report(void)
 	   if (DEBUGA) fprintf(stderr,"[DEBUG]: Don't have space at end of report, got (%c) sensor %i\n",buffer[bufcount-1], d_sensor);
 
 	   return 0;
-
    }
 
-
    //Decode the error status and output a debug message
-
    if (buffer[4] != ' ') {
      // An error has been flagged
      if (DEBUGA) fprintf(stderr,"[DEBUG]:Error Flag %i\n",buffer[4]);
@@ -657,7 +656,6 @@ int vrpn_Tracker_Liberty::get_report(void)
    // seconds.
    //--------------------------------------------------------------------
 
-
        struct timeval delta_time;   // Time since the clock was reset
 
        // Read the integer value of the time from the record.
@@ -672,7 +670,6 @@ int vrpn_Tracker_Liberty::get_report(void)
        timestamp = vrpn_TimevalSum(liberty_zerotime, delta_time);
        vrpn_gettimeofday(&watchdog_timestamp, NULL);	// Set watchdog now       
  
-
    //--------------------------------------------------------------------
    // If this sensor has button on it, decode the button values
    // into the button device and mainloop the button device so that
@@ -721,4 +718,3 @@ int vrpn_Tracker_Liberty::add_stylus_button(const char *button_device_name, int 
     // Send a new station-format command to the tracker so it will report the button states.
     return set_sensor_output_format(sensor);
 }
-

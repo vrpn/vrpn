@@ -22,9 +22,8 @@ endif()
 
 #-----------------------------------------------------------------------------
 # Phantom library (if configured)
-# XXX Does not work with GHOST library
 find_package(OpenGL)
-if(VRPN_USE_PHANTOM_SERVER AND OPENHAPTICS_FOUND AND OPENGL_FOUND)
+if(VRPN_USE_PHANTOM_SERVER AND OPENGL_FOUND)
 	set(PHANTOM_SOURCES
 		ghostEffects/InstantBuzzEffect.cpp
 		buzzForceField.C
@@ -45,10 +44,12 @@ if(VRPN_USE_PHANTOM_SERVER AND OPENHAPTICS_FOUND AND OPENGL_FOUND)
 		texture_plane.h
 		trimesh.h
 		vrpn_Phantom.h)
-	include_directories(${OPENHAPTICS_INCLUDE_DIRS})
 	include_directories(${VRPN_SOURCE_DIR}/server_src/ghostEffects)
+	if(VRPN_USE_GHOST AND GHOST_STL_INCLUDE_DIR)
+		include_directories(${GHOST_STL_INCLUDE_DIR})
+	endif()
 	add_library(vrpn_phantom ${PHANTOM_SOURCES} ${PHANTOM_HEADERS})
-	target_link_libraries(vrpn_phantom vrpnserver ${OPENGL_LIBRARIES} ${OPENHAPTICS_LIBRARIES})
+	target_link_libraries(vrpn_phantom vrpnserver ${OPENGL_LIBRARIES})
 
 	set_property(TARGET
 		vrpn_phantom
@@ -70,57 +71,10 @@ if(VRPN_USE_PHANTOM_SERVER AND OPENHAPTICS_FOUND AND OPENGL_FOUND)
 	set(VRPNPHANTOMLIB vrpn_phantom)
 endif()
 
-#-----------------------------------------------------------------------------
-# DirectShow base-class library (if configured)
+#------------------------------------------------------------------
+# DirectShow video server - only for pre-VS10 due to header removal
 if(VRPN_BUILD_DIRECTSHOW_VIDEO_SERVER AND DIRECTSHOW_FOUND)
-	# Add this if you can't compile.  Otherwise, don't
-	# add_definitions(-DCOINIT_DISABLE_OLE1DDE=0x4)
-	add_library(DirectShow_baseclasses
-		${DirectShow_BASECLASS_DIR}/amextra.cpp
-		${DirectShow_BASECLASS_DIR}/amfilter.cpp
-		${DirectShow_BASECLASS_DIR}/amvideo.cpp
-		${DirectShow_BASECLASS_DIR}/combase.cpp
-		${DirectShow_BASECLASS_DIR}/cprop.cpp
-		${DirectShow_BASECLASS_DIR}/ctlutil.cpp
-		${DirectShow_BASECLASS_DIR}/ddmm.cpp
-		${DirectShow_BASECLASS_DIR}/dllentry.cpp
-		${DirectShow_BASECLASS_DIR}/dllsetup.cpp
-		${DirectShow_BASECLASS_DIR}/mtype.cpp
-		${DirectShow_BASECLASS_DIR}/outputq.cpp
-		${DirectShow_BASECLASS_DIR}/pstream.cpp
-		${DirectShow_BASECLASS_DIR}/pullpin.cpp
-		${DirectShow_BASECLASS_DIR}/refclock.cpp
-		${DirectShow_BASECLASS_DIR}/renbase.cpp
-		${DirectShow_BASECLASS_DIR}/schedule.cpp
-		${DirectShow_BASECLASS_DIR}/seekpt.cpp
-		${DirectShow_BASECLASS_DIR}/source.cpp
-		${DirectShow_BASECLASS_DIR}/strmctl.cpp
-		${DirectShow_BASECLASS_DIR}/sysclock.cpp
-		${DirectShow_BASECLASS_DIR}/transfrm.cpp
-		${DirectShow_BASECLASS_DIR}/transip.cpp
-		${DirectShow_BASECLASS_DIR}/videoctl.cpp
-		${DirectShow_BASECLASS_DIR}/vtrans.cpp
-		${DirectShow_BASECLASS_DIR}/winctrl.cpp
-		${DirectShow_BASECLASS_DIR}/winutil.cpp
-		${DirectShow_BASECLASS_DIR}/wxdebug.cpp
-		${DirectShow_BASECLASS_DIR}/wxlist.cpp
-		${DirectShow_BASECLASS_DIR}/wxutil.cpp)
-	set(DirectShow_LIBS DirectShow_baseclasses)
-
-	include_directories(${DirectShow_INCLUDE_DIRS})
-	add_executable(directshow_video_server
-		directshow_video_server/directx_video_imager_server.cpp
-		directshow_video_server/directx_camera_server.cpp
-		directshow_video_server/directx_camera_server.h)
-	target_link_libraries(directshow_video_server
-		${VRPN_SERVER_LIBRARY}
-		${DirectShow_LIBS}
-		${DIRECTSHOW_LIBRARIES})
-	set_target_properties(directshow_video_server
-		PROPERTIES
-		FOLDER
-		Servers)
-	install(TARGETS directshow_video_server RUNTIME DESTINATION bin COMPONENT servers)
+	add_subdirectory(directshow_video_server)
 endif()
 
 add_subdirectory(timecode_generator_server)
@@ -155,10 +109,20 @@ install(TARGETS vrpn_server
 #-----------------------------------------------------------------------------
 # Install the vrpn.cfg file needed by the server.
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/vrpn.cfg" "${CMAKE_CURRENT_BINARY_DIR}/vrpn.cfg" @ONLY)
-install(FILES "${CMAKE_CURRENT_BINARY_DIR}/vrpn.cfg"
-	DESTINATION etc
-	COMPONENT mainserver)
+if(WIN32)
+	install(FILES "${CMAKE_CURRENT_BINARY_DIR}/vrpn.cfg"
+		DESTINATION bin
+		COMPONENT mainserver)
+else()
+	install(FILES "${CMAKE_CURRENT_BINARY_DIR}/vrpn.cfg"
+		DESTINATION etc
+		COMPONENT mainserver)
+endif()
 
+install(FILES "${CMAKE_CURRENT_BINARY_DIR}/vrpn.cfg"
+	DESTINATION share/vrpn-${BRIEF_VERSION}
+	RENAME vrpn.cfg.sample
+	COMPONENT mainserver)
 
 #-----------------------------------------------------------------------------
 # Declaration of the simple test applications that don't have extra files
@@ -193,8 +157,10 @@ set(SRV_TEST_SOURCES
 	test_vrpn.C
 	testimager_server.cpp
 	#text.C
-	vrpn_HID_device_watcher.cpp
 )
+if(VRPN_USE_HID)
+	list(APPEND SRV_TEST_SOURCES vrpn_HID_device_watcher.cpp)
+endif()
 
 set(SRV_SERVER_SOURCES
 	wiimote_head_tracker.C

@@ -77,7 +77,7 @@ inline void vrpn_MainloopContainer::clear() {
 		return;
 	}
 	/// Delete in reverse order
-	for (size_t i = _vrpn.size() - 1; i >= 0; --i) {
+	for (int i = int(_vrpn.size()) - 1; i >= 0; --i) {
 		delete _vrpn[i];
 		_vrpn[i] = NULL;
 	}

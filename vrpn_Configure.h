@@ -63,7 +63,12 @@
 //-----------------------
 // Instructs VRPN to use phantom library to construct a unified
 // server, using phantom as a common device, and phantom
-// configuration in .cfg file.
+// configuration in .cfg file.  This will not build (at least
+// on Visual Studio 2008) with the 3.1 version of OpenHaptics.
+// There will be problems with  #include and library directories,
+// and then a failure to link due to undefined symbol.  Use CMAKE
+// if you want to compile with a Phantom -- that version works
+// on VS2008 and 3.1 at least.
 //#define	VRPN_USE_PHANTOM_SERVER
 
 //------------------------
@@ -124,6 +129,10 @@
 //    This will let the code find the right version when it compiles.
 //#define	VRPN_USE_DIRECTINPUT
 //#define   VRPN_USE_WINDOWS_XINPUT
+
+// The DirectInput-based zSight tracker requires ATL for smart pointers,
+// which sadly isn't everywhere (VC Express, MXE cross compiling, ...).
+//#define VRPN_HAVE_ATLBASE
 
 //-----------------------
 // Instructs VRPN library and server to include code that uses
@@ -360,6 +369,20 @@
 // on your system.  Note that the VRPN server and ViewPoint calibration
 // software must use the same copy of the VPX_InterApp.dll
 //#define VRPN_USE_VIEWPOINT
+
+//------------------------
+// Use DevInput devices.
+#if defined(linux) && !defined(__APPLE__)
+#define VRPN_USE_DEV_INPUT
+#endif
+
+//------------------------
+// Instructs VRPN to compile code to use the Polhemus Developer
+// (PDI) library to enable opening several of their trackers using
+// this interface (the G4 was the original one this was written
+// for, but new versions are available for the Fastrak and Liberty).
+//#define VRPN_USE_PDI
+
 
 //------------------------------------------------------------------//
 // SYSTEM CONFIGURATION SECTION                                     //

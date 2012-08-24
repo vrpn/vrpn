@@ -8,6 +8,8 @@
 # Author: Russ Taylor, 10/2/1997
 #
 # modified:
+# * Andrew Roth June 16/2012
+#	 * Updates for MacOSX builds for 32/64, 64 bit and Xcode 4.3
 # * Jeff Juliano, 10/99
 #    * added "make depend"  (see comments at end of this makefile)
 #    * changed to use RM, RMF, MV, and MVF
@@ -47,18 +49,23 @@
 #HW_OS := powerpc_aix
 #HW_OS := powerpc_macosx
 #HW_OS := universal_macosx
+#HW_OS := macosx_32_64
+#HW_OS := macosx_64
 ##########################
 
 ##########################
 # Mac OS X-specific options. If HW_OS is powerpc_macosx or universal_macosx,
 # uncomment one line below to choose the minimum targeted OS X version and
 # corresponding SDK. If none of the lines below is commented out, 10.5 will
-# be the minimum version.
+# be the minimum version.  10.7/4.3 removes ppc support.  In Xcode 4.3 - you 
+# must now manually install command line tools from: 
+# Xcode menu > Preferences > Downloads.
 ##########################
 #MAC_OS_MIN_VERSION := 10.4
 #MAC_OS_MIN_VERSION := 10.5
 #MAC_OS_MIN_VERSION := 10.6
-
+#MAC_OS_MIN_VERSION := 10.7
+#MAC_OS_MIN_VERSION := 10.8
 
 INSTALL_DIR := /usr/local
 BIN_DIR := $(INSTALL_DIR)/bin
@@ -163,7 +170,13 @@ else
 
     # Select which compiler and MAC OS X SDK to use
     MAC_GCC := g++
-    ifeq ($(MAC_OS_MIN_VERSION), 10.6)
+    ifeq ($(MAC_OS_MIN_VERSION), 10.8)
+      MAC_OS_SDK := MacOSX10.8.sdk
+    else
+    ifeq ($(MAC_OS_MIN_VERSION), 10.7)
+      MAC_OS_SDK := MacOSX10.7.sdk
+    else
+   ifeq ($(MAC_OS_MIN_VERSION), 10.6)
       MAC_OS_SDK := MacOSX10.6.sdk
     else
       ifeq ($(MAC_OS_MIN_VERSION), 10.5)
@@ -174,6 +187,18 @@ else
       endif
     endif
   endif
+ endif
+endif
+ 
+ ifneq (,$(findstring macosx,$(HW_OS)))
+  ifeq ($(wildcard /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/$(MAC_OS_SDK)),/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/$(MAC_OS_SDK))
+		PATH_TO_DEV := /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/$(MAC_OS_SDK)
+$(info ---> Xcode 4.3+: Platform SDK found.  Setting dev path to $(PATH_TO_DEV)) 
+ else
+		PATH_TO_DEV := /Developer/SDKs/$(MAC_OS_SDK)
+$(info Xcode 4.3+: Platform SDK not found in /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/$(MAC_OS_SDK)!  Attempting to locate SDK in $(PATH_TO_DEV))
+  endif
+endif
 
   ifeq ($(HW_OS), powerpc_macosx)
         CC := $(MAC_GCC) -arch ppc -isysroot /Developer/SDKs/$(MAC_OS_SDK) -mmacosx-version-min=$(MAC_OS_MIN_VERSION)
@@ -183,12 +208,26 @@ else
   endif
 
   ifeq ($(HW_OS), universal_macosx)
-        CC := $(MAC_GCC) -arch ppc -arch i386 -isysroot /Developer/SDKs/$(MAC_OS_SDK) -mmacosx-version-min=$(MAC_OS_MIN_VERSION)
+        CC := $(MAC_GCC) -arch ppc -arch i386 -arch x86_64 -isysroot /Developer/SDKs/$(MAC_OS_SDK) -mmacosx-version-min=$(MAC_OS_MIN_VERSION)
         RANLIB := :
         AR := libtool -static -o
 	SYSLIBS := -framework CoreFoundation -framework IOKit -framework System
   endif
-
+  
+   ifeq ($(HW_OS), macosx_32_64)
+        CC := $(MAC_GCC) -arch i386 -arch x86_64 -isysroot $(PATH_TO_DEV) -mmacosx-version-min=$(MAC_OS_MIN_VERSION)
+        RANLIB := :
+        AR := libtool -static -o
+	SYSLIBS := -framework CoreFoundation -framework IOKit -framework System
+  endif
+  
+    ifeq ($(HW_OS), macosx_64)
+     	CC := $(MAC_GCC) -arch x86_64 -isysroot $(PATH_TO_DEV) -mmacosx-version-min=$(MAC_OS_MIN_VERSION)
+        RANLIB := :
+        AR := libtool -static -o
+		SYSLIBS := -framework CoreFoundation -framework IOKit -framework System
+    endif
+       
   ifeq ($(HW_OS), pc_linux_arm)
         CC := arm-linux-g++
         RANLIB := arm-linux-ranlib
@@ -269,6 +308,8 @@ SAFE_KNOWN_ARCHITECTURES :=	\
 	pc_linux_arm/* \
 	powerpc_macosx/* \
 	universal_macosx/* \
+	macosx_32_64/* \
+	macosx_64/* \
 	pc_linux64/* \
 	pc_linux_ia64/*
 
@@ -288,6 +329,16 @@ ifeq ($(HW_OS),powerpc_macosx)
 endif
 
 ifeq ($(HW_OS),universal_macosx)
+#  SYS_INCLUDE := -I/usr/include
+   SYS_INCLUDE :=-DMACOSX -I../isense
+endif
+
+ifeq ($(HW_OS),macosx_32_64)
+#  SYS_INCLUDE := -I/usr/include
+   SYS_INCLUDE :=-DMACOSX -I../isense
+endif
+
+ifeq ($(HW_OS),macosx_64)
 #  SYS_INCLUDE := -I/usr/include
    SYS_INCLUDE :=-DMACOSX -I../isense
 endif
@@ -346,6 +397,12 @@ endif
 
 
 ifeq ($(HW_OS),universal_macosx)
+	LOAD_FLAGS := $(LOAD_FLAGS)
+endif
+ifeq ($(HW_OS),macosx_32_64)
+	LOAD_FLAGS := $(LOAD_FLAGS)
+endif
+ifeq ($(HW_OS),macosx_64)
 	LOAD_FLAGS := $(LOAD_FLAGS)
 endif
 
@@ -608,6 +665,7 @@ SLIB_FILES =  $(LIB_FILES) \
 	vrpn_FunctionGenerator.C \
 	vrpn_GlobalHapticsOrb.C \
 	vrpn_HumanInterface.C \
+	vrpn_IDEA.C \
 	vrpn_Imager_Stream_Buffer.C \
 	vrpn_ImmersionBox.C \
 	vrpn_inertiamouse.C \
@@ -636,6 +694,7 @@ SLIB_FILES =  $(LIB_FILES) \
 	vrpn_Tracker_isense.C \
 	vrpn_Tracker_Isotrak.C \
 	vrpn_Tracker_Liberty.C \
+	vrpn_Tracker_PDI.C \
 	vrpn_Tracker_MotionNode.C \
 	vrpn_Tracker_NDI_Polaris.C \
 	vrpn_Tracker_PhaseSpace.C \
@@ -680,6 +739,7 @@ SLIB_INCLUDES = $(LIB_INCLUDES) \
 	vrpn_Freespace.h \
 	vrpn_GlobalHapticsOrb.h \
 	vrpn_HumanInterface.h \
+	vrpn_IDEA.h \
 	vrpn_Imager_Stream_Buffer.h \
 	vrpn_ImmersionBox.h \
 	vrpn_inertiamouse.h \
@@ -707,6 +767,7 @@ SLIB_INCLUDES = $(LIB_INCLUDES) \
 	vrpn_Tracker_isense.h \
 	vrpn_Tracker_Isotrak.h \
 	vrpn_Tracker_Liberty.h \
+	vrpn_Tracker_PDI.h \
 	vrpn_Tracker_MotionNode.h \
 	vrpn_Tracker_NDI_Polaris.h \
 	vrpn_Tracker_PhaseSpace.h \
@@ -724,6 +785,15 @@ SLIB_INCLUDES = $(LIB_INCLUDES) \
 	vrpn_Xkeys.h \
 	vrpn_Tracker_LibertyHS.h \
 	vrpn_Zaber.h
+
+ifeq ($(HW_OS), pc_linux64)
+	SLIB_FILES += vrpn_DevInput.C
+	SLIB_INCLUDES += vrpn_DevInput.h
+endif
+ifeq ($(HW_OS), pc_linux)
+	SLIB_FILES += vrpn_DevInput.C
+	SLIB_INCLUDES += vrpn_DevInput.h
+endif
 
 $(SLIB_OBJECTS):
 $(OBJECT_DIR)/libvrpnserver.a: $(MAKEFILE) $(SLIB_OBJECTS)

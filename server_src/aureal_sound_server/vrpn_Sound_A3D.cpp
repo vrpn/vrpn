@@ -570,7 +570,7 @@ void vrpn_Sound_Server_A3D::loadModelLocal(const char * filename) {
 			}
 			
 			// copy for strtok work
-			strncpy(scrap, line, 512);
+			strncpy(scrap, line, sizeof(line) - 1);
 			
 #define isit(s) !strcmp(pch=strtok(scrap," \t"),s)
 #define next() pch += strlen(pch) + 1
@@ -1117,7 +1117,7 @@ int USE_TRACKER;
 			}
 			
 			// copy for strtok work
-			strncpy(scrap, line, 512);
+			strncpy(scrap, line, sizeof(line) - 1);
 			// Figure out the device from the name and handle appropriately
 			
 			// WARNING: SUBSTRINGS WILL MATCH THE EARLIER STRING, SO 

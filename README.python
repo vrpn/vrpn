@@ -1,0 +1,9 @@
+python_vrpn:
+	VRPN wrapped in Python using Swig.  Works with Python 2.7.
+
+python:
+	Hand-written Python classes that work with Python 2.7 and 3.2.
+	Compile the main library (ie.: root of VRPN) and the quat library.  Then, go to the "python" folder. Before making the binary, you have to define the "PYTHON_VERSION" environment variable to the version of python you want to compile it for (ie.: "3.2", "2.7" ...).  And you have to put the resulting vrpn.so shared library (found in $HW_OS/$PYTHON_VERSION) in the python module folder or in a path defined in the PYTHONPATH environment variable.
+
+	The "essai_*.py" are simple python files that show you how to use this module (the single difference is a call to python3.2 or python2.7 interpreter).
+

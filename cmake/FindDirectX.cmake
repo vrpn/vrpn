@@ -1,35 +1,38 @@
-# - try to find DirectInput library (part of DirectX SDK)
+# - try to find part of DirectX SDK
 #
 # Cache Variables: (probably not for direct use in your scripts)
-#  DIRECTINPUT_DXGUID_LIBRARY
-#  DIRECTINPUT_DXERR_LIBRARY
-#  DIRECTINPUT_DINPUT_LIBRARY
-#  DIRECTINPUT_INCLUDE_DIR
+#  DIRECTX_INCLUDE_DIR
 #
-# Non-cache variables you should use in your CMakeLists.txt:
-#  DIRECTINPUT_LIBRARIES
-#  DIRECTINPUT_INCLUDE_DIRS
-#  DIRECTINPUT_FOUND - if this is not true, do not attempt to use this library
+# Variables you should use in your CMakeLists.txt:
+#  DIRECTX_DXGUID_LIBRARY
+#  DIRECTX_DXERR_LIBRARY
+#  DIRECTX_DINPUT_LIBRARY
+#  DIRECTX_D3D9_LIBRARY
+#  DIRECTX_D3DXOF_LIBRARY
+#  DIRECTX_D3DX9_LIBRARIES
+#  DIRECTX_INCLUDE_DIRS
+#  DIRECTX_FOUND - if this is not true, do not attempt to use this library
 #
 # Requires these CMake modules:
 #  FindPackageHandleStandardArgs (known included with CMake >=2.6.2)
+#  SelectLibraryConfigurations
 #
 # Original Author:
-# 2011 Ryan Pavlik <rpavlik@iastate.edu> <abiryan@ryand.net>
+# 2012 Ryan Pavlik <rpavlik@iastate.edu> <abiryan@ryand.net>
 # http://academic.cleardefinition.com
 # Iowa State University HCI Graduate Program/VRAC
 #
-# Copyright Iowa State University 2011.
+# Copyright Iowa State University 2012.
 # Distributed under the Boost Software License, Version 1.0.
 # (See accompanying file LICENSE_1_0.txt or copy at
 # http://www.boost.org/LICENSE_1_0.txt)
 
 
-set(DIRECTINPUT_ROOT_DIR
-	"${DIRECTINPUT_ROOT_DIR}"
+set(DIRECTX_ROOT_DIR
+	"${DIRECTX_ROOT_DIR}"
 	CACHE
 	PATH
-	"Root directory to search for DirectX/DirectInput")
+	"Root directory to search for DirectX")
 
 if(MSVC)
 	file(TO_CMAKE_PATH "$ENV{ProgramFiles}" _PROG_FILES)
@@ -78,43 +81,43 @@ else()
 	set(DXSDK_DIRS /mingw)
 endif()
 
-find_path(DIRECTINPUT_INCLUDE_DIR
+find_path(DIRECTX_INCLUDE_DIR
 	NAMES
-	dinput.h
+	dxdiag.h dinput.h dxerr8.h
 	PATHS
 	${DXSDK_DIRS}
 	HINTS
-	"${DIRECTINPUT_ROOT_DIR}"
+	"${DIRECTX_ROOT_DIR}"
 	PATH_SUFFIXES
 	include)
 
-find_library(DIRECTINPUT_DXGUID_LIBRARY
+find_library(DIRECTX_DXGUID_LIBRARY
 	NAMES
 	dxguid
 	PATHS
 	${DXSDK_DIRS}
 	HINTS
-	"${DIRECTINPUT_ROOT_DIR}"
+	"${DIRECTX_ROOT_DIR}"
 	PATH_SUFFIXES
 	${_lib_suffixes})
 
-if(DIRECTINPUT_DXGUID_LIBRARY)
-	get_filename_component(_dinput_lib_dir ${DIRECTINPUT_DXGUID_LIBRARY} PATH)
+if(DIRECTX_DXGUID_LIBRARY)
+	get_filename_component(_dxsdk_lib_dir ${DIRECTX_DXGUID_LIBRARY} PATH)
 endif()
 
-find_library(DIRECTINPUT_DINPUT_LIBRARY
+find_library(DIRECTX_DINPUT_LIBRARY
 	NAMES
 	dinput8
 	dinput
 	PATHS
 	${DXSDK_DIRS}
 	HINTS
-	"${_dinput_lib_dir}"
-	"${DIRECTINPUT_ROOT_DIR}"
+	"${_dxsdk_lib_dir}"
+	"${DIRECTX_ROOT_DIR}"
 	PATH_SUFFIXES
 	${_lib_suffixes})
 
-find_library(DIRECTINPUT_DXERR_LIBRARY
+find_library(DIRECTX_DXERR_LIBRARY
 	NAMES
 	dxerr
 	dxerr9
@@ -122,12 +125,60 @@ find_library(DIRECTINPUT_DXERR_LIBRARY
 	PATHS
 	${DXSDK_DIRS}
 	HINTS
-	"${_dinput_lib_dir}"
-	"${DIRECTINPUT_ROOT_DIR}"
+	"${_dxsdk_lib_dir}"
+	"${DIRECTX_ROOT_DIR}"
 	PATH_SUFFIXES
 	${_lib_suffixes})
-set(DIRECTINPUT_EXTRA_CHECK)
-if(DIRECTINPUT_INCLUDE_DIR)
+
+find_library(DIRECTX_D3D9_LIBRARY
+	NAMES
+	d3d9
+	PATHS
+	${DXSDK_DIRS}
+	HINTS
+	"${_dxsdk_lib_dir}"
+	"${DIRECTX_ROOT_DIR}"
+	PATH_SUFFIXES
+	${_lib_suffixes})
+
+find_library(DIRECTX_D3DXOF_LIBRARY
+	NAMES
+	d3dxof
+	PATHS
+	${DXSDK_DIRS}
+	HINTS
+	"${_dxsdk_lib_dir}"
+	"${DIRECTX_ROOT_DIR}"
+	PATH_SUFFIXES
+	${_lib_suffixes})
+
+find_library(DIRECTX_D3DX9_LIBRARY_RELEASE
+	NAMES
+	d3dx9
+	PATHS
+	${DXSDK_DIRS}
+	HINTS
+	"${_dxsdk_lib_dir}"
+	"${DIRECTX_ROOT_DIR}"
+	PATH_SUFFIXES
+	${_lib_suffixes})
+
+find_library(DIRECTX_D3DX9_LIBRARY_DEBUG
+	NAMES
+	d3dx9d
+	PATHS
+	${DXSDK_DIRS}
+	HINTS
+	"${_dxsdk_lib_dir}"
+	"${DIRECTX_ROOT_DIR}"
+	PATH_SUFFIXES
+	${_lib_suffixes})
+
+include(SelectLibraryConfigurations)
+select_library_configurations(DIRECTX_D3DX9)
+
+set(DIRECTX_EXTRA_CHECK)
+if(DIRECTX_INCLUDE_DIR)
 	if(MSVC80)
 		set(DXSDK_DEPRECATION_BUILD 1962)
 	endif()
@@ -135,9 +186,8 @@ if(DIRECTINPUT_INCLUDE_DIR)
 	if(DXSDK_DEPRECATION_BUILD)
 		include(CheckCSourceCompiles)
 		set(_dinput_old_includes ${CMAKE_REQUIRED_INCLUDES})
-		set(CMAKE_REQUIRED_INCLUDES "${DIRECTINPUT_INCLUDE_DIR}")
-		check_c_source_compiles(
-			"
+		set(CMAKE_REQUIRED_INCLUDES "${DIRECTX_INCLUDE_DIR}")
+		check_c_source_compiles("
 			#include <dxsdkver.h>
 			#if _DXSDK_BUILD_MAJOR >= ${DXSDK_DEPRECATION_BUILD}
 			#error
@@ -146,35 +196,37 @@ if(DIRECTINPUT_INCLUDE_DIR)
 				return 0;
 			}
 			"
-			DIRECTINPUT_SDK_SUPPORTS_COMPILER)
-		set(DIRECTINPUT_EXTRA_CHECK DIRECTINPUT_SDK_SUPPORTS_COMPILER)
+			DIRECTX_SDK_SUPPORTS_COMPILER)
+		set(DIRECTX_EXTRA_CHECK DIRECTX_SDK_SUPPORTS_COMPILER)
 		set(CMAKE_REQUIRED_INCLUDES "${_dinput_old_includes}")
 	endif()
 endif()
 
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(DirectInput
+find_package_handle_standard_args(DirectX
 	DEFAULT_MSG
-	DIRECTINPUT_DINPUT_LIBRARY
-	DIRECTINPUT_DXGUID_LIBRARY
-	DIRECTINPUT_DXERR_LIBRARY
-	DIRECTINPUT_INCLUDE_DIR
-	${DIRECTINPUT_EXTRA_CHECK})
+	DIRECTX_DXGUID_LIBRARY
+	DIRECTX_DINPUT_LIBRARY
+	DIRECTX_DXERR_LIBRARY
+	DIRECTX_INCLUDE_DIR
+	${DIRECTX_EXTRA_CHECK})
 
-if(DIRECTINPUT_FOUND)
-	set(DIRECTINPUT_LIBRARIES
-		"${DIRECTINPUT_DXGUID_LIBRARY}"
-		"${DIRECTINPUT_DXERR_LIBRARY}"
-		"${DIRECTINPUT_DINPUT_LIBRARY}")
+if(DIRECTX_FOUND)
+	set(DIRECTX_LIBRARIES
+		"${DIRECTX_DXGUID_LIBRARY}"
+		"${DIRECTX_DXERR_LIBRARY}"
+		"${DIRECTX_DINPUT_LIBRARY}")
 
-	set(DIRECTINPUT_INCLUDE_DIRS
-		"${DIRECTINPUT_INCLUDE_DIR}")
+	set(DIRECTX_INCLUDE_DIRS "${DIRECTX_INCLUDE_DIR}")
 
-	mark_as_advanced(DIRECTINPUT_ROOT_DIR)
+	mark_as_advanced(DIRECTX_ROOT_DIR)
 endif()
 
-mark_as_advanced(
-	DIRECTINPUT_DINPUT_LIBRARY
-	DIRECTINPUT_DXGUID_LIBRARY
-	DIRECTINPUT_DXERR_LIBRARY
-	DIRECTINPUT_INCLUDE_DIR)
+mark_as_advanced(DIRECTX_DINPUT_LIBRARY
+	DIRECTX_DXGUID_LIBRARY
+	DIRECTX_DXERR_LIBRARY
+	DIRECTX_D3D9_LIBRARY
+	DIRECTX_D3DXOF_LIBRARY
+	DIRECTX_D3DX9_LIBRARY_RELEASE
+	DIRECTX_D3DX9_LIBRARY_DEBUG
+	DIRECTX_INCLUDE_DIR)

@@ -60,6 +60,7 @@ void vrpn_HidInterface::reconnect() {
         struct hid_device_info  *loop = devs;
         bool found = false;
         const wchar_t *serial;
+        const char * path;
         while ((loop != NULL) && !found) {
           vrpn_HIDDEVINFO device_info;
           device_info.vendor = loop->vendor_id;
@@ -75,7 +76,12 @@ void vrpn_HidInterface::reconnect() {
             _product = loop->product_id;
             _interface = loop->interface_number;
             serial = loop->serial_number;
+            path = loop->path;
             found = true;
+#ifdef VRPN_HID_DEBUGGING
+            fprintf(stderr,"vrpn_HidInterface::reconnect(): Found %ls %ls (%04hx:%04hx) at path %s - will attempt to to open.\n",
+				loop->manufacturer_string, loop->product_string, _vendor, _product, loop->path);
+#endif
           }
           loop = loop->next;
         }
@@ -84,8 +90,8 @@ void vrpn_HidInterface::reconnect() {
 		return;
         }
 
-	// Initialize the HID interface and open the device.
-        _device = hid_open(_vendor, _product, const_cast<wchar_t *>(serial));
+		// Initialize the HID interface and open the device.
+		_device = hid_open_path(path);
         if (_device == NULL) {
 		fprintf(stderr,"vrpn_HidInterface::reconnect(): Could not open device\n");
 #ifdef linux
@@ -108,6 +114,9 @@ void vrpn_HidInterface::reconnect() {
                 return;
         }
 
+#ifdef VRPN_HID_DEBUGGING
+	fprintf(stderr,"vrpn_HidInterface::reconnect(): Device successfully opened.\n");
+#endif
 	_working = true;
 }
 
@@ -137,6 +146,7 @@ void vrpn_HidInterface::update()
         int ret = hid_read(_device, inbuf, sizeof(inbuf));
         if (ret < 0) {
 		fprintf(stderr,"vrpn_HidInterface::update(): Read error\n");
+		fprintf(stderr,"  (On one version of Red Hat Linux, this was from not having libusb-devel installed when configuring in CMake.)\n");
 		return;
         }
 
@@ -173,6 +183,10 @@ void vrpn_HidInterface::send_feature_report(size_t bytes, const vrpn_uint8 *buff
 	int ret = hid_send_feature_report(_device, buffer, bytes);
 	if (ret == -1) {
 		fprintf(stderr, "vrpn_HidInterface::send_feature_report(): failed to send feature report\n");
+		const wchar_t * errmsg = hid_error(_device);
+		if (errmsg) {
+			fprintf(stderr, "vrpn_HidInterface::send_feature_report(): error message: %ls\n", errmsg);
+		}
 	} else {
 		//fprintf(stderr, "vrpn_HidInterface::send_feature_report(): sent feature report, %d bytes\n", static_cast<int>(bytes));
 	}
@@ -187,6 +201,10 @@ int vrpn_HidInterface::get_feature_report(size_t bytes, vrpn_uint8 *buffer) {
 	int ret = hid_get_feature_report(_device, buffer, bytes);
 	if (ret == -1) {
 		fprintf(stderr, "vrpn_HidInterface::get_feature_report(): failed to get feature report\n");
+		const wchar_t * errmsg = hid_error(_device);
+		if (errmsg) {
+			fprintf(stderr, "vrpn_HidInterface::get_feature_report(): error message: %ls\n", errmsg);
+		}
 	} else {
 		//fprintf(stderr, "vrpn_HidInterface::get_feature_report(): got feature report, %d bytes\n", static_cast<int>(bytes));
 	}

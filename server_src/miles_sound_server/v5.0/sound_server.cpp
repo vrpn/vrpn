@@ -516,7 +516,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdL
 			}
 			
 			// copy for strtok work
-			strncpy(scrap, line, 512);
+			strncpy(scrap, line, sizeof(line) - 1);
 			// Figure out the device from the name and handle appropriately
 			
 			// WARNING: SUBSTRINGS WILL MATCH THE EARLIER STRING, SO 
