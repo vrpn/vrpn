@@ -1839,6 +1839,26 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="vrpn_Tracker_LibertyHS.C"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath="vrpn_Tracker_MotionNode.C"
 				>
 				<FileConfiguration
@@ -2525,6 +2545,10 @@
 			</File>
 			<File
 				RelativePath="vrpn_Tracker_Liberty.h"
+				>
+			</File>
+			<File
+				RelativePath="vrpn_Tracker_LibertyHS.h"
 				>
 			</File>
 			<File
