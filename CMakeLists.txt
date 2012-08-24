@@ -636,6 +636,7 @@ set(VRPN_SERVER_SOURCES
 	vrpn_Tracker_Isotrak.C
 	vrpn_Tracker_JsonNet.C
 	vrpn_Tracker_Liberty.C
+	vrpn_Tracker_LibertyHS.C
 	vrpn_Tracker_MotionNode.C
 	vrpn_Tracker_NDI_Polaris.C
 	vrpn_Tracker_NovintFalcon.C
@@ -719,6 +720,7 @@ set(VRPN_SERVER_PUBLIC_HEADERS
 	vrpn_Tracker_Isotrak.h
 	vrpn_Tracker_JsonNet.h
 	vrpn_Tracker_Liberty.h
+	vrpn_Tracker_LibertyHS.h
 	vrpn_Tracker_MotionNode.h
 	vrpn_Tracker_NDI_Polaris.h
 	vrpn_Tracker_NovintFalcon.h
