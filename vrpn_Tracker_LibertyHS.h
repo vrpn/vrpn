@@ -17,6 +17,8 @@
 
 #include "vrpn_Tracker.h"
 
+#if defined(VRPN_USE_LIBUSB_1_0)
+
 // Vendor and product IDs for High Speed Liberty Latus tracker
 static const vrpn_uint16 LIBERTYHS_VENDOR_ID  = 0x0f44;
 static const vrpn_uint16 LIBERTYHS_PRODUCT_ID = 0xff20;
@@ -97,6 +99,9 @@ class VRPN_API vrpn_Tracker_LibertyHS: public vrpn_Tracker_USB {
   /// Returns the number of detected and lauched trackers
   int  launch_markers();
 };
+
+// End of LIBUSB
+#endif
 
 // End of VRPN_TRACKER_LIBERTYHS_H
 #endif

@@ -31,6 +31,8 @@
 #include "vrpn_BufferUtils.h"
 #include "quat.h"
 
+#if defined(VRPN_USE_LIBUSB_1_0)
+
 #include <libusb.h>
 
 #define	INCHES_TO_METERS	(2.54/100.0)
@@ -140,7 +142,7 @@ int vrpn_Tracker_LibertyHS::write_usb_data(void* data, int len)
 {
   int sent_len = 0;
   int ret = libusb_bulk_transfer(_device_handle, LIBERTYHS_WRITE_EP | LIBUSB_ENDPOINT_OUT,
-                                 (BYTE*)data, len, &sent_len, 50);
+                                 (vrpn_uint8*)data, len, &sent_len, 50);
 
   if (ret != 0)
     fprintf(stderr,"vrpn_Tracker_LibertyHS::write_usb_data(): LIBUSB ERROR '%i'\n",ret);
@@ -154,7 +156,7 @@ int vrpn_Tracker_LibertyHS::read_usb_data(void* data, int maxlen, unsigned int t
   int read_len = 0;
 
   int ret = libusb_bulk_transfer(_device_handle, LIBERTYHS_READ_EP | LIBUSB_ENDPOINT_IN, 
-                                 (BYTE*)data, maxlen, &read_len, timeout);
+                                 (vrpn_uint8*)data, maxlen, &read_len, timeout);
 
   /*
   fprintf(stderr,"vrpn_Tracker_LibertyHS::read_usb_data() READ %i chars: ___",read_len);
@@ -177,11 +179,11 @@ void vrpn_Tracker_LibertyHS::flush_usb_data()
 {
 
   int len;
-  BYTE buf[BUFFER_SIZE];
+  vrpn_uint8 buf[VRPN_TRACKER_USB_BUF_SIZE];
 
   // Flush usb data as long as they are available on usb port
   do {
-    len = read_usb_data(buf, BUFFER_SIZE); 
+    len = read_usb_data(buf, VRPN_TRACKER_USB_BUF_SIZE); 
   } while(len);
 
 }
@@ -511,7 +513,7 @@ int vrpn_Tracker_LibertyHS::get_report(void)
    {
      // Read new data from USB buffer if we are in Syncing mode
      if (status == vrpn_TRACKER_SYNCING) {
-       read_len = read_usb_data(buffer, BUFFER_SIZE);
+       read_len = read_usb_data(buffer, VRPN_TRACKER_USB_BUF_SIZE);
 
        if (read_len < 1) {
          if (DEBUG) fprintf(stderr,"[DEBUG]: Missed First Sync Char, read_len = %i\n",read_len);
@@ -801,3 +803,6 @@ int vrpn_Tracker_LibertyHS::launch_markers()
 
   return marker_found;
 }
+
+// End of LIBUSB
+#endif

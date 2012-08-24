@@ -294,7 +294,7 @@ int vrpn_Tracker::read_config_file (FILE * config_file,
 void vrpn_Tracker::print_latest_report(void)
 {
    printf("----------------------------------------------------\n");
-   printf("Sensor    :%d\n", d_sensor + 1);
+   printf("Sensor    :%d\n", d_sensor);
    printf("Timestamp :%ld:%ld\n", timestamp.tv_sec, static_cast<long>(timestamp.tv_usec));
    printf("Framecount:%d\n", frame_count);
    printf("Pos       :%lf, %lf, %lf\n", pos[0],pos[1],pos[2]);
