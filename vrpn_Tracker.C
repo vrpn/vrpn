@@ -294,10 +294,11 @@ int vrpn_Tracker::read_config_file (FILE * config_file,
 void vrpn_Tracker::print_latest_report(void)
 {
    printf("----------------------------------------------------\n");
-   printf("Sensor   :%d\n", d_sensor);
-   printf("Timestamp:%ld:%ld\n", timestamp.tv_sec, static_cast<long>(timestamp.tv_usec));
-   printf("Pos      :%lf, %lf, %lf\n", pos[0],pos[1],pos[2]);
-   printf("Quat     :%lf, %lf, %lf, %lf\n",
+   printf("Sensor    :%d\n", d_sensor + 1);
+   printf("Timestamp :%ld:%ld\n", timestamp.tv_sec, static_cast<long>(timestamp.tv_usec));
+   printf("Framecount:%d\n", frame_count);
+   printf("Pos       :%lf, %lf, %lf\n", pos[0],pos[1],pos[2]);
+   printf("Quat      :%lf, %lf, %lf, %lf\n",
           d_quat[0],d_quat[1],d_quat[2],d_quat[3]);
 }
 
@@ -929,6 +930,163 @@ void vrpn_Tracker_Serial::mainloop()
 	break;
    }
 }
+
+vrpn_Tracker_USB::vrpn_Tracker_USB
+               (const char * name, vrpn_Connection * c, 
+                vrpn_uint16 vendor, vrpn_uint16 product, long baud) :
+    vrpn_Tracker(name, c),
+    _vendor(vendor),
+    _product(product),
+    _baudrate(baud),
+    _device_handle(NULL)
+{
+  // Register handlers
+  register_server_handlers();
+
+  // Initialize libusb
+  if ( libusb_init(&_context) != 0) {
+    fprintf(stderr,"vrpn_Tracker_USB: can't init LibUSB\n");
+    status = vrpn_TRACKER_FAIL;
+    return;
+  }
+  //libusb_set_debug (_context, 3);
+
+  // Open and claim an usb device with the expected vendor and product ID.
+  if ( (_device_handle = libusb_open_device_with_vid_pid
+        (_context, _vendor, _product)) == NULL) {
+    fprintf(stderr,"vrpn_Tracker_USB: can't find any Polhemus High Speed Liberty Latus devices\n");
+    fprintf(stderr,"                      (Did you remember to run as root?)\n");
+    status = vrpn_TRACKER_FAIL;
+    return;
+  }
+
+  if ( libusb_claim_interface(_device_handle, 0) != 0) {
+    fprintf(stderr,"vrpn_Tracker_USB: can't claim interface for this device\n");
+    fprintf(stderr,"                      (Did you remember to run as root?)\n");
+    libusb_close(_device_handle);
+    _device_handle = NULL;
+    libusb_exit(_context);
+    _context = NULL;
+    status = vrpn_TRACKER_FAIL;
+    return;
+  }
+
+  // Reset the tracker and find out what time it is
+  status = vrpn_TRACKER_RESETTING;
+  vrpn_gettimeofday(&timestamp, NULL);
+}
+
+vrpn_Tracker_USB::~vrpn_Tracker_USB()
+{
+  if (_device_handle) {
+    libusb_close(_device_handle);
+    _device_handle = NULL;
+  }
+  if (_context) {
+    libusb_exit(_context);
+    _context = NULL;
+  }
+}
+
+void vrpn_Tracker_USB::send_report(void)
+{
+    // Send the message on the connection
+    if (d_connection) {
+	    char	msgbuf[1000];
+	    int	len = encode_to(msgbuf);
+	    if (d_connection->pack_message(len, timestamp,
+		    position_m_id, d_sender_id, msgbuf,
+		    vrpn_CONNECTION_LOW_LATENCY)) {
+	      fprintf(stderr,"Tracker: cannot write message: tossing\n");
+	    }
+    } else {
+	    fprintf(stderr,"Tracker: No valid connection\n");
+    }
+}
+
+/** This function should be called each time through the main loop
+    of the server code. It polls for reports from the tracker and
+    sends them if there are one or more. It will reset the tracker
+    if there is no data from it for a few seconds.
+**/
+void vrpn_Tracker_USB::mainloop()
+{
+  server_mainloop();
+
+  switch (status) {
+    case vrpn_TRACKER_SYNCING:
+    case vrpn_TRACKER_PARTIAL:
+      {
+	    // It turns out to be important to get the report before checking
+	    // to see if it has been too long since the last report.  This is
+	    // because there is the possibility that some other device running
+	    // in the same server may have taken a long time on its last pass
+	    // through mainloop().  Trackers that are resetting do this.  When
+	    // this happens, you can get an infinite loop -- where one tracker
+	    // resets and causes the other to timeout, and then it returns the
+	    // favor.  By checking for the report here, we reset the timestamp
+	    // if there is a report ready (ie, if THIS device is still operating).
+
+            get_report();
+
+            // Ready for another report
+            status = vrpn_TRACKER_SYNCING;		
+
+            // Save reception time
+	    struct timeval current_time;
+	    vrpn_gettimeofday(&current_time, NULL);
+	    int time_lapsed; // The time since the last report
+
+            // Watchdog timestamp is implemented by Polhemus Liberty driver.
+            // XXX All trackers should be modified to use this, or it to not.
+	    // If the watchdog timestamp is zero, use the last timestamp to check.
+	    if (watchdog_timestamp.tv_sec == 0) {
+		time_lapsed=duration(current_time,timestamp);
+	    } else { // The watchdog_timestamp is being used
+		time_lapsed=duration(current_time,watchdog_timestamp);
+	    }
+
+	    if (time_lapsed > vrpn_ser_tkr_MAX_TIME_INTERVAL) {
+	      char errmsg[1024];
+	      sprintf(errmsg,"Tracker failed to read... current_time=%ld:%ld, timestamp=%ld:%ld\n", \
+		      current_time.tv_sec, static_cast<long>(current_time.tv_usec),
+			  timestamp.tv_sec, static_cast<long>(timestamp.tv_usec));
+	      send_text_message(errmsg, current_time, vrpn_TEXT_ERROR);
+	      status = vrpn_TRACKER_FAIL;
+
+	    }
+
+      }
+      break;
+
+    case vrpn_TRACKER_RESETTING:
+	reset();
+	break;
+
+    case vrpn_TRACKER_FAIL:
+	send_text_message("Tracker failed, trying to reset (Try power cycle if more than 4 attempts made)", timestamp, vrpn_TEXT_ERROR);
+	// Reset the device handle and then attempt to connect to a device.
+        if (_device_handle)  {libusb_close(_device_handle); _device_handle = NULL;}
+        if ( (_device_handle = libusb_open_device_with_vid_pid
+              (_context, _vendor, _product)) == NULL) {
+              fprintf(stderr,"vrpn_Tracker_USB::mainloop(): can't find any Polhemus High Speed Liberty Latus devices\n");
+              status = vrpn_TRACKER_FAIL;
+              break;
+        }
+
+        if ( libusb_claim_interface(_device_handle, 0) != 0) {
+              fprintf(stderr,"vrpn_Tracker_USB::mainloop(): can't claim interface for this device\n");
+              libusb_close(_device_handle);
+              _device_handle = NULL;
+              status = vrpn_TRACKER_FAIL;
+              break;
+        }
+
+	status = vrpn_TRACKER_RESETTING;
+	break;
+   }
+}
+
 #endif  // VRPN_CLIENT_ONLY
 
 vrpn_Tracker_Remote::vrpn_Tracker_Remote (const char * name, vrpn_Connection *cn) :

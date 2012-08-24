@@ -37,6 +37,11 @@
 #include "vrpn_BaseClass.h"
 #include "vrpn_Connection.h"
 
+// This driver uses the VRPN-preferred LibUSB-1.0 to control the device.
+#if defined(VRPN_USE_LIBUSB_1_0)
+#include "libusb-1.0/libusb.h"
+
+
 class VRPN_API vrpn_RedundantTransmission;
 
 // tracker status flags
@@ -101,6 +106,8 @@ class VRPN_API vrpn_Tracker : public vrpn_BaseClass {
    vrpn_float64 acc[3], acc_quat[4];	// Cur accel and d2Quat/acc_quat_dt2
    vrpn_float64 acc_quat_dt;		// delta time (in secs) for acc_quat
    struct timeval timestamp;		// Current timestamp
+   vrpn_int32 frame_count;		// Current framecount
+
 
    // The timestamp that the last report was received (Used by the Liberty Driver)
    // Other trackers use timestamp as the watchdog, however due to variable USB
@@ -168,6 +175,42 @@ class VRPN_API vrpn_Tracker_Serial : public vrpn_Tracker {
    /// Uses the get_report, send_report, and reset routines to implement a server
    virtual void mainloop();
 };
+
+
+#define BYTE  unsigned char
+#define BUFFER_SIZE   1000
+
+class VRPN_API vrpn_Tracker_USB : public vrpn_Tracker {
+  public:
+   vrpn_Tracker_USB
+         (const char * name, vrpn_Connection * c,
+          vrpn_uint16 vendor, vrpn_uint16 product,
+          long baud = 115200);
+   virtual ~vrpn_Tracker_USB();
+
+  protected:
+   struct libusb_device_handle *_device_handle;    // Handle for the USB device
+   struct libusb_context       *_context;          // LibUSB context used for this device
+   vrpn_uint16 _vendor;     // Vendor ID for usb device
+   vrpn_uint16 _product;    // Product ID for usb device
+   long _baudrate;
+
+   BYTE buffer[BUFFER_SIZE];  // Characters read in from the tracker
+   vrpn_uint32 bufcount;      // How many characters in the buffer?
+
+   /// Gets reports if some are available, returns 0 if not, 1 if complete report(s).
+   virtual int get_report(void) = 0;
+
+   // Sends the report that was just read.
+   virtual void send_report(void);
+
+   /// Reset the tracker.
+   virtual void reset(void) = 0;
+
+   /// Uses the get_report, send_report, and reset routines to implement a server
+   virtual void mainloop();
+};
+
 #endif  // VRPN_CLIENT_ONLY
 
 
@@ -431,4 +474,9 @@ class VRPN_API vrpn_Tracker_Remote: public vrpn_Tracker {
 		    vrpn_HANDLERPARAM p);
 };
 
+// End of VRPN_USE_LIBUSB_1_0
 #endif
+
+// End of vrpn_TRACKER_H
+#endif
+
