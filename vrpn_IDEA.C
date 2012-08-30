@@ -32,10 +32,35 @@ static	unsigned long	duration(struct timeval t1, struct timeval t2)
 // This creates a vrpn_IDEA and sets it to reset mode. It opens
 // the serial device using the code in the vrpn_Serial_Analog constructor.
 
-vrpn_IDEA::vrpn_IDEA (const char * name, vrpn_Connection * c,
-			const char * port):
-	vrpn_Serial_Analog(name, c, port, 57600),
-        vrpn_Analog_Output(name, c)
+vrpn_IDEA::vrpn_IDEA (const char * name, vrpn_Connection * c,const char * port
+                      , int run_speed_tics_sec
+                      , int start_speed_tics_sec
+                      , int end_speed_tics_sec
+                      , int accel_rate_tics_sec_sec
+                      , int decel_rate_tics_sec_sec
+                      , int run_current
+                      , int hold_current
+                      , int accel_current
+                      , int decel_current
+                      , int delay
+                      , int step
+                      , int high_limit_index
+                      , int low_limit_index):
+	vrpn_Serial_Analog(name, c, port, 57600)
+        , vrpn_Analog_Output(name, c)
+        , d_run_speed_tics_sec(run_speed_tics_sec)
+        , d_start_speed_tics_sec(start_speed_tics_sec)
+        , d_end_speed_tics_sec(end_speed_tics_sec)
+        , d_accel_rate_tics_sec_sec(accel_rate_tics_sec_sec)
+        , d_decel_rate_tics_sec_sec(decel_rate_tics_sec_sec)
+        , d_run_current(run_current)
+        , d_hold_current(hold_current)
+        , d_accel_current(accel_current)
+        , d_decel_current(decel_current)
+        , d_delay(delay)
+        , d_step(step)
+        , d_high_limit_index(high_limit_index)
+        , d_low_limit_index(low_limit_index)
 {
   num_channel = 1;
   channel[0] = 0;
@@ -83,6 +108,7 @@ bool vrpn_IDEA::send_command(const char *cmd)
 
 //   Commands		  Responses	           Meanings
 //    M                     None                      Move to position
+//    i                     None                      Interrupt configure
 // Params:
 //  distance: distance in 1/64th steps
 //  run speed: steps/second
@@ -100,31 +126,62 @@ bool vrpn_IDEA::send_command(const char *cmd)
 bool  vrpn_IDEA::send_move_request(vrpn_float64 location_in_steps)
 {
   char  cmd[512];
+
+  //-----------------------------------------------------------------------
+  // Configure input interrupts.  We want a falling-edge trigger for the
+  // inputs, calling the appropriate subroutine.  We only enable the
+  // high limit switch when moving forward and only the low one when moving
+  // backwards.  If neither limit switch is set, we don't ever need to
+  // send anything.
+  if ( (d_high_limit_index > 0) || (d_low_limit_index > 0) ) {
+    int edge_masks[4] = { 0, 0, 0, 0 };
+    int address_masks[4] = { 0, 0, 0, 0 };
+    int priority_masks[4] = { 0, 0, 0, 0 };
+
+    // If we're moving forward and there is a high limit switch, set
+    // up to use it.
+    if ( (location_in_steps > channel[0]) && (d_high_limit_index > 0) ) {
+      edge_masks[d_high_limit_index - 1] = 2;       // Falling edge
+      address_masks[d_high_limit_index - 1] = 40;   // Address of program
+    }
+
+    // If we're moving backwards and there is a low limit switch, set
+    // up to use it.
+    if ( (location_in_steps > channel[0]) && (d_low_limit_index > 0) ) {
+      edge_masks[d_low_limit_index - 1] = 2;        // Falling edge
+      address_masks[d_low_limit_index - 1] = 80;    // Address of program
+    }
+
+    if (sprintf(cmd, "i,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d",
+      edge_masks[0], edge_masks[1], edge_masks[2], edge_masks[3],
+      address_masks[0], address_masks[1], address_masks[2], address_masks[3],
+      priority_masks[0], priority_masks[1], priority_masks[2], priority_masks[3]
+    ) != 13) {
+      IDEA_ERROR("vrpn_IDEA::send_move_request(): Could not configure interrupt command");
+      status = STATUS_RESETTING;
+      return false;
+    }
+    if (!send_command(cmd)) {
+      IDEA_ERROR("vrpn_IDEA::send_move_request(): Could not configure interrupts");
+      status = STATUS_RESETTING;
+      return false;
+    }        
+  }
+
   long steps_64th = static_cast<long>(location_in_steps*64);
-  int run_speed = 3200;
-  int start_speed = 1200;
-  int end_speed = 2000;
-  int accel_rate = 40000;
-  int decel_rate = 100000;
-  int run_current = 290;
-  int hold_current = 290;
-  int accel_current = 290;
-  int decel_current = 290;
-  int delay = 50;
-  int step = 8;
   sprintf(cmd, "M%ld,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d",
     steps_64th,
-    run_speed,
-    start_speed,
-    end_speed,
-    accel_rate,
-    decel_rate,
-    run_current,
-    hold_current,
-    accel_current,
-    decel_current,
-    delay,
-    step);
+    d_run_speed_tics_sec,
+    d_start_speed_tics_sec,
+    d_end_speed_tics_sec,
+    d_accel_rate_tics_sec_sec,
+    d_decel_rate_tics_sec_sec,
+    d_run_current,
+    d_hold_current,
+    d_accel_current,
+    d_decel_current,
+    d_delay,
+    d_step);
   return send_command(cmd);
 }
 
@@ -163,6 +220,9 @@ bool  vrpn_IDEA::convert_report_to_value(unsigned char *buf, vrpn_float64 *value
 //    R                     None                      Software reset
 //    f                     `f<value>[cr]`f#[cr]      Request fault status
 //    l                     `l<value>[cr]`l#[cr]      Location of the drive
+//    A                     None                      Abort
+//    P                     `P[program size][cr]`P#[cr] (or none) Program
+//    L                     None                      Goto If
 
 int	vrpn_IDEA::reset(void)
 {
@@ -250,6 +310,115 @@ int	vrpn_IDEA::reset(void)
           return -1;
         }
         channel[0] = position;
+
+	//-----------------------------------------------------------------------
+        // If we are using the high-limit index, we should abort a move when
+        // the drive is moving in a positive direction and we get a falling
+        // edge trigger on the associated input.  If the index of the input
+        // to use is -1, we aren't using this.  The motion command will set
+        // the interrupt handlers appropriately, given the direction of travel.
+        // Here, we write the programs for the high limit switch and the low
+        // limit switch that will be called when they are triggered.
+
+        if (d_high_limit_index > 0) {
+
+          // First, we write the program that will be run when the high limit
+          // switch goes low.  The program will abort the move.
+
+          // The program name must be exactly ten characters.
+          // We put this program at memory location 40 (must be multiple of 4?).
+          if (!send_command("Phighlimit_,40,1")) {
+            fprintf(stderr,"vrpn_IDEA::reset(): Could not start high limit program\n");
+            return -1;
+          }
+
+          // The program should cause an abort instruction when run
+          if (!send_command("A")) {
+            fprintf(stderr,"vrpn_IDEA::reset(): Could not send abort to high limit program\n");
+            return -1;
+          }
+
+          // The program description is done
+          if (!send_command("P")) {
+            fprintf(stderr,"vrpn_IDEA::reset(): Could not finish high limit program\n");
+            return -1;
+          }
+
+          timeout.tv_sec = 0;
+	  timeout.tv_usec = 30000;
+
+          // Get a response saying that the program has been received; it will
+          // say what the size of the program is.
+          ret = vrpn_read_available_characters(serial_fd, inbuf, sizeof(inbuf), &timeout);
+          if (ret < 0) {
+            perror("vrpn_IDEA::reset(): Error reading high-limit program response from device");
+	    return -1;
+          }
+          if ( (ret < 8) || (inbuf[ret-1] != '\r') ) {
+            inbuf[ret] = '\0';
+            fprintf(stderr,"vrpn_IDEA::reset(): Bad high-limit program response report: %s\n", inbuf);
+            IDEA_ERROR("Bad position report");
+            return -1;
+          }
+          inbuf[ret] = '\0';
+
+          int program_length;
+          if (sscanf((char *)(inbuf), "`P%d\r`P#\r", &program_length) != 1) {
+            fprintf(stderr,"vrpn_IDEA::reset(): Bad high program report: %s\n", inbuf);
+            IDEA_ERROR("Bad high program report");
+            return -1;
+          }
+        }
+
+        if (d_low_limit_index > 0) {
+
+          // Next, we write the program that will be run when the low limit
+          // switch goes low.  The program will abort the move.
+
+          // The program name must be exactly ten characters.
+          // We put this program at memory location 80 (must be multiple of 4?).
+          if (!send_command("Plow_limit_,80,1")) {
+            fprintf(stderr,"vrpn_IDEA::reset(): Could not start low limit program\n");
+            return -1;
+          }
+
+          // The program should cause an abort instruction when run
+          if (!send_command("A")) {
+            fprintf(stderr,"vrpn_IDEA::reset(): Could not send abort to low limit program\n");
+            return -1;
+          }
+
+          // The program description is done
+          if (!send_command("P")) {
+            fprintf(stderr,"vrpn_IDEA::reset(): Could not finish low limit program\n");
+            return -1;
+          }
+
+          timeout.tv_sec = 0;
+	  timeout.tv_usec = 30000;
+
+          // Get a response saying that the program has been received; it will
+          // say what the size of the program is.
+          ret = vrpn_read_available_characters(serial_fd, inbuf, sizeof(inbuf), &timeout);
+          if (ret < 0) {
+            perror("vrpn_IDEA::reset(): Error reading low-limit program response from device");
+	    return -1;
+          }
+          if ( (ret < 8) || (inbuf[ret-1] != '\r') ) {
+            inbuf[ret] = '\0';
+            fprintf(stderr,"vrpn_IDEA::reset(): Bad low-limit program response report: %s\n", inbuf);
+            IDEA_ERROR("Bad low-limit program response report");
+            return -1;
+          }
+          inbuf[ret] = '\0';
+
+          int program_length;
+          if (sscanf((char *)(inbuf), "`P%d\r`P#\r", &program_length) != 1) {
+            fprintf(stderr,"vrpn_IDEA::reset(): Bad low program report: %s\n", inbuf);
+            IDEA_ERROR("Bad low program report");
+            return -1;
+          }
+        }
 
 	//-----------------------------------------------------------------------
         // Ask for the position of the drive so that it will start sending.

@@ -1019,10 +1019,17 @@ int vrpn_Generic_Server_Object::setup_Zaber (char * & pch, char * line, FILE * c
 int vrpn_Generic_Server_Object::setup_IDEA (char * & pch, char * line, FILE * config_file)
 {
   char s2 [LINESIZE], s3 [LINESIZE];
+  int run_speed, start_speed, end_speed, accel_rate, decel_rate;
+  int run_current, hold_current, accel_current, decel_current;
+  int delay, step, high_limit, low_limit;
 
   next();
+
   // Get the arguments (class, Radamec_name, port, baud
-  if (sscanf (pch, "%511s%511s", s2, s3) != 2) {
+  if (sscanf (pch, "%511s%511s%d%d%d%d%d%d%d%d%d%d%d%d%d", s2, s3,
+    &run_speed, &start_speed, &end_speed, &accel_rate, &decel_rate,
+    &run_current, &hold_current, &accel_current, &decel_current,
+    &delay, &step, &high_limit, &low_limit) != 15) {
     fprintf (stderr, "Bad vrpn_IDEA: %s\n", line);
     return -1;
   }
@@ -1038,7 +1045,10 @@ int vrpn_Generic_Server_Object::setup_IDEA (char * & pch, char * line, FILE * co
     printf ("Opening vrpn_IDEA: %s on port %s\n", s2, s3);
   }
   if ( (analogs[num_analogs] =
-          new vrpn_IDEA (s2, connection, s3)) == NULL) {
+          new vrpn_IDEA (s2, connection, s3,
+                         run_speed, start_speed, end_speed, accel_rate, decel_rate,
+                         run_current, hold_current, accel_current, decel_current,
+                         delay, step, high_limit, low_limit)) == NULL) {
     fprintf (stderr, "Can't create new vrpn_IDEA\n");
     return -1;
   } else {
