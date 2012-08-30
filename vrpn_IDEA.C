@@ -223,6 +223,7 @@ bool  vrpn_IDEA::convert_report_to_value(unsigned char *buf, vrpn_float64 *value
 //    A                     None                      Abort
 //    P                     `P[program size][cr]`P#[cr] (or none) Program
 //    L                     None                      Goto If
+//    :                     `:[value][cr]`:#[cr]      Read I/O
 
 int	vrpn_IDEA::reset(void)
 {
@@ -279,6 +280,38 @@ int	vrpn_IDEA::reset(void)
           IDEA_ERROR("Drive reports a fault");
           return -1;
         }
+
+	//-----------------------------------------------------------------------
+	// Read the input/output values from the drive (debugging).  This is how
+	// we'd read them to fill in values for the buttons if we want to do that.
+        if (!send_command(":")) {
+          fprintf(stderr,"vrpn_IDEA::reset(): Could not request I/O status\n");
+          return -1;
+        }
+
+        timeout.tv_sec = 0;
+	timeout.tv_usec = 30000;
+
+        ret = vrpn_read_available_characters(serial_fd, inbuf, sizeof(inbuf), &timeout);
+        if (ret < 0) {
+          perror("vrpn_IDEA::reset(): Error reading I/O status from device");
+	  return -1;
+        }
+        if ( (ret < 8) || (inbuf[ret-1] != '\r') ) {
+          inbuf[ret] = '\0';
+          fprintf(stderr,"vrpn_IDEA::reset(): Bad I/O status report (length %d): %s\n", ret, inbuf);
+          IDEA_ERROR("Bad I/O status report");
+          return -1;
+        }
+        inbuf[ret] = '\0';
+
+        int io_status;
+        if (sscanf((char *)(inbuf), "`:%d\r`:#\r", &io_status) != 1) {
+          fprintf(stderr,"vrpn_IDEA::reset(): Bad I/O status report: %s\n", inbuf);
+          IDEA_ERROR("Bad I/O status report");
+          return -1;
+        }
+	printf("XXX I/O status: %02x\n", io_status);
 
 	//-----------------------------------------------------------------------
         // Ask for the position of the drive and make sure we can read it.
