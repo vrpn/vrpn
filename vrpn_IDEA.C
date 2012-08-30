@@ -156,7 +156,7 @@ bool  vrpn_IDEA::send_move_request(vrpn_float64 location_in_steps)
       edge_masks[0], edge_masks[1], edge_masks[2], edge_masks[3],
       address_masks[0], address_masks[1], address_masks[2], address_masks[3],
       priority_masks[0], priority_masks[1], priority_masks[2], priority_masks[3]
-    ) != 13) {
+    ) <= 0) {
       IDEA_ERROR("vrpn_IDEA::send_move_request(): Could not configure interrupt command");
       status = STATUS_RESETTING;
       return false;
@@ -345,7 +345,7 @@ int	vrpn_IDEA::reset(void)
           }
 
           timeout.tv_sec = 0;
-	  timeout.tv_usec = 30000;
+	  timeout.tv_usec = 300000;
 
           // Get a response saying that the program has been received; it will
           // say what the size of the program is.
@@ -395,7 +395,7 @@ int	vrpn_IDEA::reset(void)
           }
 
           timeout.tv_sec = 0;
-	  timeout.tv_usec = 30000;
+	  timeout.tv_usec = 300000;
 
           // Get a response saying that the program has been received; it will
           // say what the size of the program is.
