@@ -1027,7 +1027,7 @@ int vrpn_Generic_Server_Object::setup_IDEA (char * & pch, char * line, FILE * co
   next();
 
   // Get the arguments (class, Radamec_name, port, baud
-  if (sscanf (pch, "%511s%511s%d%d%d%d%d%d%d%d%d%d%d%d%d", s2, s3,
+  if (sscanf (pch, "%511s%511s%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d", s2, s3,
     &run_speed, &start_speed, &end_speed, &accel_rate, &decel_rate,
     &run_current, &hold_current, &accel_current, &decel_current,
     &delay, &step, &high_limit, &low_limit,
