@@ -36,6 +36,10 @@ public:
           , int step = 8      // Microstepping to do; 1/step steps
           , int high_limit_index = -1  // Input index for high limits switch (-1 for none)
           , int low_limit_index = -1   // Input index fro low limit switch (-1 for none)
+          , int output_1_setting = -1
+          , int output_2_setting = -1
+          , int output_3_setting = -1
+          , int output_4_setting = -1
         );
 	~vrpn_IDEA () {};
 
@@ -61,6 +65,10 @@ public:
     int d_step;
     int d_high_limit_index;
     int d_low_limit_index;
+    int d_output_1_setting;
+    int d_output_2_setting;
+    int d_output_3_setting;
+    int d_output_4_setting;
 
     virtual int reset(void);      //< Set device back to starting config
     virtual int get_report(void); //< Try to read a report from the device

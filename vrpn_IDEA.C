@@ -45,7 +45,11 @@ vrpn_IDEA::vrpn_IDEA (const char * name, vrpn_Connection * c,const char * port
                       , int delay
                       , int step
                       , int high_limit_index
-                      , int low_limit_index):
+                      , int low_limit_index
+                      , int output_1_setting
+                      , int output_2_setting
+                      , int output_3_setting
+                      , int output_4_setting):
 	vrpn_Serial_Analog(name, c, port, 57600)
         , vrpn_Analog_Output(name, c)
         , d_run_speed_tics_sec(run_speed_tics_sec)
@@ -61,6 +65,10 @@ vrpn_IDEA::vrpn_IDEA (const char * name, vrpn_Connection * c,const char * port
         , d_step(step)
         , d_high_limit_index(high_limit_index)
         , d_low_limit_index(low_limit_index)
+        , d_output_1_setting(output_1_setting)
+        , d_output_2_setting(output_2_setting)
+        , d_output_3_setting(output_3_setting)
+        , d_output_4_setting(output_4_setting)
 {
   num_channel = 1;
   channel[0] = 0;
@@ -224,12 +232,14 @@ bool  vrpn_IDEA::convert_report_to_value(unsigned char *buf, vrpn_float64 *value
 //    P                     `P[program size][cr]`P#[cr] (or none) Program
 //    L                     None                      Goto If
 //    :                     `:[value][cr]`:#[cr]      Read I/O
+//    O                     None                      Set output
 
 int	vrpn_IDEA::reset(void)
 {
 	struct	timeval	timeout;
 	unsigned char	inbuf[128];
-	int	ret;
+        char            cmd[512];
+	int	        ret;
 
 	//-----------------------------------------------------------------------
 	// Drain the input buffer to make sure we start with a fresh slate.
@@ -280,6 +290,38 @@ int	vrpn_IDEA::reset(void)
           IDEA_ERROR("Drive reports a fault");
           return -1;
         }
+
+	//-----------------------------------------------------------------------
+        // Set the outputs to the desired state.  If a setting is -1, then we
+        // don't change the value.  If it is 0 or 1 then we set the value to
+        // what was requested.
+        int value = 0;
+        if (d_output_1_setting >= 0) {
+          value |= 1 << (4 + 0);
+          value |= d_output_1_setting << (0);
+        }
+        if (d_output_2_setting >= 0) {
+          value |= 1 << (4 + 1);
+          value |= d_output_2_setting << (1);
+        }
+        if (d_output_3_setting >= 0) {
+          value |= 1 << (4 + 2);
+          value |= d_output_3_setting << (2);
+        }
+        if (d_output_4_setting >= 0) {
+          value |= 1 << (4 + 3);
+          value |= d_output_4_setting << (3);
+        }
+        if (sprintf(cmd, "O%d", value) <= 0) {
+          IDEA_ERROR("vrpn_IDEA::send_move_request(): Could not configure output command");
+          status = STATUS_RESETTING;
+          return -1;
+        }
+        if (!send_command(cmd)) {
+          IDEA_ERROR("vrpn_IDEA::send_move_request(): Could not configure outputs");
+          status = STATUS_RESETTING;
+          return -1;
+        }        
 
 	//-----------------------------------------------------------------------
 	// Read the input/output values from the drive (debugging).  This is how

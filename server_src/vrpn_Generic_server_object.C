@@ -1022,6 +1022,7 @@ int vrpn_Generic_Server_Object::setup_IDEA (char * & pch, char * line, FILE * co
   int run_speed, start_speed, end_speed, accel_rate, decel_rate;
   int run_current, hold_current, accel_current, decel_current;
   int delay, step, high_limit, low_limit;
+  int output_1, output_2, output_3, output_4;
 
   next();
 
@@ -1029,7 +1030,8 @@ int vrpn_Generic_Server_Object::setup_IDEA (char * & pch, char * line, FILE * co
   if (sscanf (pch, "%511s%511s%d%d%d%d%d%d%d%d%d%d%d%d%d", s2, s3,
     &run_speed, &start_speed, &end_speed, &accel_rate, &decel_rate,
     &run_current, &hold_current, &accel_current, &decel_current,
-    &delay, &step, &high_limit, &low_limit) != 15) {
+    &delay, &step, &high_limit, &low_limit,
+    &output_1, &output_2, &output_3, &output_4) != 19) {
     fprintf (stderr, "Bad vrpn_IDEA: %s\n", line);
     return -1;
   }
