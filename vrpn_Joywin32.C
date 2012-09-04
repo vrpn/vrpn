@@ -65,7 +65,13 @@ vrpn_Joywin32::vrpn_Joywin32 (const char * name, vrpn_Connection * c, vrpn_uint8
 
 	_deadzone = deadzone / 100.0;
 
-	DWORD dwResult = 0;
+	// initialize the joystick
+    init_joystick();
+}
+
+void vrpn_Joywin32::init_joystick(void)
+{
+    DWORD dwResult = 0;
 
 	// This function below return the number of joysticks the driver supports.
 	// If it returns 0 then there is no joystick driver installed.
@@ -140,7 +146,6 @@ vrpn_Joywin32::vrpn_Joywin32 (const char * name, vrpn_Connection * c, vrpn_uint8
 	// Set the mode to reading.  Set time to zero, so we'll try to read
 	_status = STATUS_READING;
 	vrpn_gettimeofday(&_timestamp, NULL);
-
 }
 
 void	vrpn_Joywin32::clear_values(void)
@@ -367,8 +372,10 @@ void	vrpn_Joywin32::mainloop()
 	  struct  timeval now;
 	  vrpn_gettimeofday(&now, NULL);
 	  if (duration(now, last_report) > MAX_TIME_INTERVAL) {
-	    send_text_message("Cannot talk to joystick", now, vrpn_TEXT_ERROR);
+	    send_text_message("Cannot talk to joystick, trying resetting it", now, vrpn_TEXT_ERROR);
 	    last_report = now;
+
+        init_joystick();
 	  }
 	}
 	break;
