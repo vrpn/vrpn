@@ -49,7 +49,9 @@ vrpn_IDEA::vrpn_IDEA (const char * name, vrpn_Connection * c,const char * port
                       , int output_1_setting
                       , int output_2_setting
                       , int output_3_setting
-                      , int output_4_setting):
+                      , int output_4_setting
+                      , double initial_move
+                      , double fractional_c_a):
 	vrpn_Serial_Analog(name, c, port, 57600)
         , vrpn_Analog_Output(name, c)
         , d_run_speed_tics_sec(run_speed_tics_sec)
@@ -69,6 +71,8 @@ vrpn_IDEA::vrpn_IDEA (const char * name, vrpn_Connection * c,const char * port
         , d_output_2_setting(output_2_setting)
         , d_output_3_setting(output_3_setting)
         , d_output_4_setting(output_4_setting)
+        , d_initial_move(initial_move)
+        , d_fractional_c_a(fractional_c_a)
 {
   num_channel = 1;
   channel[0] = 0;
@@ -114,6 +118,12 @@ bool vrpn_IDEA::send_command(const char *cmd)
     (const unsigned char *)((void*)(buf)), strlen(buf)) == strlen(buf) );
 }
 
+// Helper function to scale int by a double and get an int.
+static inline int scale_int(int val, double scale)
+{
+  return static_cast<int>(val*scale);
+}
+
 //   Commands		  Responses	           Meanings
 //    M                     None                      Move to position
 //    i                     None                      Interrupt configure
@@ -130,8 +140,9 @@ bool vrpn_IDEA::send_command(const char *cmd)
 //  decel current: milliamps
 //  delay: milliseconds, waiting to drop to hold current
 //  step mode: inverse step size: 4 is 1/4 step.
+//  scale: Between 0 and 1.  Scales the acceleration and currents down.
 
-bool  vrpn_IDEA::send_move_request(vrpn_float64 location_in_steps)
+bool  vrpn_IDEA::send_move_request(vrpn_float64 location_in_steps, double scale)
 {
   char  cmd[512];
 
@@ -180,14 +191,14 @@ bool  vrpn_IDEA::send_move_request(vrpn_float64 location_in_steps)
   sprintf(cmd, "M%ld,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d",
     steps_64th,
     d_run_speed_tics_sec,
-    d_start_speed_tics_sec,
-    d_end_speed_tics_sec,
-    d_accel_rate_tics_sec_sec,
-    d_decel_rate_tics_sec_sec,
-    d_run_current,
-    d_hold_current,
-    d_accel_current,
-    d_decel_current,
+    scale_int(d_start_speed_tics_sec,scale),
+    scale_int(d_end_speed_tics_sec, scale),
+    scale_int(d_accel_rate_tics_sec_sec, scale),
+    scale_int(d_decel_rate_tics_sec_sec, scale),
+    scale_int(d_run_current, scale),
+    scale_int(d_hold_current, scale),
+    scale_int(d_accel_current, scale),
+    scale_int(d_decel_current, scale),
     d_delay,
     d_step);
   return send_command(cmd);
@@ -233,6 +244,8 @@ bool  vrpn_IDEA::convert_report_to_value(unsigned char *buf, vrpn_float64 *value
 //    L                     None                      Goto If
 //    :                     `:[value][cr]`:#[cr]      Read I/O
 //    O                     None                      Set output
+//    Z                     None                      Set position value
+//    o                     `oYES[cr]`o#[cr] (or NO)  Is the motor moving?
 
 int	vrpn_IDEA::reset(void)
 {
@@ -353,7 +366,7 @@ int	vrpn_IDEA::reset(void)
           IDEA_ERROR("Bad I/O status report");
           return -1;
         }
-	printf("XXX I/O status: %02x\n", io_status);
+	//printf("XXX I/O status: %02x\n", io_status);
 
 	//-----------------------------------------------------------------------
         // Ask for the position of the drive and make sure we can read it.
@@ -493,6 +506,64 @@ int	vrpn_IDEA::reset(void)
             IDEA_ERROR("Bad low program report");
             return -1;
           }
+        }
+
+	//-----------------------------------------------------------------------
+        // If we have an initial-move value (to run into the rails), then execute
+        // a move with acceleration and currents scaled by the fractional_c_a
+        // value used in the constructor.  Wait until the motor stops moving
+        // after this command before proceeding.
+
+        if (d_initial_move != 0) {
+
+          // Send a move command, scaled by the fractional current and
+          // acceleration values.
+          if (!send_move_request(d_initial_move, d_fractional_c_a)) {
+            fprintf(stderr,"vrpn_IDEA::reset(): Could not do initial move\n");
+            IDEA_ERROR("Could not do initial move");
+            return -1;
+          }
+
+          // Keep asking whether the motor is moving until it says that it
+          // is not.
+          bool moving = true;
+          do {
+            if (!send_command("o")) {
+              fprintf(stderr,"vrpn_IDEA::reset(): Could not request movement status\n");
+              IDEA_ERROR("Could not request movement status");
+              return -1;
+            }
+
+            timeout.tv_sec = 0;
+	    timeout.tv_usec = 30000;
+            ret = vrpn_read_available_characters(serial_fd, inbuf, sizeof(inbuf), &timeout);
+            if (ret < 0) {
+              perror("vrpn_IDEA::reset(): Error reading movement status from device");
+              IDEA_ERROR("Error reading movement status");
+	      return -1;
+            }
+            if ( (ret < 8) || (inbuf[ret-1] != '\r') ) {
+              inbuf[ret] = '\0';
+              fprintf(stderr,"vrpn_IDEA::reset(): Bad movement status report (length %d): %s\n", ret, inbuf);
+              IDEA_ERROR("Bad movement status report");
+              return -1;
+            }
+            inbuf[ret] = '\0';
+
+            if ( (inbuf[0] != '`') || (inbuf[1] != 'o') ) {
+              fprintf(stderr,"vrpn_IDEA::reset(): Bad movement status report: %s\n", inbuf);
+              IDEA_ERROR("Bad movement status report");
+              return -1;
+            }
+            moving = (inbuf[2] == 'Y');
+          } while (moving);
+        }
+
+	//-----------------------------------------------------------------------
+        // Reset the drive count at the present location to zero.
+        if (!send_command("Z0")) {
+          fprintf(stderr,"vrpn_IDEA::reset(): Could not set position to 0\n");
+          return -1;
         }
 
 	//-----------------------------------------------------------------------

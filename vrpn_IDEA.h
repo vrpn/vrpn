@@ -40,6 +40,8 @@ public:
           , int output_2_setting = -1
           , int output_3_setting = -1
           , int output_4_setting = -1
+          , double initial_move = 0     // Move to one end of travel when reset
+          , double fractional_c_a = 1.0 // Use lower accel and current during this move
         );
 	~vrpn_IDEA () {};
 
@@ -69,6 +71,8 @@ public:
     int d_output_2_setting;
     int d_output_3_setting;
     int d_output_4_setting;
+    double d_initial_move;
+    double d_fractional_c_a;
 
     virtual int reset(void);      //< Set device back to starting config
     virtual int get_report(void); //< Try to read a report from the device
@@ -79,7 +83,11 @@ public:
     bool send_command(const char *cmd);
 
     /// Request a move from the motor to the specified location.
-    bool send_move_request(vrpn_float64 location_in_steps);
+    // Scale the acceleration and current values for the move by the
+    // specified fraction between 0 and 1.  This lets us execute
+    // "gentler" moves for doing things like jamming against the rails,
+    // so we don't get stuck.
+    bool send_move_request(vrpn_float64 location_in_steps, double scale = 1.0);
 
     /// Parses a position report.  Returns false on failure.
     bool convert_report_to_value(unsigned char *buf, vrpn_float64 *value);
