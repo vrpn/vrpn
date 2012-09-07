@@ -35,6 +35,7 @@ protected:
 
     virtual vrpn_int32 get_report(void);	// Try to read a report from the device
     void	clear_values(void);	// Clear the Analog and Button values
+    void    init_joystick(void); // try to (re-)initialize the joystick
 
    // send report iff changed
     virtual void report_changes (vrpn_uint32 class_of_service

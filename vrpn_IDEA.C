@@ -311,19 +311,19 @@ int	vrpn_IDEA::reset(void)
         int value = 0;
         if (d_output_1_setting >= 0) {
           value |= 1 << (4 + 0);
-          value |= d_output_1_setting << (0);
+          value |= (d_output_1_setting != 0) << (0);
         }
         if (d_output_2_setting >= 0) {
           value |= 1 << (4 + 1);
-          value |= d_output_2_setting << (1);
+          value |= (d_output_2_setting != 0) << (1);
         }
         if (d_output_3_setting >= 0) {
           value |= 1 << (4 + 2);
-          value |= d_output_3_setting << (2);
+          value |= (d_output_3_setting != 0) << (2);
         }
         if (d_output_4_setting >= 0) {
           value |= 1 << (4 + 3);
-          value |= d_output_4_setting << (3);
+          value |= (d_output_4_setting != 0) << (3);
         }
         if (sprintf(cmd, "O%d", value) <= 0) {
           IDEA_ERROR("vrpn_IDEA::send_move_request(): Could not configure output command");
@@ -334,7 +334,9 @@ int	vrpn_IDEA::reset(void)
           IDEA_ERROR("vrpn_IDEA::send_move_request(): Could not configure outputs");
           status = STATUS_RESETTING;
           return -1;
-        }        
+        }
+	//printf("XXX Sending output command: %s\n", cmd);
+        vrpn_SleepMsecs(100);
 
 	//-----------------------------------------------------------------------
 	// Read the input/output values from the drive (debugging).  This is how
