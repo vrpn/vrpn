@@ -29,6 +29,7 @@
 #include <vector>
 #include <exception>
 #include <algorithm>
+#include <limits>
 
 typedef std::vector<unsigned char> DynamicBufferType;
 
@@ -131,7 +132,7 @@ int vrpn_SerialPort::read_available_characters(unsigned char * buffer, int count
 }
 
 std::string vrpn_SerialPort::read_available_characters(int count, struct timeval & timeout) {
-	if (count + 1 < count) {
+	if (count == std::numeric_limits<int>::max()) {
 		/// overflow safety
 		throw ReadFailure();
 	}
