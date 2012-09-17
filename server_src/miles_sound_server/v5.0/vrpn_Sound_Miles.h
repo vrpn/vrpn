@@ -38,7 +38,7 @@ public:
 						soundDef has pose, velocity, and volume information
 						*/
 	void		stopSound(vrpn_SoundID id);
-						//immediately stops playing the sound refered to by id
+						//immediately stops playing the sound referred to by id
 	void		loadSound(char* filename, vrpn_SoundID id);
 						/*loads a .wav file into memory.  
 						gives back id to reference the sound

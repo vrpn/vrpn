@@ -151,7 +151,7 @@ sub parseMsgDefFile ($)
   my $line = "";
   print "//Message definitions from file " . $msg_def_file . "\n";
   open(DEFHANDLE, "< " . $msg_def_file ) || 
-      die "Couldn't open vrpn msg definiton file ". $msg_def_file ;
+      die "Couldn't open vrpn msg definition file ". $msg_def_file ;
   while (defined($line = <DEFHANDLE>)) {
     #chomp $line;
     $line =~ s#//.*$##;          # remove comments

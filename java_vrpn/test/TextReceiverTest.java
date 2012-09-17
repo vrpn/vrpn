@@ -26,7 +26,7 @@ public class TextReceiverTest implements TextReceiver.TextMessageListener
 		catch( InstantiationException e )
 		{
 			// do something b/c you couldn't create the text receiver
-			System.out.println( "We couldn't connect text reciever to " + textSenderName + "." );
+			System.out.println( "We couldn't connect text receiver to " + textSenderName + "." );
 			System.out.println( e.getMessage( ) );
 			return;
 		}

@@ -22,7 +22,10 @@
 
 #define NAME_LENGTH 128
 
-#ifdef linux
+#ifdef VRPN_USE_JOYLIN
+
+#include <linux/joystick.h>
+
 vrpn_Joylin::vrpn_Joylin(char * name, 
 			 vrpn_Connection * c,
 			 char *portname):

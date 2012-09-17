@@ -28,7 +28,7 @@ typedef	enum { box, pointconstraint, lineconstraint, planeconstraint, forcefield
 // Which Object ID for the cube geometry object
 vrpn_int32  CUBE_ID = 0;
 
-// For the display of the box, this holds a descripton of the paramters
+// For the display of the box, this holds a description of the parameters
 // for each side.
 class BoxSide {
 public:
@@ -223,7 +223,7 @@ void    VRPN_CALLBACK handle_tracker_change(void *userdata, const vrpn_TRACKERCB
 	// surface parameters.  We raise the multiplier to the power of
 	// the box-description multiplier and then apply this to the surface
 	// parameter to vary each for different sides.  A box parameter of
-	// 0 will therefore cause no change (multiply by one), a paramter of
+	// 0 will therefore cause no change (multiply by one), a parameter of
 	// -1 will reduce by the factor and a parameter of 1 will increase
 	// by the parameter.  NOTE: Static and dynamic friction are set equal.
 	g_forceDevice->set_plane(a, b, c, d);

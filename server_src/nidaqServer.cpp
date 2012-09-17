@@ -95,7 +95,7 @@ int main (int argc, char * argv[])
 
   // You should use an even number of channels even if you
   // really only need one less.  If you don't, the daq will
-  // only report at about half the rate (some wierd double-buffering
+  // only report at about half the rate (some weird double-buffering
   // side-effect).
 
   // xbow acc are 0->5v, tokin rg are +-1v, systron rg +-5

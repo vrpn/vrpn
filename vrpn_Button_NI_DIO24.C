@@ -4,7 +4,7 @@
 // DIO-24, a PCMCIA card, which provides 24-bit digital I/O.  
 // The I/O is accessed in 3 "ports" with 8 bits per port,
 // though the user is protected from that detail.  The
-// user of this class need only request inputs 1 thru 24.
+// user of this class need only request inputs 1 through 24.
 //
 // Unlike the other National Instrument devices currently
 // in vrpn, this uses their new "mx" library.  To access
@@ -88,7 +88,7 @@ vrpn_Button_Filter (name, c)
 
 /*  The following code *should* make the 0's into 1's, and vice versa, but it only works
  *  for one channel, and even then, it causes the 1's (button pressed) to "flicker" 1-0-1.
- *  National Intruments can't explain it.  Furthermore, if you try to set this property
+ *  National Instruments can't explain it.  Furthermore, if you try to set this property
  *  for all inputs, it errors out.
  *
  *  if (!error)

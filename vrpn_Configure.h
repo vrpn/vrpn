@@ -166,7 +166,7 @@
 
 //-----------------------
 // Instructs VRPN library and server to include code that uses
-// the National Instruments Nidaq libary to control analog outputa.
+// the National Instruments Nidaq library to control analog outputs.
 // Later in this file, we also instruct the compiler to link with
 // the National Instruments libraries if this is defined.  Either or
 // both of these can be defined, depending on which library you
@@ -176,7 +176,7 @@
 
 //-----------------------
 // Instructs VRPN library and server to include code that uses
-// the US Digital SEI/A2 libary to control analog inputs from the
+// the US Digital SEI/A2 library to control analog inputs from the
 // A2 absolute encoder.
 // Later in this file, we also instruct the compiler to link with
 // the US Digital library if this is defined.  You also need to
@@ -198,7 +198,7 @@
 //#define VRPN_USE_MICROSCRIBE
 
 //------------------------
-// Compiles the VRPN libary with the PhaseSpace Tracker using the
+// Compiles the VRPN library with the PhaseSpace Tracker using the
 // PhaseSpace OWL API on Linux and Windows.
 //
 // In Linux:
@@ -376,13 +376,20 @@
 #define VRPN_USE_DEV_INPUT
 #endif
 
+//-------------------------
+// Use Linux kernel joystick support:
+// note that using this kernel header
+// makes the GPL apply to the server!
+#if defined(linux)
+#define VRPN_USE_JOYLIN
+#endif
+
 //------------------------
 // Instructs VRPN to compile code to use the Polhemus Developer
 // (PDI) library to enable opening several of their trackers using
 // this interface (the G4 was the original one this was written
 // for, but new versions are available for the Fastrak and Liberty).
 //#define VRPN_USE_PDI
-
 
 //------------------------------------------------------------------//
 // SYSTEM CONFIGURATION SECTION                                     //

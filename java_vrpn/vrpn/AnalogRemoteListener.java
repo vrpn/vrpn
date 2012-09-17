@@ -113,7 +113,7 @@ public class AnalogRemoteListener implements AnalogRemote.AnalogChangeListener
 	
 	/**
 	 * @return The last (most recent, latest) AnalogUpdate received.  This function 
-	 * returns <code>null</code> if no updates have been recieved.  Note that
+	 * returns <code>null</code> if no updates have been received.  Note that
 	 * successive calls to getLastAnalogUpdate() may return the same AnalogUpdate
 	 * if no updates were received in the interim.
 	 */

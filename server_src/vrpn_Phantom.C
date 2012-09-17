@@ -466,7 +466,7 @@ vrpn_Phantom::vrpn_Phantom(char *name, vrpn_Connection *c, float hz, char * news
   if(!phantom->getValidConstruction()) {
       fprintf(stderr, "ERROR: Invalid Phantom object created\n");
   }
-  /* We add the phantom to the root instead of the hapticScene (whic
+  /* We add the phantom to the root instead of the hapticScene (which
      is the child of the root) because when we turn haptics off
      via the 'H' key, we do not want to remove the phantom from the
      scene.  Pressing the 'H' key removes hapticScene and

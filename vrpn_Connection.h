@@ -409,7 +409,7 @@ class VRPN_API vrpn_Endpoint_IP : public vrpn_Endpoint {
 
     char *d_remote_machine_name;	// Machine to call
     int	d_remote_port_number;	// Port to connect to on remote machine
-    timeval d_last_connect_attempt;	// When the last UDP lob occured
+    timeval d_last_connect_attempt;	// When the last UDP lob occurred
 
     vrpn_bool	d_tcp_only;
       ///< For connections made through firewalls or NAT with the
@@ -575,7 +575,7 @@ class VRPN_API vrpn_Connection {
     // call, the connection should stop looking for more messages.  NOTE:
     // this does not guarantee that only this many messages will be received,
     // only that the connection will stop looking for new ones on a given
-    // channel once that many have been recived (for example, UDP channels
+    // channel once that many have been received (for example, UDP channels
     // will parse all the rest of the messages in a packet before stopping).
     // A value of 0 turns off the limit, and will cause all incoming messages
     // to be handled before returning.
@@ -668,7 +668,7 @@ class VRPN_API vrpn_Connection {
 
     // Derived classes need access to d_dispatcher in their
     // allocateEndpoint() routine.  Several compilers won't give it to
-    // them, even if they do inherit publically.  Until we figure that
+    // them, even if they do inherit publicly.  Until we figure that
     // out, d_dispatcher needs to be public.
 
     vrpn_TypeDispatcher * d_dispatcher;

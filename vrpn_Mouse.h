@@ -39,7 +39,7 @@
 // in pixels, but this has been changed to match on both platforms.
 // 
 // vrpn_Mouse must be run on a Linux console, not an xterm.  Rationale:
-// 1) Since the console environment doesn't presume the existance of a mouse,
+// 1) Since the console environment doesn't presume the existence of a mouse,
 //    it avoids issues about mapping mouse events to window focus, etc.
 // 2) With the mouse movement controlled by a different user, it's really
 //    not possible to also use a mouse-based user interface anyway.
@@ -59,7 +59,7 @@ public:
 
     virtual void mainloop();
 
-    class GpmOpenFailure {};    // thrown when cant open GPM server
+    class GpmOpenFailure {};    // thrown when can't open GPM server
 
 protected:  // methods
     /// Try to read reports from the device.

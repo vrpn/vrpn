@@ -37,7 +37,7 @@ public:
 protected:
 
   // read available events
-  // returns number of structs read succesfully
+  // returns number of structs read successfully
   int read_available_data();
 
 protected:

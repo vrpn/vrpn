@@ -418,7 +418,7 @@ void vrpn_Tracker_InterSense::get_report(void)
 
 	// Copy the tracker data into our internal storage before sending
 	// (no unit problem as the Position vector is already in meters, see ISD_STATION_STATE_TYPE)
-	// Watch: For some reason, to get consistant rotation and translation axis permutations,
+	// Watch: For some reason, to get consistent rotation and translation axis permutations,
 	//        we need non direct mapping.
         // RMT: Based on a report from Christian Odom, it seems like the Quaternions in the
         //      Isense are QXYZ, whereas in Quatlib (and VRPN) they are XYZQ.  Once these

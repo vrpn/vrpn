@@ -22,7 +22,7 @@ const int DATE_LEN = 6;
 NMEAData::NMEAData ()
 {
   // The constructor for the NMEAData object clears all data and resets the
-  // times of last aquisition to 0.
+  // times of last acquisition to 0.
   reset ();
 
   // No coordinate has ever been valid since this object was created.
@@ -1389,7 +1389,7 @@ bool NMEAParser::isKnownSentenceType (const char* sentence) const
 
 int NMEAParser::countChars (const char* string, char charToCount, uint_ charCount) const
   // Purpose:
-  //  This function counts the number of specified occurrances(sp?) of the
+  //  This function counts the number of specified occurrences of the
   //  specified characters and compares to the number of characters that is
   //  expected.
   // Parameters:

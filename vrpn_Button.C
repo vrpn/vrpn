@@ -770,7 +770,7 @@ void vrpn_Button_PinchGlove::report_no_timestamp()
   struct timeval timeout = {0, 30000}; // time_out for response from glove: 30 msec
   struct timeval timeout_to_pass;
 
-  // read until correct reply is recieved
+  // read until correct reply is received
   do {
        vrpn_flush_input_buffer(serial_fd);
        vrpn_write_characters(serial_fd, (unsigned char *)"T0", 2);
