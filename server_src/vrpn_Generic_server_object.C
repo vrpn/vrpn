@@ -1033,7 +1033,7 @@ int vrpn_Generic_Server_Object::setup_IDEA (char * & pch, char * line, FILE * co
     &run_current, &hold_current, &accel_current, &decel_current,
     &delay, &step, &high_limit, &low_limit,
     &output_1, &output_2, &output_3, &output_4,
-    &initial_move, &fractional_c_a) != 19) {
+    &initial_move, &fractional_c_a) != 21) {
     fprintf (stderr, "Bad vrpn_IDEA: %s\n", line);
     return -1;
   }
