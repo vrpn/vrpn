@@ -4755,7 +4755,7 @@ int vrpn_Generic_Server_Object::setup_LUDL_USBMAC6000 (char * & pch, char * line
   return 0;  // successful completion
 
 #else
-  fprintf (stderr, "vrpn_LUDL_USBMAC6000 not yet implemented for this architecture.\n");
+  fprintf (stderr, "vrpn_LUDL_USBMAC6000 requires VRPN built with LIBUSB_1_0.\n");
   return -1;
 #endif
 }
