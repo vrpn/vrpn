@@ -367,7 +367,7 @@ void vrpn_Sound_Server_Miles::playSound(vrpn_SoundID id, vrpn_int32 repeat, vrpn
 	
 
 void vrpn_Sound_Server_Miles::stopSound(vrpn_SoundID id)
-/*immediately stops playing the sound refered to by id
+/*immediately stops playing the sound referred to by id
 the sound can be restarted*/
 {
 	if (provider != 0) {

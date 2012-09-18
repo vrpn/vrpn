@@ -1068,7 +1068,7 @@ int vrpn_Generic_Server_Object::setup_NationalInstrumentsOutput (char * & pch, c
 {
 
 #ifndef	VRPN_USE_NATIONAL_INSTRUMENTS
-  fprintf (stderr, "Attemting to use National Instruments board, but not compiled in\n");
+  fprintf (stderr, "Attempting to use National Instruments board, but not compiled in\n");
   fprintf (stderr, "  (Define VRPN_USE_NATIONAL_INSTRUMENTS in vrpn_Configuration.h\n");
 #else
   fprintf (stderr, "Warning: vrpn_NI_Analog_Output is deprecated: use vrpn_National_Instruments instead\n");
@@ -1148,7 +1148,7 @@ int vrpn_Generic_Server_Object::setup_NationalInstruments (char * & pch, char * 
     num_analogs++;
   }
 #else
-  fprintf (stderr, "Attemting to use National Instruments board, but not compiled in\n");
+  fprintf (stderr, "Attempting to use National Instruments board, but not compiled in\n");
   fprintf (stderr, "  (Define VRPN_USE_NATIONAL_INSTRUMENTS in vrpn_Configuration.h\n");
 #endif
 
@@ -2419,6 +2419,7 @@ int vrpn_Generic_Server_Object::setup_Joylin (char * & pch, char * line, FILE * 
     return -1;
   }
 
+#ifdef VRPN_USE_JOYLIN
   // Make sure there's room for a new joystick server
   if (num_analogs >= VRPN_GSO_MAX_ANALOG) {
     fprintf (stderr, "Too many analog devices in config file");
@@ -2437,6 +2438,10 @@ int vrpn_Generic_Server_Object::setup_Joylin (char * & pch, char * line, FILE * 
     num_analogs++;
   }
   return 0;
+#else
+    fprintf(stderr,"vrpn_Joylin support not compiled in\n");
+    return -1;
+#endif
 }
 
 //================================

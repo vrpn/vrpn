@@ -36,8 +36,8 @@ class VRPN_API vrpn_3DMicroscribe: public vrpn_Tracker
         int packtype;             ///< What kind of packet we are decoding
         int packlen;              ///< Expected packet length
         int escapedchar;          ///< We're processing an escaped char
-        int erroroccured;         ///< A device error has occured
-        int resetoccured;         ///< A reset event has occured
+        int erroroccured;         ///< A device error has occurred
+        int resetoccured;         ///< A reset event has occurred
 	struct timeval timestamp; ///< Time of the last report from the device
 
 	void ConvertOriToQuat(float ori[3]); //< directly put the values in the quat for message sending

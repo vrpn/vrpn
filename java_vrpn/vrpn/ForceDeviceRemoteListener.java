@@ -283,7 +283,7 @@ public class ForceDeviceRemoteListener
 		
 	/**
 	 * @return The last (most recent, latest) ForceChange received.  This function 
-	 * returns <code>null</code> if no updates have been recieved.  Note that
+	 * returns <code>null</code> if no updates have been received.  Note that
 	 * successive calls to getLastForceUpdate() may return the same ForceChange
 	 * if no updates were received in the interim.
 	 */
@@ -298,7 +298,7 @@ public class ForceDeviceRemoteListener
 	
 	/**
 	 * @return The last (most recent, latest) ForceError received.  This function 
-	 * returns <code>null</code> if no updates have been recieved.  Note that
+	 * returns <code>null</code> if no updates have been received.  Note that
 	 * successive calls to getLastErrorUpdate() may return the same ForceError
 	 * if no updates were received in the interim.
 	 */
@@ -313,7 +313,7 @@ public class ForceDeviceRemoteListener
 	
 	/**
 	 * @return The last (most recent, latest) SCPChange received.  This function 
-	 * returns <code>null</code> if no updates have been recieved.  Note that
+	 * returns <code>null</code> if no updates have been received.  Note that
 	 * successive calls to getLastSCPUpdate() may return the same SCPChange
 	 * if no updates were received in the interim.
 	 */

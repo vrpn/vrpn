@@ -137,7 +137,7 @@ void vrpn_Tracker_Flock::printError( unsigned char uchErrCode,
     fprintf(stderr,"...Numeric CPU Error - call factory");
     break;
   case 28:
-    fprintf(stderr,"...CRT Syncronization Error");
+    fprintf(stderr,"...CRT Synchronization Error");
     break;
   case 29:
     fprintf(stderr,"...Transmitter Not Active Error");
@@ -478,7 +478,7 @@ void vrpn_Tracker_Flock::reset()
        fprintf(stderr," (a receiver)");
      } else {
        fprintf(stderr," (a transmitter)");
-// now we allow non transmitters at fisrt adress !!!!
+// now we allow non transmitters at fisrt address !!!!
 //       if (i != 0) {
 //	   fprintf(stderr,"\nError: VRPN Flock driver can only accept transmitter as first unit\n");
 //	   status = vrpn_TRACKER_FAIL;

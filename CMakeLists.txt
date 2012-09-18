@@ -26,9 +26,9 @@ include(SetDefaultBuildType)
 include(OptionRequires)
 include(CTest)
 include(CreateDashboardScripts)
+include(CheckIncludeFileCXX)
 
-
-if(NOT CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
+if((NOT CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR) OR VRPN_SUBPROJECT_BUILD)
 	set(SUBPROJECT TRUE)
 	set(DEFAULT_OFF_IF_SUBPROJECT OFF_BY_DEFAULT)
 	set(TRUE_UNLESS_SUBPROJECT FALSE)
@@ -49,7 +49,7 @@ endif()
 # variable and never tells the poor user what happened (the GUI location
 # looks standard but the files end up somewhere else).  If we make it a
 # non-forced cache variable, it already has a value so does not change.
-# If we make it a forced cache variable, it gets overwritten everytime
+# If we make it a forced cache variable, it gets overwritten every time
 # and the user cannot change it on the GUI.  So we have a workaround here.
 # We make a cache variable that records whether we have ever forced the
 # install prefix.  If not, we force it.  If so, we don't force it again.
@@ -252,7 +252,7 @@ endif()
 
 # Setting up the local HIDAPI was handled above, in the submodules directory
 if(NOT VRPN_USE_LOCAL_HIDAPI)
-	find_package(HIDAPI)	
+	find_package(HIDAPI)
 endif()
 
 # HID requires either local or system-installed HIDAPI
@@ -425,7 +425,7 @@ endif()
 if(UNIX)
 	find_package(GPM)
 	option_requires(VRPN_USE_GPM_MOUSE
-		"Build with GPM Linux mouse interface support"
+		"Build with GPM Linux mouse interface support (makes servers GPL)"
 		${DEFAULT_OFF_IF_SUBPROJECT}
 		GPM_FOUND)
 endif()
@@ -479,6 +479,28 @@ if(WIN32 OR CYGWIN)
 		set(VRPN_ADRIENNE_INCLUDE_FILENAME "${ADRIENNE_INCLUDE_FILENAME}")
 		set(VRPN_ADRIENNE_INCLUDE_HAS_EXTERN_C ${ADRIENNE_INCLUDE_HAS_EXTERN_C})
 	endif()
+endif()
+
+###
+# Linux kernel joystick interface
+###
+if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+	check_include_file_cxx(linux/joystick.h HAVE_LINUX_JOYSTICK_H)
+	option_requires(VRPN_USE_JOYLIN
+		"Build with support for Linux kernel joystick interface (Uses kernel header - may make servers GPL)"
+		${DEFAULT_OFF_IF_SUBPROJECT}
+		HAVE_LINUX_JOYSTICK_H)
+endif()
+
+###
+# /dev/input kernel joystick interface
+###
+if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+	check_include_file_cxx(linux/input.h HAVE_LINUX_INPUT_H)
+	option(VRPN_USE_DEV_INPUT
+		"Build with flags to enable the use of DevInput. (Uses kernel header - may make servers GPL)"
+		${DEFAULT_OFF_IF_SUBPROJECT}
+		HAVE_LINUX_INPUT_H)
 endif()
 
 ###
@@ -552,16 +574,6 @@ elseif(UNIX)
 		OFF)
 endif()
 
-if (UNIX AND NOT APPLE)
-	option(VRPN_USE_DEV_INPUT
-		"Build with flags to enable the use of DevInput."
-		ON)
-else()
-	option(VRPN_USE_DEV_INPUT
-		"Build with flags to enable the use of DevInput."
-		OFF)
-endif()
-
 option(VRPN_USE_PDI
 	"Build with flags to enable the use of Polhemus DVI library."
 	OFF)
@@ -610,6 +622,7 @@ set(VRPN_CLIENT_SOURCES
 	vrpn_Poser.C
 	vrpn_RedundantTransmission.C
 	vrpn_Serial.C
+	vrpn_SerialPort.C
 	vrpn_Shared.C
 	vrpn_SharedObject.C
 	vrpn_Sound.C
@@ -639,6 +652,7 @@ set(VRPN_CLIENT_PUBLIC_HEADERS
 	vrpn_Mutex.h
 	vrpn_SendTextMessageStreamProxy.h
 	vrpn_Serial.h
+	vrpn_SerialPort.h
 	vrpn_Shared.h
 	vrpn_SharedObject.h
 	vrpn_Sound.h
@@ -676,6 +690,7 @@ set(VRPN_SERVER_SOURCES
 	vrpn_FunctionGenerator.C
 	vrpn_GlobalHapticsOrb.C
 	vrpn_HumanInterface.C
+	vrpn_IDEA.C
 	vrpn_Imager_Stream_Buffer.C
 	vrpn_ImmersionBox.C
 	vrpn_inertiamouse.C
@@ -707,7 +722,6 @@ set(VRPN_SERVER_SOURCES
 	vrpn_Tracker_Isotrak.C
 	vrpn_Tracker_JsonNet.C
 	vrpn_Tracker_Liberty.C
-	vrpn_Tracker_PDI.C
 	vrpn_Tracker_MotionNode.C
 	vrpn_Tracker_NDI_Polaris.C
 	vrpn_Tracker_NovintFalcon.C
@@ -726,7 +740,6 @@ set(VRPN_SERVER_SOURCES
 	vrpn_Xkeys.C
 	vrpn_Tracker_LibertyHS.C
 	vrpn_Zaber.C
-	vrpn_IDEA.C
 	server_src/vrpn_Generic_server_object.C
 	${HIDAPI_SOURCES})
 
@@ -761,6 +774,7 @@ set(VRPN_SERVER_PUBLIC_HEADERS
 	vrpn_GlobalHapticsOrb.h
 	vrpn_HashST.h
 	vrpn_HumanInterface.h
+	vrpn_IDEA.h
 	vrpn_Imager_Stream_Buffer.h
 	vrpn_ImmersionBox.h
 	vrpn_inertiamouse.h
@@ -795,7 +809,6 @@ set(VRPN_SERVER_PUBLIC_HEADERS
 	vrpn_Tracker_Isotrak.h
 	vrpn_Tracker_JsonNet.h
 	vrpn_Tracker_Liberty.h
-	vrpn_Tracker_PDI.h
 	vrpn_Tracker_MotionNode.h
 	vrpn_Tracker_NDI_Polaris.h
 	vrpn_Tracker_NovintFalcon.h
@@ -814,7 +827,6 @@ set(VRPN_SERVER_PUBLIC_HEADERS
 	vrpn_Xkeys.h
 	vrpn_Tracker_LibertyHS.h
 	vrpn_Zaber.h
-	vrpn_IDEA.h
 	server_src/vrpn_Generic_server_object.h)
 
 if(VRPN_BUILD_SERVER_LIBRARY)
@@ -957,8 +969,18 @@ endif()
 # Do a little check for GPL and GPL-incompatible libraries
 
 # What flags cause us to link against GPL libraries?
+
+# TODO: Figure out about the kernel headers we use.
+# Conflicting stories:
+# ML post by Linus: https://lkml.org/lkml/2003/12/5/13
+# Interview of Linus: http://www.itworld.com/open-source/140916/android-sued-microsoft-not-linux
+
 set(ALL_GPL_SERVER_FLAGS
-		VRPN_USE_WIIUSE)
+	#VRPN_USE_DEV_INPUT # Kernel header: GPL2
+	#VRPN_USE_JOYLIN # Kernel header: GPL2
+	VRPN_USE_GPM_MOUSE # GPL2+
+	VRPN_USE_WIIUSE # GPL3
+)
 
 set(GPL_SERVER_FLAGS)
 foreach(POSSIBLE_GPL_FLAG ${ALL_GPL_SERVER_FLAGS})
@@ -969,7 +991,8 @@ endforeach()
 
 # What flags cause us to link against GPL-incompatible libraries?
 set(ALL_GPLINCOMPAT_SERVER_FLAGS
-		VRPN_USE_PHANTOM_SERVER)
+	VRPN_INCLUDE_TIMECODE_SERVER
+	VRPN_USE_PHANTOM_SERVER)
 
 set(GPLINCOMPAT_SERVER_FLAGS)
 foreach(POSSIBLE_GPLINCOMPAT_FLAG ${ALL_GPLINCOMPAT_SERVER_FLAGS})

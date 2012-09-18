@@ -1457,7 +1457,7 @@ VOID vrpn_Tracker_FastrakPDI::ParseFastrakFrame( PBYTE pBuf, DWORD dwSize, timev
 		// Catch command response frames sent when tracker is in continuous mode
 		// and don't parse them but do provide output to the server screen
 		if (ucInitCommand != '0'){
-			printf("FastrakPDI: recieved record type %x while in continuous mode, record error byte was %x \r\n", ucInitCommand, ucErrorNum);
+			printf("FastrakPDI: received record type %x while in continuous mode, record error byte was %x \r\n", ucInitCommand, ucErrorNum);
 		}
 		else{
 			PFLOAT pPno = (PFLOAT)(&pBuf[dw]); // Position and Orientation data
@@ -2011,7 +2011,7 @@ VOID vrpn_Tracker_LibertyPDI::ParseLibertyFrame( PBYTE pBuf, DWORD dwSize, timev
 		// Catch command response frames sent when tracker is in continuous mode
 		// and don't parse them but do provide output to the server screen
 		if (ucInitCommand != 'C' && ucInitCommand != 'P'){
-			printf("LibertyPDI: recieved command %x while in continuous mode, tracker response was %x \r\n", ucInitCommand, ucErrorNum);
+			printf("LibertyPDI: received command %x while in continuous mode, tracker response was %x \r\n", ucInitCommand, ucErrorNum);
 		}
 		else{
 			PFLOAT pPno = (PFLOAT)(&pBuf[dw]); // Position and Orientation data

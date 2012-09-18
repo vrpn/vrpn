@@ -97,7 +97,7 @@ protected:
       return false;
     };
 
-    // NOTE: ghost dosen't take normals, 
+    // NOTE: ghost doesn't take normals, 
     //       and normals still aren't implemented for Hcollide
     virtual bool setNormal(vrpn_int32 objNum, vrpn_int32 normNum,vrpn_float32 x,vrpn_float32 y,vrpn_float32 z) {
       struct timeval now;

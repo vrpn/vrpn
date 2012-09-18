@@ -548,7 +548,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdL
 
 				
 				if (InitSoundServerWindow(hInstance) != true) 
-					fprintf(stderr, "Didnt open window!\n"); 
+					fprintf(stderr, "Didn't open window!\n"); 
 				
 				soundServer = NULL;
 				soundServer = new vrpn_Sound_Server_Miles(s2, connection);

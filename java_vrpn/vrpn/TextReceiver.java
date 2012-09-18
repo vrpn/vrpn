@@ -93,7 +93,7 @@ public class TextReceiver extends VRPNDevice implements Runnable
 	
 
 	/**
-	 * Initialize the native text reciever object
+	 * Initialize the native text receiver object
 	 * @param name The name of the text sender and host (e.g., <code>"Messages0@myhost.edu"</code>).
 	 * @return <code>true</code> if the tracker was connected successfully, 
 	 *			<code>false</code> otherwise.

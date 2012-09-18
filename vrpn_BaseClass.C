@@ -269,7 +269,7 @@ vrpn_BaseClass::~vrpn_BaseClass()
 
 int vrpn_BaseClass::init(void)
 {
-    // In the case of multiple inheritence from this base class, the rest of
+    // In the case of multiple inheritance from this base class, the rest of
     //  the code in this function will be executed each time init is called.
 
     // If we have established a connection, then register the sender and types
@@ -352,7 +352,7 @@ d_flatline(0)
     // Initialize variables
     d_time_first_ping.tv_sec = d_time_first_ping.tv_usec = 0;
 
-    shutup = false;	// don't surpress the "No response from server" messages
+    shutup = false;	// don't suppress the "No response from server" messages
 }
 
 /** Unregister all of the message handlers that were to be autodeleted.
@@ -588,7 +588,7 @@ void vrpn_BaseClassUnique::initiate_ping_cycle(void)
     d_time_last_warned.tv_sec = d_time_last_warned.tv_usec = 0;
 }
 
-/** Store the time at which the last pong occured.  Used by client_mainloop() to keep
+/** Store the time at which the last pong occurred.  Used by client_mainloop() to keep
     track of how long it has been since we got one.  The callback for this handler is registered
     in client_mainloop() the first time through.
 */

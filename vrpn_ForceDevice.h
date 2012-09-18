@@ -425,7 +425,7 @@ public:
 	/** functions for a single object **********************************************************/
     // vertNum normNum and triNum start at 0
     void setVertex(vrpn_int32 vertNum,vrpn_float32 x,vrpn_float32 y,vrpn_float32 z);
-    // NOTE: ghost dosen't take normals, 
+    // NOTE: ghost doesn't take normals, 
     //       and normals still aren't implemented for Hcollide
     void setNormal(vrpn_int32 normNum,vrpn_float32 x,vrpn_float32 y,vrpn_float32 z);
     void setTriangle(vrpn_int32 triNum,vrpn_int32 vert0,vrpn_int32 vert1,vrpn_int32 vert2,
@@ -445,7 +445,7 @@ public:
 	void addObjectExScene(vrpn_int32 objNum); 
 	// vertNum normNum and triNum start at 0
 	void setObjectVertex(vrpn_int32 objNum, vrpn_int32 vertNum,vrpn_float32 x,vrpn_float32 y,vrpn_float32 z);
-    // NOTE: ghost dosen't take normals, 
+    // NOTE: ghost doesn't take normals, 
     //       and normals still aren't implemented for Hcollide
     void setObjectNormal(vrpn_int32 objNum, vrpn_int32 normNum,vrpn_float32 x,vrpn_float32 y,vrpn_float32 z);
     void setObjectTriangle(vrpn_int32 objNum, vrpn_int32 triNum,vrpn_int32 vert0,vrpn_int32 vert1,vrpn_int32 vert2,

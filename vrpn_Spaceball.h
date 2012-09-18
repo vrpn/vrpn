@@ -26,8 +26,8 @@ class VRPN_API vrpn_Spaceball: public vrpn_Serial_Analog
         int packtype;             ///< What kind of packet we are decoding
         int packlen;              ///< Expected packet length
         int escapedchar;          ///< We're processing an escaped char
-        int erroroccured;         ///< A device error has occured
-        int resetoccured;         ///< A reset event has occured
+        int erroroccured;         ///< A device error has occurred
+        int resetoccured;         ///< A reset event has occurred
         int spaceball4000;        ///< We found a Spaceball 4000
         int leftymode4000;        ///< Spaceball 4000 is in lefty mode
 	int null_radius;          ///< range where no motion should be reported

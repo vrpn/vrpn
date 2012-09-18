@@ -108,7 +108,7 @@ public:
     virtual ~vrpn_Analog_Output_Callback_Server(void);
 
     // (un)Register a callback handler to handle analog value change.
-    // These will be called whenver EITHER type of change message is
+    // These will be called whenever EITHER type of change message is
     // received, either a single channel or multiple channels.  This is
     // useful for applications that "have a" server, rather than derive
     // from the server.

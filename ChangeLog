@@ -2447,7 +2447,7 @@
 	* vrpn_Zaber.C : Same.
 	* vrpn_nikon_controls.C : Same.
 	* vrpn_FileConnection.C : Same.  Also, modified some calls to
-		advance_currentLogEntry() so that they were funtion
+		advance_currentLogEntry() so that they were function
 		calls so that the code would compile.  Not sure how
 		they compiled before...
 
@@ -3085,7 +3085,7 @@
 
 2002-09-26  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
-	* vrpn_Magellan.h : Added 'altreset' paramter to constructor.
+	* vrpn_Magellan.h : Added 'altreset' parameter to constructor.
 	* vrpn_Magellan.C : Alternate reset command for older Magellans added.
 
 2002-09-26  Russell M. Taylor II  <taylorr@cs.unc.edu>
@@ -3247,7 +3247,7 @@
         is basically the inverse of a Tracker.  It takes pose requests for
         a device and will (eventually) drive the device to the given pose.
         Right now, we can give pose and velocity requests on the client 
-        side and recieve them on the server side.  Just performing this 
+        side and receive them on the server side.  Just performing this 
         commit for some testing purposes.
 
 2002-07-19  Russell M. Taylor II  <taylorr@cs.unc.edu>
@@ -4052,7 +4052,7 @@
 2000-10-04  Sang-Uok Kum  <kumsu@cs.unc.edu>
 
 	* vrpn_Button.C : Include files and #ifdefs changed so in cygwin v1.1
-	it always uses unix sockets instead of window sockets. (The vrpn libary
+	it always uses unix sockets instead of window sockets. (The vrpn library
 	compiled but gave run time errors.) This was only tested for vrpn 
 	client.
 	* vrpn_Clock.C : same

@@ -1,4 +1,4 @@
-JSONCPP is requred to build a VRPN server for the Vrpn Android widgets (see  android_widgets directory).
+JSONCPP is required to build a VRPN server for the Vrpn Android widgets (see  android_widgets directory).
 
 Get the latest JSONCPP (r156 has been used successfully) from 
 	http://jsoncpp.svn.sourceforge.net/svnroot/jsoncpp/trunk/jsoncpp

@@ -324,7 +324,7 @@
 2007-07-20  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Generic_server_object.C : Adds the ability to create an
-		auxilliary log file connection to the same or a different
+		auxiliary log file connection to the same or a different
 		host.
 	* vrpn_Generic_server_object.h : Same.
 	* vrpn.cfg : Same.

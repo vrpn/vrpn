@@ -1865,7 +1865,7 @@ void vrpn_ForceDevice_Remote::setObjectVertex(vrpn_int32 objNum, vrpn_int32 vert
   }
 }
 
-// NOTE: ghost dosen't take normals, 
+// NOTE: ghost doesn't take normals, 
 //       and normals still aren't implemented for Hcollide
 void vrpn_ForceDevice_Remote::setObjectNormal(vrpn_int32 objNum, vrpn_int32 normNum,vrpn_float32 x,vrpn_float32 y,vrpn_float32 z)
 {
