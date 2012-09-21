@@ -286,7 +286,7 @@ bool vrpn_Tracker_RazerHydra::reconnect() {
 	}
 
 	vrpn_HidInterface::reconnect();
-	_ctrl->reconnect();
+	return _ctrl->reconnect();
 }
 
 void vrpn_Tracker_RazerHydra::_waiting_for_connect() {
