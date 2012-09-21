@@ -96,9 +96,10 @@ class VRPN_API vrpn_Tracker_RazerHydra: public vrpn_Analog, public vrpn_Button_F
 		~vrpn_Tracker_RazerHydra();
 
 		virtual void mainloop();
-		virtual void reconnect();
 
 		virtual void on_data_received(size_t bytes, vrpn_uint8 *buffer);
+
+		virtual bool reconnect();
 
 	private:
 		enum HydraStatus {

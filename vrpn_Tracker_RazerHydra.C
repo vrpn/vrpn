@@ -89,11 +89,20 @@ static inline double duration_seconds(struct timeval t1, struct timeval t2) {
 	return duration(t1, t2) / double(1000000L);
 }
 
-class vrpn_Tracker_RazerHydra::ControlInterface : vrpn_HidInterface {
+class vrpn_Tracker_RazerHydra::ControlInterface : public vrpn_HidInterface {
 	public:
 		ControlInterface()
+#ifdef __APPLE__
+	// XXX The Interface is not supported on the mac version -- it
+	// is always returned as -1.  So we need to do this based on which
+	// device shows up first and hope that it is always the same order.
+	// On my mac, the control interface shows up first on iHid, so we
+	// try this order.
+			: vrpn_HidInterface(new vrpn_HidNthMatchAcceptor(0, 
+#else
 			: vrpn_HidInterface(new vrpn_HidBooleanAndAcceptor(
 			                        new vrpn_HidInterfaceNumberAcceptor(HYDRA_CONTROL_INTERFACE),
+#endif
 			                        new vrpn_HidProductAcceptor(HYDRA_VENDOR, HYDRA_PRODUCT)))
 		{}
 
@@ -134,10 +143,6 @@ class vrpn_Tracker_RazerHydra::ControlInterface : vrpn_HidInterface {
 			return vrpn_HidInterface::connected();
 		}
 
-		void reconnect() {
-			return vrpn_HidInterface::reconnect();
-		}
-
 		void update() {
 			vrpn_HidInterface::update();
 		}
@@ -163,8 +168,17 @@ vrpn_Tracker_RazerHydra::vrpn_Tracker_RazerHydra(const char * name, vrpn_Connect
 	: vrpn_Analog(name, con)
 	, vrpn_Button_Filter(name, con)
 	, vrpn_Tracker(name, con)
+#ifdef __APPLE__
+	// XXX The Interface is not supported on the mac version -- it
+	// is always returned as -1.  So we need to do this based on which
+	// device shows up first and hope that it is always the same order.
+	// On my mac, the standard interface shows up second on iHid, so we
+	// try this order.
+	, vrpn_HidInterface(new vrpn_HidNthMatchAcceptor(1, 
+#else
 	, vrpn_HidInterface(new vrpn_HidBooleanAndAcceptor(
 	                        new vrpn_HidInterfaceNumberAcceptor(HYDRA_INTERFACE),
+#endif
 	                        new vrpn_HidProductAcceptor(HYDRA_VENDOR, HYDRA_PRODUCT)))
 	, status(HYDRA_WAITING_FOR_CONNECT)
 	, _wasInGamepadMode(false) /// assume not - if we have to send a command, then set to true
@@ -262,7 +276,7 @@ void vrpn_Tracker_RazerHydra::mainloop() {
 	}
 }
 
-void vrpn_Tracker_RazerHydra::reconnect() {
+bool vrpn_Tracker_RazerHydra::reconnect() {
 	status = HYDRA_WAITING_FOR_CONNECT;
 
 	// Reset calibration if we have to reconnect.

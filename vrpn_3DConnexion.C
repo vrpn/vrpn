@@ -106,11 +106,6 @@ vrpn_3DConnexion::~vrpn_3DConnexion()
 }
 
 #if defined(VRPN_USE_HID)
-void vrpn_3DConnexion::reconnect()
-{
-	vrpn_HidInterface::reconnect();
-}
-
 void vrpn_3DConnexion::on_data_received(size_t bytes, vrpn_uint8 *buffer)
 {
   decodePacket(bytes, buffer);

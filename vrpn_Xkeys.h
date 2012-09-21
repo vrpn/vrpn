@@ -33,8 +33,6 @@ public:
 
   virtual void mainloop() = 0;
 
-  virtual void reconnect();
-
 protected:
   // Set up message handlers, etc.
   void init_hid();

@@ -81,7 +81,7 @@ public:
 
 	/// Tries to reconnect to an acceptable device.
 	/// Call this if you suspect a hotplug event has occurred.
-	virtual void reconnect();
+	virtual bool reconnect();
 
 	/// Returns USB vendor ID of connected device
 	vrpn_uint16 vendor() const;

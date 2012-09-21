@@ -30,11 +30,6 @@ vrpn_Xkeys::~vrpn_Xkeys()
 	delete _filter;
 }
 
-void vrpn_Xkeys::reconnect()
-{
-	vrpn_HidInterface::reconnect();
-}
-
 void vrpn_Xkeys::init_hid() {
 	// Get notifications when clients connect and disconnect
 	register_autodeleted_handler(d_connection->register_message_type(vrpn_dropped_last_connection), on_last_disconnect, this);
