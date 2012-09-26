@@ -524,8 +524,8 @@ endif()
 # to the source code
 configure_file("${PROJECT_SOURCE_DIR}/vrpn_Configure.h.cmake_in"
 	"${PROJECT_BINARY_DIR}/vrpn_Configure.h")
-
-add_definitions(-DVRPN_USING_CMAKE)
+file(RELATIVE_PATH VRPN_PATH_TO_CMAKE_CONFIG "${CMAKE_CURRENT_SOURCE_DIR}" "${PROJECT_BINARY_DIR}/vrpn_Configure.h")
+add_definitions("-DVRPN_USING_CMAKE=\"${VRPN_PATH_TO_CMAKE_CONFIG}\"")
 
 # Configuration options controlling what gets included in the build.
 # These are the default options - if a library is detected above it will
