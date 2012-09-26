@@ -197,9 +197,14 @@ add_subdirectory(submodules)
 find_package(SWIG)
 find_package(PythonLibs)
 option_requires(VRPN_BUILD_PYTHON
-	"Build VRPN Python bindings"
+	"Build VRPN Python SWIG-based bindings"
 	${DEFAULT_OFF_IF_SUBPROJECT}
 	SWIG_FOUND
+	PYTHONLIBS_FOUND)
+
+option_requires(VRPN_BUILD_PYTHON_HANDCODED
+	"Build VRPN Python handcoded bindings"
+	${DEFAULT_OFF_IF_SUBPROJECT}
 	PYTHONLIBS_FOUND)
 
 ###
@@ -941,6 +946,7 @@ endif()
 #-----------------------------------------------------------------------------
 # Python wrappers
 add_subdirectory(python_vrpn)
+add_subdirectory(python)
 
 #-----------------------------------------------------------------------------
 # Java wrappers
