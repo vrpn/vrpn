@@ -12,7 +12,8 @@ if(PYTHONLIBS_FOUND AND VRPN_BUILD_PYTHON_HANDCODED)
 	else()
 		add_definitions(-DCALLBACK_CALL=)
 	endif()
-	add_library(vrpn-python MODULE Base.cpp
+	python_add_module(vrpn-python
+		Base.cpp
 		Connection.cpp
 		Device.cpp
 		callback.cpp
@@ -48,12 +49,8 @@ if(PYTHONLIBS_FOUND AND VRPN_BUILD_PYTHON_HANDCODED)
 	set_target_properties(vrpn-python
 		PROPERTIES
 		FOLDER "Python Bindings"
-		OUTPUT_NAME vrpn
-		PREFIX "")
+		OUTPUT_NAME vrpn)
 	if(WIN32)
-		set_target_properties(vrpn-python
-			PROPERTIES
-			SUFFIX .pyd)
 		install(TARGETS vrpn-python
 			RUNTIME DESTINATION lib/${PYTHONVERSIONDIR}dist-packages/ COMPONENT python
 			LIBRARY DESTINATION lib/${PYTHONVERSIONDIR}dist-packages/ COMPONENT python)
