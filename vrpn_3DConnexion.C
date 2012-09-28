@@ -28,7 +28,8 @@ typedef struct input_devinfo {
 // USB vendor and product IDs for the models we support
 static const vrpn_uint16 vrpn_3DCONNEXION_VENDOR = 0x046d; //1133;
 static const vrpn_uint16 vrpn_3DCONNEXION_TRAVELER = 50723;
-static const vrpn_uint16 vrpn_3DCONNEXION_NAVIGATOR = 0xc628; //50726;
+static const vrpn_uint16 vrpn_3DCONNEXION_NAVIGATOR = 50726;
+static const vrpn_uint16 vrpn_3DCONNEXION_NAVIGATOR_FOR_NOTEBOOKS = 0xc628;	// 50728;
 static const vrpn_uint16 vrpn_3DCONNEXION_SPACEEXPLORER = 0xc627;   // 50727
 static const vrpn_uint16 vrpn_3DCONNEXION_SPACEMOUSE = 50691;
 static const vrpn_uint16 vrpn_3DCONNEXION_SPACEBALL5000 = 0xc621;   // 50721;
@@ -305,6 +306,11 @@ void vrpn_3DConnexion::decodePacket(size_t bytes, vrpn_uint8 *buffer)
 
 vrpn_3DConnexion_Navigator::vrpn_3DConnexion_Navigator(const char *name, vrpn_Connection *c)
   : vrpn_3DConnexion(_filter = new vrpn_HidProductAcceptor(vrpn_3DCONNEXION_VENDOR, vrpn_3DCONNEXION_NAVIGATOR), 2, name, c)
+{
+}
+
+vrpn_3DConnexion_Navigator_for_Notebooks::vrpn_3DConnexion_Navigator_for_Notebooks(const char *name, vrpn_Connection *c)
+  : vrpn_3DConnexion(_filter = new vrpn_HidProductAcceptor(vrpn_3DCONNEXION_VENDOR, vrpn_3DCONNEXION_NAVIGATOR_FOR_NOTEBOOKS), 2, name, c)
 {
 }
 
