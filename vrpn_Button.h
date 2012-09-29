@@ -52,12 +52,15 @@ class VRPN_API vrpn_Button : public vrpn_BaseClass {
 	vrpn_int32	num_buttons;
 	struct timeval	timestamp;
 	vrpn_int32 change_message_id;	// ID of change button message to connection
+	vrpn_int32 states_message_id;	// ID of button-states message to connection
 	vrpn_int32 admin_message_id;	// ID of admin button message to connection
 
 	virtual int register_types (void);
 	virtual void report_changes (void);
+        virtual void report_states (void);  // Calls Button or Button_Filter encode
 	virtual vrpn_int32 encode_to(char *buf, vrpn_int32 button,
 				     vrpn_int32 state);
+	virtual vrpn_int32 encode_states_to(char *buf);
 };
 
 /** All button servers should derive from this class, which provides
@@ -78,7 +81,12 @@ class VRPN_API vrpn_Button_Filter:public vrpn_Button {
 	int send_alerts;
 	vrpn_Button_Filter(const char *,vrpn_Connection *c=NULL);
 	vrpn_int32 alert_message_id;   //used to send back to alert button box for lights
-	void report_changes(void);
+	virtual vrpn_int32 encode_states_to(char *buf);
+	virtual void report_changes(void);
+
+        // This method makes sure we send a states message whenever we get a ping from
+        // a client object or a new connection.
+        static  int VRPN_CALLBACK handle_ping_message(void *userdata, vrpn_HANDLERPARAM p);
 };
 
 #ifndef VRPN_CLIENT_ONLY
@@ -209,7 +217,7 @@ protected:
 
 // User routine to handle a change in button state.  This is called when
 // the button callback is called (when a message from its counterpart
-// across the connection arrives). The pinch glove has 5 different state of on
+// across the connection arrives). The pinch glove has 5 different states of on
 // since it knows which fingers are touching.  This pinch glove behavior is
 // non-standard and will be removed in a future version.  Button states should
 // be considered like booleans.
@@ -223,6 +231,19 @@ typedef	struct _vrpn_BUTTONCB {
 } vrpn_BUTTONCB;
 typedef void (VRPN_CALLBACK *vrpn_BUTTONCHANGEHANDLER)(void *userdata,
 					 const vrpn_BUTTONCB info);
+
+// This is a new button callback type that was added in VRPN 7.31.  It
+// tells the current state of all of the buttons on the device.  It is
+// called whenever a button server receives a new connection request.  It
+// is intended to deal with the issue of not knowing what state toggled
+// buttons are in when a client connects.
+typedef	struct _vrpn_BUTTONSTATECB {
+	struct timeval	msg_time;	// Timestamp of analog data
+	vrpn_int32	num_buttons;    // how many buttons
+	vrpn_int32	states[vrpn_BUTTON_MAX_BUTTONS];  // button state values
+} vrpn_BUTTONSTATESCB;
+typedef void (VRPN_CALLBACK *vrpn_BUTTONSTATESHANDLER) (void * userdata,
+					  const vrpn_BUTTONSTATESCB info);
 
 // Open a button that is on the other end of a connection
 // and handle updates from it.  This is the type of button that user code will
@@ -249,9 +270,22 @@ class VRPN_API vrpn_Button_Remote: public vrpn_Button {
 	  return d_callback_list.unregister_handler(userdata, handler);
 	}
 
+	// (un)Register a callback handler to handle buttons states reports
+	virtual int register_states_handler(void *userdata,
+			vrpn_BUTTONSTATESHANDLER handler) {
+	  return d_states_callback_list.register_handler(userdata, handler);
+	};
+	virtual int unregister_states_handler(void *userdata,
+			vrpn_BUTTONSTATESHANDLER handler) {
+	  return d_states_callback_list.unregister_handler(userdata, handler);
+	}
+
   protected:
 	vrpn_Callback_List<vrpn_BUTTONCB> d_callback_list;
 	static int VRPN_CALLBACK handle_change_message(void *userdata, vrpn_HANDLERPARAM p);
+
+	vrpn_Callback_List<vrpn_BUTTONSTATESCB> d_states_callback_list;
+	static int VRPN_CALLBACK handle_states_message(void *userdata, vrpn_HANDLERPARAM p);
 };
 
 #define	VRPN_BUTTON_H

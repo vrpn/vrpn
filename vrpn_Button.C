@@ -111,6 +111,9 @@ int vrpn_Button::register_types(void)
       //used to handle button strikes
       change_message_id = d_connection->register_message_type("vrpn_Button Change");
       
+      //used to handle button states reports
+      states_message_id = d_connection->register_message_type("vrpn_Button States");
+      
       //to handle button state changes -- see Buton_Filter should register a handler
       //for this ID -- ideally the message will be ignored otherwise
       admin_message_id = d_connection->register_message_type("vrpn_Button Admin");
@@ -140,12 +143,28 @@ vrpn_Button_Filter::vrpn_Button_Filter(const char *name, vrpn_Connection *c)
       send_alerts=0;	//used to turn on/off alerts -- send and admin message from
 			//remote to turn it on -- or server side call set_alerts();
 
+      // Set up callback handler for ping message from client so that it
+      // sends the button states.  This will make sure that the other side hears
+      // the initial button states.  Also set this up
+      // to fire on the "new connection" system message.
+
+      register_autodeleted_handler(d_ping_message_id, handle_ping_message, this, d_sender_id);
+      register_autodeleted_handler(d_connection->register_message_type(vrpn_got_connection), handle_ping_message, this, vrpn_ANY_SENDER);
+
       //set button default buttonstates
       for (vrpn_int32 i=0; i< vrpn_BUTTON_MAX_BUTTONS; i++) {
            buttonstate[i] = vrpn_BUTTON_MOMENTARY;
       }
       return;
 }
+
+int  vrpn_Button_Filter::handle_ping_message(void *userdata, vrpn_HANDLERPARAM)
+{
+  vrpn_Button_Filter  *me = (vrpn_Button_Filter*)userdata;
+  me->report_states();
+  return 0;
+}
+
 void vrpn_Button_Filter::set_alerts(vrpn_int32 i){
 	if(i==0 || i==1) send_alerts=i;
 	else fprintf(stderr,"Invalid send_alert state\n");
@@ -267,6 +286,50 @@ vrpn_int32 vrpn_Button::encode_to(char *buf,
 	return 1000 - buflen;
 }
 
+/** Encode a message describing the state of all buttons.
+    Assumes that there is enough room in the buffer to hold
+    the bytes from the message. Returns the number of bytes
+    sent.
+*/
+
+vrpn_int32 vrpn_Button::encode_states_to(char *buf)
+{
+  // Message includes: vrpn_int32 number_of_buttons, vrpn_int32 state
+  // Byte order of each needs to be reversed to match network standard
+  
+  vrpn_int32    int_btn = num_buttons;
+  int buflen = (vrpn_BUTTON_MAX_BUTTONS+1)*sizeof(vrpn_int32);
+  
+  vrpn_buffer(&buf, &buflen, int_btn);
+  for (int i=0; i < num_buttons; i++) {
+    vrpn_buffer(&buf, &buflen, buttons[i]);
+  }
+  
+  return (num_buttons+1)*sizeof(vrpn_int32);
+}
+
+/** Encode a message describing the state of all buttons.
+    Assumes that there is enough room in the buffer to hold
+    the bytes from the message. Returns the number of bytes
+    sent.
+*/
+
+vrpn_int32 vrpn_Button_Filter::encode_states_to(char *buf)
+{
+  // Message includes: vrpn_int32 number_of_buttons, vrpn_int32 state
+  // Byte order of each needs to be reversed to match network standard
+  
+  vrpn_int32    int_btn = num_buttons;
+  int buflen = (vrpn_BUTTON_MAX_BUTTONS+1)*sizeof(vrpn_int32);
+  
+  vrpn_buffer(&buf, &buflen, int_btn);
+  for (int i=0; i < num_buttons; i++) {
+    vrpn_buffer(&buf, &buflen, buttonstate[i]);
+  }
+  
+  return (num_buttons+1)*sizeof(vrpn_int32);
+}
+
 
 static int VRPN_CALLBACK client_msg_handler(void *userdata, vrpn_HANDLERPARAM p) {
   vrpn_Button_Filter * instance = (vrpn_Button_Filter *) userdata;
@@ -290,7 +353,7 @@ static int VRPN_CALLBACK client_msg_handler(void *userdata, vrpn_HANDLERPARAM p)
 }
 
 
-void vrpn_Button_Filter::report_changes (void){
+void vrpn_Button_Filter::report_changes (void) {
    vrpn_int32 i;
 
 //   vrpn_Button::report_changes();
@@ -341,6 +404,22 @@ void	vrpn_Button::report_changes(void)
    } else {
    	fprintf(stderr,"vrpn_Button: No valid connection\n");
    }
+}
+
+void	vrpn_Button::report_states(void)
+{
+    // msgbuf must be int32-aligned!
+    vrpn_int32 ibuf [vrpn_BUTTON_MAX_BUTTONS + 1];
+    char * msgbuf = (char *) ibuf;
+
+    vrpn_int32  len;
+
+    len = vrpn_Button::encode_states_to(msgbuf);
+    if (d_connection && d_connection->pack_message(len, timestamp,
+                                 states_message_id, d_sender_id, msgbuf,
+                                 vrpn_CONNECTION_RELIABLE)) {
+      fprintf(stderr,"vrpn_Button: cannot write states message: tossing\n");
+    }
 }
 
 
@@ -796,17 +875,22 @@ vrpn_Button_Remote::vrpn_Button_Remote(const char *name, vrpn_Connection *cn):
 	if (d_connection != NULL) {
 	  if (register_autodeleted_handler(change_message_id, handle_change_message,
 	    this, d_sender_id)) {
-		fprintf(stderr,"vrpn_Button_Remote: can't register handler\n");
+		fprintf(stderr,"vrpn_Button_Remote: can't register change handler\n");
+		d_connection = NULL;
+	  }
+	  if (register_autodeleted_handler(states_message_id, handle_states_message,
+	    this, d_sender_id)) {
+		fprintf(stderr,"vrpn_Button_Remote: can't register states handler\n");
 		d_connection = NULL;
 	  }
 	} else {
 		fprintf(stderr,"vrpn_Button_Remote: Can't get connection!\n");
 	}
 
-	// XXX These should be read from a description message that comes
-	// from the button device (as a response to a query?).  For now,
-	// we assume an SGI button box.
-	num_buttons = 32;
+	// Fill in all possible buttons with off.  The number of buttons
+        // will be overwritten when the states message comes in from the
+        // server.
+	num_buttons = vrpn_BUTTON_MAX_BUTTONS;
 	for (i = 0; i < num_buttons; i++) {
 		buttons[i] = lastbuttons[i] = 0;
 	}
@@ -850,6 +934,30 @@ int vrpn_Button_Remote::handle_change_message(void *userdata,
 
 	return 0;
 }
+
+int vrpn_Button_Remote::handle_states_message(void *userdata,
+	vrpn_HANDLERPARAM p)
+{
+    const char* bufptr = p.buffer;
+    vrpn_int32          numbuttons;	//< Number of buttons
+    vrpn_Button_Remote* me = (vrpn_Button_Remote* )userdata;
+    vrpn_BUTTONSTATESCB	cp;
+
+    cp.msg_time = p.msg_time;
+    vrpn_unbuffer(&bufptr, &numbuttons);
+    cp.num_buttons = numbuttons;
+    me->num_buttons = cp.num_buttons;
+    for (vrpn_int32 i=0; i< cp.num_buttons; i++) {
+      vrpn_unbuffer(&bufptr, &cp.states[i]);
+    }
+
+    // Go down the list of callbacks that have been registered.
+    // Fill in the parameter and call each.
+    me->d_states_callback_list.call_handlers(cp);
+
+    return 0;
+}
+
 
   // We use _inp (inport) to read the parallel port status register
   // since we haven't found a way to do it through the Win32 API.

@@ -147,6 +147,19 @@ void	VRPN_CALLBACK handle_button (void *userdata, const vrpn_BUTTONCB b)
 	name, b.button, b.state?"pressed":"released");
 }
 
+void	VRPN_CALLBACK handle_button_states (void *userdata, const vrpn_BUTTONSTATESCB b)
+{
+    const char *name = (const char *)userdata;
+
+    printf("Button %s has %d buttons with states:",
+	name, b.num_buttons);
+    int i;
+    for (i = 0; i < b.num_buttons; i++) {
+      printf(" %d", b.states[i]);
+    }
+    printf("\n");
+}
+
 void	VRPN_CALLBACK handle_analog (void *userdata, const vrpn_ANALOGCB a)
 {
     int i;
@@ -301,6 +314,7 @@ int main (int argc, char * argv [])
 	if (print_for_button) {
 	    printf(" Button");
 	    dev->btn->register_change_handler(dev->name, handle_button);
+	    dev->btn->register_states_handler(dev->name, handle_button_states);
 	}
 
 	if (print_for_analog) {
