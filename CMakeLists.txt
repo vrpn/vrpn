@@ -242,7 +242,7 @@ option_requires(VRPN_USE_LIBUSB_1_0
 
 if(VRPN_USE_LIBUSB_1_0)
 	include_directories(${LIBUSB1_INCLUDE_DIRS})
-	list(APPEND SERVER_EXTRA_LIBS ${LIBUSB1_LIBRARIES})
+	list(APPEND EXTRA_LIBS ${LIBUSB1_LIBRARIES})
 endif()
 
 
@@ -599,6 +599,24 @@ if(SUBPROJECT)
 	set(BUILD_TESTING FALSE)
 endif()
 
+if(APPLE)
+  if(NOT CMAKE_OSX_ARCHITECTURES OR CMAKE_OSX_ARCHITECTURES STREQUAL "")
+    if(_CMAKE_OSX_MACHINE MATCHES "ppc")
+      set(CMAKE_OSX_ARCHITECTURES "ppc;ppc64" CACHE
+        STRING "Build architectures for OS X" FORCE)
+    else()
+      set(CMAKE_OSX_ARCHITECTURES "i386;x86_64" CACHE
+        STRING "Build architectures for OS X" FORCE)
+    endif()
+  endif()
+  set(CMAKE_INCLUDE_SYSTEM_FLAG_C "-isystem ")
+  set(CMAKE_INCLUDE_SYSTEM_FLAG_CXX "-isystem ")
+  if (NOT CMAKE_INSTALL_NAME_DIR)
+    set(CMAKE_INSTALL_NAME_DIR "${CMAKE_INSTALL_PREFIX}/lib")
+  endif (NOT CMAKE_INSTALL_NAME_DIR)
+  message(STATUS
+    "Building ${CMAKE_PROJECT_NAME} for ${CMAKE_OSX_ARCHITECTURES}")
+endif(APPLE)
 
 #-----------------------------------------------------------------------------
 # Build the library itself and declare what bits need to be installed
@@ -870,6 +888,11 @@ if(VRPN_BUILD_SERVER_LIBRARY)
 		DESTINATION
 		include
 		COMPONENT serversdk)
+
+	if(VRPN_USE_LOCAL_HIDAPI)
+		install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/submodules/hidapi/hidapi/hidapi.h
+	  		DESTINATION include/submodules/hidapi/hidapi)
+	endif()
 
 	add_cppcheck(vrpnserver STYLE UNUSED_FUNCTIONS)
 endif()
