@@ -433,19 +433,19 @@ void vrpn_Tracker_RazerHydra::_report_for_sensor(int sensorNum, vrpn_uint8 * dat
 	q_normalize(d_quat, q_filtered);
 
 	/// "middle" button
-	buttons[0 + buttonOffset] = buttonBits & 0x20;
+	buttons[0 + buttonOffset] = (buttonBits & 0x20) != 0;
 
 	/// Numbered buttons
-	buttons[1 + buttonOffset] = buttonBits & 0x04;
-	buttons[2 + buttonOffset] = buttonBits & 0x08;
-	buttons[3 + buttonOffset] = buttonBits & 0x02;
-	buttons[4 + buttonOffset] = buttonBits & 0x10;
+	buttons[1 + buttonOffset] = (buttonBits & 0x04) != 0;
+	buttons[2 + buttonOffset] = (buttonBits & 0x08) != 0;
+	buttons[3 + buttonOffset] = (buttonBits & 0x02) != 0;
+	buttons[4 + buttonOffset] = (buttonBits & 0x10) != 0;
 
 	/// "Bumper" button
-	buttons[5 + buttonOffset] = buttonBits & 0x01;
+	buttons[5 + buttonOffset] = (buttonBits & 0x01) != 0;
 
 	/// Joystick button
-	buttons[6 + buttonOffset] = buttonBits & 0x40;
+	buttons[6 + buttonOffset] = (buttonBits & 0x40) != 0;
 
 	/// Joystick X, Y
 	channel[0 + channelOffset] = vrpn_unbuffer_from_little_endian<vrpn_int16>(data) * SCALE_INT16_TO_FLOAT_PLUSMINUS_1;
