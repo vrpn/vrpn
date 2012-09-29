@@ -52,10 +52,10 @@ vrpn_HidInterface::~vrpn_HidInterface()
 // Reconnects the device I/O for the first acceptable device
 // Called automatically by constructor, but userland code can
 // use it to reacquire a hotplugged device.
-void vrpn_HidInterface::reconnect() {
-
-        // Enumerate all devices and pass each one to the acceptor to see if it is the
-        // one that we want.
+bool vrpn_HidInterface::reconnect()
+{
+        // Enumerate all devices and pass each one to the acceptor to see if it
+        // is the one that we want.
         struct hid_device_info  *devs = hid_enumerate(0, 0);
         struct hid_device_info  *loop = devs;
         bool found = false;
@@ -69,7 +69,7 @@ void vrpn_HidInterface::reconnect() {
           device_info.manufacturer_string = loop->manufacturer_string;
           device_info.product_string = loop->product_string;
           device_info.interface_number = loop->interface_number;
-          //printf("XXX Found vendor %x, product %x\n", (unsigned)(loop->vendor_id), (unsigned)(loop->product_id));
+          //printf("XXX Found vendor %x, product %x, interface %d\n", (unsigned)(loop->vendor_id), (unsigned)(loop->product_id), (int)(loop->interface_number) );
 
           if (_acceptor->accept(device_info)) {
             _vendor = loop->vendor_id;
@@ -87,7 +87,7 @@ void vrpn_HidInterface::reconnect() {
         }
         if (!found) {
 		fprintf(stderr,"vrpn_HidInterface::reconnect(): Device not found\n");
-		return;
+		return false;
         }
 
 		// Initialize the HID interface and open the device.
@@ -97,7 +97,7 @@ void vrpn_HidInterface::reconnect() {
 #ifdef linux
 		fprintf(stderr,"   (Did you remember to run as root?)\n");
 #endif
-                return;
+                return false;
         }
 
 	// We cannot do this before the call to open because the serial number
@@ -111,13 +111,14 @@ void vrpn_HidInterface::reconnect() {
         // Set the device to non-blocking mode.
         if (hid_set_nonblocking(_device, 1) != 0) {
 		fprintf(stderr,"vrpn_HidInterface::reconnect(): Could not set device to nonblocking\n");
-                return;
+                return false;
         }
 
 #ifdef VRPN_HID_DEBUGGING
 	fprintf(stderr,"vrpn_HidInterface::reconnect(): Device successfully opened.\n");
 #endif
 	_working = true;
+	return _working;
 }
 
 // Check for incoming characters.  If we get some, pass them on to the handler code.

@@ -20,11 +20,6 @@ vrpn_DreamCheeky::~vrpn_DreamCheeky()
 	delete _filter;
 }
 
-void vrpn_DreamCheeky::reconnect()
-{
-	vrpn_HidInterface::reconnect();
-}
-
 void vrpn_DreamCheeky::on_data_received(size_t bytes, vrpn_uint8 *buffer)
 {
   decodePacket(bytes, buffer);

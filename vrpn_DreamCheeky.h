@@ -25,8 +25,6 @@ public:
 
   virtual void mainloop() = 0;
 
-  virtual void reconnect();
-
 protected:
   // Set up message handlers, etc.
   void on_data_received(size_t bytes, vrpn_uint8 *buffer);
