@@ -307,7 +307,10 @@ bool vrpn_LUDL_USBMAC6000::recenter(void)
   }
 
   // Send the command to record the value at the center of the X axis as
-  // 694576 ticks (XXX magic number from where?)
+  // 694576 ticks.  This magic number comes from the dividing by two the
+  // range on the UNC Monoptes system between the stops set to keep the
+  // objective from running into the walls of the plate.  XXX Replace this
+  // with a more meaningful constant, perhaps 0.
   if (!send_usbmac_command(1, 83, 5, 694576)) {
     REPORT_ERROR("vrpn_LUDL_USBMAC6000::recenter(): Could not send command 2");
     return false;
@@ -333,7 +336,10 @@ bool vrpn_LUDL_USBMAC6000::recenter(void)
   }
 
   // Send the command to record the value at the center of the Y axis as
-  // 1124201 ticks (XXX magic number from where?)
+  // 1124201 ticks.  This magic number comes from the dividing by two the
+  // range on the UNC Monoptes system between the stops set to keep the
+  // objective from running into the walls of the plate.  XXX Replace this
+  // with a more meaningful constant, perhaps 0.
   if (!send_usbmac_command(2, 83, 5, 1124201)) {
     REPORT_ERROR("vrpn_LUDL_USBMAC6000::recenter(): Could not send command 4");
     return false;
@@ -399,6 +405,15 @@ bool vrpn_LUDL_USBMAC6000::move_axis_to_position(int axis, int position)
     REPORT_ERROR("vrpn_LUDL_USBMAC6000::move_axis_to_position(): Could not send command");
     return false;
   }
+
+  // Wait until that axis starts to move.  If we don't do this, then
+  // sometimes we hear back that there are no axes moving even though
+  // we told them to.  Just waiting a while after we told them to move
+  // does not help; there is still a report saying that they are not moving.
+  // XXX What happens if the move is so fast we don't see it?  Then we
+  // will hang here.  When I tested with single-step moves, it does not
+  // hang up, so it seems to be safe.
+  while (!ludl_axis_moving(axis)) {};
 
   // Indicate that we're expecting this axis to be moving and where we think it is
   // going, so that when the axis becomes no longer busy we know that we have gotten
