@@ -398,6 +398,13 @@ bool vrpn_LUDL_USBMAC6000::move_axis_to_position(int axis, int position)
   if (!_device_handle) { return false; }
   if (!_axis_destination || !_axis_moving) { return false; }
 
+  // If we're already at the place we're being asked to move to,
+  // then we just go ahead and return.  Otherwise, the code below
+  // that waits for us to start moving hangs forever.
+  if (_axis_destination[axis-1] == position) {
+	return true;
+  }
+
   // Send the command to the device asking it to move.
   // command: 65 - MOTOR_ACTION
   // index:   0  - START_MOTOR_TARGET
