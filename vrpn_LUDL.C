@@ -400,7 +400,7 @@ bool vrpn_LUDL_USBMAC6000::move_axis_to_position(int axis, int position)
 
   // If we're already at the place we're being asked to move to,
   // then we just go ahead and return.  Otherwise, the code below
-  // that waits for us to start moving hangs forever.
+  // that waits for us to start moving hangs.
   if (_axis_destination[axis-1] == position) {
 	return true;
   }
@@ -417,10 +417,22 @@ bool vrpn_LUDL_USBMAC6000::move_axis_to_position(int axis, int position)
   // sometimes we hear back that there are no axes moving even though
   // we told them to.  Just waiting a while after we told them to move
   // does not help; there is still a report saying that they are not moving.
-  // XXX What happens if the move is so fast we don't see it?  Then we
-  // will hang here.  When I tested with single-step moves, it does not
-  // hang up, so it seems to be safe.
-  while (!ludl_axis_moving(axis)) {};
+  // If the stage is at its limits or if we asked it to go where it already
+  // is, then we'll wait forever here because it will not move.  So this
+  // needs to time out and not set the axis to moving if we never see
+  // it start to move.
+  struct timeval start, now;
+  vrpn_gettimeofday(&start, NULL);
+  while (!ludl_axis_moving(axis)) {
+	vrpn_gettimeofday(&now, NULL);
+	struct timeval diff = vrpn_TimevalDiff(now, start);
+	if (diff.tv_sec > 1) {
+	  // Say that we moved there, but don't say that the axis is
+	  // moving.
+	  _axis_destination[axis-1] = position;
+	  return true;
+	}
+  };
 
   // Indicate that we're expecting this axis to be moving and where we think it is
   // going, so that when the axis becomes no longer busy we know that we have gotten
