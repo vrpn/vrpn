@@ -799,7 +799,42 @@ int vrpn_Generic_Server_Object::setup_Joystick (char * & pch, char * line, FILE 
   return 0;
 }
 
-int vrpn_Generic_Server_Object::setup_DialExample (char * & pch, char * line, FILE * config_file)
+int vrpn_Generic_Server_Object::setup_Example_Button (char * & pch, char * line, FILE * config_file)
+{
+  char s2 [LINESIZE];
+  int i1;
+  float f1;
+
+  next();
+
+  // Get the arguments (class, device_name, number_of_buttone, toggle_rate)
+  if (sscanf (pch, "%511s%d%g%g", s2, &i1, &f1) != 3) {
+    fprintf (stderr, "Bad vrpn_Button_Example line: %s\n", line);
+    return -1;
+  }
+
+  // Make sure there's room for a new dial
+  if (num_buttons >= VRPN_GSO_MAX_BUTTONS) {
+    fprintf (stderr, "Too many buttons in config file");
+    return -1;
+  }
+
+  // Open the button
+  if (verbose) printf (
+      "Opening vrpn_Button_Example: %s with %d sensors, toggle rate %f\n",
+      s2, i1, f1);
+  if ( (buttons[num_buttons] =
+          new vrpn_Button_Example_Server (s2, connection, i1, f1)) == NULL) {
+    fprintf (stderr, "Can't create new vrpn_Button_Example\n");
+    return -1;
+  } else {
+    num_buttons++;
+  }
+
+  return 0;
+}
+
+int vrpn_Generic_Server_Object::setup_Example_Dial(char * & pch, char * line, FILE * config_file)
 {
   char s2 [LINESIZE];
   int i1;
@@ -4338,6 +4373,37 @@ int vrpn_Generic_Server_Object::setup_3DConnexion_Navigator (char * & pch, char 
   return 0;  // successful completion
 }
 
+int vrpn_Generic_Server_Object::setup_3DConnexion_Navigator_for_Notebooks (char * & pch, char * line, FILE * config_file)
+{
+  char s2 [LINESIZE];
+
+  next();
+  if (sscanf (pch, "%511s", s2) != 1) {
+    fprintf (stderr, "Bad 3DConnexion_Navigator_for_Notebooks line: %s\n", line);
+    return -1;
+  }
+
+  // Open the 3DConnexion_Navigator_for_Notebooks
+  // Make sure there's room for a new button
+  if (num_buttons >= VRPN_GSO_MAX_BUTTONS) {
+    fprintf (stderr, "vrpn_3DConnexion_Navigator_for_Notebooks: Too many buttons in config file");
+    return -1;
+  }
+
+  // Open the button
+  if (verbose) {
+    printf ("Opening vrpn_3DConnexion_Navigator_for_Notebooks %s\n", s2);
+  }
+  if ( (buttons[num_buttons] = new vrpn_3DConnexion_Navigator_for_Notebooks (s2, connection)) == NULL) {
+    fprintf (stderr, "Can't create new vrpn_3DConnexion_Navigator_for_Notebooks\n");
+    return -1;
+  } else {
+    num_buttons++;
+  }
+
+  return 0;  // successful completion
+}
+
 int vrpn_Generic_Server_Object::setup_3DConnexion_Traveler (char * & pch, char * line, FILE * config_file)
 {
   char s2 [LINESIZE];
@@ -5279,8 +5345,10 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object (vrpn_Connection *connect
         CHECK (setup_Joylin);
       } else if (isit ("vrpn_Joywin32")) {
         CHECK (setup_Joywin32);
+      } else if (isit ("vrpn_Button_Example")) {
+        CHECK (setup_Example_Button);
       } else if (isit ("vrpn_Dial_Example")) {
-        CHECK (setup_DialExample);
+        CHECK (setup_Example_Dial);
       } else if (isit ("vrpn_CerealBox")) {
         CHECK (setup_CerealBox);
       } else if (isit ("vrpn_Magellan")) {
@@ -5397,6 +5465,8 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object (vrpn_Connection *connect
         CHECK (setup_Xkeys_Jog_And_Shuttle);
       } else if (isit ("vrpn_3DConnexion_Navigator")) {
         CHECK (setup_3DConnexion_Navigator);
+      } else if (isit ("vrpn_3DConnexion_Navigator_for_Notebooks")) {
+        CHECK (setup_3DConnexion_Navigator_for_Notebooks);
       } else if (isit ("vrpn_3DConnexion_Traveler")) {
         CHECK (setup_3DConnexion_Traveler);
       } else if (isit ("vrpn_3DConnexion_SpaceExplorer")) {
