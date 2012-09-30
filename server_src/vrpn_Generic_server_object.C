@@ -808,7 +808,7 @@ int vrpn_Generic_Server_Object::setup_Example_Button (char * & pch, char * line,
   next();
 
   // Get the arguments (class, device_name, number_of_buttone, toggle_rate)
-  if (sscanf (pch, "%511s%d%g%g", s2, &i1, &f1) != 3) {
+  if (sscanf (pch, "%511s%d%g", s2, &i1, &f1) != 3) {
     fprintf (stderr, "Bad vrpn_Button_Example line: %s\n", line);
     return -1;
   }
