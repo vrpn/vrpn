@@ -301,6 +301,15 @@ bool vrpn_LUDL_USBMAC6000::recenter(void)
   libusb_handle_events_timeout(_context, &zerotime);
 
   flush_input_from_ludl();
+
+  // First we need to wait for the axis to start moving, then we need
+  // to wait for it to stop moving.  This is because sometimes the
+  // X axis (at least) claims to be not moving even though we just
+  // told it to and flushed the buffer
+  while(!ludl_axis_moving(1)) {
+    vrpn_SleepMsecs(10);
+    libusb_handle_events_timeout(_context, &zerotime);
+  }
   while(ludl_axis_moving(1)) {
     vrpn_SleepMsecs(10);
     libusb_handle_events_timeout(_context, &zerotime);
@@ -330,6 +339,15 @@ bool vrpn_LUDL_USBMAC6000::recenter(void)
   libusb_handle_events_timeout(_context, &zerotime);
 
   flush_input_from_ludl();
+
+  // First we need to wait for the axis to start moving, then we need
+  // to wait for it to stop moving.  This is because sometimes the
+  // X axis (at least) claims to be not moving even though we just
+  // told it to and flushed the buffer
+  while(!ludl_axis_moving(2)) {
+    vrpn_SleepMsecs(10);
+    libusb_handle_events_timeout(_context, &zerotime);
+  }
   while(ludl_axis_moving(2)) {
     vrpn_SleepMsecs(10);
     libusb_handle_events_timeout(_context, &zerotime);
