@@ -2174,6 +2174,26 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="vrpn_BiosciencesTools.C"
+				>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath="vrpn_IDEA.C"
 				>
 				<FileConfiguration
@@ -2616,6 +2636,10 @@
 			</File>
 			<File
 				RelativePath="vrpn_Xkeys.h"
+				>
+			</File>
+			<File
+				RelativePath="vrpn_BiosciencesTools.h"
 				>
 			</File>
 			<File

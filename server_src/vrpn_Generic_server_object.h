@@ -44,6 +44,7 @@
 #include "vrpn_ImmersionBox.h"
 #include "vrpn_Analog_Radamec_SPI.h"
 #include "vrpn_Zaber.h"
+#include "vrpn_BiosciencesTools.h"
 #include "vrpn_IDEA.h"
 #include "vrpn_Wanda.h"
 #include "vrpn_Analog_5dt.h"
@@ -277,6 +278,7 @@ class vrpn_Generic_Server_Object
     int setup_Spaceball (char * & pch, char * line, FILE * config_file);
     int setup_Radamec_SPI (char * & pch, char * line, FILE * config_file);
     int setup_Zaber (char * & pch, char * line, FILE * config_file);
+    int setup_BiosciencesTools (char * & pch, char * line, FILE * config_file);
     int setup_IDEA (char * & pch, char * line, FILE * config_file);
     int setup_NationalInstruments (char * & pch, char * line, FILE * config_file);
     int setup_NationalInstrumentsOutput (char * & pch, char * line, FILE * config_file);

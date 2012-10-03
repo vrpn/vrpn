@@ -1051,6 +1051,41 @@ int vrpn_Generic_Server_Object::setup_Zaber (char * & pch, char * line, FILE * c
   return 0;
 }
 
+int vrpn_Generic_Server_Object::setup_BiosciencesTools (char * & pch, char * line, FILE * config_file)
+{
+  char s2 [LINESIZE], s3 [LINESIZE];
+  int i1;
+  float f1, f2;
+
+  next();
+  // Get the arguments (class, Radamec_name, port, baud
+  if (sscanf (pch, "%511s%511s%g%g%i", s2, s3, &f1, &f2, &i1) != 5) {
+    fprintf (stderr, "Bad vrpn_BiosciencesTools: %s\n", line);
+    return -1;
+  }
+
+  // Make sure there's room for a new analog
+  if (num_analogs >= VRPN_GSO_MAX_ANALOG) {
+    fprintf (stderr, "Too many Analogs in config file");
+    return -1;
+  }
+
+  // Open the device
+  if (verbose) {
+    printf ("Opening vrpn_BiosciencesTools: %s on port %s\n", s2, s3);
+    printf ("    Temperatures: %g %g, control %d\n", f1, f2, i1);
+  }
+  if ( (analogs[num_analogs] =
+          new vrpn_BiosciencesTools (s2, connection, s3, f1, f2, (i1 != 0))) == NULL) {
+    fprintf (stderr, "Can't create new vrpn_BiosciencesTools\n");
+    return -1;
+  } else {
+    num_analogs++;
+  }
+
+  return 0;
+}
+
 int vrpn_Generic_Server_Object::setup_IDEA (char * & pch, char * line, FILE * config_file)
 {
   char s2 [LINESIZE], s3 [LINESIZE];
@@ -5359,6 +5394,8 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object (vrpn_Connection *connect
         CHECK (setup_Radamec_SPI);
       } else if (isit ("vrpn_Zaber")) {
         CHECK (setup_Zaber);
+      } else if (isit ("vrpn_BiosciencesTools")) {
+        CHECK (setup_BiosciencesTools);
       } else if (isit ("vrpn_IDEA")) {
         CHECK (setup_IDEA);
       } else if (isit ("vrpn_5dt")) {
