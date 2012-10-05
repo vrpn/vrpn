@@ -3,8 +3,10 @@ set -e
 
 # Find the VRPN source root relative to this script's known location.
 VRPN=$(cd $(dirname $0) && cd .. && pwd)
+SCRIPT="util/$(basename $0)"
 echo
-echo "VRPN Source Root: ${VRPN}"
+echo "VRPN Source Root:\t${VRPN}"
+echo "Cleanup script:\t${SCRIPT}"
 echo
 
 
@@ -16,7 +18,13 @@ fi
 
 # Check for sed
 if ! which sed > /dev/null; then
-    echo "Can't find sed!" >&2
+    echo "Can't find 'sed'!" >&2
+    exit 1
+fi
+
+# Check for find
+if ! which find > /dev/null; then
+    echo "Can't find 'find'!" >&2
     exit 1
 fi
 
@@ -35,30 +43,32 @@ PROCESSED=
 
 StartProcessingFile() {
     FILETOPROCESS=$1
-    PROCESSED="${PROCESSED} ${1}"
     echo
-    echo "Processing file: ${FILETOPROCESS}"
+}
+
+StatusMessage() {
+    echo "${FILETOPROCESS}:\t$*"
 }
 
 RemoveDosEndlines() {
-    echo "\tRemoving DOS endlines with ${DOS2UNIX}"
+    StatusMessage "Removing DOS endlines with ${DOS2UNIX}"
     ${DOS2UNIX} ${FILETOPROCESS}
 }
 
 TrimTrailingWhitespace() {
-    echo "\tTrimming trailing whitespace with sed"
+    StatusMessage "Trimming trailing whitespace with sed"
     sed -i 's/[ \t]*$//' ${FILETOPROCESS}
 }
 
 # Greps for lines that aren't all whitespace and don't start with # as a comment marker
 # such as in vrpn.cfg
 CheckForUncommentedLines() {
-    echo "\tChecking for un-commented, non-empty lines"
+    StatusMessage "Checking for un-commented, non-empty lines"
     if grep -v -E '^(#.*)?\s*$' ${FILETOPROCESS}; then
-        echo "\t\tOops - you have uncommented lines (see above) - don't commit ${FILETOPROCESS}"
+        StatusMessage "\tOops - you have uncommented lines (see above) - don't commit this file!"
         SUCCEEDED=false
     else
-        echo "\t\tNo un-commented lines found - OK to commit ${FILETOPROCESS}!"
+        StatusMessage "\tNo un-commented lines found - OK to commit this file!"
     fi
 
 }
@@ -68,18 +78,25 @@ CheckForUncommentedLines() {
 (
     cd ${VRPN}
 
+    # Clean up this script first!
+    StartProcessingFile ${SCRIPT}
+    RemoveDosEndlines
+    TrimTrailingWhitespace
+
     StartProcessingFile server_src/vrpn.cfg
     RemoveDosEndlines
     #TrimTrailingWhitespace
     CheckForUncommentedLines
+
+    # Clean up all CMake files
+    for fn in $(find * -name "CMakeLists.txt") *.cmake cmake/*.cmake submodules/*.cmake; do
+        StartProcessingFile ${fn}
+        RemoveDosEndlines
+        TrimTrailingWhitespace
+    done
 )
 
 echo
-
-echo "Processed:"
-for fn in ${PROCESSED}; do
-    echo "\t${fn}"
-done
 
 if ${SUCCEEDED}; then
     echo "Cleanups complete and all checks OK!"
