@@ -23,7 +23,7 @@ ADD_DEFINITIONS( -DQT_GUI_LIBS -DQT_CORE_LIB -DQT3_SUPPORT )
 
 
 #######################################
-# Build setup 
+# Build setup
 #######################################
 
 SET( SRC QXmlAutoGUIHandler.h QXmlAutoGUIHandler.cpp
@@ -35,13 +35,13 @@ TARGET_LINK_LIBRARIES( vrpn_Qt_AutoGUI vrpn_Qt )
 
 ADD_CUSTOM_COMMAND( TARGET vrpn_Qt_AutoGUI
                     PRE_BUILD
-                    COMMAND ${CMAKE_COMMAND} -E copy 
+                    COMMAND ${CMAKE_COMMAND} -E copy
                     ${vrpn_Qt_AutoGUI_SOURCE_DIR}/vrpn_Qt_AutoGUI.xml
-                    ${EXECUTABLE_OUTPUT_PATH}/Release )	
-                    
+                    ${EXECUTABLE_OUTPUT_PATH}/Release )
+
 ADD_CUSTOM_COMMAND( TARGET vrpn_Qt_AutoGUI
                     PRE_BUILD
-                    COMMAND ${CMAKE_COMMAND} -E copy 
+                    COMMAND ${CMAKE_COMMAND} -E copy
                     ${vrpn_Qt_AutoGUI_SOURCE_DIR}/vrpn_Qt_AutoGUI.xml
-                    ${EXECUTABLE_OUTPUT_PATH}/Debug )	                    
+                    ${EXECUTABLE_OUTPUT_PATH}/Debug )
 

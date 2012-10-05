@@ -34,7 +34,7 @@ if(QT_FOUND)
 	include(${QT_USE_FILE})
 	qt4_wrap_ui(GENERATED_SOURCES ${UIS})
 	qt4_wrap_cpp(GENERATED_SOURCES ${MOCS})
-	
+
 	source_group("Generated Sources - Do Not Edit" FILES ${GENERATED_SOURCES})
 	include_directories(${CMAKE_CURRENT_BINARY_DIR})
 

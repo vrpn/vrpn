@@ -58,12 +58,12 @@ if(WIN32 OR CYGWIN)
 		# from AecPCIeTC_8-12a: contains AEC_NTTC.h with extern "C" and three extra functions:
 		# AEC_PCTC_OPEN_ALL, AEC_PCTC_CLOSE_ALL,  AEC_PCTC_INITIALIZE_EVENT
 		"SDK_SourceCode"
-		
+
 		# from AecPci6_02_CD - called AECINTTC.H but otherwise essentially identical to earlier versions
 		"TestPrograms_WithDLL/DLL_API_INFO"
 		# A zipped development project contains essentially the same, named AEC_NTTC.h so we'll add this in case it's unzipped.
 		"TestPrograms_WithDLL/ZippedDevelopmentProjects/AecMfc32_Rel504"
-		
+
 		# from pc-ltc - called AECINTTC.H and lacks extern "C"
 		"NT-CODE/C40-APP1"
 	)
@@ -72,17 +72,17 @@ if(WIN32 OR CYGWIN)
 		AEC_NTTC.h
 		Aec_nttc.h
 		AECINTTC.H)
-		
+
 	set(ADRIENNE_LIB_SEARCH)
 	set(ADRIENNE_DLL_SEARCH)
-	
+
 	if(CMAKE_SIZEOF_VOID_P MATCHES "8")
 		# 64 bit code - apparently initially packaged only in the
 		# PCIe version of their software
 		list(APPEND ADRIENNE_LIB_SEARCH
 			# from AecPCIeTC_8-12a
 			"64BitOS_files/DLL Versions")
-		
+
 		list(APPEND ADRIENNE_DLL_SEARCH
 			# from AecPCIeTC_8-12a
 			"64BitOS_files/DLL Versions")
@@ -91,21 +91,21 @@ if(WIN32 OR CYGWIN)
 		list(APPEND ADRIENNE_LIB_SEARCH
 			# from AecPCIeTC_8-12a
 			"32BitOS_files/DLLversions"
-			
+
 			# from AecPci6_02_CD
 			"TestPrograms_WithDLL/DLL_API_INFO"
-			
+
 			# from pc-ltc
 			"NT-CODE/DLL"
 			)
-		
+
 		list(APPEND ADRIENNE_DLL_SEARCH
 			# from AecPCIeTC_8-12a
 			"32BitOS_files/DLLversions"
-			
+
 			# from AecPci6_02_CD
 			"TestPrograms_WithDLL"
-			
+
 			# from pc-ltc
 			"NT-CODE/DLL")
 	endif()
@@ -148,7 +148,7 @@ if(WIN32 OR CYGWIN)
 				break()
 			endif()
 		endforeach()
-		
+
 		if(ADRIENNE_INCLUDE_HAS_EXTERN_C)
 			list(APPEND ADRIENNE_DEFINITIONS -DADRIENNE_BEFORE_INCLUDE -DADRIENNE_AFTER_INCLUDE)
 		else()
@@ -168,7 +168,7 @@ if(WIN32 OR CYGWIN)
 		PATH_SUFFIXES
 		${ADRIENNE_DLL_SEARCH})
 
-	
+
 	set(ADRIENNE_RUNTIME_LIBRARIES "${ADRIENNE_RUNTIME_LIBRARY}")
 	get_filename_component(ADRIENNE_RUNTIME_LIBRARY_DIRS
 		"${ADRIENNE_RUNTIME_LIBRARY}"
