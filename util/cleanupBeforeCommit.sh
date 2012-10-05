@@ -103,7 +103,16 @@ CheckForUncommentedLines() {
     else
         ResultMessage "No un-commented lines found - OK to commit this file!"
     fi
+}
 
+RemoveExecutablePrivilege() {
+    StatusMessage "Ensuring file is not marked as executable"
+    chmod a-x ${FILETOPROCESS}
+}
+
+AddExecutablePrivilege() {
+    StatusMessage "Ensuring file is marked as executable"
+    chmod a+x ${FILETOPROCESS}
 }
 
 
@@ -120,19 +129,21 @@ CheckForUncommentedLines() {
     StartProcessingFile ${SCRIPT}
     RemoveDosEndlines
     TrimTrailingWhitespace
+    AddExecutablePrivilege
 
     # Server config file
     StartProcessingFile server_src/vrpn.cfg
     RemoveDosEndlines
     #TrimTrailingWhitespace  # Is this safe to do?
     CheckForUncommentedLines
+    RemoveExecutablePrivilege
 
     # Clean up all CMake files we control
     for fn in $(find * -name "CMakeLists.txt") *.cmake cmake/*.cmake submodules/*.cmake; do
         StartProcessingFile ${fn}
         RemoveDosEndlines
         TrimTrailingWhitespace
+        RemoveExecutablePrivilege
     done
-
 )
 
