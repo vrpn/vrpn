@@ -1,14 +1,16 @@
 #!/bin/sh
 set -e
 
+###
+# Auto-Configuration
+###
+
 # Find the VRPN source root relative to this script's known location.
 VRPN=$(cd $(dirname $0) && cd .. && pwd)
+# Relative path to script
 SCRIPT="util/$(basename $0)"
-echo
-echo "VRPN Source Root:\t${VRPN}"
-echo "Cleanup script:\t${SCRIPT}"
-echo
-
+# Verboseness - just use the environment
+VERBOSE=${VERBOSE:-false}
 
 # Pick the DOS endline remover
 if ! DOS2UNIX=$(which dos2unix || which fromdos); then
@@ -28,26 +30,58 @@ if ! which find > /dev/null; then
     exit 1
 fi
 
-SUCCEEDED=true
-FILETOPROCESS=
-PROCESSED=
-
 ###
-# Functions for re-use when processing more files before commit
-#
-# Seems silly to have them when we just process a few fukes, but ideally other
-# files would also get the "star treatment" of this verification/cleanup pass.
-# I'm just not sure which ones. Anyway, it makes it easier to read.
-#   -- Ryan Pavlik, Oct 2012
+# Startup Message
 ###
 
-StartProcessingFile() {
-    FILETOPROCESS=$1
-    echo
+echo
+if ${VERBOSE}; then
+    echo "VRPN Source Root: ${VRPN}"
+    echo "Cleanup script:   ${SCRIPT}"
+else
+    echo "(Run with environment variable VERBOSE=true for full output)"
+fi
+echo
+
+
+###
+# Status message functions
+###
+
+# Internal use only - don't call from the main script
+# Wrapper for echo that prefixes the filename, a colon, and a tab.
+DisplayMessageInternal() {
+    echo "${FILETOPROCESS}: $*"
 }
 
+# Display a message only seen in verbose mose
 StatusMessage() {
-    echo "${FILETOPROCESS}:\t$*"
+    if ${VERBOSE}; then
+        DisplayMessageInternal "$*"
+    fi
+}
+
+# Display a message always seen, with extra indent
+ResultMessage() {
+    DisplayMessageInternal "    $*"
+}
+
+# Display a message always seen on standard error
+ErrorMessage() {
+    ResultMessage "$*" >&2
+}
+
+###
+# Functions for file processing
+#
+# Must always start by calling StartProcessingFile with the filename.
+# Then, any other function may be called: the cleaning functions do
+# not need a filename passed to them because of StartProcessingFile.
+###
+
+# Must be called before each new file processing begins.
+StartProcessingFile() {
+    export FILETOPROCESS=$1
 }
 
 RemoveDosEndlines() {
@@ -64,14 +98,18 @@ TrimTrailingWhitespace() {
 # such as in vrpn.cfg
 CheckForUncommentedLines() {
     StatusMessage "Checking for un-commented, non-empty lines"
-    if grep -v -E '^(#.*)?\s*$' ${FILETOPROCESS}; then
-        StatusMessage "\tOops - you have uncommented lines (see above) - don't commit this file!"
-        SUCCEEDED=false
+    if grep --with-filename --line-number -v -E '^(#.*)?\s*$' ${FILETOPROCESS} >&2; then
+        ErrorMessage "Oops - you have uncommented lines (see above) - don't commit this file!"
     else
-        StatusMessage "\tNo un-commented lines found - OK to commit this file!"
+        ResultMessage "No un-commented lines found - OK to commit this file!"
     fi
 
 }
+
+
+###
+# Main script - process files!
+###
 
 # Open a subshell in which we'll change directories to VRPN root to process
 # files relative to there.
@@ -83,24 +121,18 @@ CheckForUncommentedLines() {
     RemoveDosEndlines
     TrimTrailingWhitespace
 
+    # Server config file
     StartProcessingFile server_src/vrpn.cfg
     RemoveDosEndlines
-    #TrimTrailingWhitespace
+    #TrimTrailingWhitespace  # Is this safe to do?
     CheckForUncommentedLines
 
-    # Clean up all CMake files
+    # Clean up all CMake files we control
     for fn in $(find * -name "CMakeLists.txt") *.cmake cmake/*.cmake submodules/*.cmake; do
         StartProcessingFile ${fn}
         RemoveDosEndlines
         TrimTrailingWhitespace
     done
+
 )
 
-echo
-
-if ${SUCCEEDED}; then
-    echo "Cleanups complete and all checks OK!"
-else
-    echo "One or more errors/warnings - see above!"
-    exit 1
-fi
