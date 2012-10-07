@@ -50,11 +50,11 @@ INCLUDE_DIRECTORIES( ${VRPN_INCLUDE_DIR} )
 
 
 #######################################
-# Build setup 
+# Build setup
 #######################################
 
 ADD_LIBRARY( vrpn_Qt ${QT_HEADER} ${QT_SRC} ${QT_MOC_SRC} ${SRC} )
-TARGET_LINK_LIBRARIES( vrpn_Qt 
+TARGET_LINK_LIBRARIES( vrpn_Qt
                        ${QT_LIBRARIES}
 			           ${VRPN_LIBRARY}
 )
@@ -68,7 +68,7 @@ endif()
 
 
 #######################################
-# Include applications 
+# Include applications
 #######################################
 
 ADD_SUBDIRECTORY( vrpn_Qt_AutoGUI )

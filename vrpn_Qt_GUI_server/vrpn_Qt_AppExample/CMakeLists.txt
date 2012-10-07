@@ -26,10 +26,10 @@ SET_SOURCE_FILES_PROPERTIES( ${QT_SRC} PROPERTIES OBJECT_DEPENDS "${QT_UI_HEADER
 
 
 #######################################
-# Build setup 
+# Build setup
 #######################################
 
 ADD_EXECUTABLE( vrpn_Qt_AppExample ${QT_HEADER} ${QT_SRC} ${QT_MOC_SRC} )
 ADD_DEPENDENCIES( vrpn_Qt_AppExample vrpn_Qt )
-TARGET_LINK_LIBRARIES( vrpn_Qt_AppExample vrpn_Qt )	
+TARGET_LINK_LIBRARIES( vrpn_Qt_AppExample vrpn_Qt )
 

@@ -402,7 +402,8 @@ if(WIN32)
 	option_requires(VRPN_USE_DIRECTINPUT
 			"Build with Microsoft DirectInput support"
 			${DEFAULT_OFF_IF_SUBPROJECT}
-			DIRECTX_FOUND)
+			DIRECTX_FOUND
+			DIRECTX_DINPUT_INCLUDE_DIR)
 	if(VRPN_USE_DIRECTINPUT)
 		include_directories(${DIRECTX_INCLUDE_DIRS})
 		list(APPEND SERVER_EXTRA_LIBS ${DIRECTX_DXGUID_LIBRARY} ${DIRECTX_DXERR_LIBRARY} ${DIRECTX_DINPUT_LIBRARY})
@@ -497,7 +498,7 @@ endif()
 ###
 if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
 	check_include_file_cxx(linux/input.h HAVE_LINUX_INPUT_H)
-	option(VRPN_USE_DEV_INPUT
+	option_requires(VRPN_USE_DEV_INPUT
 		"Build with flags to enable the use of DevInput. (Uses kernel header - may make servers GPL)"
 		${DEFAULT_OFF_IF_SUBPROJECT}
 		HAVE_LINUX_INPUT_H)

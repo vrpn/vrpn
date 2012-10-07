@@ -607,6 +607,11 @@
 // build directory instead.
 
 //#pragma message "NOTE: File included \"vrpn_Configure.h\" from the source dir even though this is a CMake build!"
-
-#include <vrpn_Configure.h>
+# ifndef VRPN_CONFIGURE_FORWARDING
+#  define VRPN_CONFIGURE_FORWARDING
+#  include <vrpn_Configure.h>
+#  undef VRPN_CONFIGURE_FORWARDING
+# else
+#  error "Build system error: non-CMake vrpn_Configure.h being repeatedly/recursively included"
+# endif
 #endif
