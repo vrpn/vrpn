@@ -651,6 +651,7 @@ SLIB_FILES =  $(LIB_FILES) \
 	vrpn_Analog_Radamec_SPI.C \
 	vrpn_Analog_USDigital_A2.C \
 	vrpn_Atmel.C \
+	vrpn_BiosciencesTools.C \
 	vrpn_Button_NI_DIO24.C \
 	vrpn_CerealBox.C \
 	vrpn_Dyna.C \
@@ -711,7 +712,7 @@ SLIB_FILES =  $(LIB_FILES) \
 	vrpn_WiiMote.C \
 	vrpn_Xkeys.C \
 	vrpn_Tracker_LibertyHS.C \
-	vrpn_Zaber.C
+	vrpn_Zaber.C 
 
 SLIB_OBJECTS = $(patsubst %,$(SOBJECT_DIR)/%,$(SLIB_FILES:.C=.o))
 
@@ -726,6 +727,7 @@ SLIB_INCLUDES = $(LIB_INCLUDES) \
 	vrpn_Analog_Radamec_SPI.h \
 	vrpn_Analog_USDigital_A2.h \
 	vrpn_Atmel.h \
+	vrpn_BiosciencesTools.h \
 	vrpn_Button_NI_DIO24.h \
 	vrpn_CerealBox.h \
 	vrpn_Dyna.h \
@@ -784,7 +786,7 @@ SLIB_INCLUDES = $(LIB_INCLUDES) \
 	vrpn_WiiMote.h \
 	vrpn_Xkeys.h \
 	vrpn_Tracker_LibertyHS.h \
-	vrpn_Zaber.h
+	vrpn_Zaber.h 
 
 ifeq ($(HW_OS), pc_linux64)
 	SLIB_FILES += vrpn_DevInput.C

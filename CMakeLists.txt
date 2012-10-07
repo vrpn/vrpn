@@ -690,6 +690,7 @@ set(VRPN_SERVER_SOURCES
 	vrpn_Analog_Radamec_SPI.C
 	vrpn_Analog_USDigital_A2.C
 	vrpn_Atmel.C
+	vrpn_BiosciencesTools.C
 	vrpn_Button_NI_DIO24.C
 	vrpn_Button_USB.cpp
 	vrpn_CerealBox.C
@@ -773,6 +774,7 @@ set(VRPN_SERVER_PUBLIC_HEADERS
 	vrpn_Analog_Radamec_SPI.h
 	vrpn_Analog_USDigital_A2.h
 	vrpn_Atmel.h
+	vrpn_BiosciencesTools.h
 	vrpn_Button_NI_DIO24.h
 	vrpn_Button_USB.h
 	vrpn_CerealBox.h
