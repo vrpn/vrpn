@@ -12,7 +12,7 @@
 // Exports Trackball both as clamping analogs 1 and 2 and as dials 1 and 2.
 
 class VRPN_API vrpn_GlobalHapticsOrb: public vrpn_Serial_Analog
-			,public vrpn_Button
+			,public vrpn_Button_Filter
 			,public vrpn_Dial
 {
 public:

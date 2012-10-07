@@ -37,7 +37,7 @@ protected:
   int register_types(void) { return 0; }
 };
 
-class vrpn_DreamCheeky_Drum_Kit: protected vrpn_DreamCheeky, public vrpn_Button {
+class vrpn_DreamCheeky_Drum_Kit: protected vrpn_DreamCheeky, public vrpn_Button_Filter {
 public:
   // The sensors "bounce" a lot when the buttons are pressed and released,
   // causing spurious readings of press/release.  Debouncing looks at ensembles

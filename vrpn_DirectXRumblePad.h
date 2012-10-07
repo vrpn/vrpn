@@ -18,7 +18,7 @@
 // but also enables the user to set a rumble magnitude using an Analog_Output
 // (channel zero controls the rumble magnitude).
 
-class VRPN_API vrpn_DirectXRumblePad: public vrpn_Analog, public vrpn_Button, public vrpn_Analog_Output {
+class VRPN_API vrpn_DirectXRumblePad: public vrpn_Analog, public vrpn_Button_Filter, public vrpn_Analog_Output {
 public:
 	vrpn_DirectXRumblePad(const char *name, vrpn_Connection *c = NULL,
 		GUID device_guid = GUID_NULL);

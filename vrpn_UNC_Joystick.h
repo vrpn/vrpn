@@ -8,7 +8,7 @@
 // single-board computer.  This driver is based on the px_sjoy.c
 // code.
 
-class VRPN_API vrpn_Joystick :public vrpn_Serial_Analog, public vrpn_Button {
+class VRPN_API vrpn_Joystick :public vrpn_Serial_Analog, public vrpn_Button_Filter {
 public:
   vrpn_Joystick(char * name, vrpn_Connection * c, char * portname,int
 		baud, double);

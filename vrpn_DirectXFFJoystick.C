@@ -30,7 +30,7 @@ static	unsigned long	duration(struct timeval t1, struct timeval t2)
 vrpn_DirectXFFJoystick::vrpn_DirectXFFJoystick (const char * name, vrpn_Connection * c,
 						double readRate, double forceRate) :
 		vrpn_Analog(name, c),
-		vrpn_Button(name, c),
+		vrpn_Button_Filter(name, c),
 		vrpn_ForceDeviceServer(name, c),
 		_read_rate(readRate),
 		_force_rate(forceRate),

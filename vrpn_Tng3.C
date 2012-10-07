@@ -67,7 +67,7 @@ vrpn_Tng3::vrpn_Tng3 (const char * name,
 		      const int numbuttons, 
 		      const int numchannels):
     vrpn_Serial_Analog(name, c, port, baud),
-    vrpn_Button(name, c),
+    vrpn_Button_Filter(name, c),
     _numbuttons(numbuttons),
     _numchannels(numchannels)
 {

@@ -44,7 +44,7 @@ vrpn_CerealBox::vrpn_CerealBox (const char * name, vrpn_Connection * c,
 			const char * port, int baud,
 			const int numbuttons, const int numchannels, const int numencoders):
 		vrpn_Serial_Analog(name, c, port, baud),
-		vrpn_Button(name, c),
+		vrpn_Button_Filter(name, c),
 		vrpn_Dial(name, c),
 		_numbuttons(numbuttons),
 		_numchannels(numchannels),

@@ -9,7 +9,7 @@
 // Written by Rob King at Navy Research Labs.
 
 class VRPN_API vrpn_Tng3: public vrpn_Serial_Analog,
-			 public vrpn_Button
+			 public vrpn_Button_Filter
 {
  public:
     vrpn_Tng3 (const char * name, 

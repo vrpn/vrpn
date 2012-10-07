@@ -36,7 +36,7 @@ static const vrpn_uint16 vrpn_3DCONNEXION_SPACEBALL5000 = 0xc621;   // 50721;
 
 vrpn_3DConnexion::vrpn_3DConnexion(vrpn_HidAcceptor *filter, unsigned num_buttons,
                                    const char *name, vrpn_Connection *c)
-  : vrpn_Button(name, c)
+  : vrpn_Button_Filter(name, c)
   , vrpn_Analog(name, c)
 #if defined(VRPN_USE_HID)
   , vrpn_HidInterface(_filter)

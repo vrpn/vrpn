@@ -68,7 +68,7 @@ int vrpn_Xkeys::on_connect(void *thisPtr, vrpn_HANDLERPARAM /*p*/) {
 
 vrpn_Xkeys_Desktop::vrpn_Xkeys_Desktop(const char *name, vrpn_Connection *c)
   : vrpn_Xkeys(_filter = new vrpn_HidProductAcceptor(XKEYS_VENDOR, XKEYS_DESKTOP), name, c)
-  , vrpn_Button(name, c)
+  , vrpn_Button_Filter(name, c)
 {
   // 21 buttons (don't forget about button 0)
   vrpn_Button::num_buttons = 21;
@@ -129,7 +129,7 @@ void vrpn_Xkeys_Desktop::decodePacket(size_t bytes, vrpn_uint8 *buffer) {
 
 vrpn_Xkeys_Jog_And_Shuttle::vrpn_Xkeys_Jog_And_Shuttle(const char *name, vrpn_Connection *c)
   : vrpn_Xkeys(_filter = new vrpn_HidProductAcceptor(XKEYS_VENDOR, XKEYS_JOG_AND_SHUTTLE), name, c)
-  , vrpn_Button(name, c)
+  , vrpn_Button_Filter(name, c)
   , vrpn_Analog(name, c)
   , vrpn_Dial(name, c)
 {
@@ -295,7 +295,7 @@ void vrpn_Xkeys_Jog_And_Shuttle::decodePacket(size_t bytes, vrpn_uint8 *buffer)
 
 vrpn_Xkeys_Joystick::vrpn_Xkeys_Joystick(const char *name, vrpn_Connection *c)
   : vrpn_Xkeys(_filter = new vrpn_HidProductAcceptor(XKEYS_VENDOR, XKEYS_JOYSTICK), name, c)
-  , vrpn_Button(name, c)
+  , vrpn_Button_Filter(name, c)
   , vrpn_Analog(name, c)
 {
 	vrpn_Analog::num_channel = 2;
@@ -434,7 +434,7 @@ void vrpn_Xkeys_Joystick::decodePacket(size_t bytes, vrpn_uint8 *buffer)
 
 vrpn_Xkeys_Pro::vrpn_Xkeys_Pro(const char *name, vrpn_Connection *c)
   : vrpn_Xkeys(_filter = new vrpn_HidProductAcceptor(XKEYS_VENDOR, XKEYS_PRO), name, c)
-  , vrpn_Button(name, c)
+  , vrpn_Button_Filter(name, c)
 {
 	vrpn_Button::num_buttons = 59;  // Don't forget button 0
 

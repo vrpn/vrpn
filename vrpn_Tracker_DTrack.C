@@ -140,7 +140,7 @@ vrpn_Tracker_DTrack::vrpn_Tracker_DTrack(const char *name, vrpn_Connection *c,
 	                                      int fixNbody, int fixNflystick, int* fixId,
 	                                      bool act3DOFout, bool actTracing) :
 	vrpn_Tracker(name, c),	  
-	vrpn_Button(name, c),
+	vrpn_Button_Filter(name, c),
 	vrpn_Analog(name, c)
 {
 

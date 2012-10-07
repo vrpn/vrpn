@@ -6,7 +6,7 @@
 #include "vrpn_Button.h"
 
 class VRPN_API vrpn_3DMicroscribe: public vrpn_Tracker
-			,public vrpn_Button
+			,public vrpn_Button_Filter
 {
   public:
 	// Offset is in meters.  Scale is an abomination and should not be

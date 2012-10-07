@@ -7,7 +7,7 @@
 // button device.  You can find out more at http://home.att.net/~glenmurray/
 // This driver was written at Brown University.
 
-class VRPN_API vrpn_Wanda :public vrpn_Serial_Analog, public vrpn_Button {
+class VRPN_API vrpn_Wanda :public vrpn_Serial_Analog, public vrpn_Button_Filter {
 public:
   vrpn_Wanda(char * name, vrpn_Connection * c, char * portname,int
 	     baud, double);

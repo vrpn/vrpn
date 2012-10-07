@@ -51,7 +51,7 @@ int vrpn_GlobalHapticsOrb::handle_firstConnection(void * userdata,
 vrpn_GlobalHapticsOrb::vrpn_GlobalHapticsOrb(const char * name, vrpn_Connection * c,
 					     const char * port, int baud) :
 		vrpn_Serial_Analog(name, c, port, baud),
-		vrpn_Button(name, c),
+		vrpn_Button_Filter(name, c),
 		vrpn_Dial(name, c)
 {
 	// Set the parameters in the parent classes

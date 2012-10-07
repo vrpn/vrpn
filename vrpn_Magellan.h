@@ -5,7 +5,7 @@
 #include "vrpn_Button.h"
 
 class VRPN_API vrpn_Magellan: public vrpn_Serial_Analog
-			,public vrpn_Button
+			,public vrpn_Button_Filter
 {
 public:
 	vrpn_Magellan (const char * name, vrpn_Connection * c,

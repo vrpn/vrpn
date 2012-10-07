@@ -27,7 +27,7 @@ void print_bits(unsigned char *buf, int n) { print_bits((char *)buf, n); }
 vrpn_Wanda::vrpn_Wanda(char * name, 
 		    vrpn_Connection * c, char * portname,int baud, 
 			     vrpn_float64 update_rate):
-      vrpn_Serial_Analog(name, c, portname, baud, 7), vrpn_Button(name, c),
+      vrpn_Serial_Analog(name, c, portname, baud, 7), vrpn_Button_Filter(name, c),
       bytesread(0)
 { 
   num_buttons = 3;  // Wanda has 3 buttons

@@ -19,7 +19,7 @@
 // product ID; the baseclass does all the work.
 
 #if defined(VRPN_USE_HID)
-class VRPN_API vrpn_3DConnexion: public vrpn_Button, public vrpn_Analog, protected vrpn_HidInterface {
+class VRPN_API vrpn_3DConnexion: public vrpn_Button_Filter, public vrpn_Analog, protected vrpn_HidInterface {
 public:
   vrpn_3DConnexion(vrpn_HidAcceptor *filter, unsigned num_buttons,
                    const char *name, vrpn_Connection *c = 0);
@@ -43,7 +43,7 @@ protected:
   //  values, not vrpn_Button or vrpn_Dial
 };
 #else   // not _WIN32
-class VRPN_API vrpn_3DConnexion: public vrpn_Button, public vrpn_Analog {
+class VRPN_API vrpn_3DConnexion: public vrpn_Button_Filter, public vrpn_Analog {
 public:
   vrpn_3DConnexion(vrpn_HidAcceptor *filter, unsigned num_buttons,
                    const char *name, vrpn_Connection *c = 0);

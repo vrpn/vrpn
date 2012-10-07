@@ -26,7 +26,7 @@ vrpn_inertiamouse::vrpn_inertiamouse (const char* name,
                                       const char* port, 
                                       int baud_rate)
     : vrpn_Serial_Analog (name, c, port, baud_rate)
-    , vrpn_Button (name, c)
+    , vrpn_Button_Filter (name, c)
     , numbuttons_ (Buttons)
     , numchannels_ (Channels)
     , null_radius_ (0)

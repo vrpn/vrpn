@@ -15,7 +15,7 @@
 vrpn_Tracker_3DMouse::vrpn_Tracker_3DMouse(const char *name, vrpn_Connection *c, 
 		      const char *port, long baud, int filtering_count):
     vrpn_Tracker_Serial(name, c, port, baud),
-    vrpn_Button(name, c),
+    vrpn_Button_Filter(name, c),
     _filtering_count(filtering_count),
     _numbuttons(5)
 {

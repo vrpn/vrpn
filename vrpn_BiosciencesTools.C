@@ -55,7 +55,7 @@ vrpn_BiosciencesTools::vrpn_BiosciencesTools (const char * name, vrpn_Connection
 			const char * port, float temp1, float temp2, bool control_on):
 	vrpn_Serial_Analog(name, c, port, 115200),
         vrpn_Analog_Output(name, c),
-        vrpn_Button(name, c)
+        vrpn_Button_Filter(name, c)
 {
   num_channel = 6;
   o_num_channel = 3;

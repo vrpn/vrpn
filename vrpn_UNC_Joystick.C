@@ -25,7 +25,7 @@ vrpn_Joystick::vrpn_Joystick(char * name,
 		    vrpn_Connection * c, char * portname,int baud, 
 			     vrpn_float64 update_rate):
       vrpn_Serial_Analog(name, c, portname, baud),
-	  vrpn_Button(name, c)
+	  vrpn_Button_Filter(name, c)
 { 
   num_buttons = 2;  // Has 2 buttons
   num_channel = 7;	// Has a slider and two 3-axis joysticks

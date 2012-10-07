@@ -17,7 +17,7 @@
 #include "vrpn_Analog.h"
 #include "vrpn_Button.h"
 
-class VRPN_API vrpn_ADBox : public vrpn_Analog, public vrpn_Button {
+class VRPN_API vrpn_ADBox : public vrpn_Analog, public vrpn_Button_Filter {
 
  public:
   vrpn_ADBox(char* name, vrpn_Connection *c,

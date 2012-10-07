@@ -114,7 +114,7 @@ struct vrpn_WiiMote_SharedData;
 // XXX It would be great to have a vrpn_Sound device that could play through
 //      the speaker on the WiiMote.
 
-class VRPN_API vrpn_WiiMote: public vrpn_Analog, public vrpn_Button, public vrpn_Analog_Output {
+class VRPN_API vrpn_WiiMote: public vrpn_Analog, public vrpn_Button_Filter, public vrpn_Analog_Output {
 	public:
 		// If there is more than one WiiMote on the machine, the zero-indexed 'which'
 		// parameter tells which one we want to open.

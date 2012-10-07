@@ -14,7 +14,7 @@
 
 #include <basetsd.h>
 
-class VRPN_API vrpn_Joywin32: public vrpn_Analog, public vrpn_Button
+class VRPN_API vrpn_Joywin32: public vrpn_Analog, public vrpn_Button_Filter
 {
 public:
     vrpn_Joywin32 (const char * name, vrpn_Connection * c, vrpn_uint8 joyNumber = 1, vrpn_float64 readRate = 60, vrpn_uint8 mode = 0, vrpn_int32 deadzone = 0);

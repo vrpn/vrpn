@@ -39,7 +39,7 @@ static const int MSG_TYPE_ANALOG = 3;
 
 vrpn_Tracker_JsonNet::vrpn_Tracker_JsonNet(const char* name,vrpn_Connection* c,int udp_port) :
 	vrpn_Tracker(name, c),
-	vrpn_Button(name, c),
+	vrpn_Button_Filter(name, c),
 	vrpn_Analog(name, c),
 	_socket(INVALID_SOCKET),
 	_pJsonReader(0)

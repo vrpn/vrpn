@@ -2,7 +2,7 @@
 #ifdef _WIN32
 
 vrpn_Button_USB::vrpn_Button_USB(const char *name, const char *deviceName,vrpn_Connection *c)
-										: vrpn_Button(name, c)
+					: vrpn_Button_Filter(name, c)
 {
 	num_buttons = 16;
 	//setup of usb device

@@ -74,7 +74,7 @@ typedef struct{
 // --------------------------------------------------------------------------
 // VRPN class:
 
-class VRPN_API vrpn_Tracker_DTrack : public vrpn_Tracker, public vrpn_Button, public vrpn_Analog
+class VRPN_API vrpn_Tracker_DTrack : public vrpn_Tracker, public vrpn_Button_Filter, public vrpn_Analog
 {
   
  public:

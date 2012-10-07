@@ -75,8 +75,8 @@ namespace {
 vrpn_DirectXRumblePad::vrpn_DirectXRumblePad(const char *name, vrpn_Connection *c,
 							   GUID device_guid):
 	vrpn_Analog(name, c),
-	vrpn_Button(name, c),
-    vrpn_Analog_Output(name, c),
+	vrpn_Button_Filter(name, c),
+        vrpn_Analog_Output(name, c),
 	_target_device(device_guid),
 	_gamepad(NULL),
 	_directInput(NULL),

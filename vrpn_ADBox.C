@@ -27,7 +27,7 @@
 
 vrpn_ADBox::vrpn_ADBox(char* name, vrpn_Connection *c,
                        const char *port, long baud)
-  : vrpn_Analog(name, c), vrpn_Button(name, c),
+  : vrpn_Analog(name, c), vrpn_Button_Filter(name, c),
     ready(1), serial_fd(0), iNumBytes(0), iNumDigBytes(0), iFilterPos(0)
 {
   // Open the serial port

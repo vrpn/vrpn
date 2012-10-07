@@ -15,7 +15,7 @@
 #include <basetsd.h>
 
 class VRPN_API vrpn_DirectXFFJoystick: public vrpn_Analog
-			     ,public vrpn_Button
+			     ,public vrpn_Button_Filter
 			     ,public vrpn_ForceDeviceServer
 {
 public:

@@ -32,7 +32,7 @@ static	unsigned long	duration(struct timeval t1, struct timeval t2)
 
 vrpn_Joywin32::vrpn_Joywin32 (const char * name, vrpn_Connection * c, vrpn_uint8 joyNumber, vrpn_float64 readRate, vrpn_uint8 mode, vrpn_int32 deadzone) :
 		vrpn_Analog(name, c),
-		vrpn_Button(name, c),
+		vrpn_Button_Filter(name, c),
 		_read_rate(readRate),
 		_joyNumber(joyNumber),
 		_numchannels((std::min)(12,vrpn_CHANNEL_MAX)),		   // Maximum available

@@ -31,7 +31,7 @@ class vrpn_NovintFalcon_Device;
 class vrpn_NovintFalcon_ForceObjects;
 
 class VRPN_API vrpn_Tracker_NovintFalcon
-    : public vrpn_Tracker, public vrpn_Button, public vrpn_ForceDevice {
+    : public vrpn_Tracker, public vrpn_Button_Filter, public vrpn_ForceDevice {
 
 public:
     /// custom constructor

@@ -29,7 +29,7 @@
 vrpn_Joylin::vrpn_Joylin(char * name, 
 			 vrpn_Connection * c,
 			 char *portname):
-  vrpn_Analog(name, c), vrpn_Button(name, c)
+  vrpn_Analog(name, c), vrpn_Button_Filter(name, c)
 { 
   namelen = 128;
   num_channel = 2;     // inherited : default for generic me-know-nothing PC joystick
@@ -117,7 +117,7 @@ void vrpn_Joylin::mainloop(void) {
 vrpn_Joylin::vrpn_Joylin(char * name, 
 			 vrpn_Connection * c,
 			 char *):
-  vrpn_Analog(name, c), vrpn_Button(name, c)
+  vrpn_Analog(name, c), vrpn_Button_Filter(name, c)
 { 
 	  fprintf(stderr,"vrpn_Joylin::vrpn_Joylin: Can't open Linux joystick on non-Linux machine\n");
 }

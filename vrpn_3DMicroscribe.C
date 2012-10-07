@@ -40,7 +40,7 @@ vrpn_3DMicroscribe::vrpn_3DMicroscribe (const char * name, vrpn_Connection * c,
 					float OffsetZ/* = 0.0f*/,
 					float Scale/*=1.0f*/):
 		vrpn_Tracker(name, c),
-		vrpn_Button(name, c),
+		vrpn_Button_Filter(name, c),
 		_numbuttons(2)
 {
 	// Set the parameters in the parent classes

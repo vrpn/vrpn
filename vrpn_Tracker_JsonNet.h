@@ -23,7 +23,7 @@ namespace Json {
  * @Author Philippe Crassous / ENSAM ParisTech-Institut Image
  */
 class vrpn_Tracker_JsonNet :
-	public vrpn_Tracker, public vrpn_Button, public vrpn_Analog
+	public vrpn_Tracker, public vrpn_Button_Filter, public vrpn_Analog
 {
 public:
 	vrpn_Tracker_JsonNet(

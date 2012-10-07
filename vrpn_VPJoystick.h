@@ -8,7 +8,7 @@
 #define vrpn_VPJOY_MESSAGE_LENGTH (4)
 #define vrpn_VPJOY_NUM_BUTTONS	(8)
 
-class VRPN_API vrpn_VPJoystick : public vrpn_Button {
+class VRPN_API vrpn_VPJoystick : public vrpn_Button_Filter {
 
  public:
   vrpn_VPJoystick(char* name, vrpn_Connection *c,

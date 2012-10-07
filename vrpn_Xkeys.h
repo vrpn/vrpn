@@ -49,7 +49,7 @@ protected:
   int register_types(void) { return 0; }
 };
 
-class vrpn_Xkeys_Desktop: protected vrpn_Xkeys, public vrpn_Button {
+class vrpn_Xkeys_Desktop: protected vrpn_Xkeys, public vrpn_Button_Filter {
 public:
   vrpn_Xkeys_Desktop(const char *name, vrpn_Connection *c = 0);
   virtual ~vrpn_Xkeys_Desktop() {};
@@ -65,7 +65,7 @@ protected:
   void decodePacket(size_t bytes, vrpn_uint8 *buffer);
 };
 
-class vrpn_Xkeys_Pro: protected vrpn_Xkeys, public vrpn_Button {
+class vrpn_Xkeys_Pro: protected vrpn_Xkeys, public vrpn_Button_Filter {
 public:
   vrpn_Xkeys_Pro(const char *name, vrpn_Connection *c = 0);
   virtual ~vrpn_Xkeys_Pro() {};
@@ -81,7 +81,7 @@ protected:
   void decodePacket(size_t bytes, vrpn_uint8 *buffer);
 };
 
-class vrpn_Xkeys_Joystick: protected vrpn_Xkeys, public vrpn_Analog, public vrpn_Button {
+class vrpn_Xkeys_Joystick: protected vrpn_Xkeys, public vrpn_Analog, public vrpn_Button_Filter {
 public:
   vrpn_Xkeys_Joystick(const char *name, vrpn_Connection *c = 0);
   virtual ~vrpn_Xkeys_Joystick() {};
@@ -99,7 +99,7 @@ protected:
   void decodePacket(size_t bytes, vrpn_uint8 *buffer);
 };
 
-class vrpn_Xkeys_Jog_And_Shuttle: protected vrpn_Xkeys, public vrpn_Analog, public vrpn_Button, public vrpn_Dial {
+class vrpn_Xkeys_Jog_And_Shuttle: protected vrpn_Xkeys, public vrpn_Analog, public vrpn_Button_Filter, public vrpn_Dial {
 public:
   vrpn_Xkeys_Jog_And_Shuttle(const char *name, vrpn_Connection *c = 0);
   virtual ~vrpn_Xkeys_Jog_And_Shuttle() {};

@@ -9,7 +9,7 @@
 
 vrpn_XInputGamepad::vrpn_XInputGamepad(const char *name, vrpn_Connection *c, unsigned int controllerIndex):
 	vrpn_Analog(name, c),
-	vrpn_Button(name, c),
+	vrpn_Button_Filter(name, c),
 	vrpn_Analog_Output(name, c),
 	_controllerIndex(controllerIndex)
 {

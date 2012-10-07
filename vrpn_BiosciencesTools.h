@@ -10,7 +10,7 @@
 #include "vrpn_Analog_Output.h"
 
 class VRPN_API vrpn_BiosciencesTools: public vrpn_Serial_Analog,
-  public vrpn_Analog_Output, public vrpn_Button
+  public vrpn_Analog_Output, public vrpn_Button_Filter
 {
 public:
         // Tell it the temperature to use to set channels 1 and 2 to

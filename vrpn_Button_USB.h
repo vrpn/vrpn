@@ -5,7 +5,7 @@
 // USB button code. 
 // This class is derived from the vrpn_Button_Filter class, so that it
 // can be made to toggle its buttons using messages from the client.
-class VRPN_API vrpn_Button_USB : public vrpn_Button {
+class VRPN_API vrpn_Button_USB : public vrpn_Button_Filter {
   public:
 	vrpn_Button_USB(const char *name, const char *deviceName, vrpn_Connection *c);
 	~vrpn_Button_USB();

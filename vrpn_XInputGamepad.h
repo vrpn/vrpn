@@ -15,7 +15,7 @@
 // rumble magnitude using an Analog_Output (channel 0 controls the left motor,
 // channel 1 controls the right motor).
 
-class VRPN_API vrpn_XInputGamepad: public vrpn_Analog, public vrpn_Button, public vrpn_Analog_Output {
+class VRPN_API vrpn_XInputGamepad: public vrpn_Analog, public vrpn_Button_Filter, public vrpn_Analog_Output {
 public:
 	vrpn_XInputGamepad(const char *name, vrpn_Connection *c = NULL, unsigned int controllerIndex = 0);
 	~vrpn_XInputGamepad();

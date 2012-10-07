@@ -106,7 +106,7 @@ static	int	vrpn_write_slowly(int fd, unsigned char *buffer, int len, int MsecWai
 vrpn_Spaceball::vrpn_Spaceball (const char * name, vrpn_Connection * c,
 			const char * port, int baud):
 		vrpn_Serial_Analog(name, c, port, baud),
-		vrpn_Button(name, c),
+		vrpn_Button_Filter(name, c),
 		_numbuttons(12),
 		_numchannels(6),
 		null_radius(8)

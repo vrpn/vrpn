@@ -27,7 +27,7 @@ vrpn_Freespace::vrpn_Freespace(FreespaceDeviceId freespaceId,
         struct FreespaceDeviceInfo* deviceInfo,
         const char *name, vrpn_Connection *conn):
         vrpn_Tracker_Server(name, conn),
-        vrpn_Button(name, conn),
+        vrpn_Button_Filter(name, conn),
         vrpn_Dial(name, conn),
         _freespaceDevice(freespaceId)											   
 {

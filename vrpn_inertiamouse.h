@@ -87,7 +87,7 @@ private: // variables
     double out_[2];
 };
 
-class VRPN_API vrpn_inertiamouse : public vrpn_Serial_Analog , public vrpn_Button {
+class VRPN_API vrpn_inertiamouse : public vrpn_Serial_Analog , public vrpn_Button_Filter {
 public: // constants
 
     enum {

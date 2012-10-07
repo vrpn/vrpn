@@ -65,7 +65,7 @@ static	int	vrpn_write_slowly(int fd, unsigned char *buffer, int len, int MsecWai
 vrpn_Magellan::vrpn_Magellan (const char * name, vrpn_Connection * c,
 			const char * port, int baud, bool altreset):
 		vrpn_Serial_Analog(name, c, port, baud),
-		vrpn_Button(name, c),
+		vrpn_Button_Filter(name, c),
 		_numbuttons(9),
 		_numchannels(6),
 		_null_radius(8),

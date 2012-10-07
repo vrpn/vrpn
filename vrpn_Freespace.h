@@ -31,7 +31,7 @@
 
 class VRPN_API vrpn_Freespace :
 	public vrpn_Tracker_Server,   // for the positional data
-	public vrpn_Button,           // for the actual buttons
+	public vrpn_Button_Filter,    // for the actual buttons
 	public vrpn_Dial              // for the scroll wheel
 {
 public:

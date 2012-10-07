@@ -344,7 +344,7 @@ void vrpn_WiiMote::initialize_wiimote_state(void) {
 // - c: VRPN connection this device should be attached to
 vrpn_WiiMote::vrpn_WiiMote(const char *name, vrpn_Connection *c, unsigned which, unsigned useMS, unsigned useIR, unsigned reorderButtons, const char *bdaddr):
 	vrpn_Analog(name, c),
-	vrpn_Button(name, c),
+	vrpn_Button_Filter(name, c),
 	vrpn_Analog_Output(name, c),
 #if defined (vrpn_THREADS_AVAILABLE)
 	waitingForConnection(true),

@@ -8,7 +8,7 @@
 // the others are not fully implemented.
 
 class VRPN_API vrpn_ImmersionBox: public vrpn_Serial_Analog,
-			 public vrpn_Button,
+			 public vrpn_Button_Filter,
 			 public vrpn_Dial
 {
  public:

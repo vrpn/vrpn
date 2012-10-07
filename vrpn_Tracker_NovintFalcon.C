@@ -514,7 +514,7 @@ vrpn_Tracker_NovintFalcon::vrpn_Tracker_NovintFalcon(const char *name,
                                                      const char *grip,
                                                      const char *kine,
                                                      const char *damp)
-        : vrpn_Tracker(name, c), vrpn_Button(name, c),
+        : vrpn_Tracker(name, c), vrpn_Button_Filter(name, c),
           vrpn_ForceDevice(name, c), m_dev(NULL), m_obj(NULL), m_update_rate(1000.0), m_damp(0.9)
 {
     m_devflags=vrpn_NovintFalcon_Device::MASK_DEVICEIDX & devidx;
