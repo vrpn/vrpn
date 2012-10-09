@@ -42,13 +42,14 @@ class vrpn_MainloopContainer {
 		void clear();
 
 		/// Add an object wrapped by vrpn_MainloopObject.
-		void add(vrpn_MainloopObject * o);
+		vrpn_MainloopObject * add(vrpn_MainloopObject * o);
 
 		/// Template method to automatically wrap objects
 		/// with vrpn_MainloopObject before adding them.
 		template<class T>
-		void add(T o) {
+		T add(T o) {
 			add(vrpn_MainloopObject::wrap(o));
+			return o;
 		}
 
 		/// Runs mainloop on all contained objects, in the order
@@ -65,11 +66,12 @@ inline vrpn_MainloopContainer::~vrpn_MainloopContainer() {
 	clear();
 }
 
-inline void vrpn_MainloopContainer::add(vrpn_MainloopObject* o) {
+inline vrpn_MainloopObject * vrpn_MainloopContainer::add(vrpn_MainloopObject* o) {
 	if (!o) {
-		return;
+		return o;
 	}
 	_vrpn.push_back(o);
+	return o;
 }
 
 inline void vrpn_MainloopContainer::clear() {
