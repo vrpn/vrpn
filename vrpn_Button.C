@@ -11,9 +11,9 @@
 #endif
 #include <string.h> // for memcpy
 
-#ifdef linux
-#include <linux/lp.h>
-#include <sys/ioctl.h>
+#if defined(linux) && !defined(VRPN_CLIENT_ONLY)
+#  include <linux/lp.h>
+#  include <sys/ioctl.h>
 #endif
 
 // Include vrpn_Shared.h _first_ to avoid conflicts with sys/time.h 
