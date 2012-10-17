@@ -28,17 +28,17 @@
 //#define VRPN_CYGWIN_USES_WINSOCK_SOCKETS
 
 #if defined(_WIN32) && (!defined(__CYGWIN__) || defined(VRPN_CYGWIN_USES_WINSOCK_SOCKETS))
-#define VRPN_USE_WINSOCK_SOCKETS
+#  define VRPN_USE_WINSOCK_SOCKETS
 #endif
 
 #ifndef	VRPN_USE_WINSOCK_SOCKETS
 // On Win32, this constant is defined as ~0 (sockets are unsigned ints)
-#define	INVALID_SOCKET	-1
-#define	SOCKET		int
+#  define	INVALID_SOCKET	-1
+#  define	SOCKET		int
 #endif
 
 #ifdef	_WIN32_WCE
-#define perror(x) fprintf(stderr,"%s\n",x);
+#  define perror(x) fprintf(stderr,"%s\n",x);
 #endif
 
 // comment from vrpn_Connection.h reads :
@@ -49,7 +49,7 @@
 //   It probably wouldn't hurt to enable it for non-NT systems
 //   as well.
 #ifdef _WIN32
-#define VRPN_USE_WINDOWS_GETHOSTBYNAME_HACK
+#  define VRPN_USE_WINDOWS_GETHOSTBYNAME_HACK
 #endif
 
 //--------------------------------------------------------------
@@ -71,15 +71,15 @@
 // on Windows.
 
 #if (!defined(VRPN_USE_WINSOCK_SOCKETS))
-#include <sys/time.h>    // for timeval, timezone, gettimeofday
-#define vrpn_gettimeofday gettimeofday
+#  include <sys/time.h>    // for timeval, timezone, gettimeofday
+#  define vrpn_gettimeofday gettimeofday
 #else  // winsock sockets
 
-  #include <windows.h>
-#ifndef _WIN32_WCE
-  #include <sys/timeb.h>
-#endif
-  #include <winsock.h>    // struct timeval is defined here
+#  include <windows.h>
+#  ifndef _WIN32_WCE
+#    include <sys/timeb.h>
+#  endif
+#  include <winsock.h>    // struct timeval is defined here
 
   // Whether or not we export gettimeofday, we declare the
   // vrpn_gettimeofday() function.
@@ -91,9 +91,8 @@
   // so that application code can get at it.  All VRPN routines should be
   // calling vrpn_gettimeofday() directly.
 
-  #ifdef VRPN_EXPORT_GETTIMEOFDAY
-    #ifndef _STRUCT_TIMEZONE
-      #define _STRUCT_TIMEZONE
+#  if defined(VRPN_EXPORT_GETTIMEOFDAY) && !defined(_STRUCT_TIMEZONE)
+#    define _STRUCT_TIMEZONE
       /* from HP-UX */
       struct timezone {
 	  int     tz_minuteswest; /* minutes west of Greenwich */
@@ -101,9 +100,9 @@
       };
 
       // manually define this too.  _WIN32 sans cygwin doesn't have gettimeofday
-      #define gettimeofday  vrpn_gettimeofday
-    #endif
-  #endif
+#    define gettimeofday  vrpn_gettimeofday
+
+#  endif
 #endif
 
 //--------------------------------------------------------------
@@ -178,30 +177,30 @@ static	const   bool    vrpn_big_endian = (vrpn_char_data_for_endian_test[0] != 1
 // here to enable the vrpn_Imager_Logger class to do its thing.
 
 #if defined(sgi) || (defined(_WIN32) && !defined(__CYGWIN__)) || defined(linux)
-#define vrpn_THREADS_AVAILABLE
+#  define vrpn_THREADS_AVAILABLE
 #else
-#undef vrpn_THREADS_AVAILABLE
+#  undef vrpn_THREADS_AVAILABLE
 #endif
 
 // multi process stuff
 #ifdef sgi
-#include <task.h>
-#include <ulocks.h>
+#  include <task.h>
+#  include <ulocks.h>
 #elif defined(_WIN32)
-#include <process.h>
+#  include <process.h>
 #else
-#include <pthread.h>
-#include <semaphore.h>
+#  include <pthread.h>
+#  include <semaphore.h>
 #endif
 
 // make the SGI compile without tons of warnings
 #ifdef sgi
-#pragma set woff 1110,1424,3201
+#  pragma set woff 1110,1424,3201
 #endif
 
 // and reset the warnings
 #ifdef sgi
-#pragma reset woff 1110,1424,3201
+#  pragma reset woff 1110,1424,3201
 #endif
 
 class VRPN_API vrpn_Semaphore {

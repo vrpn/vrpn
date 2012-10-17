@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <math.h>
 #ifndef	_WIN32_WCE
-#include <sys/types.h>
+#  include <sys/types.h>
 #endif
 
 // Don't tell us about strcpy being dangerous.
