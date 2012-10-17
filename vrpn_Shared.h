@@ -128,6 +128,9 @@ extern VRPN_API	struct timeval vrpn_TimevalSum( const struct timeval& tv1, const
 extern VRPN_API	struct timeval vrpn_TimevalDiff( const struct timeval& tv1, const struct timeval& tv2 );
 extern VRPN_API	struct timeval vrpn_TimevalScale (const struct timeval & tv, double scale);
 
+/// @brief Return number of microseconds between startT and endT
+extern VRPN_API	unsigned long vrpn_TimevalDuration(struct timeval endT, struct timeval startT);
+
 extern VRPN_API	bool vrpn_TimevalGreater (const struct timeval & tv1, const struct timeval & tv2);
 extern VRPN_API	bool vrpn_TimevalEqual( const struct timeval& tv1, const struct timeval& tv2 );
 
