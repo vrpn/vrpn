@@ -13,6 +13,7 @@
 #include "vrpn_Button.h"
 
 #include <basetsd.h>
+#include <mmsystem.h>
 
 class VRPN_API vrpn_Joywin32: public vrpn_Analog, public vrpn_Button_Filter
 {
