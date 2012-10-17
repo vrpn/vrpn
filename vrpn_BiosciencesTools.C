@@ -41,12 +41,6 @@ S2 037 0<CR> sets reference temperature for channel II
 
 #define TIMEOUT_TIME_INTERVAL   (2000000L) // max time between reports (usec)
 
-static	unsigned long	duration(struct timeval t1, struct timeval t2)
-{
-	return (t1.tv_usec - t2.tv_usec) +
-	       1000000L * (t1.tv_sec - t2.tv_sec);
-}
-
 
 // This creates a vrpn_BiosciencesTools. It opens
 // the serial device using the code in the vrpn_Serial_Analog constructor.
@@ -434,7 +428,7 @@ void	vrpn_BiosciencesTools::mainloop()
 
 	    struct timeval current_time;
 	    vrpn_gettimeofday(&current_time, NULL);
-	    if ( duration(current_time,timestamp) > TIMEOUT_TIME_INTERVAL) {
+	    if ( vrpn_TimevalDuration(current_time,timestamp) > TIMEOUT_TIME_INTERVAL) {
 		    sprintf(errmsg,"Timeout... current_time=%ld:%ld, timestamp=%ld:%ld",
 					current_time.tv_sec, static_cast<long>(current_time.tv_usec),
 					timestamp.tv_sec, static_cast<long>(timestamp.tv_usec));
