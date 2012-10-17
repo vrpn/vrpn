@@ -116,7 +116,6 @@ if(NOT SUBPROJECT)
 	# Build various applications if we want them.
 	option(VRPN_BUILD_CLIENTS "Build VRPN client apps and tests" ON)
 	option(VRPN_BUILD_SERVERS "Build VRPN servers" ON)
-	option(VRPN_BUILD_TEST_RPC_GENERATION "Build VRPN RPC generation" OFF)
 endif()
 
 # Development tools
@@ -503,6 +502,18 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
 		${DEFAULT_OFF_IF_SUBPROJECT}
 		HAVE_LINUX_INPUT_H)
 endif()
+
+###
+# Perl, for vrpn_rpc_gen
+###
+find_package(Perl)
+find_package(PerlModules COMPONENTS Parse::RecDescent)
+
+option_requires(VRPN_BUILD_TEST_RPC_GENERATION
+	"Build VRPN RPC generation"
+	${DEFAULT_OFF_IF_SUBPROJECT}
+	PERL_FOUND
+	PERLMODULES_FOUND)
 
 ###
 # XXX Other libraries needing detection and handling (TODO)

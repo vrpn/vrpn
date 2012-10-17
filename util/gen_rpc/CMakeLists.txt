@@ -1,46 +1,72 @@
-cmake_minimum_required(VERSION 2.6)
-
 #-----------------------------------------------------------------------------
 # Include directories needed
-include_directories(${VRPN_SOURCE_DIR}
-	${QUATLIB_INCLUDE_DIR}
-	${VRPN_SOURCE_DIR}/server_src
-	${VRPN_SOURCE_DIR}/server_src/timecode_generator_server
-	${VRPN_SOURCE_DIR}/server_src/ghostEffects
-	${HDAPI_INCLUDE_DIR}
-	${HDAPI_HDU_INCLUDE_DIR})
-
-if(WIN32)
-	set(PERL C:/cygwin/bin/perl.exe)
-else()
-	set(PTHREAD_LIBRARY pthread)
-	set(PERL perl)
-endif()
+include_directories(${CMAKE_CURRENT_BINARY_DIR}
+	${VRPN_SOURCE_DIR}
+	${QUATLIB_INCLUDE_DIR})
 
 #-----------------------------------------------------------------------------
 # Custom build steps to generate RPC code.
 # Executable built from these.
-add_custom_command(OUTPUT
-	"${PROJECT_SOURCE_DIR}/util/gen_rpc/rpc_Test_Remote.C"
-	COMMAND
-	${PERL}
-	gen_vrpn_rpc.pl
-	rpc_Test_Remote.Cdef
-	WORKING_DIRECTORY
-	"${PROJECT_SOURCE_DIR}/util/gen_rpc")
-add_custom_command(OUTPUT
-	"${PROJECT_SOURCE_DIR}/util/gen_rpc/rpc_Test_Remote.h"
-	COMMAND
-	${PERL}
-	gen_vrpn_rpc.pl
-	rpc_Test_Remote.hdef
-	WORKING_DIRECTORY
-	"${PROJECT_SOURCE_DIR}/util/gen_rpc")
+set(SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/gen_vrpn_rpc.pl")
 
-set(TARGET_NAME test_gen_rpc)
+set(MESSAGE_DEF rpc_Test.vrpndef)
+
+# Must copy the message def to the binary directory
+add_custom_command(OUTPUT
+	"${CMAKE_CURRENT_BINARY_DIR}/${MESSAGE_DEF}"
+	COMMAND
+	"${CMAKE_COMMAND}"
+	-E
+	copy_if_different
+	"${CMAKE_CURRENT_SOURCE_DIR}/${MESSAGE_DEF}"
+	"${CMAKE_CURRENT_BINARY_DIR}/${MESSAGE_DEF}"
+	DEPENDS
+	"${CMAKE_CURRENT_SOURCE_DIR}/${MESSAGE_DEF}"
+	COMMENT
+	"Copying message definition file ${MESSAGE_DEF}")
+
+# This generates the source files
+function(gen_vrpn_rpc OUTVAR OUT IN)
+	add_custom_command(OUTPUT
+		"${CMAKE_CURRENT_BINARY_DIR}/${OUT}"
+		COMMAND
+		${PERL}
+		"${SCRIPT}"
+		${ARGN}
+		"${CMAKE_CURRENT_SOURCE_DIR}/${IN}"
+		DEPENDS
+		"${SCRIPT}"
+		"${CMAKE_CURRENT_SOURCE_DIR}/${IN}"
+		"${CMAKE_CURRENT_BINARY_DIR}/${MESSAGE_DEF}"
+		WORKING_DIRECTORY
+		"${CMAKE_CURRENT_BINARY_DIR}"
+		COMMENT
+		"Generating ${OUT} from ${IN}"
+		VERBATIM)
+	list(APPEND ${OUTVAR} "${CMAKE_CURRENT_BINARY_DIR}/${OUT}")
+	set(${OUTVAR} ${${OUTVAR}} PARENT_SCOPE)
+endfunction()
+
+set(GENERATED_SOURCES)
+gen_vrpn_rpc(GENERATED_SOURCES
+	rpc_Test_Remote.C
+	rpc_Test_Remote.Cdef)
+gen_vrpn_rpc(GENERATED_SOURCES
+	rpc_Test_Remote.h
+	rpc_Test_Remote.hdef)
+gen_vrpn_rpc(GENERATED_SOURCES
+	rpc_Test.h
+	rpc_Test.vrpndef -h)
+gen_vrpn_rpc(GENERATED_SOURCES
+	rpc_Test.C
+	rpc_Test.vrpndef -C)
+
 add_executable(test_gen_rpc
 	main_test.C
-	rpc_Test.C
-	rpc_Test_Remote.C
-	rpc_Test_Remote.h)
-target_link_libraries(test_gen_rpc vrpn ${PTHREAD_LIBRARY})
+	${GENERATED_SOURCES})
+
+target_link_libraries(test_gen_rpc vrpn)
+
+if(PTHREAD_LIBRARY)
+	target_link_libraries(test_gen_rpc ${PTHREAD_LIBRARY})
+endif()
