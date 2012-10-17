@@ -11,8 +11,8 @@
 #include <fcntl.h>
 #include <ctype.h>
 
-#ifdef	linux
-#include <linux/lp.h>
+#if defined(linux) && !defined(VRPN_CLIENT_ONLY)
+#  include <linux/lp.h>
 #endif
 #if defined(linux) || defined(__sparc) || defined(hpux) || defined(__GNUC__)
 #include <string.h>
