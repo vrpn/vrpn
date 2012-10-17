@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 #include <math.h>
+#include <stdlib.h> // for exit()
 #ifndef	_WIN32_WCE
 #  include <sys/types.h>
 #endif
