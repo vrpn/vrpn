@@ -45,15 +45,15 @@ static const std::string &getDeviceNodes(const std::string &device_name) {
 
       int fd = open(oss.str().c_str(), O_RDONLY);
       if(fd >= 0){
-	char name[512];
-	if(ioctl(fd, EVIOCGNAME(sizeof(name)), name) >= 0) {
-	  s_devicesNodes[name] = oss.str();
-	}
+        char name[512];
+        if(ioctl(fd, EVIOCGNAME(sizeof(name)), name) >= 0) {
+          s_devicesNodes[name] = oss.str();
+        }
 
-	close(fd);
+        close(fd);
       } else {
-	if (errno == ENOENT) break;
-	if (errno == EACCES) permission_missing = true;
+        if (errno == ENOENT) break;
+        if (errno == EACCES) permission_missing = true;
       }
       errno = 0;
       id++;
@@ -204,7 +204,7 @@ int vrpn_DevInput::get_report()
     int channel_number = event.code;
     if ((channel_number >= 0) && (channel_number < vrpn_Analog::num_channel)) {
       for (unsigned int i = 0 ; i < vrpn_Analog::num_channel ; i++) {
-	vrpn_Analog::last[i] = 0;
+        vrpn_Analog::last[i] = 0;
       }
       vrpn_Analog::channel[channel_number] = (vrpn_float64)event.value;
     }
