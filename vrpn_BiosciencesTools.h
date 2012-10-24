@@ -9,6 +9,22 @@
 #include "vrpn_Button.h"
 #include "vrpn_Analog_Output.h"
 
+/*
+# Analog channels: (read by client)
+#	0	Reading from stage 1 in degrees Celcius
+#	1	Reading from bath 1 in degrees Celcius
+#	2	Reading from stage 2 in degrees Celcius
+#	3	Reading from bath 2 in degrees Celcius
+#	4	Setpoint for control on stage 1 in degrees Celcius
+#	5	Setpoint for control on stage 2 in degrees Celcius
+# Button channels: (read by client)
+#	0	Temperature control is on or off
+# Analog_Output channels: (set by client)
+#	0	Reference temperature for channel 1
+#	1	Reference temperature for channel 2
+#	2	Turn temperature control on/off (0 = off, otherwise on)
+*/
+
 class VRPN_API vrpn_BiosciencesTools: public vrpn_Serial_Analog,
   public vrpn_Analog_Output, public vrpn_Button_Filter
 {
