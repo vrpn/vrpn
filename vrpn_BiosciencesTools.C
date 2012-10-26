@@ -3,6 +3,11 @@
 // It was written in October 2012 by Russ Taylor.
 
 // INFO about how the device communicates, taken from the user manual:
+// Note: They say that the device uses <cr>, but they also say that it
+// uses \n for this character.  In fact, the \r character is <cr> and \n
+// is newline.  Not sure which this should be.  In fact, neither seem to
+// work for our device.
+
 /*
 Using a standard DB-9 cable (female-female connectors on both ends)
 connect the controller (middle DB-9 connector) to a serial port of your computer.
@@ -57,6 +62,10 @@ vrpn_BiosciencesTools::vrpn_BiosciencesTools (const char * name, vrpn_Connection
         vrpn_Analog_Output(name, c),
         vrpn_Button_Filter(name, c)
 {
+  // Turn on hardware flow control for our serial port.  The manual
+  // reports that the device uses hardware flow control.
+  vrpn_set_rts(serial_fd);
+
   num_channel = 6;
   o_num_channel = 3;
   num_buttons = 1;
