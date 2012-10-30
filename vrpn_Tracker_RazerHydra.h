@@ -90,14 +90,12 @@
 	* 2 - analog trigger, in range 0 (not pressed) to 1 (fully pressed).
 */
 
-class VRPN_API vrpn_Tracker_RazerHydra: public vrpn_Analog, public vrpn_Button_Filter, public vrpn_Tracker, vrpn_HidInterface {
+class VRPN_API vrpn_Tracker_RazerHydra: public vrpn_Analog, public vrpn_Button_Filter, public vrpn_Tracker {
 	public:
 		vrpn_Tracker_RazerHydra(const char * name, vrpn_Connection * trackercon);
 		~vrpn_Tracker_RazerHydra();
 
 		virtual void mainloop();
-
-		virtual void on_data_received(size_t bytes, vrpn_uint8 *buffer);
 
 		virtual bool reconnect();
 
@@ -138,8 +136,10 @@ class VRPN_API vrpn_Tracker_RazerHydra: public vrpn_Analog, public vrpn_Button_F
 
 		FilterData * _f;
 
-		class ControlInterface;
-		ControlInterface * _ctrl;
+                // This device has both a control and a data interface.
+                class MyInterface;
+                MyInterface * _ctrl;
+                MyInterface * _data;
 };
 
 #endif

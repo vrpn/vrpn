@@ -89,26 +89,66 @@ static inline double duration_seconds(struct timeval t1, struct timeval t2) {
 	return duration(t1, t2) / double(1000000L);
 }
 
-class vrpn_Tracker_RazerHydra::ControlInterface : public vrpn_HidInterface {
+
+// XXXX Need to determine which on_data_received action to take based on
+// whether we're a controller or data interface.
+class vrpn_Tracker_RazerHydra::MyInterface : public vrpn_HidInterface {
 	public:
-		ControlInterface()
+                MyInterface(unsigned which_interface, vrpn_Tracker_RazerHydra *hydra)
 #ifdef __APPLE__
-	// XXX The Interface is not supported on the mac version -- it
+        // XXX The InterfaceNumber is not supported on the mac version -- it
 	// is always returned as -1.  So we need to do this based on which
 	// device shows up first and hope that it is always the same order.
 	// On my mac, the control interface shows up first on iHid, so we
 	// try this order.
-			: vrpn_HidInterface(new vrpn_HidNthMatchAcceptor(0, 
+                        : vrpn_HidInterface(new vrpn_HidNthMatchAcceptor(which_interface,
 #else
 			: vrpn_HidInterface(new vrpn_HidBooleanAndAcceptor(
 			                        new vrpn_HidInterfaceNumberAcceptor(HYDRA_CONTROL_INTERFACE),
 #endif
-			                        new vrpn_HidProductAcceptor(HYDRA_VENDOR, HYDRA_PRODUCT)))
-		{}
+                                                new vrpn_HidProductAcceptor(HYDRA_VENDOR, HYDRA_PRODUCT)))
+                {
+                    d_my_interface = which_interface;
+                    d_hydra = hydra;
+                }
 
-		void on_data_received(size_t bytes, vrpn_uint8 * /*buffer*/) {
-			fprintf(stderr, "Unexpected receipt of %d bytes on Hydra control interface!\n", static_cast<int>(bytes));
-		}
+                void on_data_received(size_t bytes, vrpn_uint8 *buffer)
+                {
+                    if (d_my_interface == HYDRA_CONTROL_INTERFACE) {
+                        fprintf(stderr, "Unexpected receipt of %d bytes on Hydra control interface!\n", static_cast<int>(bytes));
+                    } else {
+                        if (bytes != 52) {
+                                d_hydra->send_text_message(vrpn_TEXT_WARNING)
+                                        << "Got input report of " << bytes << " bytes, expected 52! Discarding, and re-connecting to Hydra."
+                #ifdef _WIN32
+                                        << " Please make sure that you have completely quit the Hydra Configurator software and the Hydra system tray icon,"
+                                        << " since this usually indicates that the Razer software has changed the Hydra's mode behind our back."
+                #endif
+                                        ;
+                                d_hydra->reconnect();
+                                return;
+                        }
+
+                        if (d_hydra->status != HYDRA_REPORTING) {
+
+                                d_hydra->send_text_message(vrpn_TEXT_WARNING)
+                                        << "Got first motion controller report! This means everything is working properly now. "
+                                        << "(Took " << d_hydra->_attempt << " attempt" << (d_hydra->_attempt > 1 ? "s" : "") << " to change modes.)";
+                                d_hydra->status = HYDRA_REPORTING;
+                        }
+
+                        vrpn_gettimeofday(&d_hydra->_timestamp, NULL);
+                        double dt = duration_seconds(d_hydra->_timestamp, d_hydra->vrpn_Button::timestamp);
+                        d_hydra->vrpn_Button::timestamp = d_hydra->_timestamp;
+                        d_hydra->vrpn_Tracker::timestamp = d_hydra->_timestamp;
+                        d_hydra->_report_for_sensor(0, buffer + 8, dt);
+                        d_hydra->_report_for_sensor(1, buffer + 30, dt);
+
+                        d_hydra->vrpn_Analog::report_changes(vrpn_CONNECTION_LOW_LATENCY, d_hydra->_timestamp);
+                        d_hydra->vrpn_Button::report_changes();
+                    }
+                }
+
 
 		std::string getSerialNumber() {
 			if (connected()) {
@@ -146,6 +186,10 @@ class vrpn_Tracker_RazerHydra::ControlInterface : public vrpn_HidInterface {
 		void update() {
 			vrpn_HidInterface::update();
 		}
+
+protected:
+                unsigned    d_my_interface;
+                vrpn_Tracker_RazerHydra *d_hydra;
 };
 
 struct vrpn_Tracker_RazerHydra::FilterData {
@@ -168,24 +212,13 @@ vrpn_Tracker_RazerHydra::vrpn_Tracker_RazerHydra(const char * name, vrpn_Connect
 	: vrpn_Analog(name, con)
 	, vrpn_Button_Filter(name, con)
 	, vrpn_Tracker(name, con)
-#ifdef __APPLE__
-	// XXX The Interface is not supported on the mac version -- it
-	// is always returned as -1.  So we need to do this based on which
-	// device shows up first and hope that it is always the same order.
-	// On my mac, the standard interface shows up second on iHid, so we
-	// try this order.
-	, vrpn_HidInterface(new vrpn_HidNthMatchAcceptor(1, 
-#else
-	, vrpn_HidInterface(new vrpn_HidBooleanAndAcceptor(
-	                        new vrpn_HidInterfaceNumberAcceptor(HYDRA_INTERFACE),
-#endif
-	                        new vrpn_HidProductAcceptor(HYDRA_VENDOR, HYDRA_PRODUCT)))
-	, status(HYDRA_WAITING_FOR_CONNECT)
+        , status(HYDRA_WAITING_FOR_CONNECT)
 	, _wasInGamepadMode(false) /// assume not - if we have to send a command, then set to true
 	, _attempt(0)
 	, _f(new FilterData())
-	, _ctrl(new ControlInterface) {
-
+        , _ctrl(new MyInterface(HYDRA_CONTROL_INTERFACE, this))
+        , _data(new MyInterface(HYDRA_INTERFACE, this))
+{
 	/// Set up sensor counts
 	vrpn_Analog::num_channel = ANALOG_CHANNELS; /// 3 analog channels from each controller
 	vrpn_Button::num_buttons = BUTTON_CHANNELS; /// 7 for each controller, starting at a nice number for each
@@ -219,52 +252,20 @@ vrpn_Tracker_RazerHydra::~vrpn_Tracker_RazerHydra() {
 	delete _f;
 }
 
-void vrpn_Tracker_RazerHydra::on_data_received(size_t bytes, vrpn_uint8 *buffer) {
-	if (bytes != 52) {
-		send_text_message(vrpn_TEXT_WARNING)
-		        << "Got input report of " << bytes << " bytes, expected 52! Discarding, and re-connecting to Hydra."
-#ifdef _WIN32
-		        << " Please make sure that you have completely quit the Hydra Configurator software and the Hydra system tray icon,"
-		        << " since this usually indicates that the Razer software has changed the Hydra's mode behind our back."
-#endif
-		        ;
-		reconnect();
-		return;
-	}
-
-	if (status != HYDRA_REPORTING) {
-
-		send_text_message(vrpn_TEXT_WARNING)
-		        << "Got first motion controller report! This means everything is working properly now. "
-		        << "(Took " << _attempt << " attempt" << (_attempt > 1 ? "s" : "") << " to change modes.)";
-		status = HYDRA_REPORTING;
-	}
-
-	vrpn_gettimeofday(&_timestamp, NULL);
-	double dt = duration_seconds(_timestamp, vrpn_Button::timestamp);
-	vrpn_Button::timestamp = _timestamp;
-	vrpn_Tracker::timestamp = _timestamp;
-	_report_for_sensor(0, buffer + 8, dt);
-	_report_for_sensor(1, buffer + 30, dt);
-
-	vrpn_Analog::report_changes(vrpn_CONNECTION_LOW_LATENCY, _timestamp);
-	vrpn_Button::report_changes();
-}
-
 void vrpn_Tracker_RazerHydra::mainloop() {
 	// server update
 	vrpn_Analog::server_mainloop();
 	vrpn_Button::server_mainloop();
 	vrpn_Tracker::server_mainloop();
 
-	if (connected()) {
+        if (_data->connected()) {
 		// Update state
 		if (status == HYDRA_WAITING_FOR_CONNECT) {
 			_waiting_for_connect();
 		}
 
 		// device update
-		update();
+                _data->update();
 		_ctrl->update();
 
 		// Check/update listening state during connection/handshaking
@@ -285,13 +286,13 @@ bool vrpn_Tracker_RazerHydra::reconnect() {
 		_mirror[i] = 1;
 	}
 
-	vrpn_HidInterface::reconnect();
+        _data->reconnect();
 	return _ctrl->reconnect();
 }
 
 void vrpn_Tracker_RazerHydra::_waiting_for_connect() {
 	assert(status == HYDRA_WAITING_FOR_CONNECT);
-	if (connected() && _ctrl->connected()) {
+        if (_data->connected() && _ctrl->connected()) {
 		send_text_message(vrpn_TEXT_WARNING) << "Connected to Razer Hydra with serial number " << _ctrl->getSerialNumber();
 
 		status = HYDRA_LISTENING_AFTER_CONNECT;
@@ -307,7 +308,7 @@ void vrpn_Tracker_RazerHydra::_waiting_for_connect() {
 
 void vrpn_Tracker_RazerHydra::_listening_after_connect() {
 	assert(status == HYDRA_LISTENING_AFTER_CONNECT);
-	assert(connected() && _ctrl->connected());
+        assert(_data->connected() && _ctrl->connected());
 	struct timeval now;
 	vrpn_gettimeofday(&now, NULL);
 	if (duration(now, _connected) > MAXIMUM_INITIAL_WAIT_USEC) {
@@ -317,11 +318,12 @@ void vrpn_Tracker_RazerHydra::_listening_after_connect() {
 
 void vrpn_Tracker_RazerHydra::_listening_after_set_feature() {
 	assert(status == HYDRA_LISTENING_AFTER_SET_FEATURE);
-	assert(connected() && _ctrl->connected());
+        assert(_data->connected() && _ctrl->connected());
 	struct timeval now;
 	vrpn_gettimeofday(&now, NULL);
 	if (duration(now, _set_feature) > MAXIMUM_WAIT_USEC) {
 		send_text_message(vrpn_TEXT_WARNING)
+                        << "Really sleepy device - won't start motion controller reports despite our earlier "
 		        << "Really sleepy device - won't start motion controller reports despite our earlier "
 		        << _attempt << " attempt" << (_attempt > 1 ? ". " : "s. ")
 		        << " Will give it another try. "
@@ -332,7 +334,7 @@ void vrpn_Tracker_RazerHydra::_listening_after_set_feature() {
 
 void vrpn_Tracker_RazerHydra::_enter_motion_controller_mode() {
 	assert(status == HYDRA_LISTENING_AFTER_CONNECT || status == HYDRA_LISTENING_AFTER_SET_FEATURE);
-	assert(connected());
+        assert(_data->connected());
 
 	_attempt++;
 	_wasInGamepadMode = true;
