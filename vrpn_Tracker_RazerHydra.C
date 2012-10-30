@@ -90,21 +90,19 @@ static inline double duration_seconds(struct timeval t1, struct timeval t2) {
 }
 
 
-// XXXX Need to determine which on_data_received action to take based on
-// whether we're a controller or data interface.
 class vrpn_Tracker_RazerHydra::MyInterface : public vrpn_HidInterface {
-	public:
+        public:
                 MyInterface(unsigned which_interface, vrpn_Tracker_RazerHydra *hydra)
 #ifdef __APPLE__
-        // XXX The InterfaceNumber is not supported on the mac version -- it
-	// is always returned as -1.  So we need to do this based on which
-	// device shows up first and hope that it is always the same order.
-	// On my mac, the control interface shows up first on iHid, so we
-	// try this order.
+        // The InterfaceNumber is not supported on the mac version -- it
+        // is always returned as -1.  So we need to do this based on which
+        // device shows up first and hope that it is always the same order.
+        // On my mac, the control interface shows up first on iHid, so we
+        // try this order.  If we get it wrong, then we swap things out later.
                         : vrpn_HidInterface(new vrpn_HidNthMatchAcceptor(which_interface,
 #else
-			: vrpn_HidInterface(new vrpn_HidBooleanAndAcceptor(
-			                        new vrpn_HidInterfaceNumberAcceptor(HYDRA_CONTROL_INTERFACE),
+                        : vrpn_HidInterface(new vrpn_HidBooleanAndAcceptor(
+                                                new vrpn_HidInterfaceNumberAcceptor(HYDRA_CONTROL_INTERFACE),
 #endif
                                                 new vrpn_HidProductAcceptor(HYDRA_VENDOR, HYDRA_PRODUCT)))
                 {
@@ -115,7 +113,19 @@ class vrpn_Tracker_RazerHydra::MyInterface : public vrpn_HidInterface {
                 void on_data_received(size_t bytes, vrpn_uint8 *buffer)
                 {
                     if (d_my_interface == HYDRA_CONTROL_INTERFACE) {
+#ifdef __APPLE__
+                        d_hydra->send_text_message(vrpn_TEXT_WARNING)
+                                << "Got report on controller channel.  This means that we need to swap channels. "
+                                << "Swapping channels.";
+
+                        MyInterface *t = d_hydra->_ctrl;
+                        d_hydra->_ctrl = d_hydra->_data;
+                        d_hydra->_data = t;
+                        d_hydra->_ctrl->set_interface(HYDRA_CONTROL_INTERFACE);
+                        d_hydra->_data->set_interface(HYDRA_INTERFACE);
+#else
                         fprintf(stderr, "Unexpected receipt of %d bytes on Hydra control interface!\n", static_cast<int>(bytes));
+#endif
                     } else {
                         if (bytes != 52) {
                                 d_hydra->send_text_message(vrpn_TEXT_WARNING)
@@ -150,42 +160,46 @@ class vrpn_Tracker_RazerHydra::MyInterface : public vrpn_HidInterface {
                 }
 
 
-		std::string getSerialNumber() {
-			if (connected()) {
-				char buf[256];
-				memset(buf, 0, sizeof(buf));
-				int bytes = get_feature_report(sizeof(buf) - 1, reinterpret_cast<vrpn_uint8*>(buf));
-				if (bytes > 0) {
-					return std::string(buf + 216, 17);
-				} else {
-					return "[FAILED TO GET FEATURE REPORT]";
-				}
-			} else {
-				return "[HYDRA CONTROL INTERFACE NOT CONNECTED]";
-			}
-		}
+                std::string getSerialNumber() {
+                        if (connected()) {
+                                char buf[256];
+                                memset(buf, 0, sizeof(buf));
+                                int bytes = get_feature_report(sizeof(buf) - 1, reinterpret_cast<vrpn_uint8*>(buf));
+                                if (bytes > 0) {
+                                        return std::string(buf + 216, 17);
+                                } else {
+                                        return "[FAILED TO GET FEATURE REPORT]";
+                                }
+                        } else {
+                                return "[HYDRA CONTROL INTERFACE NOT CONNECTED]";
+                        }
+                }
 
-		void setMotionControllerMode() {
-			/// Prompt to start streaming motion data
-			send_feature_report(HYDRA_FEATURE_REPORT_LEN, HYDRA_FEATURE_REPORT);
+                void setMotionControllerMode() {
+                        /// Prompt to start streaming motion data
+                        send_feature_report(HYDRA_FEATURE_REPORT_LEN, HYDRA_FEATURE_REPORT);
 
-			vrpn_uint8 buf[91] = {0};
-			buf[0] = 0;
-			get_feature_report(91, buf);
-		}
+                        vrpn_uint8 buf[91] = {0};
+                        buf[0] = 0;
+                        get_feature_report(91, buf);
+                }
 
-		void setGamepadMode() {
-			/// Prompt to stop streaming motion data
-			send_feature_report(HYDRA_GAMEPAD_COMMAND_LEN, HYDRA_GAMEPAD_COMMAND);
-		}
+                void setGamepadMode() {
+                        /// Prompt to stop streaming motion data
+                        send_feature_report(HYDRA_GAMEPAD_COMMAND_LEN, HYDRA_GAMEPAD_COMMAND);
+                }
 
-		bool connected() {
-			return vrpn_HidInterface::connected();
-		}
+                bool connected() {
+                        return vrpn_HidInterface::connected();
+                }
 
-		void update() {
-			vrpn_HidInterface::update();
-		}
+                void update() {
+                        vrpn_HidInterface::update();
+                }
+
+                void set_interface(unsigned interface) {
+                    d_my_interface = interface;
+                }
 
 protected:
                 unsigned    d_my_interface;
@@ -323,12 +337,22 @@ void vrpn_Tracker_RazerHydra::_listening_after_set_feature() {
 	vrpn_gettimeofday(&now, NULL);
 	if (duration(now, _set_feature) > MAXIMUM_WAIT_USEC) {
 		send_text_message(vrpn_TEXT_WARNING)
-                        << "Really sleepy device - won't start motion controller reports despite our earlier "
 		        << "Really sleepy device - won't start motion controller reports despite our earlier "
 		        << _attempt << " attempt" << (_attempt > 1 ? ". " : "s. ")
 		        << " Will give it another try. "
 		        << "If this doesn't work, unplug and replug device and restart the VRPN server.";
-		_enter_motion_controller_mode();
+#ifdef __APPLE__
+                if ((_attempt % 2) == 0) {
+                    send_text_message(vrpn_TEXT_WARNING)
+                        << "Switching control and data interface (mac can't tell the difference).";
+                    MyInterface *t = _ctrl;
+                    _ctrl = _data;
+                    _data = t;
+                    _ctrl->set_interface(HYDRA_CONTROL_INTERFACE);
+                    _data->set_interface(HYDRA_INTERFACE);
+                }
+#endif
+                _enter_motion_controller_mode();
 	}
 }
 
