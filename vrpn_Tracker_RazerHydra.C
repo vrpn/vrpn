@@ -102,7 +102,7 @@ class vrpn_Tracker_RazerHydra::MyInterface : public vrpn_HidInterface {
                         : vrpn_HidInterface(new vrpn_HidNthMatchAcceptor(which_interface,
 #else
                         : vrpn_HidInterface(new vrpn_HidBooleanAndAcceptor(
-                                                new vrpn_HidInterfaceNumberAcceptor(HYDRA_CONTROL_INTERFACE),
+                                                new vrpn_HidInterfaceNumberAcceptor(which_interface),
 #endif
                                                 new vrpn_HidProductAcceptor(HYDRA_VENDOR, HYDRA_PRODUCT)))
                 {
@@ -197,8 +197,8 @@ class vrpn_Tracker_RazerHydra::MyInterface : public vrpn_HidInterface {
                         vrpn_HidInterface::update();
                 }
 
-                void set_interface(unsigned interface) {
-                    d_my_interface = interface;
+                void set_interface(unsigned which_interface) {
+                    d_my_interface = which_interface;
                 }
 
 protected:
@@ -230,9 +230,11 @@ vrpn_Tracker_RazerHydra::vrpn_Tracker_RazerHydra(const char * name, vrpn_Connect
 	, _wasInGamepadMode(false) /// assume not - if we have to send a command, then set to true
 	, _attempt(0)
 	, _f(new FilterData())
-        , _ctrl(new MyInterface(HYDRA_CONTROL_INTERFACE, this))
-        , _data(new MyInterface(HYDRA_INTERFACE, this))
 {
+        // Set up the control and data channels
+        _ctrl = new MyInterface(HYDRA_CONTROL_INTERFACE, this);
+        _data = new MyInterface(HYDRA_INTERFACE, this);
+
 	/// Set up sensor counts
 	vrpn_Analog::num_channel = ANALOG_CHANNELS; /// 3 analog channels from each controller
 	vrpn_Button::num_buttons = BUTTON_CHANNELS; /// 7 for each controller, starting at a nice number for each
