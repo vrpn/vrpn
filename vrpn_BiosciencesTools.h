@@ -40,7 +40,6 @@ public:
 	virtual void mainloop ();
 
   protected:
-	unsigned d_expected_chars;    //< How many characters to expect in the report
 	char d_buffer[128];           //< Buffer of characters in report
 	unsigned d_bufcount;	      //< How many characters we have so far
 

@@ -120,7 +120,7 @@ void vrpn_Analog::report (vrpn_uint32 class_of_service, const struct timeval tim
 #ifndef VRPN_CLIENT_ONLY
 vrpn_Serial_Analog::vrpn_Serial_Analog (const char * name, vrpn_Connection * c,
 				        const char * port, int baud, int bits,
-					vrpn_SER_PARITY parity) :
+					vrpn_SER_PARITY parity, bool rts_flow) :
     vrpn_Analog(name, c),
     serial_fd(-1),
     baudrate(0),
@@ -141,7 +141,7 @@ vrpn_Serial_Analog::vrpn_Serial_Analog (const char * name, vrpn_Connection * c,
     baudrate = baud;
 
     // Open the serial port we're going to use
-    if ( (serial_fd=vrpn_open_commport(portname, baudrate, bits, parity)) == -1) {
+    if ( (serial_fd=vrpn_open_commport(portname, baudrate, bits, parity, rts_flow)) == -1) {
 	fprintf(stderr,"vrpn_Serial_Analog: Cannot Open serial port\n");
 	status = vrpn_ANALOG_FAIL;
     }

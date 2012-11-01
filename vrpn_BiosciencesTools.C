@@ -5,16 +5,18 @@
 // INFO about how the device communicates, taken from the user manual:
 // Note: They say that the device uses <cr>, but they also say that it
 // uses \n for this character.  In fact, the \r character is <cr> and \n
-// is newline.  Not sure which this should be.  In fact, neither seem to
-// work for our device.
+// is newline.  In fact, \r is what works in the end.
 
 /*
-Using a standard DB-9 cable (female-female connectors on both ends)
+Using a standard DB-9 cable (female-female connectors on both ends with
+straight-through connections from each pin)
 connect the controller (middle DB-9 connector) to a serial port of your computer.
 Set the serial port at 115,200 speed, 8 bits, 1 stop bit,
-NONE parity, and Hardware control.
+NONE parity, and Hardware flow control.
 The following is the list of text commands supported.
-NOTE: Each command should follow by \n <CR> code:
+NOTE: Each command should follow by \r <CR> code:
+(The following notes LIE: There is no space before the . or before the C,
+ and sometimes the C is an E.)
 T1<CR> returns temperature readings from STAGE1 sensor: 37 .1 C
 T2<CR> returns temperature readings from BATH1 sensor: 36 .9 C
 T5<CR> returns SET temperature: 37 .0 C
@@ -33,7 +35,7 @@ S2 037 0<CR> sets reference temperature for channel II
 #include "vrpn_Shared.h"
 #include "vrpn_Serial.h"
 
-#undef VERBOSE
+#define VERBOSE
 
 // Defines the modes in which the device can find itself.
 #define	STATUS_RESETTING	(-1)	// Resetting the device
@@ -55,17 +57,14 @@ static	unsigned long	duration(struct timeval t1, struct timeval t2)
 
 // This creates a vrpn_BiosciencesTools. It opens
 // the serial device using the code in the vrpn_Serial_Analog constructor.
+// It uses hardware flow control.
 
 vrpn_BiosciencesTools::vrpn_BiosciencesTools (const char * name, vrpn_Connection * c,
 			const char * port, float temp1, float temp2, bool control_on):
-	vrpn_Serial_Analog(name, c, port, 115200),
+	vrpn_Serial_Analog(name, c, port, 115200, 8, vrpn_SER_PARITY_NONE, true),
         vrpn_Analog_Output(name, c),
         vrpn_Button_Filter(name, c)
 {
-  // Turn on hardware flow control for our serial port.  The manual
-  // reports that the device uses hardware flow control.
-  vrpn_set_rts(serial_fd);
-
   num_channel = 6;
   o_num_channel = 3;
   num_buttons = 1;
@@ -112,7 +111,7 @@ bool  vrpn_BiosciencesTools::set_reference_temperature(unsigned channel, float v
 
   // Fill in the command with a dot in the middle of it.
   // Replace the dot with a space to match the protocol.
-  sprintf(command, "S%d %5.1f\n", channel+1, value);
+  sprintf(command, "S%d %5.1f\r", channel+1, value);
   command[6] = ' ';
 
   // Send the command to the serial port
@@ -128,9 +127,9 @@ bool  vrpn_BiosciencesTools::set_control_status(bool on)
   char command[128];
 
   if (on) {
-    sprintf(command, "ON\n");
+    sprintf(command, "ON\r");
   } else {
-    sprintf(command, "OFF\n");
+    sprintf(command, "OFF\r");
   }
 
   // Send the command to the serial port
@@ -138,48 +137,68 @@ bool  vrpn_BiosciencesTools::set_control_status(bool on)
 }
 
 // Command format:
-// T1<CR> returns temperature readings from STAGE1 sensor: 37 .1 C
-// T2<CR> returns temperature readings from BATH1 sensor: 36 .9 C
-// T5<CR> returns SET temperature: 37 .0 C
-// T3<CR> returns temperature readings from STAGE2 sensor: 37 .1 C
-// T4<CR> returns temperature readings from BATH2 sensor: 36 .9 C
-// T6<CR> returns SET temperature: 37 .0 C
+// T1<CR> returns temperature readings from STAGE1 sensor: 37.1C
+// T2<CR> returns temperature readings from BATH1 sensor: 36.9C
+// T5<CR> returns SET temperature: 37.0C
+// T3<CR> returns temperature readings from STAGE2 sensor: 37.1C
+// T4<CR> returns temperature readings from BATH2 sensor: 36.9C
+// T6<CR> returns SET temperature: 37.0C
+// NOTE: Sometimes the C is an E when there is no reading.
         
 bool  vrpn_BiosciencesTools::request_temperature(unsigned channel)
 {
   char command[128];
 
-  sprintf(command, "T%d\n", channel+1);
+  sprintf(command, "T%d\r", channel+1);
+#ifdef	VERBOSE
+  printf("Sending command: %s", command);
+#endif
 
   // Send the command to the serial port
   return (vrpn_write_characters(serial_fd, (unsigned char *)(command), strlen(command)) == strlen(command));
 }
 
 // Convert the four bytes that have been read into a signed integer value.
-// The format (no quotes) looks like: "37 .1 C\n".
+// The format (no quotes) looks like: "- 37.1C\r" or " 000.00E\r".
+// I don't think that the - means a minus sign, and it has a space
+// between it and the number.
 // Returns -1000 if there is an error.
 float  vrpn_BiosciencesTools::convert_bytes_to_reading(const char *buf)
 {
-  int  whole, fractional;
+  float val;
+  char  c;
 
-  if (sscanf(buf, "%d .%d C\n", &whole, &fractional) != 2) {
+  // Skip any leading minus sign.
+  if (*buf == '-') { buf++; }
+
+  // Read a fractional number.
+  if (sscanf(buf, "%f%c", &val, &c) != 2) {
     return -1000;
   }
-  return whole + (fractional*0.1f);
+
+  // See if we get and E or C after the number,
+  // or (since E can be part of a floating-point
+  // number) if we get \r.
+  if ( (c != 'E') && (c != 'C') && (c != '\r') ) {
+    return -1000;
+  }
+
+  return val;
 }
 
 
 int	vrpn_BiosciencesTools::reset(void)
 {
 	//-----------------------------------------------------------------------
-	// Sleep half a second and then drain the input buffer to make sure we start
+	// Sleep less thana second and then drain the input buffer to make sure we start
 	// with a fresh slate.
-	vrpn_SleepMsecs(500);
+	vrpn_SleepMsecs(200);
 	vrpn_flush_input_buffer(serial_fd);
 
-	//-----------------------------------------------------------------------
+        //-----------------------------------------------------------------------
         // Set the temperatures for channel 1 and 2 and then set the temperature
         // control to be on or off depending on what we've been asked to do.
+/*XXX
         if (!set_reference_temperature(0, static_cast<float>(o_channel[0]))) {
 	  fprintf(stderr,"vrpn_BiosciencesTools::reset(): Cannot send set ref temp 0, trying again\n");
 	  return -1;
@@ -188,6 +207,7 @@ int	vrpn_BiosciencesTools::reset(void)
 	  fprintf(stderr,"vrpn_BiosciencesTools::reset(): Cannot send set ref temp 1, trying again\n");
 	  return -1;
         }
+        */
         if (!set_control_status(o_channel[0] != 0)) {
 	  fprintf(stderr,"vrpn_BiosciencesTools::reset(): Cannot send set control status, trying again\n");
 	  return -1;
@@ -204,7 +224,7 @@ int	vrpn_BiosciencesTools::reset(void)
 
 	// We're now waiting for any responses from devices
 	status = STATUS_SYNCING;
-	DO_WARNING("reset complete (this is good)");
+	DO_WARNING("reset complete (this is normal)");
 	vrpn_gettimeofday(&timestamp, NULL);	// Set watchdog now
 	return 0;
 }
@@ -232,16 +252,19 @@ int vrpn_BiosciencesTools::get_report(void)
       	return 0;
       }
 
-      d_expected_chars = 8;
-
       // Got the first character of a report -- go into READING mode
-      // and record that we got one character at this time. The next
-      // bit of code will attempt to read the rest of the report.
+      // and record that we got one character at this time.  Clear the
+      // rest of the buffer to 0's so that we won't be looking at old
+      // data when we parse.
       // The time stored here is as close as possible to when the
       // report was generated.
       d_bufcount = 1;
       vrpn_gettimeofday(&timestamp, NULL);
       status = STATUS_READING;
+      size_t i;
+      for (i = 1; i < sizeof(d_buffer); i++) {
+        d_buffer[i] = 0;
+      }
 #ifdef	VERBOSE
       printf("... Got the 1st char\n");
 #endif
@@ -249,25 +272,23 @@ int vrpn_BiosciencesTools::get_report(void)
 
    //--------------------------------------------------------------------
    // Read as many bytes of this report as we can, storing them
-   // in the buffer.  We keep track of how many have been read so far
-   // and only try to read the rest.
+   // in the buffer.
    //--------------------------------------------------------------------
 
-   ret = vrpn_read_available_characters(serial_fd, (unsigned char *)(&d_buffer[d_bufcount]),
-		d_expected_chars-d_bufcount);
+   while ( 1 == (ret = vrpn_read_available_characters(serial_fd, (unsigned char *)(&d_buffer[d_bufcount]), 1))) {
+     d_bufcount++;
+   }
    if (ret == -1) {
 	DO_ERROR("Error reading");
 	status = STATUS_RESETTING;
 	return 0;
    }
-   d_bufcount += ret;
 #ifdef	VERBOSE
-   if (ret != 0) printf("... got %d characters (%d total)\n",ret, d_bufcount);
+   if (ret != 0) printf("... got %d total characters\n", d_bufcount);
 #endif
-   if (d_bufcount < d_expected_chars) {	// Not done -- go back for more
+   if (d_buffer[d_bufcount-1] != '\r') {	// Not done -- go back for more
 	return 0;
    }
-   d_buffer[d_expected_chars] = '\0'; // NULL terminate.
 
    //--------------------------------------------------------------------
    // We now have enough characters to make a full report. Check to make
@@ -276,6 +297,9 @@ int vrpn_BiosciencesTools::get_report(void)
    // Store the report into the appropriate analog channel.
    //--------------------------------------------------------------------
 
+#ifdef	VERBOSE
+   printf("  Complete report: \n%s\n",d_buffer);
+#endif
    float value = convert_bytes_to_reading(d_buffer);
    if (value == -1000) {
      char msg[256];
@@ -286,7 +310,7 @@ int vrpn_BiosciencesTools::get_report(void)
    channel[d_next_channel_to_read] = value;
 
 #ifdef	VERBOSE
-   printf("got a complete report (%d of %d)!\n", d_bufcount, d_expected_chars);
+   printf("got a complete report (%d chars)!\n", d_bufcount);
 #endif
 
    //--------------------------------------------------------------------
