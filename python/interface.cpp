@@ -45,7 +45,7 @@ PyMODINIT_FUNC initvrpn(void)  {
   if (!vrpn_python::quaternion::init_types()) INIT_FUNCTION_RETURN_VALUE (NULL);
 
   PyObject* vrpn_module = 
-#if PY_MAJOR_VERSION >= 3 and PY_MINOR_VERSION >= 2
+#if PY_MAJOR_VERSION >= 3 and PY_MINOR_VERSION >= 1
     PyModule_Create(&module_definition);
 #else
 #   ifdef DEFINE_REFCOUNT
