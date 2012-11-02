@@ -16,7 +16,8 @@ NONE parity, and Hardware flow control.
 The following is the list of text commands supported.
 NOTE: Each command should follow by \r <CR> code:
 (The following notes LIE: There is no space before the . or before the C,
- and sometimes the C is an E.)
+ and sometimes the C is an E.  Also, the order is incorrect.  The actual
+ order is stage 1, bath 1, external 1, stage 2, bath 2, external 2.)
 T1<CR> returns temperature readings from STAGE1 sensor: 37 .1 C
 T2<CR> returns temperature readings from BATH1 sensor: 36 .9 C
 T5<CR> returns SET temperature: 37 .0 C
@@ -35,7 +36,7 @@ S2 037 0<CR> sets reference temperature for channel II
 #include "vrpn_Shared.h"
 #include "vrpn_Serial.h"
 
-#define VERBOSE
+#undef VERBOSE
 
 // Defines the modes in which the device can find itself.
 #define	STATUS_RESETTING	(-1)	// Resetting the device
@@ -68,6 +69,7 @@ vrpn_BiosciencesTools::vrpn_BiosciencesTools (const char * name, vrpn_Connection
   num_channel = 6;
   o_num_channel = 3;
   num_buttons = 1;
+  buttons[0] = control_on;
 
   // Fill in the arguments to send to the device at reset time.
   o_channel[0] = temp1;
@@ -101,18 +103,23 @@ vrpn_BiosciencesTools::vrpn_BiosciencesTools (const char * name, vrpn_Connection
 
 }
 
-// Command format:
-// S1 037 0<CR> sets reference temperature for channel I
+// Command format described in document:
+// S1 037 0<CR> sets reference temperature for channel 1
 // (NOTE: all four digits should be sent to the controller)
+// Actual command format:
+// S1 0370<CR> Sets reference temperature for channel 1 to 37.0 deg C
+// S2 0421<CR> Sets reference temperature for channel 2 to 42.1 deg C
         
 bool  vrpn_BiosciencesTools::set_reference_temperature(unsigned channel, float value)
 {
   char command[128];
 
-  // Fill in the command with a dot in the middle of it.
-  // Replace the dot with a space to match the protocol.
-  sprintf(command, "S%d %5.1f\r", channel+1, value);
-  command[6] = ' ';
+  // Fill in the command with the zero-padded integer output for
+  // above the decimal and then a single value for the first point
+  // past the decimal.
+  int whole = static_cast<int>(value);
+  int dec = static_cast<int>(value*10) - whole*10;
+  sprintf(command, "S%d %03d%d\r", channel+1, whole,dec);
 
   // Send the command to the serial port
   return (vrpn_write_characters(serial_fd, (unsigned char *)(command), strlen(command)) == strlen(command));
@@ -198,7 +205,6 @@ int	vrpn_BiosciencesTools::reset(void)
         //-----------------------------------------------------------------------
         // Set the temperatures for channel 1 and 2 and then set the temperature
         // control to be on or off depending on what we've been asked to do.
-/*XXX
         if (!set_reference_temperature(0, static_cast<float>(o_channel[0]))) {
 	  fprintf(stderr,"vrpn_BiosciencesTools::reset(): Cannot send set ref temp 0, trying again\n");
 	  return -1;
@@ -207,7 +213,6 @@ int	vrpn_BiosciencesTools::reset(void)
 	  fprintf(stderr,"vrpn_BiosciencesTools::reset(): Cannot send set ref temp 1, trying again\n");
 	  return -1;
         }
-        */
         if (!set_control_status(o_channel[0] != 0)) {
 	  fprintf(stderr,"vrpn_BiosciencesTools::reset(): Cannot send set control status, trying again\n");
 	  return -1;

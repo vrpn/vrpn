@@ -13,10 +13,10 @@
 # Analog channels: (read by client)
 #	0	Reading from stage 1 in degrees Celcius
 #	1	Reading from bath 1 in degrees Celcius
-#	2	Reading from stage 2 in degrees Celcius
-#	3	Reading from bath 2 in degrees Celcius
-#	4	Setpoint for control on stage 1 in degrees Celcius
-#	5	Setpoint for control on stage 2 in degrees Celcius
+#	2	External 1 in degrees Celcius (or setpoint if ext not used)
+#	3	Reading from stage 2 in degrees Celcius
+#	4	Reading from bath 2 in degrees Celcius
+#	5	External 1 in degrees Celcius (or setpoint if ext not used)
 # Button channels: (read by client)
 #	0	Temperature control is on or off
 # Analog_Output channels: (set by client)
