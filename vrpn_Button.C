@@ -12,7 +12,9 @@
 #include <string.h> // for memcpy
 
 #ifdef linux
+#ifndef VRPN_CLIENT_ONLY
 #include <linux/lp.h>
+#endif
 #include <sys/ioctl.h>
 #endif
 
