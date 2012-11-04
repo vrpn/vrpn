@@ -69,3 +69,7 @@ For those not at UNC, you compile by doing the following:
 	Go to client_src
 		Run printvals to check the server
 		Example: sgi_irix/printvals localhost
+
+For those wanting to build client code for Android, see the README_Android.txt in
+the java_vrpn directory.
+
