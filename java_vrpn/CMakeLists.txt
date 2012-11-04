@@ -23,7 +23,8 @@ if(JAVA_FOUND AND JNI_FOUND AND JAVAH_EXECUTABLE AND VRPN_BUILD_JAVA)
 		TrackerRemote
 		TrackerRemoteListener
 		VRPN
-		VRPNDevice)
+		VRPNDevice
+	)
 	set(JAVAC_OUTPUT)
 	set(JAVAC_INPUT)
 	set(JAVA_JNI_HEADERS)
@@ -73,12 +74,18 @@ if(JAVA_FOUND AND JNI_FOUND AND JAVAH_EXECUTABLE AND VRPN_BUILD_JAVA)
 		vrpn_TextSender.cpp
 		vrpn_TrackerRemote.cpp
 		vrpn_VRPNDevice.cpp
-		vrpn_FunctionGeneratorRemote.cpp)
+		vrpn_FunctionGeneratorRemote.cpp
+	)
 
 	include_directories("${CMAKE_CURRENT_BINARY_DIR}" ${JNI_INCLUDE_DIRS})
 	add_library(java_vrpn SHARED ${LIB_SOURCES} ${JAVA_JNI_HEADERS})
+if ( BUILD_WITH_ANDROID_NDK )
+	# Currently link with the client-side libraries only for the Android build.
+	target_link_libraries(java_vrpn vrpn)
+else()
 	target_link_libraries(java_vrpn vrpnserver ${JNI_LIBRARIES})
 	add_dependencies(java_vrpn java_vrpn_jar)
+endif()
 
 	install(TARGETS java_vrpn
 		ARCHIVE DESTINATION lib COMPONENT java

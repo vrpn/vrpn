@@ -38,6 +38,12 @@ else()
 	set(TRUE_UNLESS_SUBPROJECT TRUE)
 endif()
 
+# Remove the following when it is fixed in the Android CMake.
+if( BUILD_WITH_ANDROID_NDK )
+ set( CMAKE_CXX_FLAGS "--sysroot=${ANDROID_NDK_SYSROOT} ${CMAKE_CXX_FLAGS}" )
+ set( CMAKE_C_FLAGS "--sysroot=${ANDROID_NDK_SYSROOT} ${CMAKE_C_FLAGS}" )
+endif()
+
 ###
 # On Windows 7, it does not work to install in the default location,
 # which is the Program Files directory, because you have to not only have
@@ -165,7 +171,10 @@ list(APPEND EXTRA_LIBS quat)
 # Threading (not on win32)
 ###
 if(NOT WIN32)
+  # Remove the test when threads are fixed in the Android CMake.
+  if( NOT BUILD_WITH_ANDROID_NDK )
 	find_package(Threads REQUIRED)
+  endif()
 	list(APPEND EXTRA_LIBS ${CMAKE_THREAD_LIBS_INIT})
 endif()
 
@@ -205,8 +214,16 @@ option_requires(VRPN_BUILD_PYTHON
 ###
 # javac, jar, and javah (for java wrapper)
 ###
-find_package(Java COMPONENTS Development)
-find_package(JNI)
+if (BUILD_WITH_ANDROID_NDK)
+  set( CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER )
+  set( CMAKE_FIND_ROOT_PATH_MODE_LIBRARY NEVER )
+  set( CMAKE_FIND_ROOT_PATH_MODE_INCLUDE NEVER )
+  find_package(Java COMPONENTS Development REQUIRED)
+  find_package(JNI REQUIRED)
+else()
+  find_package(Java COMPONENTS Development)
+  find_package(JNI)
+endif()
 find_program(JAVAH_EXECUTABLE NAMES javah)
 mark_as_advanced(JAVAH_EXECUTABLE)
 option_requires(VRPN_BUILD_JAVA
@@ -216,6 +233,12 @@ option_requires(VRPN_BUILD_JAVA
 	Java_JAR_EXECUTABLE
 	JNI_FOUND
 	JAVAH_EXECUTABLE)
+
+if (BUILD_WITH_ANDROID_NDK)
+  set( CMAKE_FIND_ROOT_PATH_MODE_PROGRAM ONLY )
+  set( CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY )
+  set( CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY )
+endif()
 
 ###
 # MPI
@@ -635,6 +658,7 @@ set(VRPN_CLIENT_SOURCES
 	vrpn_ForceDevice.C
 	vrpn_Forwarder.C
 	vrpn_ForwarderController.C
+	vrpn_FunctionGenerator.C
 	vrpn_Imager.C
 	vrpn_LamportClock.C
 	vrpn_Mutex.C
@@ -663,6 +687,7 @@ set(VRPN_CLIENT_PUBLIC_HEADERS
 	vrpn_ForceDevice.h
 	vrpn_ForwarderController.h
 	vrpn_Forwarder.h
+	vrpn_FunctionGenerator.h
 	vrpn_Imager.h
 	vrpn_LamportClock.h
 	vrpn_Log.h
