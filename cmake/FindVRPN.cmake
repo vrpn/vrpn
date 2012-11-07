@@ -61,7 +61,9 @@ find_path(VRPN_INCLUDE_DIR
 	HINTS
 	"${VRPN_ROOT_DIR}"
 	PATHS
-	"${_progfiles}/VRPN" C:/usr/local /usr/local)
+	"${_progfiles}/VRPN"
+	C:/usr/local
+	/usr/local)
 
 find_library(VRPN_LIBRARY
 	NAMES
@@ -71,7 +73,9 @@ find_library(VRPN_LIBRARY
 	HINTS
 	"${VRPN_ROOT_DIR}"
 	PATHS
-	"${_progfiles}/VRPN" C:/usr/local /usr/local)
+	"${_progfiles}/VRPN"
+	C:/usr/local
+	/usr/local)
 
 find_library(VRPN_SERVER_LIBRARY
 	NAMES
@@ -81,7 +85,9 @@ find_library(VRPN_SERVER_LIBRARY
 	HINTS
 	"${VRPN_ROOT_DIR}"
 	PATHS
-	"${_progfiles}/VRPN" C:/usr/local /usr/local)
+	"${_progfiles}/VRPN"
+	C:/usr/local
+	/usr/local)
 
 ###
 # Dependencies
@@ -119,6 +125,4 @@ if(VRPN_FOUND)
 	mark_as_advanced(VRPN_ROOT_DIR)
 endif()
 
-mark_as_advanced(VRPN_LIBRARY
-	VRPN_SERVER_LIBRARY
-	VRPN_INCLUDE_DIR)
+mark_as_advanced(VRPN_LIBRARY VRPN_SERVER_LIBRARY VRPN_INCLUDE_DIR)

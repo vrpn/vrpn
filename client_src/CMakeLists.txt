@@ -93,14 +93,18 @@ if(VRPN_BUILD_CLIENTS)
 				${GLUT_LIBRARIES}
 				${OPENGL_LIBRARIES})
 
-			set_target_properties(testimager_client
-				PROPERTIES
-				FOLDER
-				Tests)
+			set_target_properties(testimager_client PROPERTIES FOLDER Tests)
 
-			install(TARGETS testimager_client
-				RUNTIME DESTINATION bin COMPONENT tests)
-			option(VRPN_GLUT_IS_STATIC_FREEGLUT "Is the GLUT used for the imaging test client a static build of FreeGLUT?" NO)
+			install(TARGETS
+				testimager_client
+				RUNTIME
+				DESTINATION
+				bin
+				COMPONENT
+				tests)
+			option(VRPN_GLUT_IS_STATIC_FREEGLUT
+				"Is the GLUT used for the imaging test client a static build of FreeGLUT?"
+				NO)
 			mark_as_advanced(VRPN_GLUT_IS_STATIC_FREEGLUT)
 			if(VRPN_GLUT_IS_STATIC_FREEGLUT)
 				set_property(TARGET
@@ -118,15 +122,18 @@ if(VRPN_BUILD_CLIENTS)
 		c_interface.cpp)
 	target_link_libraries(c_interface_example ${VRPN_CLIENT_LIBRARY})
 
-	set_target_properties(c_interface_example
-		PROPERTIES
-		FOLDER
-		Tests)
+	set_target_properties(c_interface_example PROPERTIES FOLDER Tests)
 	# Force C compilation and linking
 	set_property(SOURCE c_interface_example.c PROPERTY LANGUAGE CXX)
 	set_target_properties(c_interface_example PROPERTIES HAS_CXX yes)
 
-	install(TARGETS c_interface_example RUNTIME DESTINATION bin COMPONENT tests)
+	install(TARGETS
+		c_interface_example
+		RUNTIME
+		DESTINATION
+		bin
+		COMPONENT
+		tests)
 
 
 	###
@@ -142,8 +149,7 @@ if(VRPN_BUILD_CLIENTS)
 		set_property(SOURCE ${SOURCE} PROPERTY LANGUAGE CXX)
 		set_target_properties(${APP} PROPERTIES HAS_CXX yes)
 
-		install(TARGETS ${APP}
-			RUNTIME DESTINATION bin COMPONENT clients)
+		install(TARGETS ${APP} RUNTIME DESTINATION bin COMPONENT clients)
 	endforeach()
 
 	###
@@ -151,11 +157,13 @@ if(VRPN_BUILD_CLIENTS)
 	###
 	add_executable(run_auxiliary_logger run_auxiliary_logger.C)
 	target_link_libraries(run_auxiliary_logger ${VRPN_CLIENT_LIBRARY})
-	set_target_properties(run_auxiliary_logger
-		PROPERTIES
-		FOLDER
-		Servers)
-	install(TARGETS run_auxiliary_logger
-		RUNTIME DESTINATION bin COMPONENT servers)
+	set_target_properties(run_auxiliary_logger PROPERTIES FOLDER Servers)
+	install(TARGETS
+		run_auxiliary_logger
+		RUNTIME
+		DESTINATION
+		bin
+		COMPONENT
+		servers)
 
 endif()

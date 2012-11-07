@@ -37,21 +37,23 @@ find_library(LIBNIFALCON_LIBRARY
 get_filename_component(_libdir "${LIBNIFALCON_LIBRARY}" PATH)
 
 find_path(LIBNIFALCON_INCLUDE_DIR
-	NAMES falcon/core/FalconDevice.h
-	HINTS "${_libdir}")
+	NAMES
+	falcon/core/FalconDevice.h
+	HINTS
+	"${_libdir}")
 
 set(_deps_check)
 if(NOT WIN32)
-	find_library(LIBNIFALCON_LIBUSB1_LIBRARY
-		NAMES libusb-1.0 usb-1.0)
+	find_library(LIBNIFALCON_LIBUSB1_LIBRARY NAMES libusb-1.0 usb-1.0)
 	get_filename_component(_libdir "${LIBNIFALCON_LIBUSB1_LIBRARY}" PATH)
 
 	find_path(LIBNIFALCON_LIBUSB1_INCLUDE_DIR
-		NAMES libusb-1.0/libusb.h
-		HINTS "${_libdir}")
+		NAMES
+		libusb-1.0/libusb.h
+		HINTS
+		"${_libdir}")
 
-	find_library(LIBNIFALCON_rt_LIBRARY
-		NAMES rt)
+	find_library(LIBNIFALCON_rt_LIBRARY NAMES rt)
 	set(_deps_check
 		LIBNIFALCON_LIBUSB1_LIBRARY
 		LIBNIFALCON_LIBUSB1_INCLUDE_DIR
@@ -71,8 +73,13 @@ if(LIBNIFALCON_FOUND)
 	set(LIBNIFALCON_INCLUDE_DIRS "${LIBNIFALCON_INCLUDE_DIR}")
 
 	if(NOT WIN32)
-		list(APPEND LIBNIFALCON_LIBRARIES "${LIBNIFALCON_LIBUSB1_LIBRARY}" "${LIBNIFALCON_rt_LIBRARY}")
-		list(APPEND LIBNIFALCON_INCLUDE_DIRS "${LIBNIFALCON_LIBUSB1_INCLUDE_DIR}")
+		list(APPEND
+			LIBNIFALCON_LIBRARIES
+			"${LIBNIFALCON_LIBUSB1_LIBRARY}"
+			"${LIBNIFALCON_rt_LIBRARY}")
+		list(APPEND
+			LIBNIFALCON_INCLUDE_DIRS
+			"${LIBNIFALCON_LIBUSB1_INCLUDE_DIR}")
 	endif()
 
 	mark_as_advanced(LIBNIFALCON_ROOT_DIR)

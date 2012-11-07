@@ -40,7 +40,8 @@ endif()
 
 # Remove the following when it is fixed in the Android CMake.
 if(BUILD_WITH_ANDROID_NDK)
-	set(CMAKE_CXX_FLAGS "--sysroot=${ANDROID_NDK_SYSROOT} ${CMAKE_CXX_FLAGS}")
+	set(CMAKE_CXX_FLAGS
+		"--sysroot=${ANDROID_NDK_SYSROOT} ${CMAKE_CXX_FLAGS}")
 	set(CMAKE_C_FLAGS "--sysroot=${ANDROID_NDK_SYSROOT} ${CMAKE_C_FLAGS}")
 endif()
 
@@ -63,15 +64,25 @@ endif()
 # the change in the GUI, and also letting the user change the value in
 # the GUI if they don't like what we did.  If I knew how to do this only
 # happen on Windows 7, I'd make the if(WIN32) more specific.
-if (WIN32 AND NOT SUBPROJECT)
-	if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT AND (NOT ONCE_SET_CMAKE_INSTALL_PREFIX))
-		set(ONCE_SET_CMAKE_INSTALL_PREFIX true CACHE INTERNAL
-			"Have we set the install prefix yet?" FORCE)
-		set(CMAKE_INSTALL_PREFIX C:/usr/local CACHE PATH
-		    "Install path prefix, prepended onto install directories"
-		    FORCE)
+if(WIN32 AND NOT SUBPROJECT)
+	if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT
+		AND
+		(NOT
+		ONCE_SET_CMAKE_INSTALL_PREFIX))
+		set(ONCE_SET_CMAKE_INSTALL_PREFIX
+			true
+			CACHE
+			INTERNAL
+			"Have we set the install prefix yet?"
+			FORCE)
+		set(CMAKE_INSTALL_PREFIX
+			C:/usr/local
+			CACHE
+			PATH
+			"Install path prefix, prepended onto install directories"
+			FORCE)
 	endif()
-endif ()
+endif()
 
 
 ###
@@ -103,7 +114,8 @@ else()
 	# linked into shared libraries.
 
 	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${CMAKE_SHARED_LIBRARY_C_FLAGS}")
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CMAKE_SHARED_LIBRARY_CXX_FLAGS}")
+	set(CMAKE_CXX_FLAGS
+		"${CMAKE_CXX_FLAGS} ${CMAKE_SHARED_LIBRARY_CXX_FLAGS}")
 endif()
 
 #-----------------------------------------------------------------------------
@@ -133,7 +145,10 @@ else()
 	set(VRPN_BUILD_WITH_PROJECT_FOLDERS ON)
 endif()
 
-set_property(GLOBAL PROPERTY USE_FOLDERS ${VRPN_BUILD_WITH_PROJECT_FOLDERS})
+set_property(GLOBAL
+	PROPERTY
+	USE_FOLDERS
+	${VRPN_BUILD_WITH_PROJECT_FOLDERS})
 
 # Set a default build type
 set_default_build_type("RelWithDebInfo")
@@ -202,7 +217,8 @@ add_subdirectory(submodules)
 ###
 find_package(SWIG)
 
-set(CurrentPythonSettings "${VRPN_BUILD_PYTHON}${VRPN_BUILD_PYTHON_HANDCODED_2X}${VRPN_BUILD_PYTHON_HANDCODED_3X}")
+set(CurrentPythonSettings
+	"${VRPN_BUILD_PYTHON}${VRPN_BUILD_PYTHON_HANDCODED_2X}${VRPN_BUILD_PYTHON_HANDCODED_3X}")
 if(NOT CurrentPythonSettings STREQUAL _VRPN_PYTHON_SETTINGS)
 	set(vrpn_python_versionsearch)
 	set(vrpn_python_versionsearchargs)
@@ -210,13 +226,23 @@ if(NOT CurrentPythonSettings STREQUAL _VRPN_PYTHON_SETTINGS)
 		# Swig wants 2.x, I assume
 		set(vrpn_python_versionsearch 2)
 		if(VRPN_BUILD_PYTHON_HANDCODED_3X)
-			message(FATAL_ERROR "Can't build both SWIG (2.x) and hand-coded 3.x Python bindings. Disable either VRPN_BUILD_PYTHON or VRPN_BUILD_PYTHON_HANDCODED_3X.")
+			message(FATAL_ERROR
+				"Can't build both SWIG (2.x) and hand-coded 3.x Python bindings. Disable either VRPN_BUILD_PYTHON or VRPN_BUILD_PYTHON_HANDCODED_3X.")
 		endif()
-	elseif(VRPN_BUILD_PYTHON_HANDCODED_3X AND VRPN_BUILD_PYTHON_HANDCODED_2X)
-		message(FATAL_ERROR "Can't build handcoded Python bindings for both 2.x and 3.x versions. Pick one, please.")
-	elseif(VRPN_BUILD_PYTHON_HANDCODED_2X AND NOT VRPN_BUILD_PYTHON_HANDCODED_3X)
+	elseif(VRPN_BUILD_PYTHON_HANDCODED_3X
+		AND
+		VRPN_BUILD_PYTHON_HANDCODED_2X)
+		message(FATAL_ERROR
+			"Can't build handcoded Python bindings for both 2.x and 3.x versions. Pick one, please.")
+	elseif(VRPN_BUILD_PYTHON_HANDCODED_2X
+		AND
+		NOT
+		VRPN_BUILD_PYTHON_HANDCODED_3X)
 		set(vrpn_python_versionsearch 2)
-	elseif(VRPN_BUILD_PYTHON_HANDCODED_3X AND NOT VRPN_BUILD_PYTHON_HANDCODED_2X)
+	elseif(VRPN_BUILD_PYTHON_HANDCODED_3X
+		AND
+		NOT
+		VRPN_BUILD_PYTHON_HANDCODED_2X)
 		set(vrpn_python_versionsearch 3)
 	endif()
 	unset(PYTHON_INCLUDE_DIR CACHE)
@@ -224,8 +250,18 @@ if(NOT CurrentPythonSettings STREQUAL _VRPN_PYTHON_SETTINGS)
 	unset(PYTHON_LIBRARY CACHE)
 	unset(PYTHON_LIBRARY)
 
-	set(_VRPN_PYTHON_VERSIONSEARCH ${vrpn_python_versionsearch} CACHE INTERNAL "" FORCE)
-	set(_VRPN_PYTHON_SETTINGS ${CurrentPythonSettings} CACHE INTERNAL "" FORCE)
+	set(_VRPN_PYTHON_VERSIONSEARCH
+		${vrpn_python_versionsearch}
+		CACHE
+		INTERNAL
+		""
+		FORCE)
+	set(_VRPN_PYTHON_SETTINGS
+		${CurrentPythonSettings}
+		CACHE
+		INTERNAL
+		""
+		FORCE)
 endif()
 
 # Passing just the major version works with as desired multi-python-capable find module such
@@ -233,20 +269,26 @@ endif()
 find_package(PythonLibs ${_VRPN_PYTHON_VERSIONSEARCH})
 if(PYTHONLIBS_FOUND)
 	if(PYTHONLIBS_VERSION_STRING)
-		string(SUBSTRING ${PYTHONLIBS_VERSION_STRING} 0 1 vrpn_python_majorver)
+		string(SUBSTRING
+			${PYTHONLIBS_VERSION_STRING}
+			0
+			1
+			vrpn_python_majorver)
 		set(PYTHON${vrpn_python_majorver}_FOUND ON)
 	elseif(PYTHON_LIBRARY MATCHES "python([23])")
 		set(PYTHON${CMAKE_MATCH_1}_FOUND ON)
 	elseif(_VRPN_PYTHON_VERSIONSEARCH)
 		set(PYTHON${_VRPN_PYTHON_VERSIONSEARCH}_FOUND ON)
 	else()
-		message(STATUS "Warning: found python but couldn't determine which version. Please set either VRPN_PYTHON_IS_3 or VRPN_PYTHON_IS_2")
+		message(STATUS
+			"Warning: found python but couldn't determine which version. Please set either VRPN_PYTHON_IS_3 or VRPN_PYTHON_IS_2")
 		option(VRPN_PYTHON_IS_3 "Python found is version 3.x" OFF)
 		option(VRPN_PYTHON_IS_2 "Python found is version 2.x" OFF)
 		if(VRPN_PYTHON_IS_3 AND VRPN_PYTHON_IS_2)
 			unset(VRPN_PYTHON_IS_2 CACHE)
 			unset(VRPN_PYTHON_IS_3 CACHE)
-			message(FATAL_ERROR "If needed, please set either VRPN_PYTHON_IS_3 or VRPN_PYTHON_IS_2, not both!")
+			message(FATAL_ERROR
+				"If needed, please set either VRPN_PYTHON_IS_3 or VRPN_PYTHON_IS_2, not both!")
 		elseif(VRPN_PYTHON_IS_3)
 			set(PYTHON3_FOUND ON)
 		elseif(VRPN_PYTHON_IS_2)
@@ -305,7 +347,10 @@ endif()
 ###
 find_package(MPI)
 # XXX Safe to enable by default if we find it?
-option_requires(VRPN_USE_MPI "Build with MPI support" OFF_BY_DEFAULT MPI_FOUND)
+option_requires(VRPN_USE_MPI
+	"Build with MPI support"
+	OFF_BY_DEFAULT
+	MPI_FOUND)
 
 if(VRPN_USE_MPI)
 	# XXX what else needs to be done here?
@@ -350,15 +395,20 @@ option_requires(VRPN_USE_HID
 if(VRPN_USE_HID)
 	include_directories(${HIDAPI_INCLUDE_DIRS})
 	list(APPEND SERVER_EXTRA_LIBS ${HIDAPI_LIBRARIES})
-	option(VRPN_BUILD_HID_GUI "Should we build a GUI for analyzing live HID streams?" ${TRUE_UNLESS_SUBPROJECT})
-	option(VRPN_HID_DEBUGGING "Should verbose debugging messages be displayed during HID interactions?" off)
+	option(VRPN_BUILD_HID_GUI
+		"Should we build a GUI for analyzing live HID streams?"
+		${TRUE_UNLESS_SUBPROJECT})
+	option(VRPN_HID_DEBUGGING
+		"Should verbose debugging messages be displayed during HID interactions?"
+		off)
 	if(VRPN_HID_DEBUGGING)
 		add_definitions(-DVRPN_HID_DEBUGGING)
 	endif()
 else()
 	# Clear this variable if they don't want HID after all.
-	message(STATUS "NOTE: You have VRPN_USE_LOCAL_HIDAPI enabled, but "
-	"VRPN_USE_HID disabled: HIDAPI will only be built if you enable HID support for VRPN")
+	message(STATUS
+		"NOTE: You have VRPN_USE_LOCAL_HIDAPI enabled, but "
+		"VRPN_USE_HID disabled: HIDAPI will only be built if you enable HID support for VRPN")
 	set(HIDAPI_SOURCES)
 endif()
 
@@ -417,9 +467,9 @@ endif()
 ###
 find_package(WiiUse)
 option_requires(VRPN_USE_WIIUSE
-		"Build with WiiUse library support (makes servers GPL)"
-		${DEFAULT_OFF_IF_SUBPROJECT}
-		WIIUSE_FOUND)
+	"Build with WiiUse library support (makes servers GPL)"
+	${DEFAULT_OFF_IF_SUBPROJECT}
+	WIIUSE_FOUND)
 
 if(VRPN_USE_WIIUSE)
 	include_directories(${WIIUSE_INCLUDE_DIRS})
@@ -451,9 +501,9 @@ endif()
 ###
 find_package(LibNifalcon)
 option_requires(VRPN_USE_LIBNIFALCON
-		"Build with libnifalcon support to access Novint Falcon devices"
-		${DEFAULT_OFF_IF_SUBPROJECT}
-		LIBNIFALCON_FOUND)
+	"Build with libnifalcon support to access Novint Falcon devices"
+	${DEFAULT_OFF_IF_SUBPROJECT}
+	LIBNIFALCON_FOUND)
 
 if(VRPN_USE_LIBNIFALCON)
 	include_directories(${LIBNIFALCON_INCLUDE_DIRS})
@@ -468,13 +518,13 @@ endif()
 if(MSVC)
 	find_package(DirectShow)
 	option_requires(VRPN_USE_DIRECTSHOW
-			"Build with Microsoft DirectShow support"
-			${DEFAULT_OFF_IF_SUBPROJECT}
-			DIRECTSHOW_FOUND)
+		"Build with Microsoft DirectShow support"
+		${DEFAULT_OFF_IF_SUBPROJECT}
+		DIRECTSHOW_FOUND)
 	option_requires(VRPN_BUILD_DIRECTSHOW_VIDEO_SERVER
-			"Enable to build DirectShow Video Server (Windows)"
-			${DEFAULT_OFF_IF_SUBPROJECT}
-			DIRECTSHOW_FOUND)
+		"Enable to build DirectShow Video Server (Windows)"
+		${DEFAULT_OFF_IF_SUBPROJECT}
+		DIRECTSHOW_FOUND)
 endif()
 
 ###
@@ -483,14 +533,21 @@ endif()
 if(WIN32)
 	find_package(DirectX)
 	option_requires(VRPN_USE_DIRECTINPUT
-			"Build with Microsoft DirectInput support"
-			${DEFAULT_OFF_IF_SUBPROJECT}
-			DIRECTX_FOUND
-			DIRECTX_DINPUT_INCLUDE_DIR)
+		"Build with Microsoft DirectInput support"
+		${DEFAULT_OFF_IF_SUBPROJECT}
+		DIRECTX_FOUND
+		DIRECTX_DINPUT_INCLUDE_DIR)
 	if(VRPN_USE_DIRECTINPUT)
 		include_directories(${DIRECTX_INCLUDE_DIRS})
-		list(APPEND SERVER_EXTRA_LIBS ${DIRECTX_DXGUID_LIBRARY} ${DIRECTX_DXERR_LIBRARY} ${DIRECTX_DINPUT_LIBRARY})
-		find_path(DIRECTX_XINPUT_INCLUDE_DIR xinput.h HINTS ${DIRECTX_INCLUDE_DIRS})
+		list(APPEND
+			SERVER_EXTRA_LIBS
+			${DIRECTX_DXGUID_LIBRARY}
+			${DIRECTX_DXERR_LIBRARY}
+			${DIRECTX_DINPUT_LIBRARY})
+		find_path(DIRECTX_XINPUT_INCLUDE_DIR
+			xinput.h
+			HINTS
+			${DIRECTX_INCLUDE_DIRS})
 		if(DIRECTX_XINPUT_INCLUDE_DIR)
 			mark_as_advanced(DIRECTX_XINPUT_INCLUDE_DIR)
 			set(VRPN_USE_WINDOWS_XINPUT TRUE)
@@ -546,8 +603,12 @@ if(VIEWPOINT_FOUND)
 	list(APPEND SERVER_EXTRA_LIBS ${VIEWPOINT_LIBRARIES})
 
 	# Needed for the config file, apparently - it was added to the non-CMake one.
-	get_filename_component(VRPN_VIEWPOINT_LIB_PATH "${VIEWPOINT_LIBRARY}" PATH)
-	file(TO_CMAKE_PATH "${VRPN_VIEWPOINT_LIB_PATH}" VRPN_VIEWPOINT_LIB_PATH)
+	get_filename_component(VRPN_VIEWPOINT_LIB_PATH
+		"${VIEWPOINT_LIBRARY}"
+		PATH)
+	file(TO_CMAKE_PATH
+		"${VRPN_VIEWPOINT_LIB_PATH}"
+		VRPN_VIEWPOINT_LIB_PATH)
 endif()
 
 ###
@@ -561,7 +622,8 @@ if(WIN32 OR CYGWIN)
 		ADRIENNE_FOUND)
 	if(VRPN_INCLUDE_TIMECODE_SERVER)
 		set(VRPN_ADRIENNE_INCLUDE_FILENAME "${ADRIENNE_INCLUDE_FILENAME}")
-		set(VRPN_ADRIENNE_INCLUDE_HAS_EXTERN_C ${ADRIENNE_INCLUDE_HAS_EXTERN_C})
+		set(VRPN_ADRIENNE_INCLUDE_HAS_EXTERN_C
+			${ADRIENNE_INCLUDE_HAS_EXTERN_C})
 	endif()
 endif()
 
@@ -619,7 +681,10 @@ option_requires(VRPN_BUILD_TEST_RPC_GENERATION
 # to the source code
 configure_file("${PROJECT_SOURCE_DIR}/vrpn_Configure.h.cmake_in"
 	"${PROJECT_BINARY_DIR}/vrpn_Configure.h")
-file(RELATIVE_PATH VRPN_PATH_TO_CMAKE_CONFIG "${CMAKE_CURRENT_SOURCE_DIR}" "${PROJECT_BINARY_DIR}/vrpn_Configure.h")
+file(RELATIVE_PATH
+	VRPN_PATH_TO_CMAKE_CONFIG
+	"${CMAKE_CURRENT_SOURCE_DIR}"
+	"${PROJECT_BINARY_DIR}/vrpn_Configure.h")
 add_definitions("-DVRPN_USING_CMAKE=\"${VRPN_PATH_TO_CMAKE_CONFIG}\"")
 
 # Configuration options controlling what gets included in the build.
@@ -652,7 +717,7 @@ option(VRPN_USE_TRIVISIOCOLIBRI
 	OFF)
 option(VRPN_USE_JSONNET
 	"Build with support JSON over UDP (for Android widgets)"
-	 OFF)
+	OFF)
 option(VRPN_BUILD_EXTRA_COMPILER_WARNINGS
 	"Build with flags to enable extra warnings."
 	OFF)
@@ -678,7 +743,9 @@ if(VRPN_USE_PDI)
 	# Generalize this to use a FindPDI.cmake.
 	# Make this also work with debug (use PDID)
 	include_directories("C:\Program Files (x86)\Polhemus\PDI\PDI_90\Inc")
-	list(APPEND SERVER_EXTRA_LIBS "C:\Program Files (x86)\Polhemus\PDI\PDI_90\Lib\Win32\PDI")
+	list(APPEND
+		SERVER_EXTRA_LIBS
+		"C:\Program Files (x86)\Polhemus\PDI\PDI_90\Lib\Win32\PDI")
 endif()
 
 if(VRPN_BUILD_EXTRA_COMPILER_WARNINGS)
@@ -696,23 +763,31 @@ if(SUBPROJECT)
 endif()
 
 if(APPLE)
-  if(NOT CMAKE_OSX_ARCHITECTURES OR CMAKE_OSX_ARCHITECTURES STREQUAL "")
-    if(_CMAKE_OSX_MACHINE MATCHES "ppc")
-      set(CMAKE_OSX_ARCHITECTURES "ppc;ppc64" CACHE
-        STRING "Build architectures for OS X" FORCE)
-    else()
-      set(CMAKE_OSX_ARCHITECTURES "i386;x86_64" CACHE
-        STRING "Build architectures for OS X" FORCE)
-    endif()
-  endif()
-  set(CMAKE_INCLUDE_SYSTEM_FLAG_C "-isystem ")
-  set(CMAKE_INCLUDE_SYSTEM_FLAG_CXX "-isystem ")
-  if (NOT CMAKE_INSTALL_NAME_DIR)
-    set(CMAKE_INSTALL_NAME_DIR "${CMAKE_INSTALL_PREFIX}/lib")
-  endif (NOT CMAKE_INSTALL_NAME_DIR)
-  message(STATUS
-    "Building ${CMAKE_PROJECT_NAME} for ${CMAKE_OSX_ARCHITECTURES}")
-endif(APPLE)
+	if(NOT CMAKE_OSX_ARCHITECTURES OR CMAKE_OSX_ARCHITECTURES STREQUAL "")
+		if(_CMAKE_OSX_MACHINE MATCHES "ppc")
+			set(CMAKE_OSX_ARCHITECTURES
+				"ppc;ppc64"
+				CACHE
+				STRING
+				"Build architectures for OS X"
+				FORCE)
+		else()
+			set(CMAKE_OSX_ARCHITECTURES
+				"i386;x86_64"
+				CACHE
+				STRING
+				"Build architectures for OS X"
+				FORCE)
+		endif()
+	endif()
+	set(CMAKE_INCLUDE_SYSTEM_FLAG_C "-isystem ")
+	set(CMAKE_INCLUDE_SYSTEM_FLAG_CXX "-isystem ")
+	if(NOT CMAKE_INSTALL_NAME_DIR)
+		set(CMAKE_INSTALL_NAME_DIR "${CMAKE_INSTALL_PREFIX}/lib")
+	endif()
+	message(STATUS
+		"Building ${CMAKE_PROJECT_NAME} for ${CMAKE_OSX_ARCHITECTURES}")
+endif()
 
 #-----------------------------------------------------------------------------
 # Build the library itself and declare what bits need to be installed
@@ -982,16 +1057,19 @@ if(VRPN_BUILD_SERVER_LIBRARY)
 		ARCHIVE
 		DESTINATION
 		lib
-		COMPONENT serversdk
-
+		COMPONENT
+		serversdk
 		PUBLIC_HEADER
 		DESTINATION
 		include
-		COMPONENT serversdk)
+		COMPONENT
+		serversdk)
 
 	if(VRPN_USE_LOCAL_HIDAPI)
-		install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/submodules/hidapi/hidapi/hidapi.h
-	  		DESTINATION include/submodules/hidapi/hidapi)
+		install(FILES
+			${CMAKE_CURRENT_SOURCE_DIR}/submodules/hidapi/hidapi/hidapi.h
+			DESTINATION
+			include/submodules/hidapi/hidapi)
 	endif()
 
 	add_cppcheck(vrpnserver STYLE UNUSED_FUNCTIONS)
@@ -1029,12 +1107,13 @@ if(VRPN_BUILD_CLIENT_LIBRARY)
 		ARCHIVE
 		DESTINATION
 		lib
-		COMPONENT clientsdk
-
+		COMPONENT
+		clientsdk
 		PUBLIC_HEADER
 		DESTINATION
 		include
-		COMPONENT clientsdk)
+		COMPONENT
+		clientsdk)
 
 	add_cppcheck(vrpn STYLE UNUSED_FUNCTIONS)
 endif()
@@ -1181,20 +1260,17 @@ create_dashboard_scripts("${CMAKE_CURRENT_SOURCE_DIR}/DashboardBuildInitialCache
 # If we succeeded, we can go on and include packaging!
 include(CPack)
 cpack_add_component(serversdk
-	DISPLAY_NAME "VRPN Server Library and C++ Headers")
+	DISPLAY_NAME
+	"VRPN Server Library and C++ Headers")
 cpack_add_component(clientsdk
-	DISPLAY_NAME "VRPN Client Library and C++ Headers")
-cpack_add_component(tests
-	DISPLAY_NAME "Test applications")
-cpack_add_component(clients
-	DISPLAY_NAME "Client applications")
-cpack_add_component(servers
-	DISPLAY_NAME "Server applications")
+	DISPLAY_NAME
+	"VRPN Client Library and C++ Headers")
+cpack_add_component(tests DISPLAY_NAME "Test applications")
+cpack_add_component(clients DISPLAY_NAME "Client applications")
+cpack_add_component(servers DISPLAY_NAME "Server applications")
 cpack_add_component(mainserver
-	DISPLAY_NAME "VRPN main server application")
-cpack_add_component(python
-	DISPLAY_NAME "Python bindings")
-cpack_add_component(java
-	DISPLAY_NAME "Java bindings")
-cpack_add_component(doc
-	DISPLAY_NAME "C++ API Documentation")
+	DISPLAY_NAME
+	"VRPN main server application")
+cpack_add_component(python DISPLAY_NAME "Python bindings")
+cpack_add_component(java DISPLAY_NAME "Java bindings")
+cpack_add_component(doc DISPLAY_NAME "C++ API Documentation")

@@ -48,22 +48,12 @@ function(gen_vrpn_rpc OUTVAR OUT IN)
 endfunction()
 
 set(GENERATED_SOURCES)
-gen_vrpn_rpc(GENERATED_SOURCES
-	rpc_Test_Remote.C
-	rpc_Test_Remote.Cdef)
-gen_vrpn_rpc(GENERATED_SOURCES
-	rpc_Test_Remote.h
-	rpc_Test_Remote.hdef)
-gen_vrpn_rpc(GENERATED_SOURCES
-	rpc_Test.h
-	rpc_Test.vrpndef -h)
-gen_vrpn_rpc(GENERATED_SOURCES
-	rpc_Test.C
-	rpc_Test.vrpndef -C)
+gen_vrpn_rpc(GENERATED_SOURCES rpc_Test_Remote.C rpc_Test_Remote.Cdef)
+gen_vrpn_rpc(GENERATED_SOURCES rpc_Test_Remote.h rpc_Test_Remote.hdef)
+gen_vrpn_rpc(GENERATED_SOURCES rpc_Test.h rpc_Test.vrpndef -h)
+gen_vrpn_rpc(GENERATED_SOURCES rpc_Test.C rpc_Test.vrpndef -C)
 
-add_executable(test_gen_rpc
-	main_test.C
-	${GENERATED_SOURCES})
+add_executable(test_gen_rpc main_test.C ${GENERATED_SOURCES})
 
 target_link_libraries(test_gen_rpc vrpn)
 

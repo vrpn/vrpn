@@ -67,11 +67,7 @@ function(enable_extra_compiler_warnings _target)
 			COMPILE_FLAGS
 			"${_flags} ${_origflags}")
 	else()
-		set_property(TARGET
-			${_target}
-			PROPERTY
-			COMPILE_FLAGS
-			"${_flags}")
+		set_property(TARGET ${_target} PROPERTY COMPILE_FLAGS "${_flags}")
 	endif()
 
 endfunction()

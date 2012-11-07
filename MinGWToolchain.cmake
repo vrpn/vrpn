@@ -4,15 +4,17 @@
 # cross-compiling
 
 # the name of the target operating system
-SET(CMAKE_SYSTEM_NAME Windows)
+set(CMAKE_SYSTEM_NAME Windows)
 
 # which compilers to use for C and C++
-SET(CMAKE_C_COMPILER i586-mingw32msvc-gcc)
-SET(CMAKE_CXX_COMPILER i586-mingw32msvc-g++)
-SET(CMAKE_RC_COMPILER i586-mingw32msvc-windres)
+set(CMAKE_C_COMPILER i586-mingw32msvc-gcc)
+set(CMAKE_CXX_COMPILER i586-mingw32msvc-g++)
+set(CMAKE_RC_COMPILER i586-mingw32msvc-windres)
 
 # here is the target environment located
-SET(CMAKE_FIND_ROOT_PATH  /usr/i586-mingw32msvc $ENV{HOME}/mingw-install )
+set(CMAKE_FIND_ROOT_PATH
+	/usr/i586-mingw32msvc
+	$ENV{HOME}/mingw-install)
 
 # adjust the default behaviour of the FIND_XXX() commands:
 # search headers and libraries in the target environment, search

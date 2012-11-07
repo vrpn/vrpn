@@ -22,12 +22,25 @@ set(JSONCPP_ROOT_DIR
 	PATH
 	"Directory to search for JSONCPP")
 set(_jsoncppnames)
-set(_pathsuffixes suncc vacpp mingw msvc6 msvc7 msvc71 msvc80 msvc90 linux-gcc)
+set(_pathsuffixes
+	suncc
+	vacpp
+	mingw
+	msvc6
+	msvc7
+	msvc71
+	msvc80
+	msvc90
+	linux-gcc)
 if(CMAKE_COMPILER_IS_GNUCXX)
-	execute_process(COMMAND ${CMAKE_CXX_COMPILER} -dumpversion
-		OUTPUT_VARIABLE _gnucxx_ver
+	execute_process(COMMAND
+		${CMAKE_CXX_COMPILER}
+		-dumpversion
+		OUTPUT_VARIABLE
+		_gnucxx_ver
 		OUTPUT_STRIP_TRAILING_WHITESPACE)
-	list(APPEND _jsoncppnames
+	list(APPEND
+		_jsoncppnames
 		json_linux-gcc-${_gnucxx_ver}_libmt
 		json_linux-gcc_libmt)
 	list(APPEND _pathsuffixes linux-gcc-${_gnucxx_ver})
@@ -54,16 +67,21 @@ endif()
 list(APPEND _jsoncppnames
 	json_mingw_libmt)
 
-find_library(
-	JSONCPP_LIBRARY
-	NAMES ${_jsoncppnames}
-	PATHS "${JSONCPP_ROOT_DIR}/libs"
-	PATH_SUFFIXES ${_pathsuffixes})
+find_library(JSONCPP_LIBRARY
+	NAMES
+	${_jsoncppnames}
+	PATHS
+	"${JSONCPP_ROOT_DIR}/libs"
+	PATH_SUFFIXES
+	${_pathsuffixes})
 
 find_path(JSONCPP_INCLUDE_DIR
-	NAMES json/json.h
-	PATHS "${JSONCPP_ROOT_DIR}"
-	PATH_SUFFIXES include)
+	NAMES
+	json/json.h
+	PATHS
+	"${JSONCPP_ROOT_DIR}"
+	PATH_SUFFIXES
+	include)
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(JSONCPP
