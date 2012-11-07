@@ -136,12 +136,12 @@ class VRPN_API vrpn_Tracker_RazerHydra: public vrpn_Analog, public vrpn_Button_F
 
 		FilterData * _f;
 
-                // This device has both a control and a data interface.
-                // On the mac, we may need to swap these because we can't tell which
-                // is which when we open them.
-                class MyInterface;
-                MyInterface * _ctrl;
-                MyInterface * _data;
+		// This device has both a control and a data interface.
+		// On the mac, we may need to swap these because we can't tell which
+		// is which when we open them.
+		class MyInterface;
+		MyInterface * _ctrl;
+		MyInterface * _data;
 };
 
 #endif
