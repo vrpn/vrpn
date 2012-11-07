@@ -7,7 +7,9 @@
 #include <vrpn_BaseClass.h>
 
 // Libraries we need to link with to use what we're using.
+#if defined(_MSC_VER) && !defined(VRPN_USING_CMAKE)
 #pragma comment(lib,"strmiids.lib")
+#endif
 
 //#define	DEBUG
 
