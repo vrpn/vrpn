@@ -39,9 +39,9 @@ else()
 endif()
 
 # Remove the following when it is fixed in the Android CMake.
-if( BUILD_WITH_ANDROID_NDK )
- set( CMAKE_CXX_FLAGS "--sysroot=${ANDROID_NDK_SYSROOT} ${CMAKE_CXX_FLAGS}" )
- set( CMAKE_C_FLAGS "--sysroot=${ANDROID_NDK_SYSROOT} ${CMAKE_C_FLAGS}" )
+if(BUILD_WITH_ANDROID_NDK)
+	set(CMAKE_CXX_FLAGS "--sysroot=${ANDROID_NDK_SYSROOT} ${CMAKE_CXX_FLAGS}")
+	set(CMAKE_C_FLAGS "--sysroot=${ANDROID_NDK_SYSROOT} ${CMAKE_C_FLAGS}")
 endif()
 
 ###
@@ -168,12 +168,10 @@ list(APPEND EXTRA_LIBS quat)
 
 ###
 # Threading (not on win32)
+# Remove the test for Android when threads are fixed in the Android CMake.
 ###
-if(NOT WIN32)
-  # Remove the test when threads are fixed in the Android CMake.
-  if( NOT BUILD_WITH_ANDROID_NDK )
+if(NOT WIN32 AND NOT BUILD_WITH_ANDROID_NDK)
 	find_package(Threads REQUIRED)
-  endif()
 	list(APPEND EXTRA_LIBS ${CMAKE_THREAD_LIBS_INIT})
 endif()
 
@@ -276,15 +274,15 @@ option_requires(VRPN_BUILD_PYTHON_HANDCODED_3X
 ###
 # javac, jar, and javah (for java wrapper)
 ###
-if (BUILD_WITH_ANDROID_NDK)
-  set( CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER )
-  set( CMAKE_FIND_ROOT_PATH_MODE_LIBRARY NEVER )
-  set( CMAKE_FIND_ROOT_PATH_MODE_INCLUDE NEVER )
-  find_package(Java COMPONENTS Development REQUIRED)
-  find_package(JNI REQUIRED)
+if(BUILD_WITH_ANDROID_NDK)
+	set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
+	set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY NEVER)
+	set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE NEVER)
+	find_package(Java COMPONENTS Development REQUIRED)
+	find_package(JNI REQUIRED)
 else()
-  find_package(Java COMPONENTS Development)
-  find_package(JNI)
+	find_package(Java COMPONENTS Development)
+	find_package(JNI)
 endif()
 find_program(JAVAH_EXECUTABLE NAMES javah)
 mark_as_advanced(JAVAH_EXECUTABLE)
@@ -296,10 +294,10 @@ option_requires(VRPN_BUILD_JAVA
 	JNI_FOUND
 	JAVAH_EXECUTABLE)
 
-if (BUILD_WITH_ANDROID_NDK)
-  set( CMAKE_FIND_ROOT_PATH_MODE_PROGRAM ONLY )
-  set( CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY )
-  set( CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY )
+if(BUILD_WITH_ANDROID_NDK)
+	set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM ONLY)
+	set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
+	set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
 endif()
 
 ###
