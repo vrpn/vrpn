@@ -191,15 +191,78 @@ message(STATUS
 add_subdirectory(submodules)
 
 ###
-# SWIG and Python Libs (for python wrapper)
+# SWIG and Python Libs (for python wrappers)
 ###
 find_package(SWIG)
-find_package(PythonLibs)
+
+set(CurrentPythonSettings "${VRPN_BUILD_PYTHON}${VRPN_BUILD_PYTHON_HANDCODED_2X}${VRPN_BUILD_PYTHON_HANDCODED_3X}")
+if(NOT CurrentPythonSettings STREQUAL _VRPN_PYTHON_SETTINGS)
+	set(vrpn_python_versionsearch)
+	set(vrpn_python_versionsearchargs)
+	if(VRPN_BUILD_PYTHON)
+		# Swig wants 2.x, I assume
+		set(vrpn_python_versionsearch 2)
+		if(VRPN_BUILD_PYTHON_HANDCODED_3X)
+			message(FATAL_ERROR "Can't build both SWIG (2.x) and hand-coded 3.x Python bindings. Disable either VRPN_BUILD_PYTHON or VRPN_BUILD_PYTHON_HANDCODED_3X.")
+		endif()
+	elseif(VRPN_BUILD_PYTHON_HANDCODED_3X AND VRPN_BUILD_PYTHON_HANDCODED_2X)
+		message(FATAL_ERROR "Can't build handcoded Python bindings for both 2.x and 3.x versions. Pick one, please.")
+	elseif(VRPN_BUILD_PYTHON_HANDCODED_2X AND NOT VRPN_BUILD_PYTHON_HANDCODED_3X)
+		set(vrpn_python_versionsearch 2)
+	elseif(VRPN_BUILD_PYTHON_HANDCODED_3X AND NOT VRPN_BUILD_PYTHON_HANDCODED_2X)
+		set(vrpn_python_versionsearch 3)
+	endif()
+	unset(PYTHON_INCLUDE_DIR CACHE)
+	unset(PYTHON_INCLUDE_DIR)
+	unset(PYTHON_LIBRARY CACHE)
+	unset(PYTHON_LIBRARY)
+
+	set(_VRPN_PYTHON_VERSIONSEARCH ${vrpn_python_versionsearch} CACHE INTERNAL "" FORCE)
+	set(_VRPN_PYTHON_SETTINGS ${CurrentPythonSettings} CACHE INTERNAL "" FORCE)
+endif()
+
+# Passing just the major version works with as desired multi-python-capable find module such
+# as in latest CMake (2.8.9)
+find_package(PythonLibs ${_VRPN_PYTHON_VERSIONSEARCH})
+if(PYTHONLIBS_FOUND)
+	if(PYTHONLIBS_VERSION_STRING)
+		string(SUBSTRING ${PYTHONLIBS_VERSION_STRING} 0 1 vrpn_python_majorver)
+		set(PYTHON${vrpn_python_majorver}_FOUND ON)
+	elseif(PYTHON_LIBRARY MATCHES "python([23])")
+		set(PYTHON${CMAKE_MATCH_1}_FOUND ON)
+	elseif(_VRPN_PYTHON_VERSIONSEARCH)
+		set(PYTHON${_VRPN_PYTHON_VERSIONSEARCH}_FOUND ON)
+	else()
+		message(STATUS "Warning: found python but couldn't determine which version. Please set either VRPN_PYTHON_IS_3 or VRPN_PYTHON_IS_2")
+		option(VRPN_PYTHON_IS_3 "Python found is version 3.x" OFF)
+		option(VRPN_PYTHON_IS_2 "Python found is version 2.x" OFF)
+		if(VRPN_PYTHON_IS_3 AND VRPN_PYTHON_IS_2)
+			unset(VRPN_PYTHON_IS_2 CACHE)
+			unset(VRPN_PYTHON_IS_3 CACHE)
+			message(FATAL_ERROR "If needed, please set either VRPN_PYTHON_IS_3 or VRPN_PYTHON_IS_2, not both!")
+		elseif(VRPN_PYTHON_IS_3)
+			set(PYTHON3_FOUND ON)
+		elseif(VRPN_PYTHON_IS_2)
+			set(PYTHON2_FOUND ON)
+		endif()
+	endif()
+endif()
+
 option_requires(VRPN_BUILD_PYTHON
-	"Build VRPN Python bindings"
+	"Build VRPN Python 2.x SWIG-based bindings"
 	${DEFAULT_OFF_IF_SUBPROJECT}
 	SWIG_FOUND
-	PYTHONLIBS_FOUND)
+	PYTHON2_FOUND)
+
+option_requires(VRPN_BUILD_PYTHON_HANDCODED_2X
+	"Build VRPN Python handcoded bindings for Python 2.x"
+	${DEFAULT_OFF_IF_SUBPROJECT}
+	PYTHON2_FOUND)
+
+option_requires(VRPN_BUILD_PYTHON_HANDCODED_3X
+	"Build VRPN Python handcoded bindings for Python 3.x"
+	${DEFAULT_OFF_IF_SUBPROJECT}
+	PYTHON3_FOUND)
 
 ###
 # javac, jar, and javah (for java wrapper)
@@ -535,8 +598,8 @@ option_requires(VRPN_BUILD_TEST_RPC_GENERATION
 # to the source code
 configure_file("${PROJECT_SOURCE_DIR}/vrpn_Configure.h.cmake_in"
 	"${PROJECT_BINARY_DIR}/vrpn_Configure.h")
-
-add_definitions(-DVRPN_USING_CMAKE)
+file(RELATIVE_PATH VRPN_PATH_TO_CMAKE_CONFIG "${CMAKE_CURRENT_SOURCE_DIR}" "${PROJECT_BINARY_DIR}/vrpn_Configure.h")
+add_definitions("-DVRPN_USING_CMAKE=\"${VRPN_PATH_TO_CMAKE_CONFIG}\"")
 
 # Configuration options controlling what gets included in the build.
 # These are the default options - if a library is detected above it will
@@ -979,6 +1042,7 @@ endif()
 #-----------------------------------------------------------------------------
 # Python wrappers
 add_subdirectory(python_vrpn)
+add_subdirectory(python)
 
 #-----------------------------------------------------------------------------
 # Java wrappers
