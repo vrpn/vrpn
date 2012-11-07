@@ -90,7 +90,7 @@
   #endif
 #endif
 
-#if defined(_AIX) || defined(__APPLE__)
+#if defined(_AIX) || defined(__APPLE__) || defined(ANDROID)
  #define GSN_CAST (socklen_t *)
 #else
  #if defined(linux) || defined(FreeBSD)

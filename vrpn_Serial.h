@@ -21,21 +21,21 @@
 ///
 /// @author Russ Taylor, 1998
 
-
 typedef enum {vrpn_SER_PARITY_NONE, vrpn_SER_PARITY_ODD, vrpn_SER_PARITY_EVEN,
 			vrpn_SER_PARITY_MARK, vrpn_SER_PARITY_SPACE} vrpn_SER_PARITY;
 
-// flush discards characters in buffer
-// drain blocks until they are written
-
 /// @brief Open a serial port, given its name and baud rate.
 ///
-/// Default Settings are 8 bits, no parity, 1 start and stop bits.  Also,
+/// Default Settings are 8 bits, no parity, 1 start and stop bits with no
+/// RTS (hardware) flow control.  Also,
 /// set the port so that it will return immediately if there are no
 /// characters or less than the number of characters requested.
 ///
 /// @returns the file descriptor on success,-1 on failure.
-extern VRPN_API int vrpn_open_commport(const char *portname, long baud, int charsize = 8, vrpn_SER_PARITY parity = vrpn_SER_PARITY_NONE);
+extern VRPN_API int vrpn_open_commport(const char *portname, long baud,
+                                       int charsize = 8,
+                                       vrpn_SER_PARITY parity = vrpn_SER_PARITY_NONE,
+                                       bool rts_flow = false);
 
 /// @name RTS Hardware Flow Control
 /// Set and clear functions for the RTS ("ready to send") hardware flow-
@@ -48,6 +48,7 @@ extern VRPN_API int vrpn_clear_rts(int comm);
 /// @}
 
 extern VRPN_API int vrpn_close_commport(int comm);
+
 /// @brief Throw out any characters within the input buffer.
 /// @returns 0 on success, -1 on error.
 extern VRPN_API int vrpn_flush_input_buffer( int comm );
@@ -75,5 +76,7 @@ extern VRPN_API int vrpn_read_available_characters(int comm, unsigned char *buff
 extern VRPN_API int vrpn_read_available_characters(int comm, unsigned char *buffer,
 		int count, struct timeval *timeout);
 /// @}
+
 extern VRPN_API int vrpn_write_characters(int comm, const unsigned char *buffer, int bytes);
+
 #endif

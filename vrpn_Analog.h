@@ -57,7 +57,8 @@ class VRPN_API vrpn_Serial_Analog: public vrpn_Analog {
 public:
   vrpn_Serial_Analog(const char * name, vrpn_Connection * connection,
                      const char * port, int baud = 9600, int bits = 8, 
-                     vrpn_SER_PARITY parity = vrpn_SER_PARITY_NONE);
+                     vrpn_SER_PARITY parity = vrpn_SER_PARITY_NONE,
+                     bool rts_flow = false);
   ~vrpn_Serial_Analog();
 protected:
   int serial_fd;

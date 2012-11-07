@@ -54,7 +54,8 @@ static HANDLE	commConnections[maxCom];
 static int curCom = -1;
 #endif
 
-int vrpn_open_commport(const char *portname, long baud, int charsize, vrpn_SER_PARITY parity)
+int vrpn_open_commport(const char *portname, long baud, int charsize, vrpn_SER_PARITY parity,
+                       bool rts_flow)
 {
 #ifdef VERBOSE
 	printf("vrpn_open_commport(): Entering\n");
@@ -90,15 +91,13 @@ int vrpn_open_commport(const char *portname, long baud, int charsize, vrpn_SER_P
       return -1;
   }
   
-  if (hCom == INVALID_HANDLE_VALUE) 
-  {    
+  if (hCom == INVALID_HANDLE_VALUE) {    
     perror("vrpn_open_commport: cannot open serial port");
     fprintf(stderr, "  (Make sure port name is valid and it has not been opened by another program)\n");
     return -1;
   }
  
-  if ((fSuccess = GetCommState(hCom, &dcb)) == 0)
-  {
+  if ((fSuccess = GetCommState(hCom, &dcb)) == 0) {
 	perror("vrpn_open_commport: cannot get serial port configuration settings");
 	CloseHandle(hCom);
     return -1;
@@ -162,8 +161,12 @@ int vrpn_open_commport(const char *portname, long baud, int charsize, vrpn_SER_P
      return -1;
   }
 
-  if ((fSuccess = SetCommState(hCom, &dcb)) == 0)
-  {
+  // Turn on RTS hardware flow control if we've been asked to.
+  if (rts_flow) {
+    dcb.fRtsControl = RTS_CONTROL_HANDSHAKE;
+  }
+
+  if ((fSuccess = SetCommState(hCom, &dcb)) == 0) {
 	perror("vrpn_open_commport: cannot set serial port configuration settings");
 	CloseHandle(hCom);
     return -1;
@@ -175,8 +178,7 @@ int vrpn_open_commport(const char *portname, long baud, int charsize, vrpn_SER_P
   cto.WriteTotalTimeoutConstant = 0;
   cto.WriteTotalTimeoutMultiplier = 0;
 
-  if ((fSuccess = SetCommTimeouts(hCom, &cto)) == 0)
-  {
+  if ((fSuccess = SetCommTimeouts(hCom, &cto)) == 0) {
 	perror("vrpn_open_commport: cannot set serial port timeouts");
 	CloseHandle(hCom);
     return -1;
@@ -271,6 +273,11 @@ int vrpn_open_commport(const char *portname, long baud, int charsize, vrpn_SER_P
 
   sttyArgs.c_cc[VMIN] = 0;	/* Return read even if no chars */
   sttyArgs.c_cc[VTIME] = 0;	/* Return without waiting */
+
+  // Enable RTS hardware flow control if we've been asked for it.
+  if (rts_flow) {
+    sttyArgs.c_cflag |= CRTSCTS;
+  }
   
 #ifdef VERBOSE
 	printf("vrpn_open_commport(): Setting settings\n");

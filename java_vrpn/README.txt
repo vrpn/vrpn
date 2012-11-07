@@ -1,3 +1,4 @@
+For notes on compiling under Android, see the "README_Android.txt" file
 
 Notes on this java implementation (mixed Windows and Irix/Linux notes):
 
