@@ -15,13 +15,13 @@ void handle_cntl_c (int) {
   long i;
 
   if (c)
-    for (i = 0L; n = c->sender_name(i); i++)
+    for (i = 0L; (n = c->sender_name(i)); i++)
       printf("Knew sender \"%s\".\n", n);
 
   // print out type names
 
   if (c)
-    for (i = 0L; n = c->message_type_name(i); i++)
+    for (i = 0L; (n = c->message_type_name(i)); i++)
       printf("Knew type \"%s\".\n", n);
 
   exit(0);
