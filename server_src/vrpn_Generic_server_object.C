@@ -1,4 +1,95 @@
+#include <stdlib.h>                     // for strtol, atoi, strtod
+#include <string.h>                     // for strcmp, strlen, strtok, etc
+
+#include "timecode_generator_server/vrpn_timecode_generator.h"
+#include "vrpn_3DConnexion.h"           // for vrpn_3DConnexion_Navigator, etc
+#include "vrpn_3DMicroscribe.h"
+#include "vrpn_3Space.h"                // for vrpn_Tracker_3Space
+#include "vrpn_5DT16.h"                 // for vrpn_5dt16, etc
+#include "vrpn_ADBox.h"                 // for vrpn_ADBox
+#include "vrpn_Analog_5dt.h"            // for vrpn_5dt
+#include "vrpn_Analog_5dtUSB.h"
+#include "vrpn_Analog.h"                // for vrpn_Analog, etc
+#include "vrpn_Analog_Output.h"         // for vrpn_Analog_Output
+#include "vrpn_Analog_Radamec_SPI.h"    // for vrpn_Radamec_SPI
+#include "vrpn_Analog_USDigital_A2.h"
+#include "vrpn_Atmel.h"                 // for VRPN_ATMEL_MODE_NA, etc
+#include "vrpn_Auxiliary_Logger.h"
+#include "vrpn_BiosciencesTools.h"      // for vrpn_BiosciencesTools
+#include "vrpn_Button.h"                // for vrpn_Button, etc
+#include "vrpn_Button_NI_DIO24.h"
+#include "vrpn_Button_USB.h"
+#include "vrpn_CerealBox.h"             // for vrpn_CerealBox
+#include "vrpn_Connection.h"
+#include "vrpn_DevInput.h"              // for vrpn_DevInput
+#include "vrpn_Dial.h"                  // for vrpn_Dial, etc
+#include "vrpn_DirectXFFJoystick.h"
+#include "vrpn_DirectXRumblePad.h"
+#include "vrpn_DreamCheeky.h"           // for vrpn_DreamCheeky_Drum_Kit
+#include "vrpn_Dyna.h"                  // for vrpn_Tracker_Dyna, etc
+#include "vrpn_Event_Mouse.h"           // for vrpn_Event_Mouse
+#include "vrpn_Flock.h"                 // for vrpn_Tracker_Flock, etc
+#include "vrpn_Flock_Parallel.h"        // for vrpn_Tracker_Flock_Parallel
+#include "vrpn_Freespace.h"
 #include "vrpn_Generic_server_object.h"
+#include "vrpn_GlobalHapticsOrb.h"      // for vrpn_GlobalHapticsOrb
+#include "vrpn_IDEA.h"                  // for vrpn_IDEA
+#include "vrpn_Imager_Stream_Buffer.h"  // for vrpn_Imager_Stream_Buffer
+#include "vrpn_ImmersionBox.h"          // for vrpn_ImmersionBox
+#include "vrpn_inertiamouse.h"          // for vrpn_inertiamouse
+#include "vrpn_JoyFly.h"                // for vrpn_Tracker_JoyFly
+#include "vrpn_Joylin.h"                // for vrpn_Joylin
+#include "vrpn_Joywin32.h"
+#include "vrpn_Keyboard.h"              // for vrpn_Keyboard
+#include "vrpn_LUDL.h"                  // for vrpn_LUDL_USBMAC6000
+#include "vrpn_Magellan.h"              // for vrpn_Magellan
+#include "vrpn_Mouse.h"                 // for vrpn_Button_SerialMouse, etc
+#include "vrpn_NationalInstruments.h"
+#include "vrpn_nikon_controls.h"        // for vrpn_Nikon_Controls
+#include "vrpn_Phantom.h"
+#include "vrpn_Poser_Analog.h"          // for vrpn_Poser_AnalogParam, etc
+#include "vrpn_Poser.h"                 // for vrpn_Poser
+#include "vrpn_Poser_Tek4662.h"         // for vrpn_Poser_Tek4662
+#include "vrpn_raw_sgibox.h"            // for vrpn_raw_SGIBox, for access to the SGI button & dial box connected to the serial port of an linux PC
+#include "vrpn_sgibox.h"                //for access to the B&D box connected to an SGI via the IRIX GL drivers
+#include "vrpn_Sound.h"                 // for vrpn_Sound
+#include "vrpn_Spaceball.h"             // for vrpn_Spaceball
+#include "vrpn_Tng3.h"                  // for vrpn_Tng3
+#include "vrpn_Tracker_3DMouse.h"       // for vrpn_Tracker_3DMouse
+#include "vrpn_Tracker_AnalogFly.h"     // for vrpn_Tracker_AnalogFlyParam, etc
+#include "vrpn_Tracker_ButtonFly.h"     // for vrpn_TBF_axis, etc
+#include "vrpn_Tracker_Crossbow.h"      // for vrpn_Tracker_Crossbow
+#include "vrpn_Tracker_DTrack.h"        // for vrpn_Tracker_DTrack
+#include "vrpn_Tracker_Fastrak.h"       // for vrpn_Tracker_Fastrak
+#include "vrpn_Tracker_GameTrak.h"      // for vrpn_Tracker_GameTrak
+#include "vrpn_Tracker_GPS.h"           // for vrpn_Tracker_GPS
+#include "vrpn_Tracker.h"               // for vrpn_Tracker, etc
+#include "vrpn_Tracker_isense.h"
+#include "vrpn_Tracker_Isotrak.h"       // for vrpn_Tracker_Isotrak
+#include "vrpn_Tracker_JsonNet.h"
+#include "vrpn_Tracker_Liberty.h"       // for vrpn_Tracker_Liberty
+#include "vrpn_Tracker_LibertyHS.h"     // for vrpn_Tracker_LibertyHS
+#include "vrpn_Tracker_MotionNode.h"
+#include "vrpn_Tracker_NDI_Polaris.h"   // for vrpn_Tracker_NDI_Polaris
+#include "vrpn_Tracker_NovintFalcon.h"
+#include "vrpn_Tracker_PDI.h"
+#include "vrpn_Tracker_PhaseSpace.h"
+#include "vrpn_Tracker_RazerHydra.h"    // for vrpn_Tracker_RazerHydra
+#include "vrpn_Tracker_SpacePoint.h"    // for vrpn_Tracker_SpacePoint
+#include "vrpn_Tracker_TrivisioColibri.h" // added by David Borland
+#include "vrpn_Tracker_ViewPoint.h" // added by David Borland
+#include "vrpn_Tracker_WiimoteHead.h"   // for vrpn_Tracker_WiimoteHead
+#include "vrpn_Tracker_zSight.h" // added by David Borland
+#include "vrpn_UNC_Joystick.h"          // for vrpn_Joystick
+#include "vrpn_VPJoystick.h"            // for vrpn_VPJoystick
+#include "vrpn_Wanda.h"                 // for vrpn_Wanda
+#include "vrpn_WiiMote.h"
+#include "vrpn_XInputGamepad.h"
+#include "vrpn_Xkeys.h"                 // for vrpn_Xkeys_Desktop, etc
+#include "vrpn_Zaber.h"                 // for vrpn_Zaber
+
+
+class VRPN_API vrpn_Connection;
 
 const int LINESIZE = 512;
 
