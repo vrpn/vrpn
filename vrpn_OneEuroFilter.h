@@ -26,8 +26,13 @@
 // - none
 
 // Standard includes
-// - none
-
+#ifdef SGI
+#  include <math.h>
+#else
+#  include <cmath>                       // for sqrt, acos
+using std::sqrt;
+using std::acos;
+#endif
 
 // "One Euro" filter for reducing jitter
 // http://hal.inria.fr/hal-00670496/
