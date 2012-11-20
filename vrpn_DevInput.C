@@ -163,7 +163,7 @@ int vrpn_DevInput::get_report()
   struct timeval timeout = { 0, 0 };
   select( d_fileDescriptor+1, &readset, NULL, NULL, &timeout );
 
-  gettimeofday( &timestamp, NULL );
+  vrpn_gettimeofday( &timestamp, NULL );
 
   if( ! FD_ISSET( d_fileDescriptor, &readset ) )
     return 0;

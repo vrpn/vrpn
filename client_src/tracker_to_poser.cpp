@@ -39,7 +39,7 @@ void	VRPN_CALLBACK handle_tracker_update(void *userdata, const vrpn_TRACKERCB t)
 
   // Get the data from the tracker and send it to the poser.
   struct timeval now;
-  gettimeofday(&now, NULL);
+  vrpn_gettimeofday(&now, NULL);
   psr->request_pose(now, t.pos, t.quat);
 }
 

@@ -60,7 +60,7 @@ vrpn_Event_Analog::vrpn_Event_Analog ( const char * name,
     }
  
     // set the time 
-    gettimeofday(&timestamp, NULL);
+    vrpn_gettimeofday(&timestamp, NULL);
 
   #endif // #if defined(LINUX) 
 }

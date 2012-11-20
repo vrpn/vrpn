@@ -322,7 +322,7 @@ void    VRPN_CALLBACK handle_tracker_change(void *userdata, const vrpn_TRACKERCB
 	// 1/4 second.
 	{ static  struct timeval  last_sent = {0,0};
 	  struct  timeval now;
-	  gettimeofday(&now, NULL);
+	  vrpn_gettimeofday(&now, NULL);
 	  if (vrpn_TimevalMsecs(vrpn_TimevalDiff(now, last_sent)) < 500) { break; }
 	  last_sent = now;
 	}

@@ -162,7 +162,7 @@ int vrpn_Mouse::get_report()
     vrpn_Analog::channel[0] = (vrpn_float64)(curPos.x - GetSystemMetrics(SM_XVIRTUALSCREEN)) / GetSystemMetrics(SM_CXVIRTUALSCREEN);
     vrpn_Analog::channel[1] = (vrpn_float64)(curPos.y - GetSystemMetrics(SM_YVIRTUALSCREEN)) / GetSystemMetrics(SM_CYVIRTUALSCREEN);
 
-    gettimeofday( &timestamp, NULL );
+    vrpn_gettimeofday( &timestamp, NULL );
     report_changes();
     return 1;
 #else

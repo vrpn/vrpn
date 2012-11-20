@@ -268,7 +268,7 @@ void vrpn_National_Instruments_Server::mainloop(void)
   // See if it has been long enough since we sent the last report.
   // If so, then read the channels and send a new report.
   struct timeval now;
-  gettimeofday(&now, NULL);
+  vrpn_gettimeofday(&now, NULL);
   if (duration(now, d_last_report_time) >= d_in_min_delay) {
     d_last_report_time = now;
 

@@ -1094,7 +1094,7 @@ bool vrpn_Phantom::addObject(vrpn_int32 objNum, vrpn_int32 ParentNum)
 {
 #ifdef  VRPN_USE_HDAPI
   struct timeval now;
-  gettimeofday(&now, NULL);
+  vrpn_gettimeofday(&now, NULL);
   send_text_message("vrpn_Phantom::addObject: Trimesh not supported under HDAPI",now, vrpn_TEXT_ERROR);
   return false;
 #else
@@ -1124,7 +1124,7 @@ bool vrpn_Phantom::addObjectExScene(vrpn_int32 objNum)
 {
 #ifdef  VRPN_USE_HDAPI
   struct timeval now;
-  gettimeofday(&now, NULL);
+  vrpn_gettimeofday(&now, NULL);
   send_text_message("vrpn_Phantom::addObjectExScene: Trimesh not supported under HDAPI",now, vrpn_TEXT_ERROR);
   return false;
 #else
@@ -1149,7 +1149,7 @@ bool vrpn_Phantom::setVertex(vrpn_int32 objNum, vrpn_int32 vertNum,vrpn_float32 
 {
 #ifdef  VRPN_USE_HDAPI
   struct timeval now;
-  gettimeofday(&now, NULL);
+  vrpn_gettimeofday(&now, NULL);
   send_text_message("vrpn_Phantom::setVertex: Trimesh not supported under HDAPI",now, vrpn_TEXT_ERROR);
   return false;
 #else
@@ -1165,7 +1165,7 @@ bool vrpn_Phantom::setNormal(vrpn_int32 objNum, vrpn_int32 normNum,vrpn_float32 
 {
 #ifdef  VRPN_USE_HDAPI
   struct timeval now;
-  gettimeofday(&now, NULL);
+  vrpn_gettimeofday(&now, NULL);
   send_text_message("vrpn_Phantom::setNormal: Trimesh not supported under HDAPI",now, vrpn_TEXT_ERROR);
   return false;
 #else
@@ -1182,7 +1182,7 @@ bool vrpn_Phantom::setTriangle(vrpn_int32 objNum, vrpn_int32 triNum,vrpn_int32 v
 {
 #ifdef  VRPN_USE_HDAPI
   struct timeval now;
-  gettimeofday(&now, NULL);
+  vrpn_gettimeofday(&now, NULL);
   send_text_message("vrpn_Phantom::setTriangle: Trimesh not supported under HDAPI",now, vrpn_TEXT_ERROR);
   return false;
 #else
@@ -1198,7 +1198,7 @@ bool vrpn_Phantom::removeTriangle(vrpn_int32 objNum, vrpn_int32 triNum)
 {
 #ifdef  VRPN_USE_HDAPI
   struct timeval now;
-  gettimeofday(&now, NULL);
+  vrpn_gettimeofday(&now, NULL);
   send_text_message("vrpn_Phantom::removeTriangle: Trimesh not supported under HDAPI",now, vrpn_TEXT_ERROR);
   return false;
 #else
@@ -1216,7 +1216,7 @@ bool vrpn_Phantom::updateTrimeshChanges(vrpn_int32 objNum,vrpn_float32 kspring, 
 {
 #ifdef  VRPN_USE_HDAPI
   struct timeval now;
-  gettimeofday(&now, NULL);
+  vrpn_gettimeofday(&now, NULL);
   send_text_message("vrpn_Phantom::updateTrimeshChanges: Trimesh not supported under HDAPI",now, vrpn_TEXT_ERROR);
   return false;
 #else
@@ -1244,7 +1244,7 @@ bool vrpn_Phantom::setTrimeshType(vrpn_int32 objNum,vrpn_int32 type)
 {
 #ifdef  VRPN_USE_HDAPI
   struct timeval now;
-  gettimeofday(&now, NULL);
+  vrpn_gettimeofday(&now, NULL);
   send_text_message("vrpn_Phantom::setTrimeshType: Trimesh not supported under HDAPI",now, vrpn_TEXT_ERROR);
   return false;
 #else
@@ -1264,7 +1264,7 @@ bool vrpn_Phantom::setTrimeshTransform(vrpn_int32 objNum, vrpn_float32 homMatrix
 {
 #ifdef  VRPN_USE_HDAPI
   struct timeval now;
-  gettimeofday(&now, NULL);
+  vrpn_gettimeofday(&now, NULL);
   send_text_message("vrpn_Phantom::setTrimeshTransform: Trimesh not supported under HDAPI",now, vrpn_TEXT_ERROR);
   return false;
 #else
@@ -1289,7 +1289,7 @@ bool vrpn_Phantom::setObjectPosition(vrpn_int32 objNum, vrpn_float32 Pos[3])
 {
 #ifdef  VRPN_USE_HDAPI
   struct timeval now;
-  gettimeofday(&now, NULL);
+  vrpn_gettimeofday(&now, NULL);
   send_text_message("vrpn_Phantom::setObjectPosition: Trimesh not supported under HDAPI",now, vrpn_TEXT_ERROR);
   return false;
 #else
@@ -1309,7 +1309,7 @@ bool vrpn_Phantom::setObjectOrientation(vrpn_int32 objNum, vrpn_float32 axis[3],
 {
 #ifdef  VRPN_USE_HDAPI
   struct timeval now;
-  gettimeofday(&now, NULL);
+  vrpn_gettimeofday(&now, NULL);
   send_text_message("vrpn_Phantom::setObjectOrientation: Trimesh not supported under HDAPI",now, vrpn_TEXT_ERROR);
   return false;
 #else
@@ -1330,7 +1330,7 @@ bool vrpn_Phantom::setObjectScale(vrpn_int32 objNum, vrpn_float32 Scale[3])
 {
 #ifdef  VRPN_USE_HDAPI
   struct timeval now;
-  gettimeofday(&now, NULL);
+  vrpn_gettimeofday(&now, NULL);
   send_text_message("vrpn_Phantom::setObjectScale: Trimesh not supported under HDAPI",now, vrpn_TEXT_ERROR);
   return false;
 #else
@@ -1350,7 +1350,7 @@ bool vrpn_Phantom::removeObject(vrpn_int32 objNum)
 {
 #ifdef  VRPN_USE_HDAPI
   struct timeval now;
-  gettimeofday(&now, NULL);
+  vrpn_gettimeofday(&now, NULL);
   send_text_message("vrpn_Phantom::removeObject: Trimesh not supported under HDAPI",now, vrpn_TEXT_ERROR);
   return false;
 #else
@@ -1396,7 +1396,7 @@ bool vrpn_Phantom::clearTrimesh(vrpn_int32 objNum)
 {
 #ifdef  VRPN_USE_HDAPI
   struct timeval now;
-  gettimeofday(&now, NULL);
+  vrpn_gettimeofday(&now, NULL);
   send_text_message("vrpn_Phantom::clearTrimesh: Trimesh not supported under HDAPI",now, vrpn_TEXT_ERROR);
   return false;
 #else
@@ -1418,7 +1418,7 @@ bool vrpn_Phantom::moveToParent(vrpn_int32 objNum, vrpn_int32 ParentNum)
 {
 #ifdef  VRPN_USE_HDAPI
   struct timeval now;
-  gettimeofday(&now, NULL);
+  vrpn_gettimeofday(&now, NULL);
   send_text_message("vrpn_Phantom::moveToParent: Trimesh not supported under HDAPI",now, vrpn_TEXT_ERROR);
   return false;
 #else
@@ -1444,7 +1444,7 @@ bool vrpn_Phantom::setHapticOrigin(vrpn_float32 Pos[3], vrpn_float32 axis[3], vr
 {
 #ifdef  VRPN_USE_HDAPI
   struct timeval now;
-  gettimeofday(&now, NULL);
+  vrpn_gettimeofday(&now, NULL);
   send_text_message("vrpn_Phantom::setHapticOrigin: Not supported under HDAPI",now, vrpn_TEXT_ERROR);
   return false;
 #else
@@ -1459,7 +1459,7 @@ bool vrpn_Phantom::setHapticScale(vrpn_float32 Scale)
 {
 #ifdef  VRPN_USE_HDAPI
   struct timeval now;
-  gettimeofday(&now, NULL);
+  vrpn_gettimeofday(&now, NULL);
   send_text_message("vrpn_Phantom::setHapticScale: Not supported under HDAPI",now, vrpn_TEXT_ERROR);
   return false;
 #else
@@ -1473,7 +1473,7 @@ bool vrpn_Phantom::setSceneOrigin(vrpn_float32 Pos[3], vrpn_float32 axis[3], vrp
 {
 #ifdef  VRPN_USE_HDAPI
   struct timeval now;
-  gettimeofday(&now, NULL);
+  vrpn_gettimeofday(&now, NULL);
   send_text_message("vrpn_Phantom::setSceneOrigin: Not supported under HDAPI",now, vrpn_TEXT_ERROR);
   return false;
 #else
@@ -1494,7 +1494,7 @@ bool vrpn_Phantom::setObjectIsTouchable(vrpn_int32 objNum, vrpn_bool IsTouchable
 {
 #ifdef  VRPN_USE_HDAPI
   struct timeval now;
-  gettimeofday(&now, NULL);
+  vrpn_gettimeofday(&now, NULL);
   send_text_message("vrpn_Phantom::setObjectIsTouchable: Not supported under HDAPI",now, vrpn_TEXT_ERROR);
   return false;
 #else
@@ -1502,7 +1502,7 @@ bool vrpn_Phantom::setObjectIsTouchable(vrpn_int32 objNum, vrpn_bool IsTouchable
     // For some reason, this function seems to be missing from GHOST 3.1 on the
     // SGI architecture, even though it is described in the manual.
     struct timeval now;
-    gettimeofday(&now, NULL);
+    vrpn_gettimeofday(&now, NULL);
     send_text_message("vrpn_Phantom::setObjectIsTouchable: Not supported under SGI",now, vrpn_TEXT_ERROR);
   #else
 	gstSeparator *obj=GetObject(objNum);

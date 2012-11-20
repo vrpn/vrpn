@@ -157,12 +157,12 @@ bool  directx_camera_server::read_one_frame(unsigned minX, unsigned maxX,
     static int frame_count = 0;
 
     if (first_time) {
-      gettimeofday(&last_print_time, NULL);
+      vrpn_gettimeofday(&last_print_time, NULL);
       first_time = false;
     } else {
       static	unsigned  last_r = 10000;
       frame_count++;
-      gettimeofday(&now, NULL);
+      vrpn_gettimeofday(&now, NULL);
       double timesecs = 0.001 * vrpn_TimevalMsecs(vrpn_TimevalDiff(now, last_print_time));
       if (timesecs >= 5) {
 	double frames_per_sec = frame_count / timesecs;

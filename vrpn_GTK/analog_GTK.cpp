@@ -1,6 +1,7 @@
 #include "analog_GTK.h"
 #include "quat.h"
 #include <iostream>
+#include <vrpn_Shared.h>                // for vrpn_gettimeofday
 
 analog_GTK::analog_GTK(vrpn_Connection *connection, const char *name, GtkBuilder *builder) : vrpn_Analog(name, connection) {
   g_signal_connect (gtk_builder_get_object (builder, "analog"), "destroy", G_CALLBACK (gtk_main_quit), NULL);
@@ -26,7 +27,7 @@ analog_GTK::analog_GTK(vrpn_Connection *connection, const char *name, GtkBuilder
 }
 
 void analog_GTK::analog_cb(GtkAdjustment *analog, analog_GTK *obj) {
-  gettimeofday( &obj->timestamp, NULL );
+  vrpn_gettimeofday( &obj->timestamp, NULL );
 
   for (unsigned int i = 0 ; i  < obj->d_analogs.size() ; i++) {
     if (obj->d_analogs[i] == analog) {
