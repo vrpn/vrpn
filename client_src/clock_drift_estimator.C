@@ -55,7 +55,7 @@ public:
       // Initialize the member variables used in estimating the time.
       // We want the estimation interval to start two seconds into the
       // future to give things time to settle in and get connected.
-      gettimeofday(&d_next_interval_time, NULL);
+      vrpn_gettimeofday(&d_next_interval_time, NULL);
       d_next_interval_time.tv_sec += 2;
       d_next_ping_time = d_next_interval_time;
 
@@ -86,7 +86,7 @@ public:
 
       // See if it is time for the next interval to start.  Start it if so.
       struct timeval now;
-      gettimeofday(&now, NULL);
+      vrpn_gettimeofday(&now, NULL);
       if (vrpn_TimevalGreater(now, d_next_interval_time) || vrpn_TimevalEqual(now, d_next_interval_time)) {
 
         // If we were doing an estimate, print the results.
@@ -176,7 +176,7 @@ protected:
     // the time of the response and the time we asked for a response.
     if (me->d_doing_ping) {
       struct timeval now;
-      gettimeofday(&now, NULL);
+      vrpn_gettimeofday(&now, NULL);
 
       // Find the round trip was by subtracting the time the last
       // ping was sent from the current time.

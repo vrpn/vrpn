@@ -146,8 +146,8 @@ vrpn_Atmel::vrpn_Atmel(char* name, vrpn_Connection *c, int fd)
     serial_fd(fd)
 {	
   // find out what time it is - needed?
-  gettimeofday(&timestamp, 0);
-  gettimeofday(&_time_alive, 0);
+  vrpn_gettimeofday(&timestamp, 0);
+  vrpn_gettimeofday(&_time_alive, 0);
   vrpn_Analog::timestamp = timestamp;
 }
 
@@ -241,7 +241,7 @@ vrpn_Atmel::Check_Serial_Alive()
   if ((timestamp.tv_sec - _time_alive.tv_sec) > VRPN_ATMEL_ALIVE_INTERVAL_SEC) {
 
     // reset time alive
-    gettimeofday(&_time_alive,0);
+    vrpn_gettimeofday(&_time_alive,0);
 
     tcflush(serial_fd, TCIOFLUSH);
 
@@ -281,7 +281,7 @@ vrpn_Atmel::Check_Serial_Alive()
 bool
 vrpn_Atmel::mainloop_serial_io() 
 {
-  gettimeofday(&timestamp, 0);
+  vrpn_gettimeofday(&timestamp, 0);
   vrpn_Analog::timestamp = timestamp;
 
   // check if there is still a valid connection to the Chip

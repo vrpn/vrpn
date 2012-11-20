@@ -288,7 +288,7 @@ int vrpn_Tracker_GPS::get_report(void)
                 //-----------------------------
                 //printf("tracker report ready\n",status);
                 
-                //gettimeofday(&timestamp, NULL);	// Set watchdog now
+                //vrpn_gettimeofday(&timestamp, NULL);	// Set watchdog now
                 
                 /*
                  // Send the message on the connection
@@ -376,7 +376,7 @@ int vrpn_Tracker_GPS::get_report(void)
             {
                 printf("tracker report ready\n",status);
                 
-                gettimeofday(&timestamp, NULL);	// Set watchdog now
+                vrpn_gettimeofday(&timestamp, NULL);	// Set watchdog now
                 
                 // Send the message on the connection
                 if (d_connection) {
@@ -433,7 +433,7 @@ int vrpn_Tracker_GPS::get_report(void)
                 get_report();
                 // 
                 // struct timeval current_time;
-                // gettimeofday(&current_time, NULL);
+                // vrpn_gettimeofday(&current_time, NULL);
                 // if ( duration(current_time,timestamp) > MAX_TIME_INTERVAL) {
                 //	  sprintf(errmsg,"Timeout... current_time=%ld:%ld, timestamp=%ld:%ld",current_time.tv_sec, current_time.tv_usec, timestamp.tv_sec, timestamp.tv_usec);
                 //	  FT_ERROR(errmsg);

@@ -146,7 +146,7 @@ getCmd (handle_t fd, struct command_t* Cmd)
   struct timeval start;
   struct timeval end;
   int sec, usec; 
-  gettimeofday( &start , 0);
+  vrpn_gettimeofday( &start , 0);
 #endif
 
   unsigned char PossibilityOne;
@@ -245,7 +245,7 @@ getCmd (handle_t fd, struct command_t* Cmd)
       
 #ifdef VRPN_ATMELLIB_TIME_MEASURE 
        // display time for
-       gettimeofday( &end , 0);
+       vrpn_gettimeofday( &end , 0);
        sec=end.tv_sec-start.tv_sec; 
        usec=end.tv_usec-start.tv_usec; 
        printf("Time for reading out: sec=%i , usec=%i\n", sec, usec);
@@ -279,7 +279,7 @@ setCmd (handle_t fd , struct command_t * Cmd)
   struct timeval start;
   struct timeval end;
   int sec, usec; 
-  gettimeofday( &start , 0);
+  vrpn_gettimeofday( &start , 0);
 #endif
   
   /* check if the given parameters are valid */
@@ -358,7 +358,7 @@ setCmd (handle_t fd , struct command_t * Cmd)
   
 #ifdef ATMELLIB_TIME_MEASURE 
        // display time for
-       gettimeofday( &end , 0);
+       vrpn_gettimeofday( &end , 0);
        sec=end.tv_sec-start.tv_sec; 
        usec=end.tv_usec-start.tv_usec; 
        printf("Time for writing down: sec=%i , usec=%i\n", sec, usec);
