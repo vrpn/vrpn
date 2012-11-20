@@ -214,13 +214,13 @@ void shutdown () {
   // print out sender names
 
   if (c)
-    for (i = 0L; n = c->sender_name(i); i++)
+    for (i = 0L; (n = c->sender_name(i)); i++)
       printf("Knew local sender \"%s\".\n", n);
 
   // print out type names
 
   if (c)
-    for (i = 0L; n = c->message_type_name(i); i++)
+    for (i = 0L; (n = c->message_type_name(i)); i++)
       printf("Knew local type \"%s\".\n", n);
 
   if (btn)
