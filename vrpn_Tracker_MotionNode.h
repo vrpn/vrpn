@@ -26,9 +26,10 @@ DEALINGS IN THE SOFTWARE.
 #ifndef __TRACKER_MOTIONNODE_H
 #define __TRACKER_MOTIONNODE_H
 
-#include "vrpn_Tracker.h"
+#include "vrpn_Configure.h"   // IWYU pragma: keep
 
 #ifdef VRPN_USE_MOTIONNODE
+#include "vrpn_Tracker.h"
 
 class VRPN_API vrpn_Tracker_MotionNode : public vrpn_Tracker {
 public:

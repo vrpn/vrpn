@@ -694,7 +694,7 @@ int vrpn_unbuffer (const char ** buffer, char * string,
 #ifndef VRPN_UNSAFE_WINDOWS_CLOCK
 
 #if defined(_WIN32) && !defined(__CYGWIN__)
-#include <math.h>
+#include <math.h>                       // for floor, fmod
 
 #pragma optimize("", on)
 
@@ -774,7 +774,7 @@ int vrpn_gettimeofday(timeval *tp, void *voidp)
 // They claim it will be fixed in the next release, version b21
 // so until then, we will make it right using our solution.
 #if defined(_WIN32) && !defined(__CYGWIN__)
-#include <math.h>
+#include <math.h>                       // for floor, fmod
 
 // utility routines to read the pentium time stamp counter
 // QueryPerfCounter drifts too much -- others have documented this
@@ -1465,6 +1465,7 @@ int vrpn_Semaphore::numResources() {
 #ifdef sgi
 usptr_t *vrpn_Semaphore::ppaArena = NULL;
 
+#include <sys/stat.h>
 // for umask stuff
 #include <sys/types.h>
 #include <sys/stat.h>

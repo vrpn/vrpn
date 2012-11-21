@@ -1,7 +1,7 @@
 #ifndef VRPN_XINPUTGAMEPAD_H
 #define VRPN_XINPUTGAMEPAD_H
 
-#include "vrpn_Configure.h"
+#include "vrpn_Configure.h"   // IWYU pragma: keep
 
 #if defined(_WIN32) && defined(VRPN_USE_DIRECTINPUT) && defined(VRPN_USE_WINDOWS_XINPUT)
 

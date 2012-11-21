@@ -1,10 +1,11 @@
 #ifndef VRPN_TRACKER_PHASESPACE_H
 #define VRPN_TRACKER_PHASESPACE_H
 
-#include "vrpn_Shared.h"
-#include "vrpn_Tracker.h"
+#include "vrpn_Configure.h"   // IWYU pragma: keep
 
 #ifdef  VRPN_INCLUDE_PHASESPACE
+#include "vrpn_Shared.h"
+#include "vrpn_Tracker.h"
 
 #include "../phasespace/owl.h"
 

@@ -9,7 +9,6 @@
 //   p_ is the prefixe for parameters
 
 #include <stdio.h>                      // for sprintf, fprintf, stderr
-#include <string.h>                     // for NULL
 
 #include "vrpn_5DT16.h"
 #include "vrpn_BaseClass.h"             // for ::vrpn_TEXT_ERROR, etc

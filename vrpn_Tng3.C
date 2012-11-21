@@ -7,7 +7,6 @@
 
 #include <math.h>                       // for floor
 #include <stdio.h>                      // for fprintf, stderr, printf
-#include <string.h>                     // for NULL
 
 #include "vrpn_BaseClass.h"             // for ::vrpn_TEXT_WARNING, etc
 #include "vrpn_Serial.h"

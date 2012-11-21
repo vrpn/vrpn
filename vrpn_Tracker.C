@@ -25,7 +25,7 @@
 #include "vrpn_Tracker.h"
 
 #if defined(VRPN_USE_LIBUSB_1_0)
-#include "libusb.h"                     // for libusb_close, etc
+#include <libusb.h>                     // for libusb_close, etc
 #endif
 
 #ifndef VRPN_CLIENT_ONLY

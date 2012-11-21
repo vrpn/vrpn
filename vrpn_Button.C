@@ -10,7 +10,9 @@
 #endif
 
 #include "vrpn_Connection.h"            // for vrpn_Connection, etc
+#ifndef VRPN_CLIENT_ONLY
 #include "vrpn_Serial.h"
+#endif
 // Include vrpn_Shared.h _first_ to avoid conflicts with sys/time.h 
 // and unistd.h
 #include "vrpn_Shared.h"                // for timeval, vrpn_buffer, etc

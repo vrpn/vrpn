@@ -52,7 +52,7 @@ using namespace std;
 
 #define FATAL_ERROR cerr << endl << "Press 'enter' to exit..." << endl;	cin.get(); return -1;
 
-#include <vrpn_Configure.h>
+#include "vrpn_Configure.h"   // IWYU pragma: keep
 
 #if defined(VRPN_USE_WIIUSE)
 #include "vrpn_Tracker.h"
