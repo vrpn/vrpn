@@ -212,7 +212,7 @@ int vrpn_Tracker_GPS::get_report(void)
             //printf("We have a $, setting to partial and moving on.\n");
             bufcount = 1;  // external GPS parser lib expects "$" at start
             
-            gettimeofday(&timestamp, NULL);
+            vrpn_gettimeofday(&timestamp, NULL);
             
             status = vrpn_TRACKER_PARTIAL;
         }//if syncing

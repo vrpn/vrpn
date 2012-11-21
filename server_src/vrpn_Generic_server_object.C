@@ -4701,14 +4701,14 @@ int vrpn_Generic_Server_Object::setup_Tracker_GPS(char * & pch, char * line, FIL
 {
   unsigned num_sensors = 0;
   char address[LINESIZE]="/dev/tty.someserialport";
-  
+
   char trackerName[512];
-  int baud; 
+  int baud;
   int useUTM = 0;
-  
+
   int argCount=0;
-  
-  
+
+
   next();
   // Get the arguments (class, tracker_name, sensors, rate)
   argCount = sscanf(pch,"%511s%511s%u", trackerName, address, &baud);
@@ -4718,22 +4718,22 @@ int vrpn_Generic_Server_Object::setup_Tracker_GPS(char * & pch, char * line, FIL
     fprintf(stderr, "Bad vrpn_Tracker_GPS line:\n %s\n\targCount is %d\n", line, argCount);
     return -1;
   }
-  
+
   // Make sure there's room for a new tracker
   if (num_trackers >= VRPN_GSO_MAX_TRACKERS) {
     fprintf(stderr,"Too many trackers in config file");
     return -1;
   }
-  
+
   // Open the tracker
   if (verbose) {
     printf("Opening vrpn_Tracker_GPS: %s with %u sensors, address %s, port %u\n",
          trackerName, num_sensors, address, baud);
   }
-  
+
   //trackers[num_trackers] = new vrpn_Tracker_GPS(name, connection, num_sensors, address, port);
   trackers[num_trackers] = new vrpn_Tracker_GPS(trackerName,connection, address, baud, useUTM, 0);
-  
+
   if (NULL == trackers[num_trackers]) {
     fprintf(stderr, "Failed to create new vrpn_Tracker_GPS\n");
     return -1;
@@ -5071,7 +5071,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_G4(char * &pch, char * line, FILE 
 
 	if(filepath[strlen(filepath)-2] == '\\' ){
 		filepath[strlen(filepath)-2] = '\0';
-	}else 
+	}else
 		filepath[strlen(filepath)-1] = '\0';
 
 	printf("%s\n",filepath);
@@ -5131,7 +5131,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_FastrakPDI(char * &pch, char * lin
 	next();
 	// Get the arguments (class(already taken), tracker_name, reports per second)
 	sscanf(pch,"%511s%d",name,&Hz);
-	
+
 	// Make sure there's room for a new tracker
 	if (num_trackers >= VRPN_GSO_MAX_TRACKERS) {
 		fprintf(stderr,"Too many trackers in config file");
@@ -5195,7 +5195,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_LibertyPDI(char * &pch, char * lin
   next();
   // Get the arguments (class(already taken), tracker_name, reports per second)
   sscanf(pch,"%511s%d",name,&Hz);
-	
+
 	 // Make sure there's room for a new tracker
 	if (num_trackers >= VRPN_GSO_MAX_TRACKERS) {
 		fprintf(stderr,"Too many trackers in config file");
@@ -5559,12 +5559,12 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object (vrpn_Connection *connect
         CHECK (setup_Tracker_ViewPoint);
       }
 // Polhemus additions
-      else if (isit ("vrpn_Tracker_G4")) { 
-        CHECK(setup_Tracker_G4); 
-      } else if (isit ("vrpn_Tracker_LibertyPDI")) { 
-        CHECK(setup_Tracker_LibertyPDI); 
-      } else if (isit ("vrpn_Tracker_FastrakPDI")) { 
-        CHECK(setup_Tracker_FastrakPDI); 
+      else if (isit ("vrpn_Tracker_G4")) {
+        CHECK(setup_Tracker_G4);
+      } else if (isit ("vrpn_Tracker_LibertyPDI")) {
+        CHECK(setup_Tracker_LibertyPDI);
+      } else if (isit ("vrpn_Tracker_FastrakPDI")) {
+        CHECK(setup_Tracker_FastrakPDI);
       }
 #ifdef VRPN_USE_JSONNET
       else if (isit ("vrpn_Tracker_JsonNet")) {

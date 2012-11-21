@@ -362,7 +362,7 @@ Answer to the question:
 // have DLL linkage, the code below asks for (but apparently does not
 // get) DLL linkage, and the DLL-linked test programs work when things
 // are as they are.  Do not use this class outside of a derived class.
-#ifdef	_WIN32
+#ifdef	_MSC_VER
 #pragma warning( disable : 4251 )
 #endif
 template<class CALLBACK_STRUCT> class VRPN_API vrpn_Callback_List {

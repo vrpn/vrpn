@@ -63,11 +63,13 @@ if(VRPN_USE_PHANTOM_SERVER AND OPENGL_FOUND)
 		ARCHIVE
 		DESTINATION
 		lib
-		COMPONENT serversdk
+		COMPONENT
+		serversdk
 		PUBLIC_HEADER
 		DESTINATION
 		include
-		COMPONENT serversdk)
+		COMPONENT
+		serversdk)
 	set(VRPNPHANTOMLIB vrpn_phantom)
 endif()
 
@@ -108,7 +110,9 @@ install(TARGETS vrpn_server
 
 #-----------------------------------------------------------------------------
 # Install the vrpn.cfg file needed by the server.
-configure_file("${CMAKE_CURRENT_SOURCE_DIR}/vrpn.cfg" "${CMAKE_CURRENT_BINARY_DIR}/vrpn.cfg" @ONLY)
+configure_file("${CMAKE_CURRENT_SOURCE_DIR}/vrpn.cfg"
+	"${CMAKE_CURRENT_BINARY_DIR}/vrpn.cfg"
+	@ONLY)
 if(WIN32)
 	install(FILES "${CMAKE_CURRENT_BINARY_DIR}/vrpn.cfg"
 		DESTINATION bin

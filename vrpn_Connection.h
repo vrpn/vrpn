@@ -4,8 +4,8 @@
 #include <stdio.h>  // for FILE
 #include "vrpn_Shared.h"
 
-// Don't complain about using sprintf() in Windows.
-#ifdef _WIN32
+// Don't complain about using sprintf() when using Visual Studio.
+#ifdef _MSC_VER
 #pragma warning ( disable : 4995 4996 )
 #endif
 

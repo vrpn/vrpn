@@ -24,7 +24,11 @@
 find_package(WindowsSDK)
 find_package(DirectX QUIET)
 
-set(DIRECTSHOW_WINDOWSSDK_ROOT "${DIRECTSHOW_WINDOWSSDK_ROOT}" CACHE PATH "A specific Windows SDK to use for DirectShow.")
+set(DIRECTSHOW_WINDOWSSDK_ROOT
+	"${DIRECTSHOW_WINDOWSSDK_ROOT}"
+	CACHE
+	PATH
+	"A specific Windows SDK to use for DirectShow.")
 
 if(MSVC AND CMAKE_CL_64)
 	set(DIRECTSHOW_LIB_SUBDIR /x64)
@@ -53,27 +57,30 @@ find_path(DIRECTSHOW_BASECLASS_DIR
 	PATH_SUFFIXES
 	"Samples/Multimedia/DirectShow/BaseClasses")
 
-find_path(DIRECTSHOW_WINDOWSSDK_INCLUDE_DIR NAMES DShow.h
+find_path(DIRECTSHOW_WINDOWSSDK_INCLUDE_DIR
+	NAMES
+	DShow.h
 	HINTS
 	"${DIRECTSHOW_WINDOWSSDK_ROOT}"
 	PATHS
 	${_acceptable_winsdk}
 	PATH_SUFFIXES
-	"Include"
-)
+	"Include")
 
 # This one we can grab from another SDK version.
-find_path(DIRECTSHOW_QEDIT_INCLUDE_DIR NAMES qedit.h
+find_path(DIRECTSHOW_QEDIT_INCLUDE_DIR
+	NAMES
+	qedit.h
 	HINTS
 	"${DIRECTSHOW_WINDOWSSDK_ROOT}"
 	PATHS
 	${WINDOWSSDK_DIRS}
 	PATH_SUFFIXES
-	"Include"
-)
+	"Include")
 
 find_library(DIRECTSHOW_STRMIIDS_LIBRARY
-	NAMES strmiids
+	NAMES
+	strmiids
 	HINTS
 	"${DIRECTSHOW_WINDOWSSDK_ROOT}"
 	PATHS
@@ -99,7 +106,9 @@ if(DIRECTSHOW_FOUND)
 		"${DIRECTX_INCLUDE_DIR}"
 	)
 	if(EXISTS "${DIRECTSHOW_WINDOWSSDK_INCLUDE_DIR}/atl/atlbase.h")
-		list(APPEND DIRECTSHOW_INCLUDE_DIRS "${DIRECTSHOW_WINDOWSSDK_INCLUDE_DIR}/atl")
+		list(APPEND
+			DIRECTSHOW_INCLUDE_DIRS
+			"${DIRECTSHOW_WINDOWSSDK_INCLUDE_DIR}/atl")
 	endif()
 	if(NOT "${DIRECTSHOW_QEDIT_INCLUDE_DIR}" STREQUAL "${DIRECTSHOW_WINDOWSSDK_INCLUDE_DIR}")
 		# QEdit include dir might be an older SDK, so put it last.

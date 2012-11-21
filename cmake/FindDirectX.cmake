@@ -51,8 +51,11 @@ if(MSVC)
 			list(APPEND DXSDK_DIRS ${ARGN})
 		endif()
 	endmacro()
-	_append_dxsdk_in_inclusive_range(1500 1600 "${_PROG_FILES}/Microsoft DirectX SDK (June 2010)")
-	_append_dxsdk_in_inclusive_range(1400 1600
+	_append_dxsdk_in_inclusive_range(1500
+		1600
+		"${_PROG_FILES}/Microsoft DirectX SDK (June 2010)")
+	_append_dxsdk_in_inclusive_range(1400
+		1600
 		"${_PROG_FILES}/Microsoft DirectX SDK (February 2010)"
 		"${_PROG_FILES}/Microsoft DirectX SDK (August 2009)"
 		"${_PROG_FILES}/Microsoft DirectX SDK (March 2009)"
@@ -60,7 +63,8 @@ if(MSVC)
 		"${_PROG_FILES}/Microsoft DirectX SDK (August 2008)"
 		"${_PROG_FILES}/Microsoft DirectX SDK (June 2008)"
 		"${_PROG_FILES}/Microsoft DirectX SDK (March 2008)")
-	_append_dxsdk_in_inclusive_range(1310 1500
+	_append_dxsdk_in_inclusive_range(1310
+		1500
 		"${_PROG_FILES}/Microsoft DirectX SDK (November 2007)"
 		"${_PROG_FILES}/Microsoft DirectX SDK (August 2007)"
 		"${_PROG_FILES}/Microsoft DirectX SDK (June 2007)"
@@ -84,7 +88,9 @@ endif()
 
 find_path(DIRECTX_INCLUDE_DIR
 	NAMES
-	dxdiag.h dinput.h dxerr8.h
+	dxdiag.h
+	dinput.h
+	dxerr8.h
 	PATHS
 	${DXSDK_DIRS}
 	HINTS

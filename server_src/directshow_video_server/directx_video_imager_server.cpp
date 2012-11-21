@@ -11,7 +11,9 @@ const int MAJOR_VERSION = 3;
 const int MINOR_VERSION = 2;
 
 // sprintf() is okay in our usage.
+#ifdef _MSC_VER
 #pragma warning( disable : 4995 )
+#endif
 
 //-----------------------------------------------------------------
 // This section contains code to initialize the camera and read its

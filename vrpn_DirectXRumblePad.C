@@ -13,6 +13,8 @@
 
 #if defined(_WIN32) && defined(VRPN_USE_DIRECTINPUT)
 #include <stdio.h>
+#include <algorithm> // for min
+using std::min;
 
 // Hacks to maintain VC++6 compatibility while preserving 64-bitness
 // Also cleans up the annoying (and in this case meaningless) warnings under Win32

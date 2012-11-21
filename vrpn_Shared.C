@@ -3,8 +3,9 @@
 
 #include <stdio.h>
 #include <math.h>
+#include <stdlib.h> // for exit()
 #ifndef	_WIN32_WCE
-#include <sys/types.h>
+#  include <sys/types.h>
 #endif
 
 // Don't tell us about strcpy being dangerous.
@@ -130,6 +131,12 @@ bool vrpn_TimevalEqual( const timeval& tv1, const timeval& tv2 )
   if( tv1.tv_sec == tv2.tv_sec && tv1.tv_usec == tv2.tv_usec )
     return true;
   else return false;
+}
+
+unsigned long vrpn_TimevalDuration(struct timeval endT, struct timeval startT)
+{
+	return (endT.tv_usec - startT.tv_usec) +
+		1000000L * (endT.tv_sec - startT.tv_sec);
 }
 
 double vrpn_TimevalMsecs( const timeval& tv )

@@ -44,7 +44,7 @@ if(SWIG_FOUND AND PYTHONLIBS_FOUND AND VRPN_BUILD_PYTHON)
 	#Make sure Python wrapper files get correctly generated in Windows
 	if(WIN32 AND NOT CYGWIN)
 		#Define the preprocessor symbol VRPN_USE_WINSOCK_SOCKETS in swig, since the latter doesn't take the preprocessor definitions from vrpn_Shared.h in account
-		SET(CMAKE_SWIG_FLAGS "-DVRPN_USE_WINSOCK_SOCKETS")
+		set(CMAKE_SWIG_FLAGS "-DVRPN_USE_WINSOCK_SOCKETS")
 	endif()
 
 	set(MODULES
@@ -59,15 +59,31 @@ if(SWIG_FOUND AND PYTHONLIBS_FOUND AND VRPN_BUILD_PYTHON)
 		vrpn_Tracker)
 	foreach(module ${MODULES})
 		set_source_files_properties(${module}.i PROPERTIES CPLUSPLUS ON)
-		swig_add_module(${module} Python ${module}.i ${clientlib_fullsrc} ${quatlib_fullsrc})
+		swig_add_module(${module}
+			Python
+			${module}.i
+			${clientlib_fullsrc}
+			${quatlib_fullsrc})
 		swig_link_libraries(${module} ${PYTHON_LIBRARIES} ${LIBS})
 		set_target_properties(_${module} PROPERTIES FOLDER "Python Bindings")
-		install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${module}.py"
-			DESTINATION lib/${PYTHONVERSIONDIR}dist-packages/
-			COMPONENT python)
-		install(TARGETS ${SWIG_MODULE_${module}_REAL_NAME}
-			RUNTIME DESTINATION lib/${PYTHONVERSIONDIR}dist-packages/ COMPONENT python
-			LIBRARY DESTINATION lib/${PYTHONVERSIONDIR}dist-packages/ COMPONENT python)
+		install(FILES
+			"${CMAKE_CURRENT_BINARY_DIR}/${module}.py"
+			DESTINATION
+			lib/${PYTHONVERSIONDIR}dist-packages/
+			COMPONENT
+			python)
+		install(TARGETS
+			${SWIG_MODULE_${module}_REAL_NAME}
+			RUNTIME
+			DESTINATION
+			lib/${PYTHONVERSIONDIR}dist-packages/
+			COMPONENT
+			python
+			LIBRARY
+			DESTINATION
+			lib/${PYTHONVERSIONDIR}dist-packages/
+			COMPONENT
+			python)
 	endforeach()
 
 endif()

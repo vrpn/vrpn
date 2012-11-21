@@ -1,7 +1,8 @@
-#include <math.h>
 #include "vrpn_DirectXFFJoystick.h"
 #if defined(_WIN32) && defined(VRPN_USE_DIRECTINPUT)
-
+#include <math.h>
+#include <algorithm> // for min
+using std::min;
 // vrpn_DirectXFFJoystick.C
 //	This is a driver for joysticks being used through the
 // DirectX interface, both for input and for force feedback.

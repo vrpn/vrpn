@@ -1,5 +1,8 @@
 include_directories(${DIRECTSHOW_INCLUDE_DIRS})
-file(GLOB BASECLASSES "${DIRECTSHOW_BASECLASS_DIR}/*.cpp" "${DIRECTSHOW_BASECLASS_DIR}/*.h")
+file(GLOB
+	BASECLASSES
+	"${DIRECTSHOW_BASECLASS_DIR}/*.cpp"
+	"${DIRECTSHOW_BASECLASS_DIR}/*.h")
 
 # Separate static library so that unresolved externals are OK - when
 # we link with it below, we'll only grab what we need.
@@ -14,9 +17,16 @@ target_link_libraries(directshow_video_server
 	DirectShow_BaseClasses
 	${DIRECTSHOW_LIBRARIES})
 
-set_target_properties(directshow_video_server DirectShow_BaseClasses
+set_target_properties(directshow_video_server
+	DirectShow_BaseClasses
 	PROPERTIES
 	FOLDER
 	Servers)
 
-install(TARGETS directshow_video_server RUNTIME DESTINATION bin COMPONENT servers)
+install(TARGETS
+	directshow_video_server
+	RUNTIME
+	DESTINATION
+	bin
+	COMPONENT
+	servers)

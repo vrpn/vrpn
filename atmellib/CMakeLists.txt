@@ -27,9 +27,10 @@ install(TARGETS
 	ARCHIVE
 	DESTINATION
 	lib
-	COMPONENT serversdk
-
+	COMPONENT
+	serversdk
 	PUBLIC_HEADER
 	DESTINATION
 	include
-	COMPONENT serversdk)
+	COMPONENT
+	serversdk)

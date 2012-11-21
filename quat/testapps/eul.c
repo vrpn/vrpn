@@ -10,7 +10,9 @@
  *
  *****************************************************************************/
 
+#ifdef _MSC_VER
 #pragma warning( disable : 4996 ) // Don't complain about scanf
+#endif
 
 #include <stdio.h>
 #include "quat.h"

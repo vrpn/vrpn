@@ -21,16 +21,16 @@
 # http://www.boost.org/LICENSE_1_0.txt)
 
 find_library(NIDAQMX_LIBRARY
-	NAMES NIDAQmx
+	NAMES
+	NIDAQmx
 	PATHS
-	"C:/Program Files (x86)/National Instruments/NI-DAQ/DAQmx ANSI C Dev/lib/msvc"
-)
+	"C:/Program Files (x86)/National Instruments/NI-DAQ/DAQmx ANSI C Dev/lib/msvc")
 
 find_path(NIDAQMX_INCLUDE_DIR
-	NAMES NIDAQmx.h
+	NAMES
+	NIDAQmx.h
 	PATHS
-	"C:/Program Files (x86)/National Instruments/NI-DAQ/DAQmx ANSI C Dev/include"
-)
+	"C:/Program Files (x86)/National Instruments/NI-DAQ/DAQmx ANSI C Dev/include")
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(NIDAQmx
