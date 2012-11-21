@@ -1,7 +1,7 @@
 #ifndef __TRACKER_ISENSE_H
 #define __TRACKER_ISENSE_H
 
-#include "vrpn_Configure.h"
+#include "vrpn_Configure.h"  // IWYU pragma: keep
 
 #ifdef VRPN_INCLUDE_INTERSENSE
 

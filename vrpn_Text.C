@@ -1,5 +1,3 @@
-#include <stdio.h>                      // for NULL
-
 #include "vrpn_Text.h"
 
 int vrpn_Text_Sender::send_message(const char *msg, 				  

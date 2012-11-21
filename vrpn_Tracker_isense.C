@@ -1,3 +1,7 @@
+
+#include "vrpn_Tracker_isense.h"
+
+#ifdef  VRPN_INCLUDE_INTERSENSE
 #include <time.h>
 #include <math.h>
 #include <stdlib.h>
@@ -20,12 +24,10 @@
 #endif
 
 #include "vrpn_Tracker.h"
-#include "vrpn_Tracker_isense.h"
 #include "vrpn_Serial.h"
 #include "vrpn_Shared.h"
 #include "quat.h" 
 
-#ifdef  VRPN_INCLUDE_INTERSENSE
 #include "isense.c"
 
 #define MAX_TIME_INTERVAL       (5000000) // max time between reports (usec)

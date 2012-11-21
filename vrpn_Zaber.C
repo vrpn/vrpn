@@ -14,7 +14,6 @@
 
 
 #include <stdio.h>                      // for sprintf, fprintf, stderr, etc
-#include <string.h>                     // for NULL
 
 #include "vrpn_BaseClass.h"             // for ::vrpn_TEXT_ERROR, etc
 #include "vrpn_Serial.h"                // for vrpn_flush_input_buffer, etc

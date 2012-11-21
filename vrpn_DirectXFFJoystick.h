@@ -1,7 +1,7 @@
 #ifndef VRPN_DIRECTXFFJOYSTICK_H
 #define VRPN_DIRECTXFFJOYSTICK_H
 
-#include "vrpn_Configure.h"
+#include "vrpn_Configure.h"    // IWYU pragma: keep
 
 #if defined(_WIN32) && defined(VRPN_USE_DIRECTINPUT)
 #ifndef DIRECTINPUT_VERSION

@@ -9,10 +9,6 @@
 class VRPN_API vrpn_Connection;
 struct vrpn_HANDLERPARAM;
 
-#ifndef VRPN_CLIENT_ONLY
-#include "vrpn_Serial.h"
-#endif
-
 const	int vrpn_BUTTON_MAX_BUTTONS = 256;
 const	int VRPN_BUTTON_BUF_SIZE = 256;
 

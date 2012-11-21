@@ -6,6 +6,8 @@
 #ifndef VRPN_TRACKER_GPS_H
 #define VRPN_TRACKER_GPS_H
 
+#include "vrpn_Configure.h"             // for VRPN_API
+
 #include <stdio.h>                      // for FILE
 
 #include "gpsnmealib/nmeaParser.h"      // for NMEAData, NMEAParser

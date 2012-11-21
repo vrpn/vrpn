@@ -4,11 +4,10 @@
 
 #include <math.h>                       // for fabs
 #include <stdio.h>                      // for fprintf, stderr, NULL
-#include <vrpn_Shared.h>                // for vrpn_gettimeofday
+#include <vrpn_Shared.h>                // for timeval, vrpn_gettimeofday
 
 #include "vrpn_BaseClass.h"             // for ::vrpn_TEXT_ERROR
 #include "vrpn_Serial.h"
-#include "vrpn_Shared.h"                // for timeval
 #include "vrpn_inertiamouse.h"
 
 #undef VERBOSE

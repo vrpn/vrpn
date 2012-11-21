@@ -8,7 +8,6 @@
 // written for the device.
 
 #include <stdio.h>                      // for perror, sprintf
-#include <string.h>                     // for NULL
 
 #include "vrpn_BaseClass.h"             // for ::vrpn_TEXT_ERROR
 #include "vrpn_GlobalHapticsOrb.h"

@@ -13,7 +13,8 @@
 #ifndef VRPN_TRACKER_TRIVISIOCOLIBRI
 #define VRPN_TRACKER_TRIVISIOCOLIBRI
 
-#include "vrpn_Configure.h"
+#include "vrpn_Configure.h"   // IWYU pragma: keep
+
 #ifdef VRPN_USE_TRIVISIOCOLIBRI
 
 #include "vrpn_Tracker.h" 

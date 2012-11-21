@@ -1,5 +1,4 @@
 #include <stdio.h>                      // for fprintf, stderr
-#include <string.h>                     // for NULL
 
 #include "vrpn_Keyboard.h"
 #include "vrpn_Shared.h"                // for timeval, vrpn_gettimeofday

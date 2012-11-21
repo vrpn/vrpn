@@ -18,7 +18,7 @@
 #ifndef VRPN_FREESPACE_H
 #define VRPN_FREESPACE_H
 
-#include "vrpn_Configure.h"
+#include "vrpn_Configure.h"   // IWYU pragma: keep
 
 #ifdef VRPN_USE_FREESPACE
 

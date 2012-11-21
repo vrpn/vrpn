@@ -13,6 +13,8 @@
 #include "vrpn_Configure.h"             // for VRPN_API
 #include "vrpn_Types.h"                 // for vrpn_int32, vrpn_float64, etc
 
+// IWYU pragma: no_include <bits/time.h>
+
 // Oct 2000: Sang-Uok changed because vrpn code was compiling but giving
 // runtime errors with cygwin 1.1. I changed the code so it only uses unix
 // code. I had to change includes in various files.
@@ -207,8 +209,8 @@ static	const   bool    vrpn_big_endian = (vrpn_char_data_for_endian_test[0] != 1
 #elif defined(_WIN32)
 #  include <process.h>
 #else
-#  include <pthread.h>
-#  include <semaphore.h>
+#  include <pthread.h>                    // for pthread_t
+#  include <semaphore.h>                  // for sem_t
 #endif
 
 // make the SGI compile without tons of warnings

@@ -1,4 +1,4 @@
-#include <math.h>
+
 #include "vrpn_Joywin32.h"
 
 #if defined(_WIN32)

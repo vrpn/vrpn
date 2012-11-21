@@ -14,7 +14,7 @@
 #include <OpenGL/OpenGL.h>
 #else
 #include <GL/gl.h>                      // for glClear, glClearColor, etc
-#include <GL/glut.h>                    // for glutCreateWindow, etc
+#include <GL/glut.h>                    // for glutCreateWindow, etc   // IWYU pragma: keep
 #endif
 #include <vrpn_Connection.h>            // for vrpn_Connection, etc
 #include <vrpn_FileConnection.h>

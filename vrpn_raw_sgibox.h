@@ -9,13 +9,13 @@
 #ifndef VRPN_RAW_SGIBOX
 #define VRPN_RAW_SGIBOX
 
+#include "vrpn_Configure.h"             // for VRPN_API
+
 #include "vrpn_Analog.h"
 #include "vrpn_Dial.h"
 #include "vrpn_Button.h"
-#ifndef _WIN32 
-#include <netinet/in.h>
-#include <sys/ioctl.h>
-#endif
+
+class VRPN_API vrpn_Connection;
 
 /* Number of buttons and number of dials on sgi button/dial boxes */
 #define vrpn_SGI_NUM_BUTTONS (32)

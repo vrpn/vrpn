@@ -14,7 +14,7 @@
 #ifndef __TRACKER_NOVINTFALCON_H
 #define __TRACKER_NOVINTFALCON_H
 
-#include "vrpn_Configure.h"
+#include "vrpn_Configure.h"   // IWYU pragma: keep
 
 #if defined(VRPN_USE_LIBNIFALCON)
 

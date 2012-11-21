@@ -1,5 +1,4 @@
 #include <stdio.h>                      // for fprintf, stderr, printf
-#include <stdlib.h>                     // for NULL
 #include <string.h>                     // for strlen
 
 #include "vrpn_Connection.h"            // for vrpn_HANDLERPARAM, etc

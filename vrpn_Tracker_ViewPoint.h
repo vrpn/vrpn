@@ -63,7 +63,7 @@
 #define VRPN_TRACKER_VIEWPOINT
 
 // Make sure ViewPoint EyeTracker is being used
-#include "vrpn_Configure.h"
+#include "vrpn_Configure.h"   // IWYU pragma: keep
 #ifdef VRPN_USE_VIEWPOINT
 
 #include "vrpn_Tracker.h" 
