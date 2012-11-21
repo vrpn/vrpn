@@ -1,9 +1,6 @@
+#include <stdio.h>                      // for NULL
+
 #include "vrpn_Text.h"
-#include <stdio.h>
-#include <string.h>
-#ifndef	_WIN32
-#include <netinet/in.h>
-#endif
 
 int vrpn_Text_Sender::send_message(const char *msg, 				  
                             vrpn_TEXT_SEVERITY type,

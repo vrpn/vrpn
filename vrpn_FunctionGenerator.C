@@ -1,5 +1,6 @@
 
-#include <string.h>
+#include <stdio.h>                      // for fflush, fprintf, stderr
+#include <string.h>                     // for NULL, strlen, strcpy
 
 #include "vrpn_FunctionGenerator.h"
 

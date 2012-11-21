@@ -6,11 +6,14 @@
 #ifndef VRPN_LUDL_H
 #define VRPN_LUDL_H
 
-#include "vrpn_Analog.h"
-#include "vrpn_Analog_Output.h"
+#include "vrpn_Analog.h"                // for vrpn_Analog
+#include "vrpn_Analog_Output.h"         // for vrpn_Analog_Output
+#include "vrpn_Configure.h"             // for VRPN_CALLBACK, etc
+#include "vrpn_Connection.h"            // for vrpn_CONNECTION_RELIABLE, etc
+#include "vrpn_Shared.h"                // for timeval
+#include "vrpn_Types.h"                 // for vrpn_uint32, vrpn_uint8, etc
 
 #if defined(VRPN_USE_LIBUSB_1_0)
-#include <libusb.h>
 
 // This driver uses the VRPN-preferred LibUSB-1.0 to control the device.
 // It exposes the vrpn_Analog and the

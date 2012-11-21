@@ -1,9 +1,7 @@
+#include <stdio.h>                      // for fprintf, stderr, NULL
+
+#include "vrpn_Connection.h"            // for vrpn_Connection, etc
 #include "vrpn_Dial.h"
-#include <stdio.h>
-#include <string.h>
-#ifndef _WIN32
-//#include <unistd.h>
-#endif
 
 //#define VERBOSE
 

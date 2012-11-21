@@ -8,8 +8,15 @@
 
 const	int vrpn_DIAL_MAX = 128;
 
-#include "vrpn_Connection.h"
-#include "vrpn_BaseClass.h"
+#include <stddef.h>                     // for NULL
+
+#include "vrpn_BaseClass.h"             // for vrpn_Callback_List, etc
+#include "vrpn_Configure.h"             // for VRPN_API, VRPN_CALLBACK
+#include "vrpn_Shared.h"                // for timeval
+#include "vrpn_Types.h"                 // for vrpn_float64, vrpn_int32
+
+class VRPN_API vrpn_Connection;
+struct vrpn_HANDLERPARAM;
 
 class VRPN_API vrpn_Dial : public vrpn_BaseClass {
 public:

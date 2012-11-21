@@ -1,13 +1,13 @@
 #ifndef	VRPN_BUTTON_H
+#include <stddef.h>                     // for NULL
 
-#ifndef _WIN32
-#ifndef _WIN32_WCE
-#include <sys/time.h>
-#endif
-#endif
+#include "vrpn_BaseClass.h"             // for vrpn_Callback_List, etc
+#include "vrpn_Configure.h"             // for VRPN_API, VRPN_CALLBACK
+#include "vrpn_Shared.h"                // for timeval
+#include "vrpn_Types.h"                 // for vrpn_int32, vrpn_float64, etc
 
-#include "vrpn_Connection.h"
-#include "vrpn_BaseClass.h"
+class VRPN_API vrpn_Connection;
+struct vrpn_HANDLERPARAM;
 
 #ifndef VRPN_CLIENT_ONLY
 #include "vrpn_Serial.h"

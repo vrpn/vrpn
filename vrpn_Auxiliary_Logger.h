@@ -16,9 +16,13 @@
 
 #ifndef	VRPN_AUXILIARY_LOGGER_H
 #define	VRPN_AUXILIARY_LOGGER_H
-#include <string.h>	// For memcpy()
+#include <string.h>                     // for NULL
+
+#include "vrpn_BaseClass.h"             // for vrpn_Callback_List, etc
+#include "vrpn_Configure.h"             // for VRPN_CALLBACK, VRPN_API
 #include  "vrpn_Connection.h"
-#include  "vrpn_BaseClass.h"
+#include "vrpn_Shared.h"                // for timeval
+#include "vrpn_Types.h"                 // for vrpn_int32
 
 class VRPN_API vrpn_Auxiliary_Logger : public vrpn_BaseClass {
 public:

@@ -14,17 +14,13 @@
 
 /* include system headers */
 
-#include <unistd.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <fcntl.h>
-#include <termios.h>
-#include <errno.h>
+#include <errno.h>                      // for ENXIO, error_t
 
 /* include i/f header */
 
-#include "vrpn_atmellib.h"
-#include "vrpn_atmellib_helper.h"
+#include "vrpn_atmellib.h"              // for command_t, handle_invalid, etc
+#include "vrpn_atmellib_errno.h"        // for ATMELLIB_ERROR_REGINV, etc
+#include "vrpn_atmellib_helper.h"       // for getAddress, setValue
 
 /***************************************************************************************************/
 /* HIGH LEVEL INTERFACE */ 

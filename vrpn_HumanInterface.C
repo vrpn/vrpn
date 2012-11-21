@@ -1,3 +1,6 @@
+#include <stdio.h>                      // for fprintf, stderr
+#include <string.h>                     // for NULL
+
 #include "vrpn_HumanInterface.h"
 
 #if defined(VRPN_USE_HID)

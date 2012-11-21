@@ -5,12 +5,12 @@
  *      Author: janoc
  */
 
-#include <stdio.h>
-#include <string.h>
+#include <stdio.h>                      // for fprintf, stderr
+#include <string.h>                     // for memset
 
-#include "quat.h"
-#include "vrpn_Tracker_SpacePoint.h"
 #include "vrpn_BufferUtils.h"
+#include "vrpn_Connection.h"            // for vrpn_CONNECTION_LOW_LATENCY, etc
+#include "vrpn_Tracker_SpacePoint.h"
 
 const unsigned SPACEPOINT_VENDOR = 0x20ff;
 const unsigned SPACEPOINT_PRODUCT = 0x0100;

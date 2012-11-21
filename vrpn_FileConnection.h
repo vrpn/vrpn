@@ -22,7 +22,14 @@
 // playback.
 // }}}
 
-#include "vrpn_Connection.h"
+#include <stdio.h>                      // for NULL, FILE
+
+#include "vrpn_Configure.h"             // for VRPN_API, VRPN_CALLBACK
+#include "vrpn_Connection.h"            // for vrpn_LOGLIST (ptr only), etc
+#include "vrpn_Shared.h"                // for timeval
+#include "vrpn_Types.h"                 // for vrpn_float32, vrpn_int32, etc
+
+struct timeval;
 
 // Global variable used to indicate whether File Connections should
 // pre-load all of their records into memory when opened.  This is the

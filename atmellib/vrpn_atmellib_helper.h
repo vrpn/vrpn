@@ -22,8 +22,10 @@
 /* includes, system */
 /* #include <> */
 
+#include <errno.h>                      // for error_t
+
 /* includes, project */
-#include "vrpn_atmellib.h"
+#include "vrpn_atmellib.h"              // for handle_t
 
 
 #if defined(__cplusplus)

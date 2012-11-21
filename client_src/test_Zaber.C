@@ -1,13 +1,12 @@
-#include <stdlib.h>
-#include <stdio.h>
-#include <signal.h>
-#include <string.h>
-#include "vrpn_Analog.h"
-#include "vrpn_Analog_Output.h"
+#include <signal.h>                     // for signal, SIGINT
+#include <stdio.h>                      // for printf, fprintf, NULL, etc
+#include <stdlib.h>                     // for exit
 
-#ifndef _WIN32
-#include <strings.h>
-#endif
+#include "vrpn_Analog.h"                // for vrpn_Analog_Remote, etc
+#include "vrpn_Analog_Output.h"         // for vrpn_Analog_Output_Remote
+#include "vrpn_Configure.h"             // for VRPN_CALLBACK
+#include "vrpn_Shared.h"                // for timeval, vrpn_gettimeofday, etc
+#include "vrpn_Types.h"                 // for vrpn_float64
 
 #define POLL_INTERVAL       (2000000)	  // time to poll if no response in a while (usec)
 vrpn_Analog_Remote	  *ana;

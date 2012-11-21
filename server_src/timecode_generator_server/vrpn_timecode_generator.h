@@ -1,9 +1,10 @@
 #ifndef VRPN_TIMECODE_GENERATOR_H
 #define VRPN_TIMECODE_GENERATOR_H
 
-#include "vrpn_Analog.h"
+#include "vrpn_Configure.h"
 #ifdef	VRPN_INCLUDE_TIMECODE_SERVER
 
+#include "vrpn_Analog.h"
 
 class vrpn_Timecode_Generator : public vrpn_Analog_Server {
 public:

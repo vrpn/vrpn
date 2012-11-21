@@ -1,10 +1,7 @@
 #ifndef VRPN_FILE_CONTROLLER_H
 #define VRPN_FILE_CONTROLLER_H
-
-#if !defined(_WIN32) 
-#include <sys/time.h>  // for struct timeval
-#endif
-#include "vrpn_Shared.h"
+#include "vrpn_Configure.h"             // for VRPN_API
+#include "vrpn_Types.h"                 // for vrpn_int32, vrpn_float32
 
 class VRPN_API vrpn_Connection;  // from vrpn_Connection.h
 

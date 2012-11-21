@@ -1,13 +1,16 @@
-#include "vrpn_Mutex.h"
+#include <stdio.h>                      // for fprintf, stderr, sprintf
+#include <string.h>                     // for NULL, memcpy, strlen, etc
 
-#include <string.h>  // for memcpy(), strlen(), ...
+#include "vrpn_Connection.h"            // for vrpn_Connection, etc
+#include "vrpn_Mutex.h"
+#include "vrpn_Shared.h"                // for vrpn_buffer, vrpn_unbuffer, etc
 
 #ifndef VRPN_USE_WINSOCK_SOCKETS
-#include <unistd.h>  // for gethostname()
+#include <arpa/inet.h>                  // for inet_addr
+#include <netdb.h>                      // for gethostbyname, hostent, etc
 //#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <netdb.h>
+#include <netinet/in.h>                 // for in_addr, ntohl, INADDR_NONE
+#include <unistd.h>                     // for getpid, gethostname
 #endif
 
 #ifdef _WIN32

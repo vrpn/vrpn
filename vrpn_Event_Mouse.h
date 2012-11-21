@@ -16,9 +16,13 @@
 #ifndef _VRPN_EVENT_MOUSE_H_
 #define _VRPN_EVENT_MOUSE_H_
 
+#include "vrpn_Button.h"                // for vrpn_Button_Server
+#include "vrpn_Configure.h"             // for VRPN_API
 // includes, project
-#include "vrpn_Event_Analog.h"
-#include "vrpn_Button.h"
+#include "vrpn_Event_Analog.h"          // for vrpn_Event_Analog
+#include "vrpn_Shared.h"                // for timeval
+
+class VRPN_API vrpn_Connection;
 
 
 class VRPN_API vrpn_Event_Mouse: public vrpn_Event_Analog, 

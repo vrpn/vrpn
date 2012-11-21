@@ -1,8 +1,16 @@
 #ifndef VRPN_DREAMCHEEKY_H
 #define VRPN_DREAMCHEEKY_H
 
-#include "vrpn_HumanInterface.h"
-#include "vrpn_Button.h"
+#include <stddef.h>                     // for size_t
+
+#include "vrpn_BaseClass.h"             // for vrpn_BaseClass
+#include "vrpn_Button.h"                // for vrpn_Button_Filter
+#include "vrpn_Configure.h"             // for VRPN_USE_HID
+#include "vrpn_HumanInterface.h"        // for vrpn_HidAcceptor (ptr only), etc
+#include "vrpn_Shared.h"                // for timeval
+#include "vrpn_Types.h"                 // for vrpn_uint8
+
+class VRPN_API vrpn_Connection;
 
 // Device drivers for the Dream Cheeky USB Roll-Up Drum Kit; done in such a
 // way that any other USB devices from this vendow should be easy to add.

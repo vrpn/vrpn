@@ -3,18 +3,16 @@
 #ifndef INCLUDED_JOYFLY
 #define INCLUDED_JOYFLY
 
-#include <time.h>
-#include <math.h>
-#include <stdlib.h>
-#include <stdio.h>
-#ifndef _WIN32
-#include <sys/time.h>
-#endif
+#include <quat.h>                       // for q_matrix_type
+#include <stdio.h>                      // for NULL
 
-#include "vrpn_Tracker.h"
-#include "vrpn_Analog.h"
+#include "vrpn_Analog.h"                // for vrpn_ANALOGCB, etc
+#include "vrpn_Configure.h"             // for VRPN_CALLBACK, VRPN_API
+#include "vrpn_Shared.h"                // for timeval
+#include "vrpn_Tracker.h"               // for vrpn_Tracker
 
-#include <quat.h>
+class VRPN_API vrpn_Connection;
+struct vrpn_HANDLERPARAM;
 
 class VRPN_API vrpn_Tracker_JoyFly : public vrpn_Tracker {
 

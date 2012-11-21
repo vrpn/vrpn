@@ -30,10 +30,11 @@
 #ifndef VRPN_HUMANINTERFACE_H
 #define VRPN_HUMANINTERFACE_H
 
-#include "vrpn_Configure.h"
-#include "vrpn_BaseClass.h"
-#include <string.h>
-#include <wchar.h>
+#include <stddef.h>                     // for size_t
+#include <wchar.h>                      // for wcscmp
+
+#include "vrpn_Configure.h"             // for VRPN_API, VRPN_USE_HID, etc
+#include "vrpn_Types.h"                 // for vrpn_uint16, vrpn_uint8
 
 struct vrpn_HIDDEVINFO {
 	vrpn_uint16 vendor;		// USB Vendor ID
@@ -61,7 +62,7 @@ public:
 #if defined(VRPN_USE_HID)
 
 #ifdef  VRPN_USE_LOCAL_HIDAPI
-#include "./submodules/hidapi/hidapi/hidapi.h"
+#include "./submodules/hidapi/hidapi/hidapi.h"  // for hid_device
 #else
 #include "hidapi.h"
 #endif

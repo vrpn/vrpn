@@ -1,11 +1,17 @@
 #ifndef VRPN_SHARED_OBJECT
 #define VRPN_SHARED_OBJECT
 
-#include "vrpn_Shared.h"  // for types
+#include <stddef.h>                     // for NULL
+
+#include "vrpn_Configure.h"             // for VRPN_CALLBACK, VRPN_API
+#include "vrpn_Shared.h"                // for timeval
+#include "vrpn_Types.h"                 // for vrpn_int32, vrpn_bool, etc
+
+class VRPN_API vrpn_Connection;
+struct timeval;
+struct vrpn_HANDLERPARAM;
   // This *must* be here to take care of winsock.h and sys/time.h and other
   // assorted system-dependent details.
-
-#include "vrpn_Connection.h"  // for vrpn_HANDLERPARAM
 
 class VRPN_API vrpn_LamportClock;  // from "vrpn_LamportClock.h"
 class VRPN_API vrpn_LamportTimestamp;
@@ -20,9 +26,9 @@ class VRPN_API vrpn_LamportTimestamp;
 // That would make it far, far easier to extend, but the implementation
 // looks too unweildy.
 
-class VRPN_API vrpn_Shared_int32;
-class VRPN_API vrpn_Shared_float64;
 class VRPN_API vrpn_Shared_String;
+class VRPN_API vrpn_Shared_float64;
+class VRPN_API vrpn_Shared_int32;
 
 typedef int (VRPN_CALLBACK * vrpnDeferredUpdateCallback) (void * userdata);
 

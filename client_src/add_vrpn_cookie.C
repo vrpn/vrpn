@@ -1,7 +1,6 @@
-#include <vrpn_Connection.h>
-
-#include <stdlib.h>  // exit()
-//#include <stdio.h>  // fopen(), fclose()
+#include <stdio.h>                      // for fprintf, fclose, fopen, etc
+#include <stdlib.h>                     // for exit
+#include <vrpn_Connection.h>            // for vrpn_cookie_size, etc
 
 // Reads a vrpn log;  writes out the same log with a (current-version)
 // magic cookie in front.

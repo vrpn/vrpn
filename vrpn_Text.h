@@ -6,13 +6,13 @@
 */
 
 #ifndef	VRPN_TEXT_H
+#include <stddef.h>                     // for NULL
 
-#ifndef _WIN32
-#include <sys/time.h>
-#endif
-
-#include "vrpn_Connection.h"
-#include "vrpn_BaseClass.h"
+#include "vrpn_BaseClass.h"             // for vrpn_BaseClass, etc
+#include "vrpn_Configure.h"             // for VRPN_API, VRPN_CALLBACK
+#include "vrpn_Connection.h"            // for vrpn_Connection, etc
+#include "vrpn_Shared.h"                // for timeval
+#include "vrpn_Types.h"                 // for vrpn_uint32
 
 // text-message time value meaning "go find out what time it is right now"
 const struct timeval vrpn_TEXT_NOW = { 0 , 0 };

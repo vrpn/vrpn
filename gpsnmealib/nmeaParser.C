@@ -4,14 +4,12 @@
 //
 
 #ifdef sgi
-#include <string.h>
 #include <stdlib.h>
+#include <string.h>
 #else
-#include <cstring>
-#include <cstdlib>
+#include <cstdlib>                      // for atof, atoi, atol
 #endif
 #include "nmeaParser.h"
-#include <iostream>
 
 // This constant define the length of the date string in a sentence.
 const int DATE_LEN = 6;

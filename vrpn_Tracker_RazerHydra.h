@@ -21,18 +21,21 @@
 #define INCLUDED_vrpn_Tracker_RazerHydra_h_GUID_8c30e762_d7e7_40c5_9308_b9bc118959fd
 
 // Internal Includes
-#include "vrpn_Configure.h"
-#include "quat.h"
-#include "vrpn_HumanInterface.h"
-#include "vrpn_Analog.h"
-#include "vrpn_Button.h"
-#include "vrpn_Tracker.h"
+#include "quat.h"                       // for q_vec_type
+#include "vrpn_Analog.h"                // for vrpn_Analog
+#include "vrpn_Button.h"                // for vrpn_Button_Filter
+#include "vrpn_Configure.h"             // for VRPN_API, VRPN_USE_HID
+#include "vrpn_Shared.h"                // for timeval
+#include "vrpn_Tracker.h"               // for vrpn_Tracker
+#include "vrpn_Types.h"                 // for vrpn_uint8
 
 // Library/third-party includes
 // - none
 
 // Standard includes
 // - none
+
+class VRPN_API vrpn_Connection;
 
 #ifdef VRPN_USE_HID
 
@@ -140,6 +143,7 @@ class VRPN_API vrpn_Tracker_RazerHydra: public vrpn_Analog, public vrpn_Button_F
 		// On the mac, we may need to swap these because we can't tell which
 		// is which when we open them.
 		class MyInterface;
+
 		MyInterface * _ctrl;
 		MyInterface * _data;
 };

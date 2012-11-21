@@ -1,10 +1,17 @@
 #ifndef VRPN_XKEYS_H
 #define VRPN_XKEYS_H
 
-#include "vrpn_HumanInterface.h"
-#include "vrpn_Button.h"
-#include "vrpn_Dial.h"
-#include "vrpn_Analog.h"
+#include <stddef.h>                     // for size_t
+
+#include "vrpn_Analog.h"                // for vrpn_Analog
+#include "vrpn_BaseClass.h"             // for vrpn_BaseClass
+#include "vrpn_Button.h"                // for vrpn_Button_Filter
+#include "vrpn_Configure.h"             // for VRPN_CALLBACK, VRPN_USE_HID
+#include "vrpn_Connection.h"            // for vrpn_CONNECTION_LOW_LATENCY, etc
+#include "vrpn_Dial.h"                  // for vrpn_Dial
+#include "vrpn_HumanInterface.h"        // for vrpn_HidAcceptor (ptr only), etc
+#include "vrpn_Shared.h"                // for timeval
+#include "vrpn_Types.h"                 // for vrpn_uint8, vrpn_uint32
 
 #if defined(VRPN_USE_HID)
 

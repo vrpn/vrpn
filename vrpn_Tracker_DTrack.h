@@ -11,20 +11,20 @@
 #ifndef VRPN_TRACKER_DTRACK_H
 #define VRPN_TRACKER_DTRACK_H
 
+#include "vrpn_Configure.h"             // for VRPN_API
+#include "vrpn_Shared.h"                // for timeval
+
+class VRPN_API vrpn_Connection;
 // There is a problem with linking on SGI related to the use of standard
 // libraries.
 #ifndef sgi
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <vector>
-#ifndef _WIN32
-	#include <sys/time.h>
-#endif
+#include <stdio.h>                      // for NULL
+#include <vector>                       // for vector
 
-#include "vrpn_Tracker.h"
-#include "vrpn_Button.h"
-#include "vrpn_Analog.h"
+#include "vrpn_Analog.h"                // for vrpn_Analog
+#include "vrpn_Button.h"                // for vrpn_Button_Filter
+#include "vrpn_Tracker.h"               // for vrpn_Tracker
 
 
 // --------------------------------------------------------------------------

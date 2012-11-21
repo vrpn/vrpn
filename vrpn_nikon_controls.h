@@ -1,8 +1,14 @@
 #ifndef VRPN_NIKON_CONTROLS_H
 #define VRPN_NIKON_CONTROLS_H
 
-#include  "vrpn_Analog.h"
-#include  "vrpn_Analog_Output.h"
+#include <stddef.h>                     // for NULL
+
+#include "vrpn_Analog.h"                // for vrpn_Serial_Analog
+#include "vrpn_Analog_Output.h"         // for vrpn_Analog_Output
+#include "vrpn_Configure.h"             // for VRPN_CALLBACK, VRPN_API
+#include "vrpn_Connection.h"            // for vrpn_CONNECTION_LOW_LATENCY, etc
+#include "vrpn_Shared.h"                // for timeval
+#include "vrpn_Types.h"                 // for vrpn_uint32, vrpn_float64
 
 class VRPN_API vrpn_Nikon_Controls : public vrpn_Serial_Analog, public vrpn_Analog_Output {
 public:

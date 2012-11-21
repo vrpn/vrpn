@@ -3,10 +3,14 @@
 // See http://www.haydonkerk.com/LinkClick.aspx?fileticket=LEcwYeRmKVg%3d&tabid=331
 // for the software manual for this device.
 
-#include <string.h>
+#include <stddef.h>                     // for size_t
+#include <stdio.h>                      // for fprintf, stderr, sprintf, etc
+#include <string.h>                     // for NULL, strlen, strchr, etc
+
+#include "vrpn_BaseClass.h"             // for ::vrpn_TEXT_ERROR, etc
 #include "vrpn_IDEA.h"
-#include "vrpn_Shared.h"
 #include "vrpn_Serial.h"
+#include "vrpn_Shared.h"                // for timeval, vrpn_unbuffer, etc
 
 #undef VERBOSE
 

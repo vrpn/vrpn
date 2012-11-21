@@ -12,18 +12,15 @@
 // depends:     libnifalcon-1.0.1+, libusb-1.0, boost 1.39, VRPN 07_27
 // tested on:   Linux x86_64 w/ gcc 4.4.1
 
-#include <ctype.h>
-#include <string.h>
-
 #include "vrpn_Tracker_NovintFalcon.h"
 
 #if defined(VRPN_USE_LIBNIFALCON)
-#include "boost/shared_ptr.hpp"
 #include "boost/array.hpp"
 #include "boost/ptr_container/ptr_vector.hpp"
+#include "boost/shared_ptr.hpp"
 #include "falcon/core/FalconDevice.h"
-#include "falcon/grip/FalconGripFourButton.h"
 #include "falcon/firmware/FalconFirmwareNovintSDK.h"
+#include "falcon/grip/FalconGripFourButton.h"
 #include "falcon/kinematic/FalconKinematicStamper.h"
 #include "falcon/util/FalconFirmwareBinaryNvent.h"
 

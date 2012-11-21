@@ -19,7 +19,9 @@
 #ifndef __LAT_LON_CPPOORD_HPP
 #define __LAT_LON_CPPOORD_HPP
 
-#include "typedCoord.h"
+#include <string>                       // for string
+
+#include "typedCoord.h"                 // for COORD_TYPE, etc
 
 enum HEMISPHERE_DIRECTION
 {

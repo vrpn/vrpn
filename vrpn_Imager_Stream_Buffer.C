@@ -1,5 +1,6 @@
-#include  <math.h>
-#include  <stdio.h>
+#include <stdio.h>                      // for fprintf, NULL, stderr, etc
+
+#include "vrpn_BaseClass.h"             // for ::vrpn_TEXT_ERROR, etc
 #include  "vrpn_Imager_Stream_Buffer.h"
 
 vrpn_Imager_Stream_Buffer::vrpn_Imager_Stream_Buffer(const char * name, const char * imager_server_name, vrpn_Connection * c) :

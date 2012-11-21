@@ -1,12 +1,14 @@
-#include "vrpn_ForwarderController.h"
+#include <stdio.h>                      // for fprintf, stderr
+#include <string.h>                     // for memcpy, strlen, NULL, etc
 
-#include <string.h>
-#include <sys/types.h>
+#include "vrpn_Connection.h"            // for vrpn_Connection, etc
+#include "vrpn_ForwarderController.h"
+#include "vrpn_Shared.h"                // for timeval, vrpn_gettimeofday
 #if !( defined(_WIN32) && defined(VRPN_USE_WINSOCK_SOCKETS) )
-#include <netinet/in.h>  // for ntohl()/htonl()
+#include <netinet/in.h>                 // for htonl, ntohl
 #endif
 
-#include "vrpn_Forwarder.h"
+#include "vrpn_Forwarder.h"             // for vrpn_ConnectionForwarder
 
 vrpn_Forwarder_Brain::vrpn_Forwarder_Brain (vrpn_Connection * c) :
     d_connection (c),

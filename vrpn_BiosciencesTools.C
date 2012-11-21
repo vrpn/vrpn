@@ -31,10 +31,14 @@ S1 037 0<CR> sets reference temperature for channel I (NOTE: all four digits sho
 S2 037 0<CR> sets reference temperature for channel II
 */
 
-#include <string.h>
+#include <stddef.h>                     // for size_t
+#include <stdio.h>                      // for sprintf, fprintf, stderr, etc
+#include <string.h>                     // for strlen, NULL
+
+#include "vrpn_BaseClass.h"             // for ::vrpn_TEXT_ERROR, etc
 #include "vrpn_BiosciencesTools.h"
-#include "vrpn_Shared.h"
-#include "vrpn_Serial.h"
+#include "vrpn_Serial.h"                // for vrpn_write_characters, etc
+#include "vrpn_Shared.h"                // for vrpn_unbuffer, timeval, etc
 
 #undef VERBOSE
 

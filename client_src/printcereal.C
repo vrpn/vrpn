@@ -1,16 +1,13 @@
-#include <stdlib.h>
-#include <stdio.h>
-#include <signal.h>
-#include <string.h>
-#include "vrpn_Button.h"
-#include "vrpn_Analog.h"
-#include "vrpn_Dial.h"
-#include "vrpn_FileConnection.h"
-#include "vrpn_FileController.h"
+#include <signal.h>                     // for signal, SIGINT
+#include <stdio.h>                      // for printf, fprintf, stderr, etc
+#include <stdlib.h>                     // for exit
 
-#ifndef _WIN32
-#include <strings.h>
-#endif
+#include "vrpn_Analog.h"                // for vrpn_Analog_Remote, etc
+#include "vrpn_Button.h"                // for vrpn_Button_Remote, etc
+#include "vrpn_Configure.h"             // for VRPN_CALLBACK
+#include "vrpn_Dial.h"                  // for vrpn_DIALCB, etc
+#include "vrpn_Shared.h"                // for vrpn_SleepMsecs
+#include "vrpn_Types.h"                 // for vrpn_float64
 
 vrpn_Button_Remote *btn;
 vrpn_Analog_Remote *ana;

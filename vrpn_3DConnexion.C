@@ -1,5 +1,7 @@
 // vrpn_3DConnexion.C: VRPN driver for 3DConnexion
 //  Space Navigator, Space Traveler, Space Explorer, Space Mouse, Spaceball 5000
+#include <stdio.h>                      // for NULL
+#include <string.h>                     // for memset
 
 // There is a non-HID Linux-based driver for this device that has a capability
 // not implemented in the HID interface.  It uses the input.h interface.
@@ -7,16 +9,9 @@
 #include <linux/input.h>
 #endif
 
-#include "vrpn_BufferUtils.h"
 #include "vrpn_3DConnexion.h"
-#include <fcntl.h>
-#include <stdio.h>
-#include <stdlib.h>
-#if !defined(_WIN32)
-#include <sys/ioctl.h>
-#include <unistd.h>
-#endif
-#include <string.h>
+#include "vrpn_BaseClass.h"             // for ::vrpn_TEXT_WARNING
+#include "vrpn_BufferUtils.h"
 
 typedef struct input_devinfo {
         vrpn_uint16 bustype;

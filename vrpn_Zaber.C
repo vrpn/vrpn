@@ -13,10 +13,13 @@
 // the MSB (most-significant byte) of the data.
 
 
-#include <string.h>
+#include <stdio.h>                      // for sprintf, fprintf, stderr, etc
+#include <string.h>                     // for NULL
+
+#include "vrpn_BaseClass.h"             // for ::vrpn_TEXT_ERROR, etc
+#include "vrpn_Serial.h"                // for vrpn_flush_input_buffer, etc
+#include "vrpn_Shared.h"                // for timeval, vrpn_unbuffer, etc
 #include "vrpn_Zaber.h"
-#include "vrpn_Shared.h"
-#include "vrpn_Serial.h"
 
 #undef VERBOSE
 

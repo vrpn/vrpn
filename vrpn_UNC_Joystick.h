@@ -1,7 +1,10 @@
 #ifndef VRPN_JOYSTICK
 #define VRPN_JOYSTICK
-#include "vrpn_Analog.h"
-#include "vrpn_Button.h"
+#include "vrpn_Analog.h"                // for vrpn_CHANNEL_MAX, etc
+#include "vrpn_Button.h"                // for vrpn_Button_Filter
+#include "vrpn_Configure.h"             // for VRPN_API
+
+class VRPN_API vrpn_Connection;
 
 // This class runs the UNC custom serial joystick.  It includes two
 // buttons, a slider, and two 3-axis joysticks.  It is based on a

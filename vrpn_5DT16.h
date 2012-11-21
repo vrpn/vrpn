@@ -1,8 +1,11 @@
 #ifndef vrpn_5dt16_H
 #define vrpn_5dt16_H
 
-#include "vrpn_Connection.h"
-#include "vrpn_Analog.h"
+#include "vrpn_Analog.h"                // for vrpn_ANALOGCB, etc
+#include "vrpn_Configure.h"             // for VRPN_API, VRPN_CALLBACK
+#include "vrpn_Connection.h"            // for vrpn_CONNECTION_LOW_LATENCY, etc
+#include "vrpn_Shared.h"                // for timeval
+#include "vrpn_Types.h"                 // for vrpn_uint32
 
 // This class will read the finger-pad values of the 5DT glove as analogs
 // and send them.  Use the vrpn_Button_5DT_Server class below if you want
@@ -45,7 +48,7 @@ public:
                    (vrpn_uint32 class_of_service = vrpn_CONNECTION_LOW_LATENCY);
 };
 
-#include "vrpn_Button.h"
+#include "vrpn_Button.h"                // for vrpn_Button_Filter
 
 // 5dt16 button server code.   This device will listen to a 5dt16 analog server
 // and report button press and release event when the analog pass a threshold

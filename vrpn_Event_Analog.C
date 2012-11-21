@@ -13,11 +13,14 @@
 /**************************************************************************************************/
 
 
+// includes, system
+#include <stdio.h>                      // for fprintf, stderr, NULL
+#include "vrpn_Shared.h"                // for vrpn_gettimeofday
+
 // includes, file
 #include "vrpn_Event_Analog.h"
 
-// includes, system
-#include <stdio.h>
+class VRPN_API vrpn_Connection;
 
 
 /**************************************************************************************************/

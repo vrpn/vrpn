@@ -19,19 +19,27 @@
 
 // Internal Includes
 #include "vrpn_Tracker_RazerHydra.h"
-#include "quat.h"
+
+#ifdef VRPN_USE_HID
+#include "quat.h"                       // for q_vec_type, q_normalize, etc
+#include "vrpn_BaseClass.h"
 #include "vrpn_BufferUtils.h"
-#include "vrpn_SendTextMessageStreamProxy.h"
-#include "vrpn_OneEuroFilter.h"
+#include "vrpn_Connection.h"            // for vrpn_CONNECTION_LOW_LATENCY, etc
+#include "vrpn_HumanInterface.h"        // for vrpn_HidInterface, etc
+#include "vrpn_OneEuroFilter.h"         // for OneEuroFilterQuat, etc
+#include "vrpn_SendTextMessageStreamProxy.h"  // for operator<<, etc
 
 // Library/third-party includes
 // - none
 
 // Standard includes
-#include <string>
-#include <sstream>
+#include <cassert>                      // for assert
+#include <sstream>                      // for operator<<, basic_ostream, etc
+#include <string>                       // for char_traits, basic_string, etc
+#include <stddef.h>                     // for size_t
+#include <stdio.h>                      // for fprintf, NULL, stderr
+#include <string.h>                     // for memset
 
-#ifdef VRPN_USE_HID
 
 const unsigned int HYDRA_VENDOR = 0x1532;
 const unsigned int HYDRA_PRODUCT = 0x0300;

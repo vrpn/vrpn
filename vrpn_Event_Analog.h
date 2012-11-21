@@ -16,11 +16,14 @@
 #define _VRPN_EVENT_ANALOG_H_
 
 // includes, system
-#include <vector>
+#include <vector>                       // for vector
 
 // includes, project
-#include "vrpn_Analog.h"
-#include "vrpn_Event.h"
+#include "vrpn_Analog.h"                // for vrpn_Analog
+#include "vrpn_Configure.h"             // for VRPN_API
+#include "vrpn_Event.h"                 // for input_event
+
+class VRPN_API vrpn_Connection;
 
 class VRPN_API vrpn_Event_Analog: public vrpn_Analog {
 

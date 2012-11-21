@@ -10,7 +10,8 @@
 #endif
 #endif
 
-#include "vrpn_Types.h"
+#include "vrpn_Configure.h"             // for VRPN_API
+#include "vrpn_Types.h"                 // for vrpn_int32, vrpn_float64, etc
 
 // Oct 2000: Sang-Uok changed because vrpn code was compiling but giving
 // runtime errors with cygwin 1.1. I changed the code so it only uses unix

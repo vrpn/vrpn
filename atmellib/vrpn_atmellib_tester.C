@@ -14,17 +14,12 @@
 
 /* include system headers */
 
-#include <unistd.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <fcntl.h>
-#include <termios.h>
-#include <errno.h>
+#include <errno.h>                      // for error_t
 
 /* include i/f header */
 
-#include "vrpn_atmellib.h"
-#include "vrpn_atmellib_helper.h"
+#include "vrpn_atmellib.h"              // for handle_t
+#include "vrpn_atmellib_errno.h"        // for ATMELLIB_ERROR_GENERAL, etc
 
 /***************************************************************************************************/
 /* internal (static) variables */

@@ -5,20 +5,15 @@
         is to test the rumble function.
 */
 
-#include <stdlib.h>
-#include <stdio.h>
+#include <stdio.h>                      // for printf, NULL, fprintf, etc
+#include <stdlib.h>                     // for exit
 #ifndef	_WIN32_WCE
-#include <signal.h>
+#include <signal.h>                     // for signal, SIGINT
 #endif
-#include <string.h>
+#include <vrpn_Analog_Output.h>         // for vrpn_Analog_Output_Remote
 
-#ifndef _WIN32
-#ifndef	_WIN32_WCE
-#include <strings.h>
-#endif
-#endif
-
-#include <vrpn_Analog_Output.h>
+#include "vrpn_Shared.h"                // for timeval, vrpn_SleepMsecs, etc
+#include "vrpn_Types.h"                 // for vrpn_float64
 
 int done = 0;	    // Signals that the program should exit
 

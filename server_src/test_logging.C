@@ -5,13 +5,15 @@
 //    The program uses VRPN text send/receive to make the logged messages
 // flow from both the client to the server and the server to the client.
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <signal.h>
-#include <string.h>
-#include "vrpn_Text.h"
+#include <stdio.h>                      // for NULL, fprintf, printf, etc
+#include <string.h>                     // for strlen
+
+#include "vrpn_Configure.h"             // for VRPN_CALLBACK, etc
+#include "vrpn_Connection.h"            // for vrpn_Connection, etc
+#include "vrpn_Shared.h"                // for timeval, vrpn_gettimeofday
+#include "vrpn_Text.h"                  // for vrpn_Text_Receiver, etc
 #ifndef _WIN32
-#include <unistd.h>
+#include <unistd.h>                     // for unlink
 #endif
 
 const char  *CLIENT_TEXT_NAME = "Text0";

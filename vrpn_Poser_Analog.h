@@ -1,21 +1,15 @@
 #ifndef vrpn_POSER_ANALOG_H
 #define vrpn_POSER_ANALOG_H
+#include <stdio.h>                      // for NULL
 
-#ifndef _WIN32_WCE
-#include <time.h>
-#endif
-#include <math.h>
-#include <stdlib.h>
-#include <stdio.h>
-#ifndef _WIN32
-#ifndef _WIN32_WCE
-#include <sys/time.h>
-#endif
-#endif
+#include "vrpn_Configure.h"             // for VRPN_API, VRPN_CALLBACK
+#include "vrpn_Poser.h"                 // for vrpn_Poser
+#include "vrpn_Tracker.h"               // for vrpn_Tracker
+#include "vrpn_Types.h"                 // for vrpn_float64
 
-#include "vrpn_Poser.h"
-#include "vrpn_Analog_Output.h"
-#include "vrpn_Tracker.h"
+class VRPN_API vrpn_Analog_Output_Remote;
+class VRPN_API vrpn_Connection;
+struct vrpn_HANDLERPARAM;
 
 
 // This code is for a Poser server that uses a vrpn_Analog_Output to drive a device.

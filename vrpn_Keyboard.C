@@ -1,8 +1,13 @@
-#include <math.h>
-#include <string.h>
+#include <stdio.h>                      // for fprintf, stderr
+#include <string.h>                     // for NULL
+
 #include "vrpn_Keyboard.h"
+#include "vrpn_Shared.h"                // for timeval, vrpn_gettimeofday
+
+class VRPN_API vrpn_Connection;
 #ifdef	_WIN32
 #include <windows.h>
+
 #pragma comment (lib, "user32.lib")
 #endif
 

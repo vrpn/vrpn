@@ -41,13 +41,14 @@
 // Russ Taylor in August 2000.
 
 #include "vrpn_Analog_USDigital_A2.h"
+
+class VRPN_API vrpn_Connection;
 #ifdef VRPN_USE_USDIGITAL
 extern "C" {
 #include <SEIDrv32.H>
 }
 #endif
-#include <stdio.h>
-#include <string.h>
+#include <stdio.h>                      // for fprintf, stderr
 
 //  Constants used by this class
 const vrpn_uint32 vrpn_Analog_USDigital_A2::vrpn_Analog_USDigital_A2_CHANNEL_MAX = 

@@ -36,6 +36,8 @@
 // code provided by National Instruments.
 
 #include "vrpn_Button_NI_DIO24.h"
+
+class VRPN_API vrpn_Connection;
 #ifdef VRPN_USE_NATIONAL_INSTRUMENTS_MX
 extern "C" {
 #include <NIDAQmx.h>
@@ -43,8 +45,7 @@ extern "C" {
 #else
 typedef	vrpn_int32	int32;
 #endif
-#include <stdio.h>
-#include <string.h>
+#include <stdio.h>                      // for fprintf, sprintf, stderr, etc
 
 //  Constants used by this class
 const vrpn_int32 vrpn_Button_NI_DIO24::vrpn_Button_NI_DIO24_CHANNEL_MAX = 

@@ -5,11 +5,14 @@
 //
 // This code is based on the Tng3 code from pulsar.org
 
-#include <string.h>
-#include <math.h>
-#include "vrpn_Tng3.h"
-#include "vrpn_Shared.h"
+#include <math.h>                       // for floor
+#include <stdio.h>                      // for fprintf, stderr, printf
+#include <string.h>                     // for NULL
+
+#include "vrpn_BaseClass.h"             // for ::vrpn_TEXT_WARNING, etc
 #include "vrpn_Serial.h"
+#include "vrpn_Shared.h"                // for timeval, vrpn_gettimeofday
+#include "vrpn_Tng3.h"
 
 #undef VERBOSE
 

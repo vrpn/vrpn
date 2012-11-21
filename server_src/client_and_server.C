@@ -6,12 +6,13 @@
 // local call handlers on the connection will send the information from
 // the server to the client callbacks.
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <signal.h>
-#include <string.h>
-#include "vrpn_Tracker.h"
-#include <string.h>
+#include <stdio.h>                      // for fprintf, stderr, printf, etc
+
+#include "vrpn_Configure.h"             // for VRPN_CALLBACK, etc
+#include "vrpn_Connection.h"
+#include "vrpn_Shared.h"                // for vrpn_SleepMsecs
+#include "vrpn_Tracker.h"               // for vrpn_TRACKERCB, etc
+#include "vrpn_Types.h"                 // for vrpn_float64
 
 const char	*TRACKER_NAME = "Tracker0";
 int	CONNECTION_PORT = vrpn_DEFAULT_LISTEN_PORT_NO;	// Port for connection to listen on

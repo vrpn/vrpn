@@ -5,16 +5,13 @@
 #ifndef VRPN_TRACKER_CROSSBOW_H
 #define VRPN_TRACKER_CROSSBOW_H
 
-#include <time.h>
-#include <math.h>
-#include <stdlib.h>
-#include <stdio.h>
-#ifndef _WIN32
-#include <sys/time.h>
-#endif
+#include "quat.h"                       // for q_type
+#include "vrpn_Configure.h"             // for VRPN_API
+#include "vrpn_Shared.h"                // for timeval
+#include "vrpn_Tracker.h"               // for vrpn_Tracker_Serial
+#include "vrpn_Types.h"                 // for vrpn_int16, vrpn_uint16, etc
 
-#include "quat.h"
-#include "vrpn_Tracker.h"
+class VRPN_API vrpn_Connection;
 
 class VRPN_API vrpn_Tracker_Crossbow: public vrpn_Tracker_Serial {
 public:

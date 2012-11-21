@@ -1,5 +1,7 @@
-#include <string.h>
-#include <math.h>
+#include <math.h>                       // for M_PI, pow, fabs
+
+#include "quat.h"                       // for q_xyz_quat_type, etc
+#include "vrpn_Connection.h"            // for vrpn_Connection, etc
 #include "vrpn_Tracker_AnalogFly.h"
 
 #undef	VERBOSE

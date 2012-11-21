@@ -1,10 +1,13 @@
 #ifndef VRPN_CEREALBOX_H
 #define VRPN_CEREALBOX_H
 
-#include "vrpn_Connection.h"
-#include "vrpn_Analog.h"
-#include "vrpn_Button.h"
-#include "vrpn_Dial.h"
+#include "vrpn_Analog.h"                // for vrpn_Serial_Analog
+#include "vrpn_Button.h"                // for vrpn_Button_Filter
+#include "vrpn_Configure.h"             // for VRPN_API
+#include "vrpn_Connection.h"            // for vrpn_CONNECTION_LOW_LATENCY, etc
+#include "vrpn_Dial.h"                  // for vrpn_Dial
+#include "vrpn_Shared.h"                // for timeval
+#include "vrpn_Types.h"                 // for vrpn_uint32
 
 class VRPN_API vrpn_CerealBox: public vrpn_Serial_Analog
 			,public vrpn_Button_Filter

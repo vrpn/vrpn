@@ -1,8 +1,11 @@
 #ifndef VRPN_5DT_H
 #define VRPN_5DT_H
 
-#include "vrpn_Connection.h"
-#include "vrpn_Analog.h"
+#include "vrpn_Analog.h"                // for vrpn_Serial_Analog
+#include "vrpn_Configure.h"             // for VRPN_API
+#include "vrpn_Connection.h"            // for vrpn_CONNECTION_LOW_LATENCY, etc
+#include "vrpn_Shared.h"                // for timeval
+#include "vrpn_Types.h"                 // for vrpn_uint32
 
 /** @brief Class to support reading data from serial 5DT data gloves.
 */

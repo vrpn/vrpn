@@ -15,16 +15,13 @@
 
 /* include system headers */
 
-#include <unistd.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <fcntl.h>
-#include <termios.h>
-#include <errno.h>
+#include <errno.h>                      // for error_t
+#include <stdio.h>                      // for printf
 
 /* include i/f header */
 
-#include "vrpn_atmellib.h"
+#include "vrpn_atmellib.h"              // for command_t, getCmd, setCmd, etc
+#include "vrpn_atmellib_errno.h"        // for ATMELLIB_NOERROR, etc
 #include "vrpn_atmellib_helper.h"
 
 /***************************************************************************************************/

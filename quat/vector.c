@@ -9,7 +9,10 @@
  *****************************************************************************/
 
 
-#include "quat.h"
+#include <math.h>                       // for sqrt
+#include <stdio.h>                      // for fprintf, printf, stderr
+
+#include "quat.h"                       // for Q_X, Q_Y, Q_Z, q_vec_type, etc
 
 /*****************************************************************************
  *

@@ -1,23 +1,18 @@
 // Include vrpn_Shared.h _first_ to avoid conflicts with sys/time.h 
 // and unistd.h
-#include "vrpn_Shared.h"
+#include <math.h>                       // for sqrt
+#include <stdio.h>                      // for fprintf, stderr, NULL, etc
 
-#include <time.h>
-#include <math.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <ctype.h>
+#include "vrpn_Connection.h"            // for vrpn_Connection, etc
+#include "vrpn_Shared.h"                // for vrpn_buffer, vrpn_unbuffer, etc
 
 #if defined(linux) || defined(__sparc) || defined(hpux) || defined(__GNUC__)
-#include <string.h>
+#include <string.h>                     // for memcpy
 #endif
 
-#include "vrpn_ForceDevice.h"
+#include <quat.h>                       // for q_matrix_type, etc
 
-#include <quat.h>  // quaternion for spring stuff
+#include "vrpn_ForceDevice.h"
 
 /* cheezy hack to make sure this enum is defined in the case we didn't 
    include trimesh.h */

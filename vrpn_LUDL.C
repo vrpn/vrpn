@@ -13,11 +13,16 @@
 // XXX Check for running into the limits.
 
 #include "vrpn_LUDL.h"
-#include <string.h>
-
-#define	REPORT_ERROR(msg)	{ send_text_message(msg, timestamp, vrpn_TEXT_ERROR) ; if (d_connection && d_connection->connected()) d_connection->send_pending_reports(); }
 
 #if defined(VRPN_USE_LIBUSB_1_0)
+
+#include <stdio.h>                      // for fprintf, stderr, sprintf, etc
+#include <string.h>                     // for NULL, memset, strlen
+
+#include "libusb.h"
+#include "vrpn_BaseClass.h"             // for ::vrpn_TEXT_ERROR
+
+#define	REPORT_ERROR(msg)	{ send_text_message(msg, timestamp, vrpn_TEXT_ERROR) ; if (d_connection && d_connection->connected()) d_connection->send_pending_reports(); }
 
 // USB vendor and product IDs for the models we support
 static const vrpn_uint16 LUDL_VENDOR = 0x6969;

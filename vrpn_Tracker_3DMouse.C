@@ -1,12 +1,18 @@
-#include <ctype.h>
+#include <ctype.h>                      // for isprint
+#include <math.h>                       // for cos, sin, M_PI
+#include <stdio.h>                      // for fprintf, stderr, perror
 
 #ifndef _WIN32
-#include <unistd.h>
 #else
 #define M_PI 3.14159265358979323846
 #endif
 
+#include "vrpn_Serial.h"                // for vrpn_write_characters, etc
+#include "vrpn_Shared.h"                // for vrpn_SleepMsecs, timeval
 #include "vrpn_Tracker_3DMouse.h"
+#include "vrpn_Types.h"                 // for vrpn_float64
+
+class VRPN_API vrpn_Connection;
 
 // max time between reports (usec)
 #define MAX_TIME_INTERVAL       (2000000) 

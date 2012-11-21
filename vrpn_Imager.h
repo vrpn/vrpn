@@ -20,9 +20,14 @@
 
 #ifndef	VRPN_IMAGER_H
 #define	VRPN_IMAGER_H
-#include <string.h>	// For memcpy()
+#include <stdio.h>                      // for fprintf, stderr
+#include <string.h>                     // for NULL, memcpy
+
+#include "vrpn_BaseClass.h"             // for vrpn_Callback_List, etc
+#include "vrpn_Configure.h"             // for VRPN_CALLBACK, VRPN_API
 #include  "vrpn_Connection.h"
-#include  "vrpn_BaseClass.h"
+#include "vrpn_Shared.h"                // for vrpn_buffer, vrpn_unbuffer, etc
+#include "vrpn_Types.h"                 // for vrpn_uint16, vrpn_int32, etc
 
 const unsigned vrpn_IMAGER_MAX_CHANNELS = 100;
 

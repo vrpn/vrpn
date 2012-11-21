@@ -1,29 +1,14 @@
 
-#include <time.h>
-#include <math.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <ctype.h>
+#include <fcntl.h>                      // for SEEK_END
+#include <stdio.h>                      // for fprintf, printf, sprintf, etc
+#include <string.h>                     // for strncmp, strlen, strncpy
 
-#ifdef linux
-#include <termios.h>
-#endif
-
-#ifndef _WIN32
-#include <sys/ioctl.h>
-#include <sys/time.h>
-#include <unistd.h>
-#include <netinet/in.h>
-#endif
-
-#include "vrpn_Tracker.h"
+#include "vrpn_Connection.h"            // for vrpn_CONNECTION_LOW_LATENCY, etc
+#include "vrpn_Serial.h"                // for vrpn_close_commport, etc
+#include "vrpn_Shared.h"                // for vrpn_SleepMsecs, etc
+#include "vrpn_Tracker.h"               // for vrpn_Tracker
 #include "vrpn_Tracker_NDI_Polaris.h"
-#include "vrpn_Serial.h"
-#include "vrpn_Shared.h"
+#include "vrpn_Types.h"                 // for vrpn_float64
 
 vrpn_Tracker_NDI_Polaris::vrpn_Tracker_NDI_Polaris(const char *name, 
 												   vrpn_Connection *c,

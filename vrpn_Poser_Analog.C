@@ -1,4 +1,8 @@
+#include "vrpn_Analog.h"                // for vrpn_CHANNEL_MAX
+#include "vrpn_Analog_Output.h"         // for vrpn_Analog_Output_Remote
+#include "vrpn_Connection.h"            // for vrpn_HANDLERPARAM, etc
 #include "vrpn_Poser_Analog.h"
+#include "vrpn_Shared.h"                // for vrpn_unbuffer, timeval, etc
 
 
 vrpn_Poser_AnalogParam::vrpn_Poser_AnalogParam() {

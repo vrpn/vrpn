@@ -42,7 +42,11 @@
 #ifndef VRPN_ANALOG_USDIGITAL_A2_H
 #define VRPN_ANALOG_USDIGITAL_A2_H
 
-#include "vrpn_Analog.h"
+#include "vrpn_Analog.h"                // for vrpn_Analog
+#include "vrpn_Configure.h"             // for VRPN_API
+#include "vrpn_Types.h"                 // for vrpn_uint32, vrpn_int32, etc
+
+class VRPN_API vrpn_Connection;
 
 class VRPN_API vrpn_Analog_USDigital_A2 : public vrpn_Analog {
 

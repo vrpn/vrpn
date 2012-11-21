@@ -1,5 +1,4 @@
-#include <stdio.h>
-#include <math.h>
+#include <stdio.h>                      // for printf
 #include "c_interface.h"
 
 void	tracker_callback(unsigned sensor, const double pos[3], const double quat[4])

@@ -1,14 +1,13 @@
-#include <fcntl.h>
+#include <fcntl.h>                      // for open, O_RDONLY
 #ifndef _WIN32
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <netinet/in.h>
+#include <netinet/in.h>                 // for ntohl
+#include <unistd.h>                     // for close, read
 #endif
-#include <stdio.h>
-#include <stdlib.h>
+#include <stdio.h>                      // for printf, fprintf, stderr
+#include <stdlib.h>                     // for exit
+#include <vrpn_Connection.h>            // for vrpn_HANDLERPARAM, etc
 
-#include <vrpn_Connection.h>  // for vrpn_ALIGN
+#include "vrpn_Shared.h"                // for timeval
 
 const int buflen = 8000;
 

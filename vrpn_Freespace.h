@@ -22,11 +22,11 @@
 
 #ifdef VRPN_USE_FREESPACE
 
-#include "vrpn_Tracker.h"
+#include <freespace/freespace.h>
+
 #include "vrpn_Button.h"
 #include "vrpn_Dial.h"
-
-#include <freespace/freespace.h>
+#include "vrpn_Tracker.h"
 
 
 class VRPN_API vrpn_Freespace :

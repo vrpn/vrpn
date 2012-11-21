@@ -1,16 +1,6 @@
-#ifndef _WIN32_WCE
-#include <time.h>
-#endif
-#include <math.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#ifndef	_WIN32_WCE
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#endif
-#include <ctype.h>
+#include <ctype.h>                      // for isspace
+#include <stdio.h>                      // for fprintf, stderr, NULL, etc
+#include <string.h>                     // for memcpy, strlen, strncmp, etc
 
 
 // NOTE: a vrpn tracker must call user callbacks with tracker data (pos and
@@ -21,16 +11,9 @@
 //       source space (ie, its value rotates the source's axes so that
 //       they coincide with the sensor's)
 
-#ifdef linux
-#include <termios.h>
-#endif
-
 // Include vrpn_Shared.h _first_ to avoid conflicts with sys/time.h 
 // and unistd.h
-#include "vrpn_Shared.h"
-#ifndef _WIN32
-#include <netinet/in.h>
-#endif
+#include "vrpn_Shared.h"                // for timeval, vrpn_buffer, etc
 
 #ifdef	_WIN32
 #ifndef _WIN32_WCE
@@ -38,12 +21,15 @@
 #endif
 #endif
 
+#include "vrpn_RedundantTransmission.h"  // for vrpn_RedundantTransmission
 #include "vrpn_Tracker.h"
 
-#include "vrpn_RedundantTransmission.h"
+#if defined(VRPN_USE_LIBUSB_1_0)
+#include "libusb.h"                     // for libusb_close, etc
+#endif
 
 #ifndef VRPN_CLIENT_ONLY
-#include "vrpn_Serial.h"
+#include "vrpn_Serial.h"                // for vrpn_close_commport, etc
 #endif
 
 static const char *default_tracker_cfg_file_name = "vrpn_Tracker.cfg";

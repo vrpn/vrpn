@@ -30,19 +30,17 @@
 
 //#define	VERBOSE
 
-#include "vrpn_raw_sgibox.h"
+#include <stdio.h>                      // for perror, fprintf, printf, etc
+#include <string.h>                     // for memcpy
+
+#include "vrpn_Connection.h"            // for vrpn_HANDLERPARAM, etc
 #include "vrpn_Serial.h"
-#include "vrpn_Shared.h"
-#include <stdio.h>
-#include <string.h>
+#include "vrpn_Shared.h"                // for vrpn_SleepMsecs, timeval
+#include "vrpn_Types.h"                 // for vrpn_float64, vrpn_int16, etc
+#include "vrpn_raw_sgibox.h"
 
 static	unsigned char	BBOX_RESET = 0x20;
 const	int	VRPN_DIAL_RANGE = 200;
-
-// all for gethostbyname();
-#ifndef	_WIN32
-#include <unistd.h>
-#endif
 
 static int VRPN_CALLBACK sgibox_raw_con_cb(void * userdata, vrpn_HANDLERPARAM p);
 static int VRPN_CALLBACK sgibox_raw_alert_handler(void * userdata, vrpn_HANDLERPARAM);
@@ -368,10 +366,6 @@ int	vrpn_raw_SGIBox::send_light_command(void)  {
   int bank, i;
   unsigned char lights[4];	// Array to hold the light-control bits
   unsigned char msg[5];		// Message to send to turn on lights
-
-#ifdef	VERBOSE
-	//printf("vrpn_raw_SGIBox::send_light_command() starting\n");
-#endif
 
   // Figure out which lights should be on, and pack them into the
   // four bytes that describe which should be on.

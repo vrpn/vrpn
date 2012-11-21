@@ -10,8 +10,11 @@
 
 #ifndef VRPN_JOYLIN
 #define VRPN_JOYLIN
-#include "vrpn_Analog.h"
-#include "vrpn_Button.h"
+#include "vrpn_Analog.h"                // for vrpn_Analog
+#include "vrpn_Button.h"                // for vrpn_Button_Filter
+#include "vrpn_Configure.h"             // for VRPN_API
+
+class VRPN_API vrpn_Connection;
 
 
 class VRPN_API vrpn_Joylin :public vrpn_Analog, public vrpn_Button_Filter {

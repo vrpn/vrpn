@@ -43,15 +43,19 @@
 	DEALINGS IN THE SOFTWARE.
 */
 
-// Standard includes
-#include <string.h>
-#include <math.h>
-#include <stdio.h>
-#include <algorithm>
-#include <iostream>
+
 
 // Local Includes
+#include "quat.h"                       // for q_xyz_quat_type, q_vec_copy, etc
+#include "vrpn_Connection.h"            // for vrpn_Connection, etc
 #include "vrpn_Tracker_WiimoteHead.h"
+#include "vrpn_Types.h"                 // for vrpn_float64
+
+// Standard includes
+#include <math.h>                       // for tan, atan2, sqrt
+#include <stdio.h>                      // for NULL, fprintf, stderr
+#include <algorithm>                    // for swap
+#include <iostream>                     // for operator<<, basic_ostream, etc
 
 #undef	VERBOSE
 

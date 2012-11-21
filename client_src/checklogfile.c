@@ -1,17 +1,17 @@
-#include <fcntl.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/types.h>
-#include <sys/stat.h>
+#include <fcntl.h>                      // for open, O_RDONLY
+#include <stdio.h>                      // for printf, fprintf, stderr
+#include <stdlib.h>                     // for exit
+#include <string.h>                     // for strcmp
 #ifndef _WIN32
-    #include <unistd.h>
-    #include <netinet/in.h>
+#include <netinet/in.h>                 // for ntohl
+#include <unistd.h>                     // for close, read
 #else
     #include <io.h>
 #endif
 
-#include <vrpn_Connection.h>  // for vrpn_ALIGN
+#include <vrpn_Connection.h>            // for vrpn_HANDLERPARAM, etc
+
+#include "vrpn_Shared.h"                // for timeval, vrpn_TimevalMsecs
 
 
 const int buflen = 8000;

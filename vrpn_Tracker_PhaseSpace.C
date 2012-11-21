@@ -1,7 +1,5 @@
 #include "vrpn_Tracker_PhaseSpace.h"
 
-#include <string.h>
-
 #define MM_TO_METERS (0.001)
 
 #ifdef VRPN_INCLUDE_PHASESPACE

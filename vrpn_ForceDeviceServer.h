@@ -5,8 +5,13 @@
 #if !defined(AFX_VRPN_FORCEDEVICESERVER_H__E5B0D6FA_E426_45E5_97C7_B2169BEBF90A__INCLUDED_)
 #define AFX_VRPN_FORCEDEVICESERVER_H__E5B0D6FA_E426_45E5_97C7_B2169BEBF90A__INCLUDED_
 
-#include "vrpn_ForceDevice.h"
-#include "vrpn_HashST.h"
+#include "vrpn_Configure.h"             // for VRPN_CALLBACK, VRPN_API
+#include "vrpn_ForceDevice.h"           // for vrpn_ForceDevice
+#include "vrpn_HashST.h"                // for vrpn_Hash
+#include "vrpn_Types.h"                 // for vrpn_int32, vrpn_float32, etc
+
+class VRPN_API vrpn_Connection;
+struct vrpn_HANDLERPARAM;
 
 
 typedef vrpn_Hash<unsigned int, void*> vrpn_VoidHash;

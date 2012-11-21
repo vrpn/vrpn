@@ -2,11 +2,14 @@
 // ff_client.C - generates an interesting sinusoidal force field
 //
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <vrpn_ForceDevice.h>
-#include <vrpn_Tracker.h>
-#include <vrpn_Button.h>
+#include <math.h>                       // for M_PI, cos, sin
+#include <stdio.h>                      // for printf, NULL
+#include <vrpn_Button.h>                // for vrpn_BUTTONCB, etc
+#include <vrpn_ForceDevice.h>           // for vrpn_ForceDevice_Remote, etc
+#include <vrpn_Tracker.h>               // for vrpn_TRACKERCB, etc
+
+#include "vrpn_Configure.h"             // for VRPN_CALLBACK
+#include "vrpn_Types.h"                 // for vrpn_float64
 
 #ifndef M_PI
 #define M_PI  (2*asin(0.0))

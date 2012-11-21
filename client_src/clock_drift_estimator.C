@@ -7,23 +7,20 @@
         and the server machine.
 */
 
-#include <math.h>
-#include <stdlib.h>
-#include <stdio.h>
+#include <math.h>                       // for floor
+#include <stdio.h>                      // for NULL, printf, fprintf, etc
+#include <stdlib.h>                     // for exit
+#include <vrpn_Shared.h>                // for vrpn_gettimeofday
 #ifndef	_WIN32_WCE
-#include <signal.h>
+#include <signal.h>                     // for signal, SIGINT
 #endif
-#include <string.h>
+#include <string.h>                     // for strcmp
+#include <vrpn_BaseClass.h>             // for vrpn_BaseClass
+#include <vrpn_Connection.h>            // for vrpn_Connection, etc
+#include <vrpn_Tracker.h>               // for vrpn_Tracker_NULL
 
-#ifndef _WIN32
-#ifndef	_WIN32_WCE
-#include <strings.h>
-#endif
-#endif
-
-#include <vrpn_Connection.h>
-#include <vrpn_BaseClass.h>
-#include <vrpn_Tracker.h>
+#include "vrpn_Configure.h"             // for VRPN_CALLBACK
+#include "vrpn_Shared.h"                // for timeval, vrpn_TimevalSum, etc
 
 int done = 0;	    // Signals that the program should exit
 

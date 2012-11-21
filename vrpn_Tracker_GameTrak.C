@@ -5,11 +5,13 @@
  *      Author: janoc
  */
 
-#include <string.h>
+#include <math.h>                       // for cos, sin
+#include <stdio.h>                      // for fprintf, stderr
+#include <string.h>                     // for memset, memcpy, NULL
 
+#include "quat.h"                       // for Q_PI
+#include "vrpn_Connection.h"            // for vrpn_CONNECTION_LOW_LATENCY, etc
 #include "vrpn_Tracker_GameTrak.h"
-
-#include "quat.h"
 
 vrpn_Tracker_GameTrak::vrpn_Tracker_GameTrak(const char * name, vrpn_Connection * trackercon, const char *joystick_dev, int *mapping) :
     vrpn_Tracker(name, trackercon)

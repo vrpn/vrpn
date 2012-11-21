@@ -1,19 +1,18 @@
 #ifndef INCLUDED_ANALOGFLY
 #define INCLUDED_ANALOGFLY
 
-#include <time.h>
-#include <math.h>
-#include <stdlib.h>
-#include <stdio.h>
-#ifndef _WIN32
-#include <sys/time.h>
-#endif
+#include <quat.h>                       // for q_matrix_type
+#include <stdio.h>                      // for NULL
 
-#include "vrpn_Tracker.h"
-#include "vrpn_Analog.h"
-#include "vrpn_Button.h"
+#include "vrpn_Analog.h"                // for vrpn_ANALOGCB, etc
+#include "vrpn_Button.h"                // for vrpn_BUTTONCB, etc
+#include "vrpn_Configure.h"             // for VRPN_API, VRPN_CALLBACK
+#include "vrpn_Shared.h"                // for timeval
+#include "vrpn_Tracker.h"               // for vrpn_Tracker
+#include "vrpn_Types.h"                 // for VRPN_FALSE, vrpn_FALSE
 
-#include <quat.h>
+class VRPN_API vrpn_Connection;
+struct vrpn_HANDLERPARAM;
 
 // This parameter is passed to the constructor for the AnalogFly; it describes
 // the channel mapping and parameters of that mapping, as well as the button

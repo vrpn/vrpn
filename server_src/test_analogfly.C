@@ -5,15 +5,16 @@
 // by creating an analog to drive both an absolute and a differential
 // AnalogFly and then seeing what their resulting outputs are.
 
-#include <math.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <signal.h>
-#include <string.h>
-#include "vrpn_Connection.h"
-#include "vrpn_Tracker.h"
-#include "vrpn_Analog.h"
-#include "vrpn_Tracker_AnalogFly.h"
+#include <stdio.h>                      // for printf, NULL, fprintf, etc
+#include <stdlib.h>                     // for exit
+
+#include "vrpn_Analog.h"                // for vrpn_Analog_Server, etc
+#include "vrpn_Configure.h"             // for VRPN_CALLBACK, etc
+#include "vrpn_Connection.h"            // for vrpn_Connection, etc
+#include "vrpn_Shared.h"                // for timeval, vrpn_gettimeofday, etc
+#include "vrpn_Tracker.h"               // for vrpn_TRACKERCB, etc
+#include "vrpn_Tracker_AnalogFly.h"     // for vrpn_TAF_axis, etc
+#include "vrpn_Types.h"                 // for vrpn_float64, vrpn_false, etc
 
 const char	*TRACKER1_NAME = "Tracker1";
 const char	*TRACKER2_NAME = "Tracker2";

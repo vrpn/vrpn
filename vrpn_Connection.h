@@ -1,8 +1,17 @@
 #ifndef VRPN_CONNECTION_H
 #define VRPN_CONNECTION_H
 
-#include <stdio.h>  // for FILE
-#include "vrpn_Shared.h"
+#include <stdio.h>                      // for NULL, sprintf
+
+#include "vrpn_Configure.h"             // for VRPN_API, VRPN_CALLBACK, etc
+#include "vrpn_Shared.h"                // for SOCKET, timeval
+#include "vrpn_Types.h"                 // for vrpn_int32, vrpn_uint32, etc
+
+#if !( defined(_WIN32) && defined(VRPN_USE_WINSOCK_SOCKETS) )
+#  include <sys/select.h>                 // for fd_set
+#endif
+
+struct timeval;
 
 // Don't complain about using sprintf() when using Visual Studio.
 #ifdef _MSC_VER
@@ -914,7 +923,7 @@ VRPN_API int write_vrpn_cookie (char * buffer, int length, long remote_log_mode)
 #endif /* VRPN_USE_WINSOCK_SOCKETS */
 
 /**
- * @class vrpn_ConnectionManager
+ * @class VRPN_API vrpn_ConnectionManager
  * Singleton class that keeps track of all known VRPN connections
  * and makes sure they're deleted on shutdown.
  * We make it static to guarantee that the destructor is called
@@ -932,7 +941,7 @@ VRPN_API int write_vrpn_cookie (char * buffer, int length, long remote_log_mode)
 // even if they all refer to the same connection.
 
 
-class vrpn_ConnectionManager {
+class VRPN_API vrpn_ConnectionManager {
 
   public:
 
