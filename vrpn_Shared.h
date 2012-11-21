@@ -75,6 +75,13 @@
 #  define vrpn_gettimeofday gettimeofday
 #else  // winsock sockets
 
+// These are a pair of horrible hacks that instruct Windows include
+// files to (1) not define min() and max() in a way that messes up
+// standard-library calls to them, and (2) avoids pulling in a large
+// number of Windows header files.  They are not used directly within
+// the VRPN library, but rather within the Windows include files to
+// change the way they behave.
+
 #  ifndef NOMINMAX
 #    define NOMINMAX
 #  endif
