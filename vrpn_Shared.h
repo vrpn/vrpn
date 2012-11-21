@@ -75,10 +75,6 @@
 #  define vrpn_gettimeofday gettimeofday
 #else  // winsock sockets
 
-#  ifndef NOMINMAX
-#    define NOMINMAX
-#  endif
-#  define WIN32_LEAN_AND_MEAN
 #  include <windows.h>
 #  ifndef _WIN32_WCE
 #    include <sys/timeb.h>
