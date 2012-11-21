@@ -21,15 +21,15 @@
 #define INCLUDED_vrpn_SerialPort_h_GUID_5d4c63a9_e038_4893_bfd7_116c43950dfa
 
 // Internal Includes
-#include "vrpn_Shared.h"
-#include "vrpn_Serial.h"
+#include "vrpn_Configure.h"             // for VRPN_API
+#include "vrpn_Serial.h"                // for ::vrpn_SER_PARITY_NONE, etc
 
 // Library/third-party includes
 // - none
 
 // Standard includes
-#include <stdexcept>
-#include <string>
+#include <stdexcept>                    // for runtime_error, logic_error
+#include <string>                       // for string
 
 /// @brief A simple class wrapping the functionality of vrpn_Serial.h with
 /// RAII, object-orientation, and optional STL types
@@ -115,14 +115,14 @@ class VRPN_API vrpn_SerialPort {
 		/// @name Serial Port Exceptions
 		/// @{
 		struct AlreadyOpen;
+		struct CloseFailure;
+		struct DrainFailure;
+		struct FlushFailure;
 		struct NotOpen;
 		struct OpenFailure;
-		struct CloseFailure;
 		struct RTSFailure;
 		struct ReadFailure;
 		struct WriteFailure;
-		struct FlushFailure;
-		struct DrainFailure;
 		/// @}
 
 	private:

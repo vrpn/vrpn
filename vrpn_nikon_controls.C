@@ -3,7 +3,12 @@
 // of characters to send (and time) and avoid the problem of the
 // device being reset at an out-of-range place.
 
-#include <string.h>
+#include <stdio.h>                      // for fprintf, stderr, sprintf, etc
+#include <stdlib.h>                     // for atoi
+#include <string.h>                     // for strlen, NULL, strncmp, etc
+
+#include "vrpn_BaseClass.h"             // for ::vrpn_TEXT_ERROR, etc
+#include "vrpn_Serial.h"
 #include "vrpn_nikon_controls.h"
 
 //#define	VERBOSE

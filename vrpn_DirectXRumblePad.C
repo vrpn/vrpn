@@ -13,6 +13,7 @@
 
 #if defined(_WIN32) && defined(VRPN_USE_DIRECTINPUT)
 #include <stdio.h>
+#include <time.h> // for time
 #include <algorithm> // for min
 using std::min;
 

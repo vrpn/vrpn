@@ -1,8 +1,11 @@
 #ifndef __TRACKER_3DMOUSE_H
 #define __TRACKER_3DMOUSE_H
 
-#include "vrpn_Tracker.h"
-#include "vrpn_Button.h"
+#include "vrpn_Button.h"                // for vrpn_Button_Filter
+#include "vrpn_Configure.h"             // for VRPN_API
+#include "vrpn_Tracker.h"               // for vrpn_Tracker_Serial
+
+class VRPN_API vrpn_Connection;
 
 class VRPN_API vrpn_Tracker_3DMouse : public vrpn_Tracker_Serial, public vrpn_Button_Filter {
   

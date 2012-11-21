@@ -3,21 +3,25 @@
 // them in an OpenGL window.  It assumes that the size of the imager does
 // not change during the run.  It asks for unsigned 8-bit pixels.
 
-#include <stdio.h>
-#include <stdlib.h>
+#include <stdio.h>                      // for printf, NULL, fprintf, etc
+#include <stdlib.h>                     // for exit
+#include <string.h>                     // for strcmp
 #ifdef	_WIN32
 #include <windows.h>
 #endif
 #ifdef __APPLE__
-#include <OpenGL/OpenGL.h>
 #include <GLUT/glut.h>
+#include <OpenGL/OpenGL.h>
 #else
-#include <GL/gl.h>
-#include <GL/glut.h>
+#include <GL/gl.h>                      // for glClear, glClearColor, etc
+#include <GL/glut.h>                    // for glutCreateWindow, etc
 #endif
-#include <vrpn_Connection.h>
+#include <vrpn_Connection.h>            // for vrpn_Connection, etc
 #include <vrpn_FileConnection.h>
-#include <vrpn_Imager.h>
+#include <vrpn_Imager.h>                // for vrpn_Imager_Remote, etc
+
+#include "vrpn_Configure.h"             // for VRPN_CALLBACK
+#include "vrpn_Shared.h"                // for timeval, vrpn_SleepMsecs, etc
 
 //----------------------------------------------------------------------------
 // Glut insists on taking over the whole application, leaving us to use

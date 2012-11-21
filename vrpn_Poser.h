@@ -1,25 +1,19 @@
 #ifndef	vrpn_POSER_H
 #define vrpn_POSER_H
-
-#ifndef _WIN32_WCE
-#include <time.h>
-#endif
-#include <math.h>
-#include <stdlib.h>
-#include <stdio.h>
-#ifndef _WIN32
-#ifndef _WIN32_WCE
-#include <sys/time.h>
-#endif
-#endif
+#include <stdio.h>                      // for NULL
 
 // NOTE: the poser class borrows heavily from the vrpn_Tracker code.
 //       The poser is basically the inverse of a tracker.  
 //       We are only handling pose and velocity updates for now...acceleration
 //       will come later, as needed.
 
-#include "vrpn_Connection.h"
-#include "vrpn_BaseClass.h"
+#include "vrpn_BaseClass.h"             // for vrpn_Callback_List, etc
+#include "vrpn_Configure.h"             // for VRPN_CALLBACK, VRPN_API
+#include "vrpn_Shared.h"                // for timeval
+#include "vrpn_Types.h"                 // for vrpn_float64, vrpn_int32
+
+class VRPN_API vrpn_Connection;
+struct vrpn_HANDLERPARAM;
 
 class VRPN_API vrpn_Poser : public vrpn_BaseClass {
     public:

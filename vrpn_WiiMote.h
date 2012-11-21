@@ -9,11 +9,11 @@
 #include "vrpn_Configure.h"
 #if defined(VRPN_USE_WIIUSE)
 
-#include "vrpn_Shared.h"
-#include "vrpn_Connection.h"
 #include "vrpn_Analog.h"
-#include "vrpn_Button.h"
 #include "vrpn_Analog_Output.h"
+#include "vrpn_Button.h"
+#include "vrpn_Connection.h"
+#include "vrpn_Shared.h"
 
 // maximum number of wiimotes connected to the system
 #define VRPN_WIIUSE_MAX_WIIMOTES 4

@@ -4,36 +4,22 @@
 // This file is based on the vrpn_Tracker_Liberty.C file, with modifications made
 // to allow it to operate a Liberty Latus instead. It has been tested on Linux.
 
-#include <time.h>
-#include <math.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <ctype.h>
+#include <ctype.h>                      // for isprint
+#include <stdio.h>                      // for fprintf, stderr, sprintf, etc
+#include <stdlib.h>                     // for atoi
+#include <string.h>                     // for strlen, strncpy, strtok
 
-#ifdef linux
-#include <termios.h>
-#endif
-
-#ifndef _WIN32
-#include <sys/ioctl.h>
-#include <sys/time.h>
-#include <unistd.h>
-#include <netinet/in.h>
-#endif
-
-#include "vrpn_Tracker.h"
-#include "vrpn_Tracker_LibertyHS.h"
-#include "vrpn_Shared.h"
+#include "quat.h"                       // for Q_W, Q_X, Q_Y, Q_Z
+#include "vrpn_BaseClass.h"             // for ::vrpn_TEXT_WARNING, etc
 #include "vrpn_BufferUtils.h"
-#include "quat.h"
+#include "vrpn_Connection.h"            // for vrpn_Connection
+#include "vrpn_Shared.h"                // for vrpn_SleepMsecs, timeval, etc
+#include "vrpn_Tracker.h"               // for vrpn_TRACKER_FAIL, etc
+#include "vrpn_Tracker_LibertyHS.h"
 
 #if defined(VRPN_USE_LIBUSB_1_0)
 
-#include <libusb.h>
+#include <libusb.h>                     // for libusb_bulk_transfer, etc
 
 #define	INCHES_TO_METERS	(2.54/100.0)
 static bool METRIC_UNITS = true;

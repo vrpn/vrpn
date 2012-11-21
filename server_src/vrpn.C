@@ -1,5 +1,13 @@
-#include "vrpn_Generic_server_object.h"
-#include "vrpn_ForwarderController.h"
+#include <stdio.h>                      // for fprintf, stderr, NULL, etc
+#include <stdlib.h>                     // for atoi, exit
+#include <string.h>                     // for strcmp
+
+#include "vrpn_BaseClass.h"             // for ::vrpn_TEXT_NORMAL, etc
+#include "vrpn_Configure.h"             // for VRPN_CALLBACK, etc
+#include "vrpn_Connection.h"            // for vrpn_Connection, etc
+#include "vrpn_ForwarderController.h"   // for vrpn_Forwarder_Server
+#include "vrpn_Generic_server_object.h"  // for vrpn_Generic_Server_Object
+#include "vrpn_Shared.h"                // for vrpn_SleepMsecs
 
 void Usage (const char * s)
 {
@@ -86,7 +94,8 @@ BOOL WINAPI handleConsoleSignalsWin( DWORD signaltype)
 }
 
 #else
-#include <signal.h>
+#include <signal.h>                     // for signal, SIGINT, SIGKILL, etc
+
 //#ifdef sgi
 //void sighandler( ... )
 //#else

@@ -1,8 +1,14 @@
 #ifndef VRPN_FUNCTIONGENERATOR_H
 #define VRPN_FUNCTIONGENERATOR_H
 
-#include "vrpn_Shared.h"
-#include "vrpn_Analog.h" // for vrpn_CHANNEL_MAX
+#include <stddef.h>                     // for NULL
+
+#include "vrpn_Analog.h"                // for vrpn_CHANNEL_MAX
+#include "vrpn_BaseClass.h"             // for vrpn_Callback_List, etc
+#include "vrpn_Configure.h"             // for VRPN_CALLBACK, VRPN_API
+#include "vrpn_Connection.h"
+#include "vrpn_Shared.h"                // for timeval
+#include "vrpn_Types.h"                 // for vrpn_int32, vrpn_uint32, etc
 
 
 const vrpn_uint32 vrpn_FUNCTION_CHANNELS_MAX = vrpn_CHANNEL_MAX;

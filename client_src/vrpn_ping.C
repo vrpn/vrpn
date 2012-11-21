@@ -5,14 +5,15 @@
    level from a client through the user level at a server.
 */
 
-#include <stdlib.h>
-#include <stdio.h>
-#ifndef _WIN32
-  #include <sys/time.h>
-#endif
-#include <signal.h>
-#include <vrpn_Connection.h>
-#include <vrpn_Text.h>
+#include <signal.h>                     // for signal, SIGINT
+#include <stdio.h>                      // for NULL, printf
+#include <stdlib.h>                     // for exit
+#include <vrpn_Connection.h>            // for vrpn_Connection, etc
+#include <vrpn_Text.h>                  // for vrpn_Text_Receiver
+
+#include "vrpn_Configure.h"             // for VRPN_CALLBACK
+#include "vrpn_Shared.h"                // for timeval, vrpn_gettimeofday, etc
+#include "vrpn_Types.h"                 // for vrpn_int32
 
 vrpn_Text_Receiver * r;
 vrpn_Connection * c;

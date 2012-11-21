@@ -15,20 +15,21 @@
 
 #ifndef _WIN32
 
+#include <errno.h>                      // for errno
+#include <stdio.h>                      // for fprintf, stderr, printf, etc
+#include <stdlib.h>                     // for exit
+#include <sys/select.h>                 // for select, FD_SET, FD_ZERO, etc
+#include <vrpn_Shared.h>                // for vrpn_gettimeofday
+
 #include "vrpn_Atmel.h"
-#include "vrpn_atmellib.h"
-#include "vrpn_atmellib_helper.h"
+#include "vrpn_Connection.h"            // for vrpn_Connection
+#include "vrpn_Types.h"                 // for vrpn_float64
+#include "vrpn_atmellib.h"              // for getRegister, closePort, etc
+#include "vrpn_atmellib_errno.h"        // for ATMELLIB_NOERROR
 
-#include <errno.h>
-#include <stdio.h>
+#include <termios.h>                    // for tcflush, TCIOFLUSH, termios
 
-#if !defined(_WIN32)
-#include <unistd.h>
-#include <termios.h>
-#endif
-
-#include <string>
-#include <string.h>
+#include <string.h>                     // for strerror
 
 /***************************************************************************************************/
 /***************************************************************************************************/

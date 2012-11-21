@@ -5,14 +5,14 @@
 // serial port is working.
 //
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <signal.h>
-#include <string.h>
+#include <stdio.h>                      // for printf, NULL, fprintf, etc
+
+#include "vrpn_Analog.h"                // for vrpn_Analog_Remote, etc
+#include "vrpn_Analog_Radamec_SPI.h"    // for vrpn_Radamec_SPI
+#include "vrpn_Configure.h"             // for VRPN_CALLBACK, etc
 #include "vrpn_Connection.h"
-#include "vrpn_Tracker.h"
-#include "vrpn_Analog.h"
-#include "vrpn_Analog_Radamec_SPI.h"
+#include "vrpn_Shared.h"                // for vrpn_SleepMsecs
+#include "vrpn_Tracker.h"               // for vrpn_Tracker_Remote, etc
 
 const char	*TRACKER_NAME = "Tracker0";
 const char	*ANALOG_NAME = "Analog0";

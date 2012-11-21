@@ -1,37 +1,28 @@
+#include <stdio.h>                      // for fprintf, stderr, NULL, etc
 #ifndef _WIN32_WCE
-#  include <time.h>
+#include <fcntl.h>                      // for open, O_RDWR
 #endif
-#include <math.h>
-#include <stdlib.h>
-#include <stdio.h>
-#ifndef _WIN32_WCE
-#  include <sys/types.h>
-#  include <sys/stat.h>
-#  include <fcntl.h>
-#endif
-#include <string.h> // for memcpy
+#include <string.h>                     // for strncpy
 
 #if defined(linux) && !defined(VRPN_CLIENT_ONLY)
-#  include <linux/lp.h>
-#  include <sys/ioctl.h>
+#include <linux/lp.h>                   // for LPGETSTATUS
+#include <sys/ioctl.h>                  // for ioctl
 #endif
 
+#include "vrpn_Connection.h"            // for vrpn_Connection, etc
+#include "vrpn_Serial.h"
 // Include vrpn_Shared.h _first_ to avoid conflicts with sys/time.h 
 // and unistd.h
-#include "vrpn_Shared.h"
+#include "vrpn_Shared.h"                // for timeval, vrpn_buffer, etc
 
 #if defined(_WIN32) && !defined(__CYGWIN__) && !defined (_WIN32_WCE)
 #  include <conio.h>  // for _inp()
 #endif
 
-#if !defined(_WIN32) || (defined(_WIN32) && !defined(VRPN_USE_WINSOCK_SOCKETS))
-#  include <netinet/in.h>
-#endif // _WIN32
-
 #if (defined(sgi) && (!defined(VRPN_CLIENT_ONLY)))
+#  include <gl/device.h>
 //need these for the gl based setdblight calls
 #  include <gl/gl.h>
-#  include <gl/device.h>
 #endif
 
 

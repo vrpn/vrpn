@@ -29,8 +29,12 @@
 // Beware that keyboards are not mapped in locale setting (ie. regional keyboards)
 ///////////////////////////////////////////////////////////////////////////
 
-#include "vrpn_Analog.h"
-#include "vrpn_Button.h"
+#include "vrpn_Analog.h"                // for vrpn_Analog
+#include "vrpn_Button.h"                // for vrpn_Button_Filter
+#include "vrpn_Configure.h"             // for VRPN_API, etc
+#include "vrpn_Connection.h"            // for vrpn_CONNECTION_LOW_LATENCY, etc
+#include "vrpn_Shared.h"                // for timeval
+#include "vrpn_Types.h"                 // for vrpn_float64, vrpn_uint32
 
 #ifdef VRPN_USE_DEV_INPUT
 

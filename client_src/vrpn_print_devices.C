@@ -7,27 +7,25 @@
 	and perhaps for simple debugging.
 */
 
-#include <stdlib.h>
-#include <stdio.h>
+#include <stdio.h>                      // for printf, fprintf, NULL, etc
+#include <stdlib.h>                     // for exit, atoi
 #ifndef	_WIN32_WCE
-#include <signal.h>
+#include <signal.h>                     // for signal, SIGINT
 #endif
-#include <string.h>
-
-#ifndef _WIN32
-#ifndef	_WIN32_WCE
-#include <strings.h>
-#endif
-#endif
-
-#include <vrpn_Shared.h>
-#include <vrpn_Tracker.h>
-#include <vrpn_Button.h>
-#include <vrpn_Analog.h>
-#include <vrpn_Dial.h>
-#include <vrpn_Text.h>
+#include <string.h>                     // for strcmp, strncpy
+#include <vrpn_Analog.h>                // for vrpn_ANALOGCB, etc
+#include <vrpn_Button.h>                // for vrpn_Button_Remote, etc
+#include <vrpn_Dial.h>                  // for vrpn_Dial_Remote, etc
 #include <vrpn_FileConnection.h>  // For preload and accumulate settings
-#include <vector>
+#include <vrpn_Shared.h>                // for vrpn_SleepMsecs
+#include <vrpn_Text.h>                  // for vrpn_Text_Receiver, etc
+#include <vrpn_Tracker.h>               // for vrpn_TRACKERACCCB, etc
+#include <vector>                       // for vector
+
+#include "vrpn_BaseClass.h"             // for vrpn_System_TextPrinter, etc
+#include "vrpn_Configure.h"             // for VRPN_CALLBACK
+#include "vrpn_Types.h"                 // for vrpn_float64, vrpn_int32
+
 using namespace std;
 
 int done = 0;	        // Signals that the program should exit

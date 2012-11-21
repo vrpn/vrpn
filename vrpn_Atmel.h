@@ -57,12 +57,17 @@
 
 /***************************************************************************************************/
 /* system includes */
-#include <vector>
+#include <vector>                       // for vector
+#include <stddef.h>                     // for NULL
 
 /***************************************************************************************************/
 /* project includes */
-#include "vrpn_Analog.h"
-#include "vrpn_Analog_Output.h"
+#include "vrpn_Analog.h"                // for vrpn_Analog_Server
+#include "vrpn_Analog_Output.h"         // for vrpn_Analog_Output_Server
+#include "vrpn_Configure.h"             // for VRPN_API
+#include "vrpn_Shared.h"                // for timeval
+
+class VRPN_API vrpn_Connection;
 
 #ifdef VRPN_ATMEL_SERIAL_VRPN
 #  include "vrpn_Serial.h"

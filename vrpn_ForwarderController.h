@@ -1,6 +1,8 @@
 #ifndef VRPN_FORWARDER_CONTROLLER_H
 #define VRPN_FORWARDER_CONTROLLER_H
 
+#include "vrpn_Configure.h"             // for VRPN_API, VRPN_CALLBACK
+#include "vrpn_Types.h"                 // for vrpn_int32
 // vrpn_Forwarder_Controller
 //
 // Tom Hudson, September 1998
@@ -29,9 +31,9 @@
 // forwarded stream cannot open new forwarders for still other clients to
 // listen to.
 
-#include "vrpn_Connection.h"  // for vrpn_HANDLERPARAM
-
 class VRPN_API vrpn_ConnectionForwarder;
+class VRPN_API vrpn_Connection;
+struct vrpn_HANDLERPARAM;
 
 class VRPN_API vrpn_Forwarder_Brain {
 

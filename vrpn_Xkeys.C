@@ -1,5 +1,8 @@
 // vrpn_Xkeys.C: VRPN driver for P.I. Engineering's X-Keys devices
 
+#include <stdio.h>                      // for fprintf, stderr, NULL
+#include <string.h>                     // for memset
+
 #include "vrpn_Xkeys.h"
 
 #if defined(VRPN_USE_HID)

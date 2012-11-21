@@ -1,21 +1,12 @@
 #ifndef vrpn_POSER_TEK4662_H
 #define vrpn_POSER_TEK4662_H
+#include "vrpn_Configure.h"             // for VRPN_CALLBACK, VRPN_API
+#include "vrpn_Poser.h"                 // for vrpn_Poser
+#include "vrpn_Serial.h"                // for ::vrpn_SER_PARITY_NONE, etc
+#include "vrpn_Tracker.h"               // for vrpn_Tracker
 
-#ifndef _WIN32_WCE
-#include <time.h>
-#endif
-#include <math.h>
-#include <stdlib.h>
-#include <stdio.h>
-#ifndef _WIN32
-#ifndef _WIN32_WCE
-#include <sys/time.h>
-#endif
-#endif
-
-#include "vrpn_Poser.h"
-#include "vrpn_Tracker.h"
-#include "vrpn_Serial.h"
+class VRPN_API vrpn_Connection;
+struct vrpn_HANDLERPARAM;
 
 // This code is for a Poser server that uses a Tektronix 4662 plotter in the
 // RS-232 mode.  This is a 2D device.

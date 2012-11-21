@@ -28,10 +28,13 @@
 // alternate reset string that works on his.  This is sent if the
 // 'altreset' parameter is true in the constructor.
 
-#include <string.h>
+#include <stdio.h>                      // for fprintf, stderr
+#include <string.h>                     // for strlen, NULL, strcmp
+
+#include "vrpn_BaseClass.h"             // for ::vrpn_TEXT_ERROR
 #include "vrpn_Magellan.h"
-#include "vrpn_Shared.h"
 #include "vrpn_Serial.h"
+#include "vrpn_Shared.h"                // for timeval, vrpn_SleepMsecs, etc
 
 #undef VERBOSE
 

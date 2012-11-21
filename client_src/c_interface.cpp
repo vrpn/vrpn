@@ -7,10 +7,12 @@
  * a C interface.
  */
 
-#include <vrpn_Tracker.h>
-#include <vrpn_Button.h>
+#include <stddef.h>                     // for NULL
+#include <vrpn_Button.h>                // for vrpn_Button_Remote, etc
+#include <vrpn_Tracker.h>               // for vrpn_TRACKERCB, etc
 
 #include "c_interface.h"
+#include "vrpn_Configure.h"             // for VRPN_CALLBACK
 
 /* Helper function that receives the callback handler from the C++ Tracker
  * remote, repackages the values, and calls the user callback function. */

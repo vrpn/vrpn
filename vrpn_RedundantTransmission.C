@@ -1,6 +1,9 @@
+#include <stdio.h>                      // for fprintf, stderr, fclose, etc
+#include <string.h>                     // for NULL, memcpy
+
 #include "vrpn_RedundantTransmission.h"
 
-#include <string.h>  // for memcpy() on solaris
+struct timeval;
 
 vrpn_RedundantTransmission::vrpn_RedundantTransmission (vrpn_Connection * c) :
     d_connection (c),

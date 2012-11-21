@@ -46,19 +46,18 @@
 	DEALINGS IN THE SOFTWARE.
 */
 
-#include <iostream>
-#include <string>
+#include <iostream>                     // for operator<<, endl, etc
 
 using namespace std;
 
-#include <vrpn_Configure.h>
-
 #define FATAL_ERROR cerr << endl << "Press 'enter' to exit..." << endl;	cin.get(); return -1;
+
+#include <vrpn_Configure.h>
 
 #if defined(VRPN_USE_WIIUSE)
 #include "vrpn_Tracker.h"
-#include "vrpn_WiiMote.h"
 #include "vrpn_Tracker_WiimoteHead.h"
+#include "vrpn_WiiMote.h"
 
 #undef RP_PROFILING
 

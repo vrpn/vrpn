@@ -1,15 +1,10 @@
 #ifndef SPACE_H
 #define SPACE_H
 
-#include <time.h>
-#include <math.h>
-#include <stdlib.h>
-#include <stdio.h>
-#ifndef _WIN32
-#include <sys/time.h>
-#endif
+#include "vrpn_Configure.h"             // for VRPN_API
+#include "vrpn_Tracker.h"               // for vrpn_Tracker_Serial
 
-#include "vrpn_Tracker.h"
+class VRPN_API vrpn_Connection;
 
 class VRPN_API vrpn_Tracker_3Space: public vrpn_Tracker_Serial {
   

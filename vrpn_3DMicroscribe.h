@@ -1,9 +1,12 @@
 #ifndef VRPN_3DMICROSCRIBE_H
 #define VRPN_3DMICROSCRIBE_H
 
-#include "vrpn_Connection.h"
-#include "vrpn_Tracker.h"
-#include "vrpn_Button.h"
+#include "vrpn_Button.h"                // for vrpn_Button_Filter
+#include "vrpn_Configure.h"             // for VRPN_API
+#include "vrpn_Connection.h"            // for vrpn_CONNECTION_LOW_LATENCY, etc
+#include "vrpn_Shared.h"                // for timeval
+#include "vrpn_Tracker.h"               // for vrpn_Tracker
+#include "vrpn_Types.h"                 // for vrpn_uint32
 
 class VRPN_API vrpn_3DMicroscribe: public vrpn_Tracker
 			,public vrpn_Button_Filter

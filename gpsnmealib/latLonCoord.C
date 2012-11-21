@@ -4,16 +4,17 @@
 //
 
 
+#include "gpsnmealib/typedCoord.h"      // for TypedCoord
 #include "latLonCoord.h"
 
 #ifdef sgi
+#include <assert.h>
 #include <math.h>
 #include <stdio.h>
-#include <assert.h>
 #else
-#include <cmath>
-#include <cstdio>
-#include <cassert>
+#include <cassert>                      // for assert
+#include <cmath>                        // for fabs
+#include <cstdio>                       // for sprintf
 #endif
 
 // Format strings for the degree-to-string conversion functions.

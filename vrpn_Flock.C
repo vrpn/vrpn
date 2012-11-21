@@ -12,31 +12,16 @@
 //     specification commands with the RS232TOFBB command.
 //   (weberh 1/11/98)
 
-#include <time.h>
-#include <math.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <ctype.h>
+#include <stdio.h>                      // for fprintf, stderr, perror, etc
+#include <time.h>                       // for ctime, time, time_t
 
-#ifdef linux
-#include <termios.h>
-#endif
-
-#ifndef _WIN32
-#include <sys/ioctl.h>
-#include <sys/time.h>
-#include <unistd.h>
-#include <netinet/in.h>
-#endif
-
-#include "quat.h"
-#include "vrpn_Tracker.h"
+#include "quat.h"                       // for q_invert
 #include "vrpn_Flock.h"
-#include "vrpn_Serial.h"
+#include "vrpn_Serial.h"                // for vrpn_drain_output_buffer, etc
+#include "vrpn_Tracker.h"               // for vrpn_TRACKER_FAIL, etc
+#include "vrpn_Types.h"                 // for vrpn_float64
+
+class VRPN_API vrpn_Connection;
 
 // output a status msg every status_msg_secs
 #define STATUS_MSG

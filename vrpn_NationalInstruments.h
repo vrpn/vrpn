@@ -9,8 +9,12 @@
 #include <NIDAQmx.h>
 #endif
 
-#include "vrpn_Analog.h"
-#include "vrpn_Analog_Output.h"
+#include "vrpn_Analog.h"                // for vrpn_CHANNEL_MAX, etc
+#include "vrpn_Analog_Output.h"         // for vrpn_Analog_Output
+#include "vrpn_Configure.h"             // for VRPN_CALLBACK, VRPN_API
+#include "vrpn_Connection.h"
+#include "vrpn_Shared.h"                // for timeval
+#include "vrpn_Types.h"                 // for vrpn_int32, vrpn_uint32, etc
 
 #define vrpn_NI_INPUT_MODE_DIFFERENTIAL (0)
 #define vrpn_NI_INPUT_MODE_REF_SINGLE_ENDED (1)

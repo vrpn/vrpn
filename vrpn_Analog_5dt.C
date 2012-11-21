@@ -7,10 +7,13 @@
 //   g_ is the prefixe for global variables
 //   p_ is the prefixe for parameters
 
-#include <string.h>
+#include <stdio.h>                      // for sprintf, printf
+#include <string.h>                     // for NULL
+
 #include "vrpn_Analog_5dt.h"
-#include "vrpn_Shared.h"
+#include "vrpn_BaseClass.h"             // for ::vrpn_TEXT_ERROR, etc
 #include "vrpn_Serial.h"
+#include "vrpn_Shared.h"                // for timeval, vrpn_SleepMsecs, etc
 
 #undef VERBOSE
 

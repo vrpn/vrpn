@@ -1,29 +1,15 @@
-#include <time.h>
-#include <math.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <ctype.h>
+#include <ctype.h>                      // for isprint
+#include <math.h>                       // for sqrt
+#include <stdio.h>                      // for fprintf, stderr, perror, etc
 
-#ifdef linux
-#include <termios.h>
-#endif
-
-#ifndef _WIN32
-#include <sys/ioctl.h>
-#include <sys/time.h>
-#include <unistd.h>
-#include <netinet/in.h>
-#endif
-
-#include "vrpn_Tracker.h"
+#include "quat.h"                       // for Q_W, Q_X, Q_Y, Q_Z
 #include "vrpn_3Space.h"
-#include "vrpn_Serial.h"
+#include "vrpn_BaseClass.h"             // for ::vrpn_TEXT_ERROR, etc
 #include "vrpn_BufferUtils.h"
-#include "quat.h"
+#include "vrpn_Serial.h"                // for vrpn_write_characters, etc
+#include "vrpn_Shared.h"                // for vrpn_SleepMsecs, etc
+#include "vrpn_Tracker.h"               // for vrpn_TRACKER_FAIL, etc
+#include "vrpn_Types.h"                 // for vrpn_int16, vrpn_float64
 
 // This constant turns the tracker binary values in the range -32768 to
 // 32768 to meters.

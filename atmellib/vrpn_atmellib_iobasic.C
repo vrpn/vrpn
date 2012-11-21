@@ -17,19 +17,19 @@
 
 /* include system headers */
 
-#include <unistd.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <fcntl.h>
-#include <termios.h>
-#include <errno.h>
-#include <sys/time.h>
-#include <string.h>
+#include <errno.h>                      // for errno, ENXIO, error_t
+#include <stddef.h>                     // for size_t
+#include <stdio.h>                      // for fprintf, stderr, NULL, etc
+#include <string.h>                     // for strerror
+#include <sys/select.h>                 // for select, FD_SET, FD_ZERO, etc
+#include <termios.h>                    // for tcflush, TCIOFLUSH
+#include <unistd.h>                     // for read, write
 
 /* include i/f header */
 
-#include "vrpn_atmellib.h"
-#include "vrpn_atmellib_helper.h"
+#include "vrpn_Shared.h"                // for timeval
+#include "vrpn_atmellib.h"              // for command_t, handle_t, etc
+#include "vrpn_atmellib_errno.h"        // for ATMELLIB_ERROR_NORESPVAL, etc
 
 /***************************************************************************************************/
 /* read data from the tty */

@@ -1,7 +1,10 @@
 #ifndef VRPN_WANDA
 #define VRPN_WANDA
-#include "vrpn_Analog.h"
-#include "vrpn_Button.h"
+#include "vrpn_Analog.h"                // for vrpn_CHANNEL_MAX, etc
+#include "vrpn_Button.h"                // for vrpn_Button_Filter
+#include "vrpn_Configure.h"             // for VRPN_API
+
+class VRPN_API vrpn_Connection;
 
 // This is a driver for the Wanda device, which is an analog and
 // button device.  You can find out more at http://home.att.net/~glenmurray/

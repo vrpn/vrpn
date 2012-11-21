@@ -1,14 +1,10 @@
-#include "vrpn_FileController.h"
-#include "vrpn_Connection.h"
+#include <stddef.h>                     // for NULL
 
+#include "vrpn_Connection.h"            // for vrpn_Connection, etc
+#include "vrpn_FileController.h"
 // Include vrpn_Shared.h _first_ to avoid conflicts with sys/time.h 
 // and netinet/in.h and ...
-#include "vrpn_Shared.h"
-#if !( defined(_WIN32) && defined(VRPN_USE_WINSOCK_SOCKETS) )
-#include <netinet/in.h>
-#endif
-
-#include "vrpn_BufferUtils.h"
+#include "vrpn_Shared.h"                // for timeval, vrpn_gettimeofday, etc
 
 vrpn_File_Controller::vrpn_File_Controller (vrpn_Connection * c) :
     d_connection (c) {

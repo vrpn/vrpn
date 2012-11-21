@@ -1,7 +1,11 @@
 
-#include <string.h>
+#include <math.h>                       // for cos, sin
+#include <stdio.h>                      // for fprintf, stderr
+#include <string.h>                     // for strcmp, NULL
+
 #include "vrpn_3DMicroscribe.h"
-#include "vrpn_Shared.h"
+#include "vrpn_BaseClass.h"             // for ::vrpn_TEXT_ERROR
+#include "vrpn_Shared.h"                // for timeval, vrpn_gettimeofday
 
 #ifdef VRPN_USE_MICROSCRIBE
 #include "armdll32.h"
@@ -13,6 +17,7 @@
 
 #if defined(VERBOSE) 
 #include <ctype.h> // for isprint()
+
 #define DEBUG 1
 #endif
 

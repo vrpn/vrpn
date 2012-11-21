@@ -1,18 +1,19 @@
 #ifndef INCLUDED_BUTTONFLY
 #define INCLUDED_BUTTONFLY
 
-#include <time.h>
-#include <math.h>
-#include <stdlib.h>
-#include <stdio.h>
-#ifndef _WIN32
-#include <sys/time.h>
-#endif
+#include <quat.h>                       // for q_matrix_type
+#include <stdio.h>                      // for NULL
+#include <string.h>                     // for strcpy, memcpy, strncpy
 
-#include "vrpn_Tracker.h"
-#include "vrpn_Button.h"
-#include "vrpn_Analog.h"
-#include <quat.h>
+#include "vrpn_Analog.h"                // for vrpn_ANALOGCB, etc
+#include "vrpn_Button.h"                // for vrpn_BUTTONCB, etc
+#include "vrpn_Configure.h"             // for VRPN_API, VRPN_CALLBACK
+#include "vrpn_Shared.h"                // for timeval
+#include "vrpn_Tracker.h"               // for vrpn_Tracker
+#include "vrpn_Types.h"                 // for VRPN_FALSE
+
+class VRPN_API vrpn_Connection;
+struct vrpn_HANDLERPARAM;
 
 const int vrpn_BUTTONFLY_MAXAXES = 200;
 

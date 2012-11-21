@@ -1,7 +1,9 @@
 //XXX Send velocity and rotational velocity reports.
 
-#include <string.h>
-#include <math.h>
+#include <math.h>                       // for pow, M_PI, fabs
+
+#include "quat.h"                       // for q_matrix_copy, etc
+#include "vrpn_Connection.h"            // for vrpn_Connection, etc
 #include "vrpn_Tracker_ButtonFly.h"
 
 #undef	VERBOSE

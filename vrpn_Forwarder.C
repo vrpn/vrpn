@@ -1,3 +1,5 @@
+#include <stddef.h>                     // for NULL
+
 #include "vrpn_Forwarder.h"
 
 

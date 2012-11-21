@@ -1,8 +1,11 @@
 // VRPN Imager Server example program.
 
-#include <stdio.h>
+#include <stdio.h>                      // for fprintf, NULL, stderr
+
 #include "vrpn_Connection.h"
-#include "vrpn_Imager.h"
+#include "vrpn_Imager.h"                // for vrpn_Imager_Server, etc
+#include "vrpn_Shared.h"                // for vrpn_SleepMsecs
+#include "vrpn_Types.h"                 // for vrpn_uint8
 
 static	vrpn_Connection	    *g_connection = NULL;
 static	vrpn_Imager_Server  *g_is = NULL;

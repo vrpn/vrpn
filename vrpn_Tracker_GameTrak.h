@@ -8,11 +8,15 @@
 #ifndef VRPN_TRACKER_GAMETRAK_H_
 #define VRPN_TRACKER_GAMETRAK_H_
 
-#include <string>
+#include <string>                       // for string
 
-#include "vrpn_Configure.h"
-#include "vrpn_Tracker.h"
-#include "vrpn_Analog.h"
+#include "vrpn_Analog.h"                // for vrpn_ANALOGCB, etc
+#include "vrpn_Configure.h"             // for VRPN_API, VRPN_CALLBACK
+#include "vrpn_Shared.h"                // for timeval
+#include "vrpn_Tracker.h"               // for vrpn_Tracker
+#include "vrpn_Types.h"                 // for vrpn_float64
+
+class VRPN_API vrpn_Connection;
 
 class VRPN_API vrpn_Tracker_GameTrak: public vrpn_Tracker
 {

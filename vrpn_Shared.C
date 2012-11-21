@@ -1,11 +1,8 @@
-#include "vrpn_Shared.h"
-#include "vrpn_BufferUtils.h"
+#include <math.h>                       // for floor, fmod
+#include <stddef.h>                     // for size_t
 
-#include <stdio.h>
-#include <math.h>
-#ifndef	_WIN32_WCE
-#  include <sys/types.h>
-#endif
+#include "vrpn_BufferUtils.h"           // for vrpn_unbuffer, vrpn_buffer
+#include "vrpn_Shared.h"
 
 // Don't tell us about strcpy being dangerous.
 #ifdef	_WIN32
@@ -16,10 +13,9 @@
 #include <unistd.h>
 #endif
 
-#include <string.h>  // for memcpy()
-
 #if !( defined(_WIN32) && defined(VRPN_USE_WINSOCK_SOCKETS) )
-#include <netinet/in.h>
+#include <sys/select.h>                 // for select
+#include <netinet/in.h>                 // for htonl, htons
 #endif
 
 //#include "vrpn_cygwin_hack.h"
@@ -1130,11 +1126,11 @@ static int __iTrash = vrpn_gettimeofday(&__tv, (struct timezone *)NULL);
 #endif // VRPN_UNSAFE_WINDOWS_CLOCK
 
 
-#include <stdio.h>
-#include <string.h>
+#include <stdio.h>                      // for fprintf, stderr, perror, etc
+#include <string.h>                     // for memcpy, strlen, strcpy, etc
 #ifndef _WIN32
-#include <errno.h>
-#include <signal.h>
+#include <errno.h>                      // for EAGAIN, errno
+#include <signal.h>                     // for pthread_kill, SIGKILL
 #endif
 
 #define ALL_ASSERT(exp, msg) if(!(exp)){ fprintf(stderr, "\nAssertion failed! \n %s (%s, %s)\n", msg, __FILE__, __LINE__); }

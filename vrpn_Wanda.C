@@ -1,11 +1,11 @@
-#include "vrpn_Wanda.h"
+#include <stdio.h>                      // for fprintf, stderr, NULL
+#include <stdlib.h>                     // for getenv
+
+#include "vrpn_Connection.h"            // for vrpn_CONNECTION_LOW_LATENCY, etc
 #include "vrpn_Serial.h"
-#include <stdio.h>
-#include <stdlib.h>
-#ifndef _WIN32
-#include <unistd.h>
-#endif
-#include <string.h>
+#include "vrpn_Shared.h"                // for timeval, vrpn_gettimeofday
+#include "vrpn_Types.h"                 // for vrpn_float64, vrpn_int32
+#include "vrpn_Wanda.h"
 
 static int dbug_wanda = getenv("DBUG_WANDA") ? 1 : 0;
 
@@ -51,12 +51,6 @@ vrpn_Wanda::report_new_button_info()
 	}
 	vrpn_Button::report_changes(); // report any button event;
 }
-
-
-// XXX - hack
-#ifndef	_WIN32
-#include <sys/time.h>
-#endif
 inline double the_time() {
     struct timeval ts;
     vrpn_gettimeofday(&ts, NULL);

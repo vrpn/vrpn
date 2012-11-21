@@ -11,19 +11,17 @@
 #include "vrpn_DevInput.h"
 
 #ifdef VRPN_USE_DEV_INPUT
-
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <linux/input.h>
-#include <string.h>
-#include <errno.h>
-#include <sys/ioctl.h>
-#include <unistd.h>
-
-#include <iostream>
-#include <map>
-#include <string>
+#include <sys/select.h>                 // for select, FD_ISSET, FD_SET, etc
+#include <vrpn_Shared.h>                // for vrpn_gettimeofday
+#include <unistd.h>                     // for close, read
+#include <utility>                      // for pair
+#include <fcntl.h>                      // for open, O_RDONLY
+#include <linux/input.h>                // for input_event, ABS_MAX, etc
+#include <errno.h>                      // for errno, EACCES, ENOENT
+#include <string.h>                     // for strcmp, NULL, strerror
+#include <sys/ioctl.h>                  // for ioctl
+#include <iostream>                     // for operator<<, ostringstream, etc
+#include <map>                          // for map, _Rb_tree_iterator, etc
 #include <sstream>
 
 static const std::string &getDeviceNodes(const std::string &device_name) {
@@ -187,7 +185,7 @@ int vrpn_DevInput::get_report()
     int channel_number = event.code;
     if ((channel_number >= 0) && (channel_number < vrpn_Analog::num_channel)) {
       for (unsigned int i = 0 ; i < vrpn_Analog::num_channel ; i++) {
-        vrpn_Analog::last[i] = 0;
+	vrpn_Analog::last[i] = 0;
       }
       vrpn_Analog::channel[channel_number] = (vrpn_float64)event.value;
     }

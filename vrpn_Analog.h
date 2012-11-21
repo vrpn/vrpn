@@ -1,11 +1,16 @@
 #ifndef VRPN_ANALOG_H
 #define VRPN_ANALOG_H
 
-#include "vrpn_Connection.h"
-#include "vrpn_BaseClass.h"
+#include <stddef.h>                     // for NULL
+
+#include "vrpn_BaseClass.h"             // for vrpn_Callback_List, etc
+#include "vrpn_Configure.h"             // for VRPN_API, VRPN_CALLBACK
+#include "vrpn_Connection.h"            // for vrpn_CONNECTION_LOW_LATENCY, etc
+#include "vrpn_Shared.h"                // for timeval
+#include "vrpn_Types.h"                 // for vrpn_int32, vrpn_float64, etc
 
 #ifndef	VRPN_CLIENT_ONLY
-#include "vrpn_Serial.h"
+#include "vrpn_Serial.h"                // for ::vrpn_SER_PARITY_NONE, etc
 #endif
 
 #define vrpn_CHANNEL_MAX 128

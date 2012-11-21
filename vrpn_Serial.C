@@ -1,22 +1,15 @@
-#include <time.h>
-#include <math.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <ctype.h>
+#include <fcntl.h>                      // for open, O_NDELAY, O_NOCTTY, etc
+#include <stdio.h>                      // for perror, fprintf, NULL, etc
+#include <string.h>                     // for memcpy
 
 #ifndef _WIN32
-#include <termios.h>
-#include <errno.h>
-#include <sys/ioctl.h>
+#include <errno.h>                      // for EINTR, errno
+#include <sys/ioctl.h>                  // for ioctl, TIOCMGET, TIOCMSET, etc
+#include <termios.h>                    // for termios, tcflush, CSIZE, etc
 #endif
 
 #if !defined(_WIN32) || defined(__GNUC__) && !defined(__MINGW32__)
-#include <unistd.h>
-#include <netinet/in.h>
+#include <unistd.h>                     // for close, read, write
 #endif
 
 #ifdef	_AIX
@@ -33,8 +26,8 @@
 #endif
 #endif
 
-#include "vrpn_Shared.h"
 #include "vrpn_Serial.h"
+#include "vrpn_Shared.h"                // for timeval, vrpn_gettimeofday
 
 //#define VERBOSE
 

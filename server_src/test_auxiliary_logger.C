@@ -1,12 +1,10 @@
-#include <stdlib.h>
-#include <stdio.h>
-#include <signal.h>
-#include <string.h>
-#include "vrpn_Auxiliary_Logger.h"
+#include <stdio.h>                      // for fprintf, NULL, stderr, etc
+#include <stdlib.h>                     // for exit
+#include <string.h>                     // for strcmp, strncpy
 
-#ifndef _WIN32
-#include <strings.h>
-#endif
+#include "vrpn_Auxiliary_Logger.h"
+#include "vrpn_Configure.h"             // for VRPN_CALLBACK
+#include "vrpn_Shared.h"                // for vrpn_gettimeofday, timeval, etc
 
 vrpn_Auxiliary_Logger_Remote *g_logger;
 

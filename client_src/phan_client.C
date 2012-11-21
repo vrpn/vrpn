@@ -1,10 +1,13 @@
 // phan_client.C - simplest example: generates a flat horizontal plane
 
-#include <stdlib.h>
-#include <stdio.h>
-#include "vrpn_ForceDevice.h"
-#include <vrpn_Tracker.h>
-#include <vrpn_Button.h>
+#include <stdio.h>                      // for printf, NULL
+#include <vrpn_Button.h>                // for vrpn_BUTTONCB, etc
+#include <vrpn_Tracker.h>               // for vrpn_TRACKERCB, etc
+
+#include "vrpn_Configure.h"             // for VRPN_CALLBACK
+#include "vrpn_Connection.h"            // for vrpn_Connection
+#include "vrpn_ForceDevice.h"           // for vrpn_ForceDevice_Remote, etc
+#include "vrpn_Types.h"                 // for vrpn_float64
 
 #define PHANTOM_SERVER "Tracker0@localhost"
 

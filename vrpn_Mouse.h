@@ -46,8 +46,12 @@
 // 3) My VRPN server machine is headless, and doesn't even have an X server.
 ///////////////////////////////////////////////////////////////////////////
 
-#include "vrpn_Analog.h"
-#include "vrpn_Button.h"
+#include "vrpn_Analog.h"                // for vrpn_Analog
+#include "vrpn_Button.h"                // for vrpn_Button_Filter
+#include "vrpn_Configure.h"             // for VRPN_API
+#include "vrpn_Connection.h"            // for vrpn_CONNECTION_LOW_LATENCY, etc
+#include "vrpn_Shared.h"                // for timeval
+#include "vrpn_Types.h"                 // for vrpn_uint32
 
 class VRPN_API vrpn_Mouse :
 	public vrpn_Analog,

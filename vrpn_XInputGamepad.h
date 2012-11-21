@@ -5,10 +5,10 @@
 
 #if defined(_WIN32) && defined(VRPN_USE_DIRECTINPUT) && defined(VRPN_USE_WINDOWS_XINPUT)
 
-#include "vrpn_Connection.h"
 #include "vrpn_Analog.h"
-#include "vrpn_Button.h"
 #include "vrpn_Analog_Output.h"
+#include "vrpn_Button.h"
+#include "vrpn_Connection.h"
 
 // This implements an XInput gamepad (read: Xbox 360 controller), which has
 // analog outputs and button outputs but also enables the user to set a

@@ -1,18 +1,21 @@
 #ifndef VRPN_DIRECTXFFJOYSTICK_H
 #define VRPN_DIRECTXFFJOYSTICK_H
 
+#include "vrpn_Configure.h"
+
+#if defined(_WIN32) && defined(VRPN_USE_DIRECTINPUT)
+#ifndef DIRECTINPUT_VERSION
+#define	DIRECTINPUT_VERSION 0x0800
+#endif
+
 #include "vrpn_Connection.h"
 #include "vrpn_Analog.h"
 #include "vrpn_Button.h"
 #include "vrpn_ForceDevice.h"
 #include "vrpn_ForceDeviceServer.h"
 
-#if defined(_WIN32) && defined(VRPN_USE_DIRECTINPUT)
-#ifndef DIRECTINPUT_VERSION
-#define	DIRECTINPUT_VERSION 0x0800
-#endif
-#include <dinput.h>
 #include <basetsd.h>
+#include <dinput.h>
 
 class VRPN_API vrpn_DirectXFFJoystick: public vrpn_Analog
 			     ,public vrpn_Button_Filter

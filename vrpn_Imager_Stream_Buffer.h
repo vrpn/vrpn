@@ -1,7 +1,13 @@
 #ifndef	VRPN_IMAGER_STREAM_BUFFER_H
 #define	VRPN_IMAGER_STREAM_BUFFER_H
+#include <string.h>                     // for NULL, strcpy, strlen
+
 #include  "vrpn_Auxiliary_Logger.h"
+#include "vrpn_Configure.h"             // for VRPN_CALLBACK, VRPN_API
+#include "vrpn_Connection.h"            // for vrpn_Connection (ptr only), etc
 #include  "vrpn_Imager.h"
+#include "vrpn_Shared.h"                // for vrpn_Semaphore, etc
+#include "vrpn_Types.h"                 // for vrpn_int32, vrpn_uint16
 
 // This is a fairly complicated class that implements a multi-threaded
 // full-rate logger and partial-rate forwarder for a vrpn_Imager_Server

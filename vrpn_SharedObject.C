@@ -1,8 +1,11 @@
+#include <stdio.h>                      // for fprintf, stderr, sprintf
+#include <string.h>                     // for NULL, strcpy, strlen, etc
+
+#include "vrpn_Connection.h"            // for vrpn_Connection, etc
+#include "vrpn_LamportClock.h"          // for vrpn_LamportTimestamp, etc
 #include "vrpn_SharedObject.h"
 
-#include "vrpn_LamportClock.h"
-
-#include <string.h>
+struct timeval;
 
 // We can't put d_lastUpdate in the message header timestamps;  it must
 // go in the body.

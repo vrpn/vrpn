@@ -8,23 +8,29 @@
 # Barth (haba@pdc.kth.se).
 */
 
+
 #include "vrpn_Joylin.h"
-
-#include <fcntl.h>
-
-#include <stdio.h>
-#include <stdlib.h>
-#ifndef _WIN32
-#include <sys/ioctl.h>
-#include <unistd.h>
-#endif
-#include <string.h>
-
-#define NAME_LENGTH 128
 
 #ifdef VRPN_USE_JOYLIN
 
-#include <linux/joystick.h>
+
+#define NAME_LENGTH 128
+
+#include <fcntl.h>                      // for open, O_RDONLY
+#include <stdio.h>                      // for NULL, fprintf, perror, etc
+#include <stdlib.h>                     // for exit
+#include <sys/select.h>                 // for select, FD_ISSET, FD_SET, etc
+#include "vrpn_Shared.h"                // for timeval, vrpn_gettimeofday
+#include "vrpn_Types.h"                 // for vrpn_float64
+
+struct timeval;
+#include <sys/ioctl.h>                  // for ioctl
+#include <unistd.h>                     // for read
+#include <string.h>                     // for strncpy
+
+#include "vrpn_BaseClass.h"             // for ::vrpn_TEXT_ERROR
+#include "vrpn_Connection.h"            // for vrpn_Connection
+#include <linux/joystick.h>             // for js_event, JSIOCGAXES, etc
 
 vrpn_Joylin::vrpn_Joylin(char * name, 
 			 vrpn_Connection * c,

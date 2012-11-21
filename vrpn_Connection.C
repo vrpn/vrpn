@@ -5,29 +5,24 @@
 #include <mpi.h>
 #endif
 
-#include <stdlib.h>
-#include <memory.h>
-#include <math.h>
 #ifndef	_WIN32_WCE
-#include <errno.h>
+#include <errno.h>                      // for errno, EINTR
 #endif
-#include <string.h>  // for strerror()
-#include <stdio.h>
+#include <stddef.h>                     // for size_t
+#include <stdio.h>                      // for fprintf, stderr, NULL, etc
+#include <string.h>                     // for strlen, strcpy, memcpy, etc
 #ifndef _WIN32_WCE
-#include <sys/types.h>
-#include <signal.h>
-#include <sys/stat.h>
-#include <fcntl.h>
+#include <signal.h>                     // for kill, signal, SIGKILL, etc
 #ifdef sgi
 #include <ctype.h>
 #else
-#include <cctype>
+#include <cctype>                       // for isalnum
 #endif
 #endif
 
 // malloc.h is deprecated;  all the functionality *should*
 // be in stdlib.h
-#include <stdlib.h>
+#include <stdlib.h>                     // for exit, atoi, getenv, system
 
 #include "vrpn_Connection.h"
 
@@ -36,25 +31,19 @@
 #define vrpn_closeSocket closesocket
 #else
 #define vrpn_closeSocket close
-#include <unistd.h>
-#ifndef _WIN32_WCE
-#include <sys/types.h>
-#endif
-  // gethostname() and getdtablesize() should be here on SGIs,
-  // but apparently aren't under g++
-#include <strings.h>
-#include <sys/time.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>  // for inet_addr()?
+#include <arpa/inet.h>                  // for inet_addr
+#include <netinet/in.h>                 // for sockaddr_in, ntohl, in_addr, etc
+#include <sys/socket.h>                 // for getsockname, send, AF_INET, etc
+#include <unistd.h>                     // for close, read, fork, etc
 #ifdef _AIX
 #define _USE_IRS
 #endif
-#include <netdb.h>
+#include <netdb.h>                      // for hostent, gethostbyname, etc
 #endif
 
 #ifdef	sparc
-#include <arpa/inet.h>
+#include <arpa/inet.h>                  // for inet_addr
+
 #define INADDR_NONE -1
 #endif
 
@@ -68,10 +57,9 @@
 #endif
 
 #ifndef VRPN_USE_WINSOCK_SOCKETS
-#include <sys/wait.h>
-#include <sys/resource.h>  // for wait3() on sparc_solaris
+#include <sys/wait.h>                   // for wait, wait3, WNOHANG
 #ifndef __CYGWIN__
-#include <netinet/tcp.h>
+#include <netinet/tcp.h>                // for TCP_NODELAY
 #endif /* __CYGWIN__ */
 #endif /* VRPN_USE_WINSOCK_SOCKETS */
 
@@ -108,9 +96,10 @@ int gethostname (char *, int);
 }
 #endif
 
-#include "vrpn_Log.h"
+#include "vrpn_FileConnection.h"        // for vrpn_File_Connection
+#include "vrpn_Log.h"                   // for vrpn_Log
 
-#include "vrpn_FileConnection.h"  // for vrpn_get_connection_by_name
+struct timeval;
 
 //#define VERBOSE
 //#define VERBOSE2
@@ -5728,10 +5717,6 @@ int vrpn_Connection_IP::mainloop (const struct timeval * pTimeout) {
   vrpn_Endpoint * endpoint;
   timeval timeout;
   int endpointIndex;
-
-#ifdef	VERBOSE2
-  //printf("vrpn_Connection_IP::mainloop() called (status %d)\n",connectionStatus);
-#endif
   
   if (d_updateEndpoint) {
     updateEndpoints();

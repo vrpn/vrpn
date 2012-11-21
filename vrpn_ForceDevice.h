@@ -1,8 +1,15 @@
 #ifndef FORCEDEVICE_H
 #define  FORCEDEVICE_H
 
-#include "vrpn_Tracker.h"
-#include "vrpn_Button.h"
+#include <stddef.h>                     // for NULL
+
+#include "vrpn_BaseClass.h"             // for vrpn_Callback_List, etc
+#include "vrpn_Configure.h"             // for VRPN_CALLBACK, VRPN_API
+#include "vrpn_Shared.h"                // for timeval
+#include "vrpn_Types.h"                 // for vrpn_int32, vrpn_float32, etc
+
+class VRPN_API vrpn_Connection;
+struct vrpn_HANDLERPARAM;
 
 #define MAXPLANE 4   //maximum number of planes in the scene 
 

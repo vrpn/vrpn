@@ -7,15 +7,14 @@
 #ifndef VRPN_TRACKER_LIBERTYHS_H
 #define VRPN_TRACKER_LIBERTYHS_H
 
-#include <time.h>
-#include <math.h>
-#include <stdlib.h>
-#include <stdio.h>
-#ifndef _WIN32
-#include <sys/time.h>
-#endif
+#include <stdio.h>                      // for NULL
 
-#include "vrpn_Tracker.h"
+#include "vrpn_Configure.h"             // for VRPN_API, etc
+#include "vrpn_Shared.h"                // for timeval
+#include "vrpn_Tracker.h"               // for vrpn_Tracker_USB
+#include "vrpn_Types.h"                 // for vrpn_uint16, vrpn_uint8, etc
+
+class VRPN_API vrpn_Connection;
 
 #if defined(VRPN_USE_LIBUSB_1_0)
 

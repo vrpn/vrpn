@@ -12,8 +12,16 @@
 /*                                                                                                */
 /***************************************************************************************************/
 
+
+#include <vrpn_Shared.h>                // for vrpn_gettimeofday
+#include <vector>                       // for vector
+
+#include "vrpn_Analog.h"                // for vrpn_Analog
+#include "vrpn_Connection.h"            // for vrpn_Connection
+#include "vrpn_Event.h"                 // for input_event
 // includes, file
 #include "vrpn_Event_Mouse.h"
+#include "vrpn_Types.h"                 // for vrpn_float64
 
 // includes, system
 

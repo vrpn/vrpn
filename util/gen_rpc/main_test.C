@@ -1,9 +1,11 @@
-#include <vrpn_Connection.h>
-#include <vrpn_Shared.h>  // for vrpn_unbuffer()
+#include <stdio.h>                      // for NULL, printf, sprintf
+#include <vrpn_Connection.h>            // for vrpn_Connection, etc
+#include <vrpn_Shared.h>                // for vrpn_gettimeofday
 
-#include <stdio.h>
-
-#include "rpc_Test_Remote.h"
+#include "rpc_Test.h"                   // for rpc_Test, NAME_LENGTH
+#include "rpc_Test_Remote.h"            // for rpc_Test_Remote
+#include "vrpn_Shared.h"                // for timeval
+#include "vrpn_Types.h"                 // for vrpn_int32, vrpn_float32
 
 int main (int argc, char ** argv) {
 

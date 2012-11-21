@@ -38,7 +38,11 @@
 #ifndef VRPN_BUTTON_NI_DIO24_H
 #define VRPN_BUTTON_NI_DIO24_H
 
-#include "vrpn_Button.h"
+#include "vrpn_Button.h"                // for vrpn_Button_Filter
+#include "vrpn_Configure.h"             // for VRPN_API
+#include "vrpn_Types.h"                 // for vrpn_int32
+
+class VRPN_API vrpn_Connection;
 #ifdef VRPN_USE_NATIONAL_INSTRUMENTS_MX
 #include <NIDAQmx.h>
 #endif

@@ -3,13 +3,14 @@
 // Written by Jason Bevins in 1998.  File is in the public domain.
 //
 
+#include "gpsnmealib/typedCoord.h"      // for TypedCoord
 #include "utmCoord.h"
 #ifdef sgi
-#include <math.h>
 #include <assert.h>
+#include <math.h>
 #else
-#include <cmath>
-#include <cassert>
+#include <cassert>                      // for assert
+#include <cmath>                        // for sin, cos, sqrt, M_PI
 #endif
 
 #ifndef M_PI

@@ -56,9 +56,12 @@ Things to do in the server object (server device) files to convert from 4.XX
 #ifndef VRPN_BASECLASS
 #define VRPN_BASECLASS
 
-#include "vrpn_Shared.h"
+#include <stdio.h>                      // for NULL, fprintf, stderr, FILE
 
+#include "vrpn_Configure.h"             // for VRPN_API, VRPN_CALLBACK
 #include "vrpn_Connection.h"
+#include "vrpn_Shared.h"                // for timeval, vrpn_gettimeofday
+#include "vrpn_Types.h"                 // for vrpn_int32, vrpn_uint32
 
 const int vrpn_MAX_BCADRS =	100;
 ///< Internal value for number of BaseClass addresses

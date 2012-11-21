@@ -12,10 +12,13 @@
 // the same time as a tracking device without slowing the tracker
 // down.
 
-#include <string.h>
+#include <stdio.h>                      // for fprintf, stderr, perror, etc
+#include <string.h>                     // for NULL, strlen, strncmp
+
+#include "vrpn_BaseClass.h"             // for ::vrpn_TEXT_ERROR
 #include "vrpn_CerealBox.h"
-#include "vrpn_Shared.h"
 #include "vrpn_Serial.h"
+#include "vrpn_Shared.h"                // for timeval, vrpn_gettimeofday
 
 #undef VERBOSE
 

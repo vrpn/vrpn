@@ -1,9 +1,15 @@
 #ifndef VRPN_3DCONNEXION_H
 #define VRPN_3DCONNEXION_H
 
-#include "vrpn_HumanInterface.h"
-#include "vrpn_Button.h"
-#include "vrpn_Analog.h"
+#include <stddef.h>                     // for size_t
+
+#include "vrpn_Analog.h"                // for vrpn_Analog
+#include "vrpn_Button.h"                // for vrpn_Button_Filter
+#include "vrpn_Configure.h"             // for VRPN_API, VRPN_USE_HID
+#include "vrpn_Connection.h"            // for vrpn_Connection (ptr only), etc
+#include "vrpn_HumanInterface.h"        // for vrpn_HidAcceptor (ptr only), etc
+#include "vrpn_Shared.h"                // for timeval
+#include "vrpn_Types.h"                 // for vrpn_uint32, vrpn_uint8
 
 // Device drivers for the 3DConnexion SpaceNavigator and SpaceTraveler
 // SpaceExplorer, SpaceMouse, Spaceball5000

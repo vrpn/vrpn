@@ -10,6 +10,9 @@
 
 #include "quat.h"
 
+#include <math.h>                       // for sqrt, sin, cos, acos, asin, etc
+#include <stdio.h>                      // for printf
+
 /* define local X, Y, Z, W to override any external definition;  don't use
  *  Q_X, etc, because it makes this code a LOT harder to read;  don't use 
  *  pphigs definition of X-W since it could theoretically change.

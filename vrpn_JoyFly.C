@@ -1,7 +1,12 @@
 /// This object has been superceded by the vrpn_Tracker_AnalogFly object.
 
-#include <string.h>
+#include <math.h>                       // for fabs
+#include <string.h>                     // for memcpy
+
+#include "quat.h"                       // for q_matrix_copy, etc
+#include "vrpn_Connection.h"            // for vrpn_Connection, etc
 #include "vrpn_JoyFly.h"
+#include "vrpn_Types.h"                 // for vrpn_float64, vrpn_int32
 
 vrpn_Tracker_JoyFly::vrpn_Tracker_JoyFly
         (const char * name, vrpn_Connection * c,

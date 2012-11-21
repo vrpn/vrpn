@@ -14,8 +14,12 @@
 // See http://www.haydonkerk.com/LinkClick.aspx?fileticket=LEcwYeRmKVg%3d&tabid=331
 // for the software manual for this device.
 
-#include "vrpn_Analog.h"
-#include "vrpn_Analog_Output.h"
+#include "vrpn_Analog.h"                // for vrpn_Serial_Analog
+#include "vrpn_Analog_Output.h"         // for vrpn_Analog_Output
+#include "vrpn_Configure.h"             // for VRPN_CALLBACK, VRPN_API
+#include "vrpn_Connection.h"            // for vrpn_CONNECTION_RELIABLE, etc
+#include "vrpn_Shared.h"                // for timeval
+#include "vrpn_Types.h"                 // for vrpn_float64, vrpn_uint32
 
 // XXX Add two buttons to the device, to report limit-switch state.
 

@@ -1,6 +1,6 @@
-#include  <math.h>
-#include  <stdio.h>
-#include  <string.h>
+#include <stdio.h>                      // for fprintf, stderr, printf
+#include <string.h>                     // for memcpy, NULL, strncpy
+
 #include  "vrpn_Imager.h"
 
 vrpn_Imager::vrpn_Imager(const char *name, vrpn_Connection *c) :

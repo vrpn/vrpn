@@ -1,7 +1,9 @@
 #ifndef VRPN_FORWARDER_H
 #define VRPN_FORWARDER_H
 
-#include "vrpn_Connection.h"  // for vrpn_HANDLERPARAM
+#include "vrpn_Configure.h"             // for VRPN_API, VRPN_CALLBACK
+#include "vrpn_Connection.h"            // for vrpn_Connection (ptr only), etc
+#include "vrpn_Types.h"                 // for vrpn_int32, vrpn_uint32
 
 
 // vrpn_Forwarder

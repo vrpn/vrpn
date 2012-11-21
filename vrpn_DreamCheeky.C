@@ -1,6 +1,10 @@
 // vrpn_dreamcheeky.C: VRPN driver for Dream Cheeky USB roll-up drum kit
 
+#include <string.h>                     // for memset
+
 #include "vrpn_DreamCheeky.h"
+
+class VRPN_API vrpn_Connection;
 
 #if defined(VRPN_USE_HID)
 

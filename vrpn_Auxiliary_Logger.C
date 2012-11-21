@@ -1,5 +1,6 @@
-#include  <math.h>
-#include  <stdio.h>
+#include <stddef.h>                     // for size_t
+#include <stdio.h>                      // for fprintf, stderr
+
 #include  "vrpn_Auxiliary_Logger.h"
 
 vrpn_Auxiliary_Logger::vrpn_Auxiliary_Logger(const char * name, vrpn_Connection * c) :

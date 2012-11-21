@@ -1,27 +1,13 @@
-#ifndef _WIN32_WCE
-#include <time.h>
-#endif
-#include <math.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#ifndef	_WIN32_WCE
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#endif
-#include <ctype.h>
+#include <math.h>                       // for floor
+#include <stdio.h>                      // for fprintf, stderr, NULL
+#include <string.h>                     // for strlen, memcpy
 
-#ifdef linux
-#include <termios.h>
-#endif
-
+#include "vrpn_BaseClass.h"             // for ::vrpn_TEXT_ERROR
+#include "vrpn_Connection.h"            // for vrpn_HANDLERPARAM, etc
 // Include vrpn_Shared.h _first_ to avoid conflicts with sys/time.h 
 // and unistd.h
-#include "vrpn_Shared.h"
-#ifndef _WIN32
-#include <netinet/in.h>
-#endif
+#include "vrpn_Shared.h"                // for timeval, vrpn_unbuffer, etc
+#include "vrpn_Types.h"                 // for vrpn_float64, vrpn_uint16
 
 #ifdef	_WIN32
 #ifndef _WIN32_WCE

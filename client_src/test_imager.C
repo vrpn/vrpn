@@ -1,8 +1,11 @@
-#include  <math.h>
-#include  <stdlib.h>
-#include  <stdio.h>
+#include <math.h>                       // for pow
+#include <stdio.h>                      // for fprintf, stderr, NULL, etc
+#include <stdlib.h>                     // for rand
+
+#include "vrpn_Configure.h"             // for VRPN_CALLBACK
 #include  "vrpn_Connection.h"
-#include  "vrpn_Imager.h"
+#include "vrpn_Imager.h"                // for vrpn_IMAGERREGIONCB, etc
+#include "vrpn_Types.h"                 // for vrpn_uint16
 
 //-----------------------------------------------------------------
 // This section contains a copy of an image that is shared between

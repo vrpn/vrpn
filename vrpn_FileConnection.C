@@ -5,25 +5,20 @@
 #include "vrpn_FileConnection.h"
 
 #ifndef _WIN32_WCE
-#include <fcntl.h>
+#include <fcntl.h>                      // for SEEK_SET
 #endif
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>	// For memcpy()
-#ifndef _WIN32_WCE
-#include <sys/types.h>
-#include <sys/stat.h>
-#endif
-#include <limits.h>
+#include <limits.h>                     // for LONG_MAX, LONG_MIN
+#include <stdio.h>                      // for NULL, fprintf, stderr, etc
+#include <string.h>                     // for memcpy
 
 // Include vrpn_Shared.h _first_ to avoid conflicts with sys/time.h 
 // and netinet/in.h and ...
-#include "vrpn_Shared.h"
+#include "vrpn_Shared.h"                // for timeval, etc
 #if !( defined(_WIN32) && defined(VRPN_USE_WINSOCK_SOCKETS) )
-#include <netinet/in.h>
+#include <netinet/in.h>                 // for ntohl
 #endif
 
-#include "vrpn_BufferUtils.h"
+#include "vrpn_BufferUtils.h"           // for vrpn_unbuffer
 
 // Global variable used to indicate whether File Connections should
 // pre-load all of their records into memory when opened.  This is the
@@ -58,7 +53,9 @@ bool vrpn_FILE_CONNECTIONS_SHOULD_SKIP_TO_USER_MESSAGES = true;
 
 #define CHECK(x) if (x == -1) return -1
 
-#include "vrpn_Log.h"
+#include "vrpn_Log.h"                   // for vrpn_Log
+
+struct timeval;
 
 // }}}
 // {{{ constructor

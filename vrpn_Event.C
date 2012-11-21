@@ -14,20 +14,11 @@
 
 // includes, system
 
-#include <stdio.h>
+#include <stdio.h>                      // for perror
 #if ! defined(_WIN32)
-  #include <stdlib.h>
-  #include <sys/ioctl.h>
-  #include <sys/types.h>
-  #include <sys/stat.h>
-  #include <sys/types.h>
-  #include <fcntl.h>
-  #include <unistd.h>
-#ifndef sgi
-  #include <stdint.h>
+  #include <fcntl.h>                      // for open, O_RDONLY
+  #include <unistd.h>                     // for close, read
 #endif
-#endif
-
 
 // includes project
 #include "vrpn_Event.h"

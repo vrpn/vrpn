@@ -3,10 +3,10 @@
 #include "vrpn_Configure.h"
 #if defined(_WIN32) && defined(VRPN_USE_DIRECTINPUT)
 
-#include "vrpn_Connection.h"
 #include "vrpn_Analog.h"
-#include "vrpn_Button.h"
 #include "vrpn_Analog_Output.h"
+#include "vrpn_Button.h"
+#include "vrpn_Connection.h"
 
 #ifndef DIRECTINPUT_VERSION
 #define	DIRECTINPUT_VERSION 0x0800

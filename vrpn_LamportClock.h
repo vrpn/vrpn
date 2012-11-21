@@ -1,7 +1,8 @@
 #ifndef VRPN_LAMPORT_CLOCK_H
 #define VRPN_LAMPORT_CLOCK_H
 
-#include "vrpn_Types.h"
+#include "vrpn_Configure.h"             // for VRPN_API
+#include "vrpn_Types.h"                 // for vrpn_uint32, vrpn_bool
 
 /// @class vrpn_LamportTimestamp
 /// Timestamp for a single event, produced by a vrpn_LamportClock and

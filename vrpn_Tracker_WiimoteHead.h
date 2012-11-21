@@ -47,9 +47,15 @@
 #ifndef __TRACKER_WIIMOTEHEAD_H
 #define __TRACKER_WIIMOTEHEAD_H
 
-#include "vrpn_Tracker.h"
-#include "vrpn_Analog.h"
-#include <quat.h>
+#include <quat.h>                       // for q_vec_type, q_xyz_quat_type
+
+#include "vrpn_Analog.h"                // for vrpn_ANALOGCB, etc
+#include "vrpn_Configure.h"             // for VRPN_CALLBACK, VRPN_API
+#include "vrpn_Shared.h"                // for timeval
+#include "vrpn_Tracker.h"               // for vrpn_Tracker
+
+class VRPN_API vrpn_Connection;
+struct vrpn_HANDLERPARAM;
 
 /** @brief Provides a tracker device given data from a Wii Remote and LED glasses.
 

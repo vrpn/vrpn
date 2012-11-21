@@ -67,8 +67,12 @@
 #ifndef VRPN_TRACKER_NDI_POLARIS_H
 #define VRPN_TRACKER_NDI_POLARIS_H
 
-#include "vrpn_Shared.h"
-#include "vrpn_Tracker.h"
+#include <stddef.h>                     // for NULL
+
+#include "vrpn_Configure.h"             // for VRPN_API
+#include "vrpn_Tracker.h"               // for vrpn_Tracker
+
+class VRPN_API vrpn_Connection;
 
 class VRPN_API vrpn_Tracker_NDI_Polaris : public vrpn_Tracker {
 

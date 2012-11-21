@@ -67,16 +67,19 @@
 //   johns@ks.uiuc.edu
 //
 
-#include <string.h>
+#include <stdio.h>                      // for fprintf, stderr
+#include <string.h>                     // for NULL, strlen
+
+#include "vrpn_Serial.h"                // for vrpn_flush_input_buffer, etc
+#include "vrpn_Shared.h"                // for timeval, vrpn_SleepMsecs, etc
 #include "vrpn_Spaceball.h"
-#include "vrpn_Shared.h"
-#include "vrpn_Serial.h"
 
 // turn on for debugging code, leave off otherwise
 #undef VERBOSE
 
 #if defined(VERBOSE) 
 #include <ctype.h> // for isprint()
+
 #define DEBUG 1
 #endif
 

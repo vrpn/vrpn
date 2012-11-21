@@ -24,7 +24,11 @@
  * Derived from vrpn_ADBox.C
 */
 
+#include "vrpn_Serial.h"
+#include "vrpn_Shared.h"                // for timeval, vrpn_gettimeofday
 #include "vrpn_VPJoystick.h"
+
+class VRPN_API vrpn_Connection;
 
 #define STATE_SYNCHING  (0)
 #define STATE_READING   (1)
@@ -55,17 +59,7 @@
 #define VP_HAT_ALL    ( VP_HAT_UP | VP_HAT_DOWN | VP_HAT_LEFT | VP_HAT_RIGHT )
 #define VP_BUTTON_ALL ( VP_TRIGGER | VP_BUTTON_TOP | VP_BUTTON_MIDDLE | VP_BUTTON_BOTTOM )
 
-#include <stdio.h>
-
-#if !defined(_WIN32)
-#include <unistd.h>
-#endif
-
-#include <string.h>
-#if defined(linux) || defined(sgi)
-#include <unistd.h>
-#endif
-
+#include <stdio.h>                      // for fprintf, stderr
 
 vrpn_VPJoystick::vrpn_VPJoystick(char* name, vrpn_Connection *c,
                        const char *port, long baud)

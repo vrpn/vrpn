@@ -1,9 +1,11 @@
 // vrpn_BaseClass.C
 
+#include <stddef.h>                     // for size_t
+#include <stdio.h>                      // for fprintf, NULL, stderr, etc
+#include <string.h>                     // for strcmp, strlen
+
 #include "vrpn_BaseClass.h"
-#include <stdio.h>
-#include <string.h>
-#include "vrpn_Shared.h"
+#include "vrpn_Shared.h"                // for timeval, vrpn_buffer, etc
 
 //#define	VERBOSE
 

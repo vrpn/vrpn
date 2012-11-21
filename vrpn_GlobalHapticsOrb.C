@@ -7,10 +7,13 @@
 // sent to Russ Taylor to help get a public-domain driver
 // written for the device.
 
-#include <string.h>
+#include <stdio.h>                      // for perror, sprintf
+#include <string.h>                     // for NULL
+
+#include "vrpn_BaseClass.h"             // for ::vrpn_TEXT_ERROR
 #include "vrpn_GlobalHapticsOrb.h"
-#include "vrpn_Shared.h"
 #include "vrpn_Serial.h"
+#include "vrpn_Shared.h"                // for timeval, vrpn_gettimeofday
 
 #undef VERBOSE
 

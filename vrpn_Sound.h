@@ -4,8 +4,14 @@
 
 #ifndef	VRPN_SOUND_H
 
-#include "vrpn_Tracker.h"
-#include "vrpn_Text.h"
+#include "vrpn_BaseClass.h"             // for vrpn_BaseClass
+#include "vrpn_Configure.h"             // for VRPN_CALLBACK, VRPN_API
+#include "vrpn_Shared.h"                // for timeval
+#include "vrpn_Text.h"                  // for vrpn_TEXTCB, etc
+#include "vrpn_Types.h"                 // for vrpn_int32, vrpn_float64, etc
+
+class VRPN_API vrpn_Connection;
+struct vrpn_HANDLERPARAM;
 
 
 #define MAX_MATERIAL_NAME_LENGTH 128

@@ -19,13 +19,12 @@ dial layout:
 
 */
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <vrpn_Analog.h>
-#include <vrpn_Button.h>
-#ifndef _WIN32
-#include <unistd.h>	// for gethostname()
-#endif
+#include <stdio.h>                      // for printf, NULL
+#include <vrpn_Analog.h>                // for vrpn_ANALOGCB, etc
+#include <vrpn_Button.h>                // for vrpn_BUTTONCB, etc
+
+#include "vrpn_Configure.h"             // for VRPN_CALLBACK
+#include "vrpn_Types.h"                 // for vrpn_float64
 /*  
 // this is the one in the PIT area
 #define BDBOX_SERVER "sgibox0@x-vrsh://152.2.128.163/~seeger/src/vrpn/server_src/sgi_irix/vrpn_server,-f,~seeger/src/config/sgibox.cfg,-q" 

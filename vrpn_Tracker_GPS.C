@@ -4,32 +4,21 @@
  *  
  */
 
-#include <time.h>
-#include <math.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-//#include <mbstring.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <ctype.h>
-
-#ifdef linux
-#include <termios.h>
-#endif
+#include <fcntl.h>                      // for SEEK_SET
+#include <stdio.h>                      // for printf, NULL, fread, etc
+#include <string.h>                     // for strlen
 
 #ifndef _WIN32
-#include <sys/ioctl.h>
-#include <sys/time.h>
-#include <unistd.h>
-#include <netinet/in.h>
+#include <unistd.h>                     // for usleep, sleep
 #endif
 
-#include "vrpn_Tracker.h"
-#include "vrpn_Tracker_GPS.h"
+#include "vrpn_BaseClass.h"             // for ::vrpn_TEXT_WARNING, etc
+#include "vrpn_Connection.h"            // for vrpn_Connection
 #include "vrpn_Serial.h"
-#include "vrpn_Shared.h"
+#include "vrpn_Shared.h"                // for timeval, vrpn_gettimeofday
+#include "vrpn_Tracker.h"               // for vrpn_TRACKER_SYNCING, etc
+#include "vrpn_Tracker_GPS.h"
+#include "vrpn_Types.h"                 // for vrpn_float64
 
 #define MAX_TIME_INTERVAL       (5000000) // max time between reports (usec)
 #define	INCHES_TO_METERS	(2.54/100.0)

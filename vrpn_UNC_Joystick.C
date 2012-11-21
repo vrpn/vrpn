@@ -1,11 +1,11 @@
-#include "vrpn_UNC_Joystick.h"
+#include <stdio.h>                      // for fprintf, stderr, perror, etc
+#include <string.h>                     // for strlen
+
+#include "vrpn_Connection.h"            // for vrpn_CONNECTION_LOW_LATENCY, etc
 #include "vrpn_Serial.h"
-#include <stdio.h>
-#include <stdlib.h>
-#ifndef _WIN32
-#include <unistd.h>
-#endif
-#include <string.h>
+#include "vrpn_Shared.h"                // for timeval, vrpn_SleepMsecs, etc
+#include "vrpn_Types.h"                 // for vrpn_float64, vrpn_int32
+#include "vrpn_UNC_Joystick.h"
 
 // This class runs the UNC custom serial joystick.  It includes two
 // buttons, a slider, and two 3-axis joysticks.  It is based on a

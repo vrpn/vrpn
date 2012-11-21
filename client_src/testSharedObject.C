@@ -1,7 +1,11 @@
-#include <stdlib.h>  // for exit()
+#include <stdio.h>                      // for printf
+#include <stdlib.h>                     // for exit
+#include <vrpn_Connection.h>            // for vrpn_Connection, etc
+#include <vrpn_SharedObject.h>          // for vrpn_Shared_int32_Remote, etc
 
-#include <vrpn_Connection.h>
-#include <vrpn_SharedObject.h>
+#include "vrpn_Configure.h"             // for VRPN_CALLBACK
+#include "vrpn_Shared.h"                // for timeval
+#include "vrpn_Types.h"                 // for vrpn_bool, vrpn_int32
 
 int VRPN_CALLBACK noteChange (void * userdata, vrpn_int32 newValue, vrpn_bool isLocal) {
   vrpn_Shared_int32_Remote * ip;

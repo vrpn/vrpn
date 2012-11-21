@@ -9,7 +9,10 @@
  *****************************************************************************/
 
 
-#include "quat.h"
+#include <math.h>                       // for atan2, cos, sin, fabs, sqrt
+#include <stdio.h>                      // for printf
+
+#include "quat.h"                       // for q_matrix_type, etc
 
 /* define local X, Y, Z, W to override any external definition;  don't use
  *  Q_X, etc, because it makes this code a LOT harder to read;  don't use 

@@ -1,17 +1,6 @@
 #ifndef	vrpn_TRACKER_H
 #define vrpn_TRACKER_H
-
-#ifndef _WIN32_WCE
-#include <time.h>
-#endif
-#include <math.h>
-#include <stdlib.h>
-#include <stdio.h>
-#ifndef _WIN32
-#ifndef _WIN32_WCE
-#include <sys/time.h>
-#endif
-#endif
+#include <stdio.h>                      // for NULL, FILE
 
 // NOTE: a vrpn tracker must call user callbacks with tracker data (pos and
 //       ori info) which represent the transformation xfSourceFromSensor.
@@ -34,8 +23,11 @@
 // to use time synched tracking, just pass in a sync connection to the 
 // client and the server
 
-#include "vrpn_BaseClass.h"
+#include "vrpn_BaseClass.h"             // for vrpn_Callback_List, etc
+#include "vrpn_Configure.h"             // for VRPN_CALLBACK, VRPN_API, etc
 #include "vrpn_Connection.h"
+#include "vrpn_Shared.h"                // for timeval
+#include "vrpn_Types.h"                 // for vrpn_float64, vrpn_int32, etc
 
 class VRPN_API vrpn_RedundantTransmission;
 

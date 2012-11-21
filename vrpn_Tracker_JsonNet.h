@@ -2,11 +2,12 @@
 #define VRPN_TRACKER_JSONNET
 
 #include "vrpn_Configure.h"
+
 #if defined(VRPN_USE_JSONNET)
 
-#include "vrpn_Tracker.h"
-#include "vrpn_Button.h"
 #include "vrpn_Analog.h"
+#include "vrpn_Button.h"
+#include "vrpn_Tracker.h"
 
 namespace Json {
 	class Reader;

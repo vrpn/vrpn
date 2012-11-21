@@ -4,12 +4,16 @@
 #ifdef	_WIN32
 #include <io.h>
 #else
-#include <unistd.h>
 #endif
-#include <stdio.h>
-#include <string.h>
+#include <stdio.h>                      // for fprintf, stderr, NULL
+#include <string.h>                     // for strlen
+
 #include "vrpn_Dyna.h"
-#include "vrpn_Serial.h"
+#include "vrpn_Serial.h"                // for vrpn_write_characters, etc
+#include "vrpn_Shared.h"                // for vrpn_SleepMsecs, timeval, etc
+#include "vrpn_Types.h"                 // for vrpn_float64
+
+class VRPN_API vrpn_Connection;
 
 #define T_ERROR (-1)
 #define T_OK 	(0)

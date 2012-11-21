@@ -36,7 +36,7 @@
 #	define VRPN_MAINLOOPOBJECT_MSG(_x)
 #endif
 
-class vrpn_Connection;
+class VRPN_API vrpn_Connection;
 
 /// An interface for all VRPN objects that have a "mainloop" method.
 /// Not instantiated directly: use vrpn_MainloopObject::wrap() to create one
