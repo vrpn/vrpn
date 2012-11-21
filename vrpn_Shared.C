@@ -3,7 +3,6 @@
 
 #include <stdio.h>
 #include <math.h>
-#include <stdlib.h> // for exit()
 #ifndef	_WIN32_WCE
 #  include <sys/types.h>
 #endif
@@ -1138,7 +1137,7 @@ static int __iTrash = vrpn_gettimeofday(&__tv, (struct timezone *)NULL);
 #include <signal.h>
 #endif
 
-#define ALL_ASSERT(exp, msg) if(!(exp)){ fprintf(stderr, "\nAssertion failed! \n %s (%s, %s)\n", msg, __FILE__, __LINE__); exit(-1);}
+#define ALL_ASSERT(exp, msg) if(!(exp)){ fprintf(stderr, "\nAssertion failed! \n %s (%s, %s)\n", msg, __FILE__, __LINE__); }
 
 // init all fields in init()
 vrpn_Semaphore::vrpn_Semaphore( int cNumResources ) :
