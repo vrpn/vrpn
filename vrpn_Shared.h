@@ -63,7 +63,7 @@
 // we alias vrpn_gettimeofday() right back to gettimeofday(), so
 // that we are calling the system routine.  On Windows, we will
 // be using vrpn_gettimofday().  So far so good, but now user code
-// would like to no have to know the difference under windows, so
+// would like to not have to know the difference under windows, so
 // we have an optional VRPN configuration setting in vrpn_Configure.h
 // that exports vrpn_gettimeofday() as gettimeofday() and also
 // exports a "struct timezone" definition.  Yucky, but it works and
