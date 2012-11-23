@@ -32,11 +32,6 @@
 // - none
 
 // Standard includes
-#ifdef sgi
-#include <assert.h>
-#else
-#include <cassert> // for assert
-#endif
 #include <string.h> // for memcpy
 #include <stdio.h> // for fprintf, stderr
 
@@ -151,7 +146,10 @@ static inline T vrpn_unbuffer_from_little_endian(ByteT * & input) {
 	using namespace vrpn_byte_order;
 
 	/// @todo make this a static assertion
-	assert(sizeof(ByteT) == 1);
+	if (sizeof(ByteT) != 1) {
+		fprintf(stderr,"vrpn_unbuffer_from_little_endian:ByteT size != 1\n");
+		return 0;
+	}
 
 	/// Union to allow type-punning
 	union {
@@ -180,7 +178,10 @@ inline T vrpn_unbuffer(ByteT * & input) {
 	using namespace vrpn_byte_order;
 
 	/// @todo make this a static assertion
-	assert(sizeof(ByteT) == 1);
+	if (sizeof(ByteT) != 1) {
+		fprintf(stderr,"vrpn_unbuffer:ByteT size != 1\n");
+		return 0;
+	}
 
 	/// Union to allow type-punning and ensure alignment
 	union {
@@ -208,10 +209,15 @@ namespace templated_buffer {
 		using namespace vrpn_byte_order;
 
 		/// @todo make this a static assertion
-		assert(sizeof(ByteT) == 1);
+		if (sizeof(ByteT) != 1) {
+			fprintf(stderr,"vrpn_buffer:ByteT size != 1\n");
+			return -1;
+		}
 
-		assert(insertPt);
-		assert(buflen);
+		if ( (insertPt == NULL) || (buflen == NULL) ) {
+			fprintf(stderr, "vrpn_buffer: NULL pointer\n");
+			return -1;
+		}
 
 		if (sizeof(T) > static_cast<size_t>(*buflen)) {
 			fprintf(stderr, "vrpn_buffer: buffer not large enough\n");

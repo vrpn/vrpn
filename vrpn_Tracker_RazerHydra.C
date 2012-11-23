@@ -28,13 +28,8 @@
 // - none
 
 // Standard includes
-#ifdef sgi
-#include <assert.h>
-#else
-#include <cassert>
 #include <string>
 #include <sstream>
-#endif
 
 #ifdef VRPN_USE_HID
 
@@ -308,7 +303,10 @@ bool vrpn_Tracker_RazerHydra::reconnect() {
 }
 
 void vrpn_Tracker_RazerHydra::_waiting_for_connect() {
-	assert(status == HYDRA_WAITING_FOR_CONNECT);
+	if (status != HYDRA_WAITING_FOR_CONNECT) {
+		fprintf(stderr, "vrpn_Tracker_RazerHydra::_waiting_for_connect(): bad status\n");
+		return;
+	}
 	if (_data->connected() && _ctrl->connected()) {
 		send_text_message(vrpn_TEXT_WARNING) << "Connected to Razer Hydra with serial number " << _ctrl->getSerialNumber();
 
@@ -324,8 +322,14 @@ void vrpn_Tracker_RazerHydra::_waiting_for_connect() {
 }
 
 void vrpn_Tracker_RazerHydra::_listening_after_connect() {
-	assert(status == HYDRA_LISTENING_AFTER_CONNECT);
-	assert(_data->connected() && _ctrl->connected());
+	if (status != HYDRA_LISTENING_AFTER_CONNECT) {
+		fprintf(stderr, "vrpn_Tracker_RazerHydra::_listening_after_connect(): bad status\n");
+		return;
+	}
+	if (!_data->connected() || !_ctrl->connected()) {
+		fprintf(stderr, "vrpn_Tracker_RazerHydra::_listening_after_connect(): Data or control channel not connected\n");
+		return;
+	}
 	struct timeval now;
 	vrpn_gettimeofday(&now, NULL);
 	if (duration(now, _connected) > MAXIMUM_INITIAL_WAIT_USEC) {
@@ -334,8 +338,14 @@ void vrpn_Tracker_RazerHydra::_listening_after_connect() {
 }
 
 void vrpn_Tracker_RazerHydra::_listening_after_set_feature() {
-	assert(status == HYDRA_LISTENING_AFTER_SET_FEATURE);
-	assert(_data->connected() && _ctrl->connected());
+	if (status != HYDRA_LISTENING_AFTER_SET_FEATURE) {
+		fprintf(stderr, "vrpn_Tracker_RazerHydra::_listening_after_set_feature(): bad status\n");
+		return;
+	}
+	if (!_data->connected() || !_ctrl->connected()) {
+		fprintf(stderr, "vrpn_Tracker_RazerHydra::_listening_after_set_feature(): Data or control channel not connected\n");
+		return;
+	}
 	struct timeval now;
 	vrpn_gettimeofday(&now, NULL);
 	if (duration(now, _set_feature) > MAXIMUM_WAIT_USEC) {
@@ -360,8 +370,15 @@ void vrpn_Tracker_RazerHydra::_listening_after_set_feature() {
 }
 
 void vrpn_Tracker_RazerHydra::_enter_motion_controller_mode() {
-	assert(status == HYDRA_LISTENING_AFTER_CONNECT || status == HYDRA_LISTENING_AFTER_SET_FEATURE);
-	assert(_data->connected());
+	if ( (status != HYDRA_LISTENING_AFTER_CONNECT) &&
+	     (status != HYDRA_LISTENING_AFTER_SET_FEATURE) ) {
+		fprintf(stderr, "vrpn_Tracker_RazerHydra::_enter_motion_controller_mode(): bad status\n");
+		return;
+	}
+	if (!_data->connected()) {
+		fprintf(stderr, "vrpn_Tracker_RazerHydra::_enter_motion_controller_mode(): Control channel not connected\n");
+		return;
+	}
 
 	_attempt++;
 	_wasInGamepadMode = true;

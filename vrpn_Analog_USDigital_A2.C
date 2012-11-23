@@ -46,7 +46,6 @@ extern "C" {
 #include <SEIDrv32.H>
 }
 #endif
-#include <assert.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -65,19 +64,22 @@ vrpn_Analog_USDigital_A2::vrpn_Analog_USDigital_A2 (const char * name,
 vrpn_Analog (name, c),
 _SEIopened(vrpn_false),
 _numDevices(0),
-_devAddr(0),
+_devAddr(NULL),
 _reportChange(reportOnChangeOnly!=0)
 {
 #ifdef VRPN_USE_USDIGITAL
     this->_devAddr = new long[vrpn_Analog_USDigital_A2::vrpn_Analog_USDigital_A2_CHANNEL_MAX] ;
-    assert(this->_devAddr) ;
+    if (this->_devAddr == NULL) {
+        fprintf(stderr,"vrpn_Analog_USDigital_A2: Out of memory!\n");
+	return;
+    }    
 
     this->setNumChannels( numChannels );
 
     // Check if we got a connection.
-    if (d_connection == NULL) 
-    {
+    if (d_connection == NULL) {
         fprintf(stderr,"vrpn_Analog_USDigital_A2: Can't get connection!\n");
+	return;
     }    
 
     //  Prepare to get data from the SEI bus
@@ -106,8 +108,7 @@ _reportChange(reportOnChangeOnly!=0)
 #ifdef VRPN_USE_USDIGITAL
     _numDevices = GetNumberOfDevices() ;
 #endif
-    if (_numDevices<0 || _numDevices>vrpn_Analog_USDigital_A2::vrpn_Analog_USDigital_A2_CHANNEL_MAX)
-    {
+    if (_numDevices<0 || _numDevices>vrpn_Analog_USDigital_A2::vrpn_Analog_USDigital_A2_CHANNEL_MAX) {
         fprintf(stderr,
             "vrpn_Analog_USDigital_A2:  Error (%d) returned from GetNumberOfDevices call on SEI bus",
             _numDevices) ;
@@ -123,8 +124,7 @@ _reportChange(reportOnChangeOnly!=0)
         _devAddr[c] = -1 ;
 
     //  Get the device addresses.
-    for (vrpn_uint32 d=0 ; d<_numDevices ; d++)
-    {
+    for (vrpn_uint32 d=0 ; d<_numDevices ; d++) {
         long deviceInfoErr, model, serialnum, version, addr ;
 #ifdef VRPN_USE_USDIGITAL
         deviceInfoErr = GetDeviceInfo(d, &model, &serialnum, &version, &addr) ;
