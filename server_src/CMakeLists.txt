@@ -132,12 +132,13 @@ install(FILES "${CMAKE_CURRENT_BINARY_DIR}/vrpn.cfg"
 # Declaration of the simple test applications that don't have extra files
 
 # XXX Are these files compiled somewhere?
-#NIUtil.cpp
-#NIUtil.h
 #clock_server.C
 #daq_server.C
 #make_vrpn_libs_build.cpp
 
+# These look like part of a utility/library rather than a tool on their own
+#NIUtil.cpp
+#NIUtil.h
 
 
 set(SRV_TEST_SOURCES

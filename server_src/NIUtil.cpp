@@ -11,12 +11,12 @@ static	bool  opened_already[Max_NIDAQ_Devices];
 
 namespace NIUtil
 {
-   char *nameCodeToString
+   const char *nameCodeToString
    (
       int code
    )
    {
-      char *name;
+      const char *name = NULL;
 
 
       switch (code)
@@ -148,7 +148,7 @@ namespace NIUtil
       return name;
    }
 
-   char * getDeviceName
+   const char * getDeviceName
    (
       short deviceNumber
    )
@@ -206,7 +206,7 @@ namespace NIUtil
    int checkError
    (
       short    status,
-      char *message,
+      const char *message,
       bool   warn
    ) 
    {
