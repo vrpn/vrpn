@@ -42,11 +42,12 @@ if(VRPN_BUILD_CLIENTS)
 		ff_client.C
 		forcedevice_test_client.cpp
 		forwarderClient.C
-		#midi_client.C # cannot find type vrpn_Sound_Remote
+		#midi_client.C # XXX TODO No vrpn_Sound_Remote ever defined in this repository
+		#ohm_client.C # XXX TODO No vrpn_Ohmmeter (vrpn_Ohmmeter.h) defined in this repository
 		phan_client.C
 		printcereal.C
 		printvals.C
-		#sound_client.C # cannot find type vrpn_Sound_Remote
+		#sound_client.C # XXX TODO No vrpn_Sound_Remote ever defined in this repository
 		sphere_client.C
 		testSharedObject.C
 		test_Zaber.C
