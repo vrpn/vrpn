@@ -73,6 +73,8 @@ int main(int argc, char *argv[])
 	vrpn_Analog_Remote *bd_dials;
 	vrpn_Button_Remote *bd_buttons;
 
+	printf("Connecting to sgi button/dial box:\n" BDBOX_SERVER "\n");
+
 	// initialize the buttons
 	bd_buttons = new vrpn_Button_Remote(BDBOX_SERVER);
 	bd_buttons->register_change_handler(&done, handle_button_change);
