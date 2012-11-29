@@ -47,7 +47,7 @@ if(VRPN_BUILD_CLIENTS)
 		phan_client.C
 		printcereal.C
 		printvals.C
-		#sound_client.C # XXX TODO No vrpn_Sound_Remote ever defined in this repository
+		sound_client.C
 		sphere_client.C
 		testSharedObject.C
 		test_Zaber.C
