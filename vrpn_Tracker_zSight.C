@@ -18,6 +18,8 @@
 
 #if defined(_WIN32) && defined(VRPN_USE_DIRECTINPUT) && defined(VRPN_HAVE_ATLBASE)
 
+#include <math.h>
+
 // Convert from 2's complement, as per the Sensics zSight documentation
 short FromTwos(unsigned short x) {
 	if ( x < 0x8000 ) {
