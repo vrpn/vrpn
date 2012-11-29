@@ -304,7 +304,7 @@ APPS := $(INSTALL_APPS) client_and_server test_mutex test_peerMutex \
 test_radamec_spi test_analogfly testimager_server test_auxiliary_logger \
 test_logging 
 # test_freespace
-# testSharedObject
+# testSharedObjectServer
 
 all: $(APPS)
 
@@ -356,8 +356,8 @@ text:	$(OBJ_DIR)/text
 .PHONY:	last_of_sequence
 last_of_sequence:	$(OBJ_DIR)/last_of_sequence
 
-.PHONY:	testSharedObject
-testSharedObject:	$(OBJ_DIR)/testSharedObject
+.PHONY:	testSharedObjectServer
+testSharedObjectServer:	$(OBJ_DIR)/testSharedObjectServer
 
 .PHONY:	wiimote_head_tracker
 wiimote_head_tracker:	$(OBJ_DIR)/wiimote_head_tracker
