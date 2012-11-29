@@ -18,8 +18,6 @@
 #include <netinet/in.h>                 // for htonl, htons
 #endif
 
-//#include "vrpn_cygwin_hack.h"
-
 #define CHECK(a) if (a == -1) return -1
 
 // perform normalization of a timeval
