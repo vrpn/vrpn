@@ -23,7 +23,7 @@ logfiletypes.C:
   A utility that reads a VRPN logfile, printing out only the meaning of
 type messages.
 
-midi_client.c:
+midi_client.C:
 
 pobjects.c:
 
