@@ -3,7 +3,7 @@ vrpn/client_src:
 
 Makefile:
 
-checklogfile.c:
+checklogfile.C:
   A utility that reads a VRPN logfile, printing out the sender, type, and
 length of every message and the meaning of system messages.
 
