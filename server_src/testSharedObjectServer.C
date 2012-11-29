@@ -4,7 +4,7 @@
 #include <stdio.h>  // for printf()
 #include <stdlib.h>  // for atoi()
 
-int noteChange (void * userdata, vrpn_int32 newValue, vrpn_bool isLocal) {
+int VRPN_CALLBACK noteChange (void * userdata, vrpn_int32 newValue, vrpn_bool isLocal) {
   vrpn_Shared_int32_Server * ip;
 
   ip = (vrpn_Shared_int32_Server *) userdata;
