@@ -78,9 +78,6 @@ if(VRPN_BUILD_CLIENTS)
 			target_link_libraries(${APP} ${VRPN_CLIENT_LIBRARY})
 
 			set_target_properties(${APP} PROPERTIES FOLDER Tests)
-			# Force C compilation and linking
-			set_property(SOURCE ${SOURCE} PROPERTY LANGUAGE CXX)
-			set_target_properties(${APP} PROPERTIES HAS_CXX yes)
 
 			install(TARGETS ${APP} RUNTIME DESTINATION bin COMPONENT tests)
 		endforeach()
@@ -143,9 +140,6 @@ if(VRPN_BUILD_CLIENTS)
 		target_link_libraries(${APP} ${VRPN_CLIENT_LIBRARY})
 
 		set_target_properties(${APP} PROPERTIES FOLDER Clients)
-		# Force C compilation and linking
-		set_property(SOURCE ${SOURCE} PROPERTY LANGUAGE CXX)
-		set_target_properties(${APP} PROPERTIES HAS_CXX yes)
 
 		install(TARGETS ${APP} RUNTIME DESTINATION bin COMPONENT clients)
 	endforeach()
