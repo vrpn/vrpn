@@ -48,7 +48,7 @@ protected:
   // NOTE:  class_of_service is only applied to vrpn_Analog
   //  values, not vrpn_Button or vrpn_Dial
 };
-#else   // not _WIN32
+#else   // not VRPN_USE_HID
 class VRPN_API vrpn_3DConnexion: public vrpn_Button_Filter, public vrpn_Analog {
 public:
   vrpn_3DConnexion(vrpn_HidAcceptor *filter, unsigned num_buttons,
@@ -75,7 +75,7 @@ protected:
   int set_led(int led_state);
 #endif
 };
-#endif  // not _WIN32
+#endif  // not VRPN_USE_HID
 
 class VRPN_API vrpn_3DConnexion_Navigator: public vrpn_3DConnexion {
 public:
