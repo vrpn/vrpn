@@ -10,7 +10,7 @@
 #include <math.h>                       // for floor
 #include <stdio.h>                      // for NULL, printf, fprintf, etc
 #include <stdlib.h>                     // for exit
-#include <vrpn_Shared.h>                // for vrpn_gettimeofday
+#include <vrpn_Shared.h>                // for vrpn_gettimeofday, timeval, vrpn_TimevalSum, etc
 #ifndef	_WIN32_WCE
 #include <signal.h>                     // for signal, SIGINT
 #endif
@@ -20,7 +20,6 @@
 #include <vrpn_Tracker.h>               // for vrpn_Tracker_NULL
 
 #include "vrpn_Configure.h"             // for VRPN_CALLBACK
-#include "vrpn_Shared.h"                // for timeval, vrpn_TimevalSum, etc
 
 int done = 0;	    // Signals that the program should exit
 

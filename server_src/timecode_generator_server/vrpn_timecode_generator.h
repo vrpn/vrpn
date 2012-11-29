@@ -1,7 +1,7 @@
 #ifndef VRPN_TIMECODE_GENERATOR_H
 #define VRPN_TIMECODE_GENERATOR_H
 
-#include "vrpn_Configure.h"
+#include "vrpn_Configure.h" // IWYU pragma: keep
 #ifdef	VRPN_INCLUDE_TIMECODE_SERVER
 
 #include "vrpn_Analog.h"

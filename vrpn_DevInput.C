@@ -22,6 +22,7 @@
 #include <sys/ioctl.h>                  // for ioctl
 #include <iostream>                     // for operator<<, ostringstream, etc
 #include <map>                          // for map, _Rb_tree_iterator, etc
+#include <string>                       // for string, operator+, etc
 #include <sstream>
 
 static const std::string &getDeviceNodes(const std::string &device_name) {

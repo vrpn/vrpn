@@ -1,11 +1,10 @@
 #include <stdio.h>                      // for fprintf, stderr, printf, etc
 #include <stdlib.h>                     // for atoi, exit
 #include <string.h>                     // for strcmp
-#include <vrpn_Shared.h>                // for vrpn_gettimeofday
+#include <vrpn_Shared.h>                // for vrpn_gettimeofday, vrpn_SleepMsecs, timeval
 
 #include "vrpn_Configure.h"             // for VRPN_CALLBACK
 #include "vrpn_Poser.h"                 // for vrpn_Poser_Remote
-#include "vrpn_Shared.h"                // for vrpn_SleepMsecs, timeval
 #include "vrpn_Tracker.h"               // for vrpn_TRACKERCB, etc
 
 static	bool  g_verbose = false;
