@@ -13,8 +13,12 @@
 #include <mmsystem.h>
 // link with winmm.lib
 
+#include <iostream>
+using std::endl;
+using std::cerr;
+
 #include "vrpn_Analog.h"
-void printNidaq( void *pvTVZero, const vrpn_ANALOGCB cbInfo ) {
+void VRPN_CALLBACK printNidaq( void *pvTVZero, const vrpn_ANALOGCB cbInfo ) {
   cerr << vrpn_TimevalMsecs( vrpn_TimevalDiff(cbInfo.msg_time,
 					      (*(struct timeval *)pvTVZero)))
     *0.001 << " Voltages: ";
@@ -34,14 +38,7 @@ int main( int argc, char *argv[] ) {
 		  cerr << "NidaqServer: timeBeginPeriod() failed!!!\n";
 	  }                       
 
-	  // If I don't care about specific parts of the synchronization, then
-  // I can just call analog_remote with no connection arg (default is null)
-  // and let it set up the connection.
-  //  Connection *pConnection;
-
-  //  pConnection = new vrpn_Synchronized_Connection();
-
-  //  pNidaq = new vrpn_Analog_Remote("Nidaq0@helium.cs.unc.edu", pConnection);
+  //  pNidaq = new vrpn_Analog_Remote("Nidaq0@helium.cs.unc.edu");
   pNidaq = new vrpn_Analog_Remote("Nidaq0@trackerpc-cs.cs.unc.edu");
 
   vrpn_gettimeofday(&tvZero,NULL);

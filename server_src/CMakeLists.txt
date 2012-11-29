@@ -137,8 +137,6 @@ install(FILES "${CMAKE_CURRENT_BINARY_DIR}/vrpn.cfg"
 #clock_server.C
 #daq_server.C
 #make_vrpn_libs_build.cpp
-#nidaqClient.cpp
-#nidaqServer.cpp
 
 
 
@@ -167,6 +165,14 @@ endif()
 
 if(VRPN_USE_DIRECTINPUT)
 	list(APPEND SRV_TEST_SOURCES directXFF.C)
+endif()
+
+if(WIN32)
+	list(APPEND SRV_TEST_SOURCES nidaqClient.cpp) # actually a client test
+endif()
+
+if(WIN32 AND VRPN_USE_NIDAQ)
+#	list(APPEND SRV_TEST_SOURCES nidaqServer.cpp) # missing getOptClean
 endif()
 
 set(SRV_SERVER_SOURCES
