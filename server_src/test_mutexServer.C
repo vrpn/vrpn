@@ -1,5 +1,7 @@
 
 #include <stdlib.h>
+#include <string.h>
+#include <vrpn_Connection.h>
 #include <vrpn_Mutex.h>
 
 

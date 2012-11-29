@@ -300,11 +300,11 @@ $(OBJ_DIR)/%.o:	%.cpp
 	$(CC) $(CXXFLAGS) -o $@ -c $<
 
 INSTALL_APPS := vrpn_server test_vrpn wiimote_head_tracker
-APPS := $(INSTALL_APPS) client_and_server test_mutex test_peerMutex \
+APPS := $(INSTALL_APPS) client_and_server test_mutexServer test_peerMutex \
 test_radamec_spi test_analogfly testimager_server test_auxiliary_logger \
-test_logging 
+test_logging testSharedObjectServer
 # test_freespace
-# testSharedObjectServer
+# 
 
 all: $(APPS)
 
@@ -338,8 +338,8 @@ client_and_server:	$(OBJ_DIR)/client_and_server
 .PHONY:	sample_server
 sample_server:	$(OBJ_DIR)/sample_server
 
-.PHONY:	test_mutex
-test_mutex:	$(OBJ_DIR)/test_mutex
+.PHONY:	test_mutexServer
+test_mutexServer:	$(OBJ_DIR)/test_mutexServer
 
 .PHONY:	test_peerMutex
 test_peerMutex:	$(OBJ_DIR)/test_peerMutex
@@ -350,8 +350,8 @@ sample_analog:	$(OBJ_DIR)/sample_analog
 .PHONY:	forward
 forward:	$(OBJ_DIR)/forward
 
-.PHONY:	text
-text:	$(OBJ_DIR)/text
+.PHONY:	textServer
+textServer:	$(OBJ_DIR)/textServer
 
 .PHONY:	last_of_sequence
 last_of_sequence:	$(OBJ_DIR)/last_of_sequence
