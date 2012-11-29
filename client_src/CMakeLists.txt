@@ -62,7 +62,7 @@ if(VRPN_BUILD_CLIENTS)
 		# TODO: These need "open" calls modified to build on win.
 		list(APPEND
 			TEST_SOURCES
-			logfilesenders.c
+			logfilesenders.C
 			logfiletypes.C
 			checklogfile.c)
 	endif()
