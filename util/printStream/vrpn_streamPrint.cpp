@@ -93,7 +93,7 @@ void parseArguments(int argc, char **argv)
 }
 
 
-int	main(unsigned argc, char *argv[])
+int	main(int argc, char *argv[])
 {
     parseArguments(argc, argv);
     
