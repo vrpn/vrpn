@@ -164,7 +164,7 @@ if(VRPN_USE_HID)
 	list(APPEND SRV_TEST_SOURCES vrpn_HID_device_watcher.cpp)
 endif()
 
-if(VRPN_USE_DIRECTINPUT)
+if(WIN32 AND VRPN_USE_DIRECTINPUT)
 	list(APPEND SRV_TEST_SOURCES directXFF.C)
 endif()
 
