@@ -119,13 +119,11 @@ if(VRPN_BUILD_CLIENTS)
 
 	add_executable(c_interface_example
 		c_interface_example.c
+		c_interface.h
 		c_interface.cpp)
 	target_link_libraries(c_interface_example ${VRPN_CLIENT_LIBRARY})
 
 	set_target_properties(c_interface_example PROPERTIES FOLDER Tests)
-	# Force C compilation and linking
-	set_property(SOURCE c_interface_example.c PROPERTY LANGUAGE CXX)
-	set_target_properties(c_interface_example PROPERTIES HAS_CXX yes)
 
 	install(TARGETS
 		c_interface_example
