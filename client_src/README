@@ -15,7 +15,7 @@ example.h:
 
 interaction.c:
 
-logfilesenders.c:
+logfilesenders.C:
   A utility that reads a VRPN logfile, printing out only the meaning of
 sender messages.
 
