@@ -435,10 +435,10 @@ $(OBJ_DIR)/forward: $(OBJ_DIR)/forward.o  \
 		$(OBJ_DIR)/forward.o \
 		$(VRPN_LIBS) $(SYSLIBS) -lm
 
-$(OBJ_DIR)/text: $(OBJ_DIR)/text.o  \
+$(OBJ_DIR)/textServer: $(OBJ_DIR)/textServer.o  \
 			 $(LIB_DIR)/libvrpnserver.a
-	$(CC) $(LFLAGS) -o $(OBJ_DIR)/text \
-		$(OBJ_DIR)/text.o \
+	$(CC) $(LFLAGS) -o $(OBJ_DIR)/textServer \
+		$(OBJ_DIR)/textServer.o \
 		$(VRPN_LIBS) $(SYSLIBS) -lm
 
 $(OBJ_DIR)/sample_server:	$(OBJ_DIR)/sample_server.o \
@@ -447,10 +447,10 @@ $(OBJ_DIR)/sample_server:	$(OBJ_DIR)/sample_server.o \
 		$(OBJ_DIR)/sample_server.o \
 		$(VRPN_LIBS) $(SYSLIBS) -lm
 
-$(OBJ_DIR)/test_mutex:	$(OBJ_DIR)/test_mutex.o \
+$(OBJ_DIR)/test_mutexServer:	$(OBJ_DIR)/test_mutexServer.o \
 			$(LIB_DIR)/libvrpnserver.a
-	$(CC) $(LFLAGS) -o $(OBJ_DIR)/test_mutex \
-		$(OBJ_DIR)/test_mutex.o \
+	$(CC) $(LFLAGS) -o $(OBJ_DIR)/test_mutexServer \
+		$(OBJ_DIR)/test_mutexServer.o \
 		$(VRPN_LIBS) $(SYSLIBS) -lm
 
 $(OBJ_DIR)/test_peerMutex:	$(OBJ_DIR)/test_peerMutex.o \
@@ -472,10 +472,10 @@ $(OBJ_DIR)/last_of_sequence:	$(OBJ_DIR)/last_of_sequence.o \
 		$(VRPN_LIBS) $(SYSLIBS) -lm
 
 
-$(OBJ_DIR)/testSharedObject:	$(OBJ_DIR)/testSharedObject.o \
+$(OBJ_DIR)/testSharedObjectServer:	$(OBJ_DIR)/testSharedObjectServer.o \
 			$(LIB_DIR)/libvrpnserver.a
-	$(CC) $(LFLAGS) -o $(OBJ_DIR)/testSharedObject \
-		$(OBJ_DIR)/testSharedObject.o \
+	$(CC) $(LFLAGS) -o $(OBJ_DIR)/testSharedObjectServer \
+		$(OBJ_DIR)/testSharedObjectServer.o \
 		$(VRPN_LIBS) $(SYSLIBS) -lm
 
 $(OBJ_DIR)/wiimote_head_tracker:	$(OBJ_DIR)/wiimote_head_tracker.o \
@@ -503,9 +503,9 @@ endif
 $(OBJ_DIR)/vrpn.o:	vrpn.C
 $(OBJ_DIR)/vrpn_Generic_server_object.o:	vrpn_Generic_server_object.C
 $(OBJ_DIR)/forward.o:	forward.C
-$(OBJ_DIR)/text.o:	text.C
+$(OBJ_DIR)/textServer.o:	textServer.C
 $(OBJ_DIR)/sample_server.o:	sample_server.C
-$(OBJ_DIR)/test_mutex.o:	test_mutex.C
+$(OBJ_DIR)/test_mutexServer.o:	test_mutexServer.C
 $(OBJ_DIR)/test_peerMutex.o:	test_peerMutex.C
 $(OBJ_DIR)/sample_analog.o:	sample_analog.C
 
