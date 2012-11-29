@@ -1,17 +1,14 @@
+if(NOT VRPN_CLIENT_LIBRARY)
+	message(FATAL_ERROR
+		"Cannot compile RPC test without either the client or full library.  Enable one and try again.")
+endif()
+
 #-----------------------------------------------------------------------------
 # Include directories needed
 include_directories(${CMAKE_CURRENT_BINARY_DIR}
 	${VRPN_SOURCE_DIR}
 	${QUATLIB_INCLUDE_DIR})
 
-if(VRPN_BUILD_CLIENT_LIBRARY)
-	set(VRPN_CLIENT_LIBRARY vrpn)
-elseif(VRPN_BUILD_SERVER_LIBRARY)
-	set(VRPN_CLIENT_LIBRARY vrpnserver)
-else()
-	message(FATAL_ERROR
-		"Cannot compile RPC test without either the client or full library.  Enable one and try again.")
-endif()
 #-----------------------------------------------------------------------------
 # Custom build steps to generate RPC code.
 # Executable built from these.
