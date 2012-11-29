@@ -144,10 +144,10 @@ install(FILES "${CMAKE_CURRENT_BINARY_DIR}/vrpn.cfg"
 
 set(SRV_TEST_SOURCES
 	client_and_server.C
-	#forward.C
-	#last_of_sequence.C
-	#sample_analog.C
-	#sample_server.C
+	forward.C
+	last_of_sequence.C
+	sample_analog.C
+	sample_server.C
 	#testSharedObject.C
 	test_analogfly.C
 	test_auxiliary_logger.C

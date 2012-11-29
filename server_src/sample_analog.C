@@ -70,7 +70,7 @@ int main (int argc, char ** argv) {
 
   struct timeval delay;
 
-  c = new vrpn_Synchronized_Connection;
+  c = vrpn_create_server_connection();
   ats = new vrpn_Analog_Server ("audio_throughput", c);
   ats->setNumChannels(1);
   vts = new vrpn_Analog_Server ("video_throughput", c);

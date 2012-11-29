@@ -26,7 +26,7 @@ int main (int argc, char ** argv) {
   long fooType, barType, bazType, quitType;
   int quitNow = 0;
 
-  listen_connection = new vrpn_Synchronized_Connection;
+  listen_connection = vrpn_create_server_connection();
     // defaults to port vrpn_DEFAULT_LISTEN_PORT_NO
 
   myId = listen_connection->register_sender("Sample Server");
