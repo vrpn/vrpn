@@ -7,7 +7,7 @@ void	tracker_callback(unsigned sensor, const double pos[3], const double quat[4]
 		sensor, pos[0], pos[1], pos[2], quat[0], quat[1], quat[2], quat[3]);
 }
 
-void	button_callback(unsigned button, bool value)
+void	button_callback(unsigned button, vrpn_c_bool value)
 {
 	const char *state = (value?"pressed":"released");
 	printf("Button %d %s\n", button, state);
@@ -19,7 +19,7 @@ int main()
 	void *tkr = vrpn_c_open_tracker(device_name, tracker_callback);
 	void *btn = vrpn_c_open_button(device_name, button_callback);
 
-	while (true) {
+	while (1) {
 		vrpn_c_poll_tracker(tkr);
 		vrpn_c_poll_button(btn);
 	}
