@@ -64,7 +64,7 @@ if(VRPN_BUILD_CLIENTS)
 			TEST_SOURCES
 			logfilesenders.C
 			logfiletypes.C
-			checklogfile.c)
+			checklogfile.C)
 	endif()
 
 	###
