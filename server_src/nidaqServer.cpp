@@ -20,6 +20,10 @@
 #include <windows.h>
 //#define MEM_DBG
 
+#include <iostream>
+using std::endl;
+using std::cerr;
+
 #if defined(MEM_DBG)
 #define _MEM_DBG_SET
 #include <crtdbg.h>
@@ -90,7 +94,7 @@ int main (int argc, char * argv[])
   // in the signal handler (so we can close any open logfiles).
   // In this case, it is so we can shut down the nidaq server and 
   // avoid blue screening.
-  pConnection = new vrpn_Synchronized_Connection(iVrpnPort);
+  pConnection = vrpn_create_server_connection(iVrpnPort);
 
 
   // You should use an even number of channels even if you
