@@ -108,6 +108,16 @@ install(TARGETS vrpn_server
 	RUNTIME DESTINATION bin
 	COMPONENT mainserver)
 
+if(VRPN_USE_NATIONAL_INSTRUMENTS_MX)
+	add_executable(daq_server
+		daq_server.C
+		NIUtil.cpp
+		NIUtil.h)
+	target_link_libraries(daq_server ${VRPN_SERVER_LIBRARY})
+	set_target_properties(daq_server PROPERTIES FOLDER Servers)
+	install(TARGETS daq_server RUNTIME DESTINATION bin COMPONENT servers)
+endif()
+
 #-----------------------------------------------------------------------------
 # Install the vrpn.cfg file needed by the server.
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/vrpn.cfg"
@@ -133,13 +143,7 @@ install(FILES "${CMAKE_CURRENT_BINARY_DIR}/vrpn.cfg"
 
 # XXX Are these files compiled somewhere?
 #clock_server.C
-#daq_server.C
 #make_vrpn_libs_build.cpp
-
-# These look like part of a utility/library rather than a tool on their own
-#NIUtil.cpp
-#NIUtil.h
-
 
 set(SRV_TEST_SOURCES
 	client_and_server.C
@@ -179,7 +183,6 @@ endif()
 set(SRV_SERVER_SOURCES
 	wiimote_head_tracker.C
 )
-
 
 ###
 # Tests
