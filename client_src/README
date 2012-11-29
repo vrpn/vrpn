@@ -19,7 +19,7 @@ logfilesenders.c:
   A utility that reads a VRPN logfile, printing out only the meaning of
 sender messages.
 
-logfiletypes.c:
+logfiletypes.C:
   A utility that reads a VRPN logfile, printing out only the meaning of
 type messages.
 
