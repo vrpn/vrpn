@@ -15,7 +15,6 @@
 #include	<vrpn_Connection.h>
 
 vrpn_Connection		*conn;	// Connection pointer
-vrpn_OneConnection	*endp;	// Endpoint pointer
 
 void	Usage(char *s)
 {
@@ -28,7 +27,7 @@ void	Usage(char *s)
 // sender, size and time for each message that comes in to the
 // connection.
 
-int	msg_handler(void *, vrpn_HANDLERPARAM p)
+int	VRPN_CALLBACK msg_handler(void *, vrpn_HANDLERPARAM p)
 {
 	const char	*sender_name = conn->sender_name(p.sender);
 	const char	*type_name = conn->message_type_name(p.type);
@@ -59,38 +58,19 @@ int	main(int argc, char *argv[])
 		conn_name = argv[1];
 	}
 
-	// Open the connection
-	conn = vrpn_get_connection_by_name(conn_name, "vrpn_temp.deleteme",
-		vrpn_LOG_INCOMING);
+	// Open the connection, with a file for incoming log required for some reason.
+	// (I think it's so that there is a log that we can filter by displaying it)
+	conn = vrpn_get_connection_by_name(conn_name, "vrpn_temp.deleteme");
 	if (conn == NULL) {
 		fprintf(stderr,"ERROR: Can't get connection %s\n",conn_name);
 		return -1;
 	}
-	endp = conn->endpointPtr();
 
 	// Set up the callback for all message types
 	conn->register_log_filter(msg_handler, NULL);
 
-	// Mainloop until they kill us. When new senders or types
-	// are registered on the other side, register them locally
-	// so that we can print them out reasonably
+	// Mainloop until they kill us.
 	while (1) {
-		int	i;
-
-		// Register any new senders
-		for (i = num_registered_senders; i < endp->num_other_senders;
-		     i++) {
-			conn->register_sender(endp->other_senders[i].name);
-		}
-		num_registered_senders = endp->num_other_senders;
-
-		// Register any new types
-		for (i = num_registered_types; i < endp->num_other_types;
-		     i++) {
-			conn->register_message_type(endp->other_types[i].name);
-		}
-		num_registered_types = endp->num_other_types;
-
 		conn->mainloop();
 	}
 
