@@ -2,7 +2,7 @@
 
 #include <vrpn_Connection.h>
 
-int handle_quit (void * userdata, vrpn_HANDLERPARAM) {
+int VRPN_CALLBACK handle_quit (void * userdata, vrpn_HANDLERPARAM) {
   int * quitNow = (int *) userdata;
 
   *quitNow = 1;
@@ -10,7 +10,7 @@ int handle_quit (void * userdata, vrpn_HANDLERPARAM) {
   return 0;  // non-error completion
 }
 
-int handle_any_print (void * userdata, vrpn_HANDLERPARAM p) {
+int VRPN_CALLBACK handle_any_print (void * userdata, vrpn_HANDLERPARAM p) {
   vrpn_Connection * c = (vrpn_Connection *) userdata;
 
   fprintf(stderr, "Got mesage \"%s\" from \"%s\".\n",
