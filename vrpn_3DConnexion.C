@@ -9,7 +9,10 @@
 // There is a non-HID Linux-based driver for this device that has a capability
 // not implemented in the HID interface.  It uses the input.h interface.
 #if defined(linux) && !defined(VRPN_USE_HID)
+#define VRPN_USING_3DCONNEXION_EVENT_IFACE
 #include <linux/input.h>
+#include <stdlib.h> // for malloc, free, etc
+#include <unistd.h> // for write, etc
 #endif
 
 typedef struct input_devinfo {
@@ -49,7 +52,7 @@ vrpn_3DConnexion::vrpn_3DConnexion(vrpn_HidAcceptor *filter, unsigned num_button
 // There is a non-HID Linux-based driver for this device that has a capability
 // not implemented in the HID interface.  It is implemented using the Event
 // interface.
-#if defined(linux) && !defined(VRPN_USE_HID)
+#if defined(VRPN_USING_3DCONNEXION_EVENT_IFACE)
   // Use the Event interface to open devices looking for the one
   // we want.  Call the acceptor with all the devices we find
   // until we get one that we want.
@@ -94,7 +97,7 @@ vrpn_3DConnexion::vrpn_3DConnexion(vrpn_HidAcceptor *filter, unsigned num_button
 
 vrpn_3DConnexion::~vrpn_3DConnexion()
 {
-#if defined(linux) && !defined(VRPN_USE_HID)
+#if defined(VRPN_USING_3DCONNEXION_EVENT_IFACE)
 	set_led(0);
 #endif
         delete _filter;
@@ -114,7 +117,7 @@ void vrpn_3DConnexion::mainloop()
 	// XXX If we get a 2-byte report mixed in, then something is going to get
 	// truncated.
 	update();
-#elif defined(linux) && !defined(VRPN_USE_HID)
+#elif defined(VRPN_USING_3DCONNEXION_EVENT_IFACE)
     struct timeval zerotime;
     fd_set fdset;
     struct input_event ev;
