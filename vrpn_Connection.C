@@ -4740,8 +4740,8 @@ vrpn_Connection::vrpn_Connection
     d_updateEndpoint = vrpn_TRUE;
     endpoint = d_endpoints[0];
     if (!endpoint) {
-      fprintf(stderr, "vrpn_Connection::vrpn_Connection:  "
-                      "Couldn't create endpoint for log file.\n");
+      fprintf(stderr, "vrpn_Connection::vrpn_Connection:%d  "
+                      "Couldn't create endpoint for log file.\n", __LINE__);
       connectionStatus = BROKEN;
       return;
     }
@@ -4749,8 +4749,8 @@ vrpn_Connection::vrpn_Connection
     endpoint->d_outLog->logMode() = d_serverLogMode;
     retval = endpoint->d_outLog->open();
     if (retval == -1) {
-      fprintf(stderr, "vrpn_Connection::vrpn_Connection:  "
-                      "Couldn't open outgoing log file.\n");
+      fprintf(stderr, "vrpn_Connection::vrpn_Connection:%d  "
+                      "Couldn't open outgoing log file.\n", __LINE__);
       delete d_endpoints[0];
       d_endpoints[0] = NULL;
       connectionStatus = BROKEN;
@@ -4769,8 +4769,8 @@ vrpn_Connection::vrpn_Connection
   if (local_in_logfile_name) {
     d_serverLogName = new char [1 + strlen(local_in_logfile_name)];
     if (!d_serverLogName) {
-      fprintf(stderr, "vrpn_Connection::vrpn_Connection:  "
-                      "Out of memory.\n");
+      fprintf(stderr, "vrpn_Connection::vrpn_Connection:%d  "
+                      "Out of memory.\n", __LINE__);
       connectionStatus = BROKEN;
       return;
     }
@@ -4808,7 +4808,7 @@ vrpn_Connection::vrpn_Connection
   d_endpoints[0]->setConnection( this );
   d_updateEndpoint = vrpn_TRUE;
   if (!d_endpoints[0]) {
-    fprintf(stderr, "vrpn_Connection:  Out of memory.\n");
+    fprintf(stderr, "vrpn_Connection:%d  Out of memory.\n", __LINE__);
     connectionStatus = BROKEN;
     return;
   }
@@ -4846,8 +4846,8 @@ vrpn_Connection::vrpn_Connection
     endpoint->d_inLog->logMode() = vrpn_LOG_INCOMING;
     retval = endpoint->d_inLog->open();
     if (retval == -1) {
-      fprintf(stderr, "vrpn_Connection::vrpn_Connection:  "
-    		      "Couldn't open incoming log file.\n");
+      fprintf(stderr, "vrpn_Connection::vrpn_Connection:%d  "
+    		      "Couldn't open incoming log file.\n", __LINE__);
       connectionStatus = BROKEN;
 //fprintf(stderr, "BROKEN - vrpn_Connection::vrpn_Connection.\n");
       return;
@@ -4860,8 +4860,8 @@ vrpn_Connection::vrpn_Connection
     endpoint->d_outLog->logMode() = vrpn_LOG_OUTGOING;
     retval = endpoint->d_outLog->open();
     if (retval == -1) {
-      fprintf(stderr, "vrpn_Connection::vrpn_Connection:  "
-    		      "Couldn't open local outgoing log file.\n");
+      fprintf(stderr, "vrpn_Connection::vrpn_Connection:%d  "
+    		      "Couldn't open local outgoing log file.\n", __LINE__);
       connectionStatus = BROKEN;
 //fprintf(stderr, "BROKEN - vrpn_Connection::vrpn_Connection.\n");
       return;
