@@ -142,7 +142,7 @@ install(FILES "${CMAKE_CURRENT_BINARY_DIR}/vrpn.cfg"
 # Declaration of the simple test applications that don't have extra files
 
 # XXX Are these files compiled somewhere?
-#clock_server.C
+#
 #make_vrpn_libs_build.cpp
 
 set(SRV_TEST_SOURCES
