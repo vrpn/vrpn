@@ -27,7 +27,7 @@ midi_client.c:
 
 pobjects.c:
 
-printvals.c:
+printvals.C:
   A VRPN client that connects to a Tracker and Button and prints
 some minimal data from them.  Includes the ability to log sessions
 and to playback logs.

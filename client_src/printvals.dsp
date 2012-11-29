@@ -86,7 +86,7 @@ LINK32=link.exe
 # Name "printvals - Win32 Debug"
 # Begin Source File
 
-SOURCE=printvals.c
+SOURCE=printvals.C
 # End Source File
 # End Target
 # End Project

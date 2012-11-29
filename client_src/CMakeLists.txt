@@ -46,7 +46,7 @@ if(VRPN_BUILD_CLIENTS)
 		#ohm_client.C
 		phan_client.C
 		printcereal.C
-		printvals.c
+		printvals.C
 		#sound_client.c # cannot find type vrpn_Sound_Remote
 		sphere_client.C
 		testSharedObject.C
