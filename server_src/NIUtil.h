@@ -12,12 +12,12 @@
 namespace NIUtil
 {
 
-   char *nameCodeToString
+   const char *nameCodeToString
    (
       int code
    ); ///< Convert NI-DAQ device name code into meaningful string
 
-   char *getDeviceName
+   const char *getDeviceName
    (
       int deviceNumber
    ); ///< Get name of some device
@@ -39,7 +39,7 @@ namespace NIUtil
    int checkError
    (
       int    status,
-      char * message,
+      const char * message,
       bool   warn
    ); ///< Error/Warning messages for NI-DAQ calls
 }
