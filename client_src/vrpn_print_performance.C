@@ -24,7 +24,6 @@
 
 #include "vrpn_BaseClass.h"             // for vrpn_System_TextPrinter, etc
 #include "vrpn_Configure.h"             // for VRPN_CALLBACK
-#include "vrpn_Shared.h"                // for timeval
 
 using namespace std;
 

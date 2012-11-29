@@ -165,8 +165,8 @@ class VRPN_API vrpn_Tracker_Serial : public vrpn_Tracker {
 
 // This driver uses the VRPN-preferred LibUSB-1.0 to control the device.
 #if defined(VRPN_USE_LIBUSB_1_0)
-struct libusb_device_handle;
-struct libusb_context;
+struct libusb_device_handle; // IWYU pragma: keep
+struct libusb_context; // IWYU pragma: keep
 #define VRPN_TRACKER_USB_BUF_SIZE   1000
 
 class VRPN_API vrpn_Tracker_USB : public vrpn_Tracker {

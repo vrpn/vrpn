@@ -2,13 +2,14 @@
 #include <stdio.h>                      // for fprintf, stderr, NULL, etc
 #include <stdlib.h>                     // for atof, exit, atoi
 #include <string.h>                     // for strcmp, strncmp
+#include <vrpn_Configure.h>             // for VRPN_CALLBACK
 #include <vrpn_Button.h>                // for vrpn_BUTTONCB
 #include <vrpn_Shared.h>                // for vrpn_SleepMsecs
 #include <vrpn_Tracker.h>               // for vrpn_TRACKERCB, etc
 
-#include <vrpn_Configure.h>             // for VRPN_CALLBACK
 #include <vrpn_Connection.h>            // for vrpn_HANDLERPARAM
 #include <vrpn_Types.h>                 // for vrpn_float64, vrpn_int32
+#include <vrpn_BaseClass.h>             // for vrpn_System_TextPrinter, etc
 #include <vrpn_FileConnection.h>
 #include <vrpn_FileController.h>
 #include <vrpn_RedundantTransmission.h>

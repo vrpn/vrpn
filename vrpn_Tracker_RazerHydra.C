@@ -33,7 +33,6 @@
 // - none
 
 // Standard includes
-#include <cassert>                      // for assert
 #include <sstream>                      // for operator<<, basic_ostream, etc
 #include <string>                       // for char_traits, basic_string, etc
 #include <stddef.h>                     // for size_t

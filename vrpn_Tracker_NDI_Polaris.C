@@ -1,5 +1,4 @@
 
-#include <fcntl.h>                      // for SEEK_END
 #include <stdio.h>                      // for fprintf, printf, sprintf, etc
 #include <string.h>                     // for strncmp, strlen, strncpy
 

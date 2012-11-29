@@ -4,7 +4,6 @@
  *  
  */
 
-#include <fcntl.h>                      // for SEEK_SET
 #include <stdio.h>                      // for printf, NULL, fread, etc
 #include <string.h>                     // for strlen
 

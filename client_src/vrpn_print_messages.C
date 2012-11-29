@@ -8,11 +8,12 @@
 
 // XXX Bad side effect: It produces a file called vrpn_temp.deleteme
 // in the current directory.
+#include <stdio.h>                      // for fprintf, NULL, stderr, etc
+#include <stdlib.h>                     // for exit
 
-#include	<math.h>
-#include	<stdlib.h>
-#include	<stdio.h>
-#include	<vrpn_Connection.h>
+#include <vrpn_Configure.h>             // for VRPN_CALLBACK
+#include <vrpn_Shared.h>                // for timeval
+#include <vrpn_Connection.h>            // for vrpn_HANDLERPARAM, etc
 
 vrpn_Connection		*conn;	// Connection pointer
 
