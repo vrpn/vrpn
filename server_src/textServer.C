@@ -12,8 +12,12 @@
 
 int main (int argc, char* argv[])
 {
+	if (argc != 2) {
+		fprintf(stderr, "Must pass a device name as the sole argument\n");
+		return 1;
+	}
 	char msg[MAX];
-	vrpn_Connection *sc = new vrpn_Synchronized_Connection();
+	vrpn_Connection *sc = vrpn_create_server_connection();
 	vrpn_Text_Sender *s = new vrpn_Text_Sender(argv[1], sc);
 	
 	while (1) {

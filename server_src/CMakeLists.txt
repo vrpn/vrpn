@@ -153,13 +153,13 @@ set(SRV_TEST_SOURCES
 	test_auxiliary_logger.C
 	test_freespace.C
 	test_logging.C
-	#test_mutex.C
+	test_mutexServer.C
 	test_peerMutex.C
 	test_radamec_spi.C
 	test_rumble.C
 	test_vrpn.C
 	testimager_server.cpp
-	#text.C
+	textServer.C
 )
 if(VRPN_USE_HID)
 	list(APPEND SRV_TEST_SOURCES vrpn_HID_device_watcher.cpp)
