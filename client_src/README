@@ -34,7 +34,7 @@ and to playback logs.
 
 readstructs.c:
 
-sound_client.c:
+sound_client.C:
 
 vrpnTrackerClient.cpp:
 
