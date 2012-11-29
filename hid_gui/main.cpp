@@ -26,7 +26,7 @@
 
 // Standard includes
 #include <sstream>
-
+#include <stdio.h>
 
 int usage(char * argv0) {
 	printf("Usage:\n\n"
