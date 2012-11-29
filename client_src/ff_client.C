@@ -68,9 +68,10 @@ void	VRPN_CALLBACK handle_button_change(void *userdata, const vrpn_BUTTONCB b)
   *(int *)userdata = buttonstate;
 }
 
-int main(int argc, char *argv[])
+int main(int /*argc*/, char */*argv*/[])
 {
-
+  printf("Trying to connect to ForceDevice, Tracker, and Button named:\n");
+  printf("%s\n", PHANTOM_SERVER);
   int     done = 0;
   float	pos[3];
   int	  forceInEffect = 0;

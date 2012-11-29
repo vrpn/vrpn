@@ -16,6 +16,8 @@ void	button_callback(unsigned button, vrpn_c_bool value)
 int main()
 {
 	const char *device_name = "Spaceball0@localhost";
+	printf("This is just a simple dummy application to show how you could access VRPN from straight C with a C-style interface.\n");
+	printf("It will try to connect to a local tracker and button device %s\n", device_name);
 	void *tkr = vrpn_c_open_tracker(device_name, tracker_callback);
 	void *btn = vrpn_c_open_button(device_name, button_callback);
 

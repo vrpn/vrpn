@@ -62,6 +62,7 @@ void	VRPN_CALLBACK handle_button_change(void *userdata, const vrpn_BUTTONCB b)
 
 int main(int argc, char *argv[])
 {
+	printf("generates a flat horizontal plane on ForceDevice %s\n", PHANTOM_SERVER);
         int     done = 0;
         vrpn_ForceDevice_Remote *forceDevice;
 	vrpn_Tracker_Remote *tracker;
