@@ -14,14 +14,17 @@ int noteChange (void * userdata, vrpn_int32 newValue, vrpn_bool isLocal) {
 }
 
 int main (int argc, char ** argv) {
-
+  if (argc != 2) {
+    fprintf(stderr, "Must pass a port number as the sole argument\n");
+    return 1;
+  }
   vrpn_Connection * c;
 
-  c = new vrpn_Synchronized_Connection (atoi(argv[1]));
+  c = vrpn_create_server_connection(atoi(argv[1]));
 
   vrpn_Shared_int32_Server a ("a", 0, VRPN_SO_DEFER_UPDATES);
 
-  a.setSerializerPolicy(vrpn_DENY);
+  a.setSerializerPolicy(vrpn_DENY_REMOTE);
 
   c->mainloop();
 
@@ -57,5 +60,6 @@ int main (int argc, char ** argv) {
   printf("C is not OK;  shutting down.\n");
 
   delete c;
+  return 2;
 }
 
