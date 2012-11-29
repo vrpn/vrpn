@@ -96,7 +96,7 @@ int main (int argc, char ** argv) {
   vrpn_Connection * c;
   vrpn_int32 myId;
 
-  c = new vrpn_Synchronized_Connection;
+  c = vrpn_create_server_connection();
 
   myId = c->register_sender ("Me!");
   g_foo_type = c->register_message_type ("Foo?");
