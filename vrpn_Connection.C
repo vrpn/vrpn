@@ -4736,15 +4736,15 @@ vrpn_Connection::vrpn_Connection
 
   if (local_out_logfile_name) {
     d_endpoints[0] = (*d_endpointAllocator)(this, NULL);
-    d_endpoints[0]->setConnection( this );
-    d_updateEndpoint = vrpn_TRUE;
-    endpoint = d_endpoints[0];
-    if (!endpoint) {
+    if (!d_endpoints[0]) {
       fprintf(stderr, "vrpn_Connection::vrpn_Connection:%d  "
                       "Couldn't create endpoint for log file.\n", __LINE__);
       connectionStatus = BROKEN;
       return;
     }
+    endpoint = d_endpoints[0];
+    endpoint->setConnection( this );
+    d_updateEndpoint = vrpn_TRUE;
     endpoint->d_outLog->setName(local_out_logfile_name);
     endpoint->d_outLog->logMode() = d_serverLogMode;
     retval = endpoint->d_outLog->open();
