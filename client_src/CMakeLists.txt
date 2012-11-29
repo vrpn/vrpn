@@ -63,7 +63,7 @@ if(VRPN_BUILD_CLIENTS)
 		list(APPEND
 			TEST_SOURCES
 			logfilesenders.c
-			logfiletypes.c
+			logfiletypes.C
 			checklogfile.c)
 	endif()
 
