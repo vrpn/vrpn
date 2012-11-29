@@ -1,0 +1,4 @@
+[
+  { symbol: [ "timeval", private, "\"vrpn_Shared.h\"", public ] },
+  { include: ["@\".+vrpn_Configure.h\"", private, "\"vrpn_Configure.h\"", public ] }
+]
