@@ -59,6 +59,8 @@ using namespace std;
 #include "vrpn_Tracker_WiimoteHead.h"
 #include "vrpn_WiiMote.h"
 
+#include <stdlib.h> // for atoi
+
 #undef RP_PROFILING
 
 const char* TRACKER_NAME = "Tracker0";
