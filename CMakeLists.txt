@@ -1142,6 +1142,10 @@ if(VRPN_BUILD_TEST_RPC_GENERATION)
 	add_subdirectory(util/gen_rpc)
 endif()
 
+if(VRPN_BUILD_CLIENTS)
+	add_subdirectory(util/printStream)
+endif()
+
 #-----------------------------------------------------------------------------
 # Create documentation
 if(NOT SUBPROJECT)
