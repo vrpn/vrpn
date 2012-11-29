@@ -37,9 +37,6 @@ enum vrpn_ConnectionStatus {LISTEN             = (1),
 
 class VRPN_API	vrpn_File_Connection;  // Forward declaration for get_File_Connection()
 
-#ifndef _DEFINED_HANDLERPARAM
-#define _DEFINED_HANDLERPARAM
-
 /// @brief This structure is what is passed to a vrpn_Connection message callback.
 ///
 /// It is used by objects, but not normally by user code.
@@ -50,8 +47,6 @@ struct vrpn_HANDLERPARAM {
 	vrpn_int32	payload_len;
 	const char	*buffer;
 };
-
-#endif
 
 /// @brief Type of a message handler for vrpn_Connection messages.
 typedef	int (VRPN_CALLBACK *vrpn_MESSAGEHANDLER)(void *userdata, vrpn_HANDLERPARAM p);
@@ -169,8 +164,6 @@ struct VRPN_API vrpn_LOGLIST {
 /// (although we'd like to make them protected/private members)
 /// because aCC on PixelFlow doesn't handle nested classes correctly.
 /// @{
-#ifndef _DEFINED_MSGCALLBACKENTRY
-#define _DEFINED_MSGCALLBACKENTRY
 
 /// @brief Description of a callback entry for a user type.
 struct vrpnMsgCallbackEntry {
@@ -185,7 +178,6 @@ struct vrpnLogFilterEntry {
   void * userdata;         ///< passed along
   vrpnLogFilterEntry * next;
 };
-#endif
 /// @}
 
 class VRPN_API	vrpn_Connection;
