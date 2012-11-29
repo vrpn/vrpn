@@ -1022,12 +1022,16 @@ set(VRPN_SERVER_PUBLIC_HEADERS
 	vrpn_Zaber.h
 	server_src/vrpn_Generic_server_object.h)
 
-if(VRPN_BUILD_SERVER_LIBRARY)
+set(VRPN_SERVER_LIBRARY)
+set(VRPN_CLIENT_LIBRARY)
 
+if(VRPN_BUILD_SERVER_LIBRARY)
 	add_library(vrpnserver
 		${VRPN_SERVER_SOURCES}
 		${VRPN_SERVER_PUBLIC_HEADERS})
 	target_link_libraries(vrpnserver ${EXTRA_LIBS} ${SERVER_EXTRA_LIBS})
+	set(VRPN_CLIENT_LIBRARY vrpnserver)
+	set(VRPN_SERVER_LIBRARY vrpnserver)
 	set_property(TARGET
 		vrpnserver
 		PROPERTY
@@ -1079,6 +1083,7 @@ endif()
 if(VRPN_BUILD_CLIENT_LIBRARY)
 	add_library(vrpn ${VRPN_CLIENT_SOURCES} ${VRPN_CLIENT_PUBLIC_HEADERS})
 	target_link_libraries(vrpn ${EXTRA_LIBS})
+	set(VRPN_CLIENT_LIBRARY vrpn)
 
 	set_property(TARGET
 		vrpn

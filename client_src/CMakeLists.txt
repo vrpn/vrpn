@@ -12,11 +12,7 @@ cmake_minimum_required(VERSION 2.6)
 # Build the client applications if we've been asked to.
 if(VRPN_BUILD_CLIENTS)
 
-	if(VRPN_BUILD_CLIENT_LIBRARY)
-		set(VRPN_CLIENT_LIBRARY vrpn)
-	elseif(VRPN_BUILD_SERVER_LIBRARY)
-		set(VRPN_CLIENT_LIBRARY vrpnserver)
-	else()
+	if(NOT VRPN_CLIENT_LIBRARY)
 		message(FATAL_ERROR
 			"Cannot compile clients without either the client or full library.  Enable one and try again.")
 	endif()
