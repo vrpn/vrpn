@@ -29,7 +29,7 @@ static void move_sample_values()
 void loopSound(vrpn_SoundID id)
 {
   float sX,sZ,sA;
-  vrpn_float64 position[3], orientation[4], velocity[3];
+  vrpn_float64 position[3], orientation[4], velocity[4];
 
   while(1)
   {
