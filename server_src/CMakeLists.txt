@@ -136,7 +136,6 @@ install(FILES "${CMAKE_CURRENT_BINARY_DIR}/vrpn.cfg"
 #NIUtil.h
 #clock_server.C
 #daq_server.C
-#directXFF.C
 #make_vrpn_libs_build.cpp
 #nidaqClient.cpp
 #nidaqServer.cpp
@@ -164,6 +163,10 @@ set(SRV_TEST_SOURCES
 )
 if(VRPN_USE_HID)
 	list(APPEND SRV_TEST_SOURCES vrpn_HID_device_watcher.cpp)
+endif()
+
+if(VRPN_USE_DIRECTINPUT)
+	list(APPEND SRV_TEST_SOURCES directXFF.C)
 endif()
 
 set(SRV_SERVER_SOURCES
