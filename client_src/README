@@ -47,4 +47,3 @@ sphere_client.C: phantom client that makes a sphere
 
 ff_client.C: phantom client that makes a force field
 
-ohm_client.C: vrpn ohmmeter client for ORPX2 ohmmeter

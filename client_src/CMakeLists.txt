@@ -43,7 +43,6 @@ if(VRPN_BUILD_CLIENTS)
 		forcedevice_test_client.cpp
 		forwarderClient.C
 		#midi_client.c # cannot find type vrpn_Sound_Remote
-		#ohm_client.C
 		phan_client.C
 		printcereal.C
 		printvals.c

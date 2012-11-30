@@ -169,8 +169,6 @@ APPS := $(INSTALL_APPS) printvals printcereal checklogfile logfilesenders \
 
 all:	$(APPS)
 
-# $(OBJ_DIR)/ohm_client
-
 .PHONY:	vrpn_print_devices
 vrpn_print_devices:	$(OBJ_DIR)/vrpn_print_devices
 
@@ -259,10 +257,6 @@ $(OBJ_DIR)/bdbox_client: $(OBJ_DIR)/bdbox_client.o $(LIB_DIR)/libvrpn.a
 $(OBJ_DIR)/ff_client: $(OBJ_DIR)/ff_client.o $(LIB_DIR)/libvrpn.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/ff_client \
 		$(OBJ_DIR)/ff_client.o -lvrpn $(ARCH_LIBS)
-
-$(OBJ_DIR)/ohm_client: $(OBJ_DIR)/ohm_client.o $(LIB_DIR)/libvrpn.a
-	$(CC) $(LFLAGS) -o $(OBJ_DIR)/ohm_client \
-		$(OBJ_DIR)/ohm_client.o -lvrpn $(ARCH_LIBS)
 
 $(OBJ_DIR)/forcedevice_test_client: $(OBJ_DIR)/forcedevice_test_client.o $(LIB_DIR)/libvrpn.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/forcedevice_test_client \
