@@ -299,6 +299,9 @@ protected:
     //     all of them or else the read routine will attempt to load the
     //     next message each time one is played.  The constructor fills it
     //     in with the first message, which makes it non-NULL initially.
+    //     HOWEVER, if there are no user messages and we're asked to skip
+    //     to the first user message then it can be NULL right after the
+    //     constructor is called.
 protected:
     vrpn_LOGLIST * d_logHead;  // the first read-in record
     vrpn_LOGLIST * d_logTail;  // the last read-in record

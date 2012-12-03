@@ -156,7 +156,7 @@ vrpn_File_Connection::vrpn_File_Connection (const char * station_name,
     // This is useful to play the initial system messages
     // (the sender/type ones) automatically.  These might not be
     // time synched so if we don't play them automatically they
-    // can mess up playback if their timestamps are later then
+    // can mess up playback if their timestamps are later than
     // the first user message.
     if (vrpn_FILE_CONNECTIONS_SHOULD_SKIP_TO_USER_MESSAGES) {
 	play_to_user_message();
@@ -707,16 +707,22 @@ int vrpn_File_Connection::playone_to_filetime( timeval end_filetime )
 // not preloaded, then try to read one in.
 int vrpn_File_Connection::advance_currentLogEntry(void)
 {
-    d_currentLogEntry = d_currentLogEntry->next;
-    if (!d_currentLogEntry && !d_preload) {
-        int retval = read_entry();
-        if (retval != 0) {
-            return -1;  // error reading from file or EOF
-	}
-        d_currentLogEntry = d_logTail;  // If read_entry() returns zero, this will be non-NULL
-    }
+  // If we don't have a currentLogEntry, then we've gone past the end of the
+  // file.
+  if (!d_currentLogEntry) {
+    return 1;
+  }
 
-    return 0;
+  d_currentLogEntry = d_currentLogEntry->next;
+  if (!d_currentLogEntry && !d_preload) {
+      int retval = read_entry();
+      if (retval != 0) {
+          return -1;  // error reading from file or EOF
+      }
+      d_currentLogEntry = d_logTail;  // If read_entry() returns zero, this will be non-NULL
+  }
+
+  return 0;
 }
 
 
