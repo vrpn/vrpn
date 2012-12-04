@@ -80,8 +80,8 @@ void parseArguments(int argc, char **argv)
 		else if( !strcmp( argv[i], "-head" ) )
 		{
 			if (++i >= argc) usage(argv[0]);
+			if( atoi( argv[i] ) < 0 ) usage( argv[0] );
 			msgs_to_print = atoi( argv[i] );
-			if( msgs_to_print < 0 ) usage( argv[0] );
 			doHead = true;
 		}
 		else

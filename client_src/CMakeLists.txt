@@ -39,7 +39,6 @@ if(VRPN_BUILD_CLIENTS)
 		forcedevice_test_client.cpp
 		forwarderClient.C
 		#midi_client.C # XXX TODO No vrpn_Sound_Remote ever defined in this repository
-		#ohm_client.C # XXX TODO No vrpn_Ohmmeter (vrpn_Ohmmeter.h) defined in this repository
 		phan_client.C
 		printcereal.C
 		printvals.C
