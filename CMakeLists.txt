@@ -685,10 +685,6 @@ file(RELATIVE_PATH
 	VRPN_PATH_TO_CMAKE_CONFIG
 	"${CMAKE_CURRENT_SOURCE_DIR}"
 	"${PROJECT_BINARY_DIR}/vrpn_Configure.h")
-
-set(VRPN_DEFINITIONS "-DVRPN_USING_CMAKE=\"${CMAKE_CURRENT_BINARY_DIR}/vrpn_Configure.h\""
-	CACHE INTERNAL "Definition to add if using as a subproject")
-
 add_definitions("-DVRPN_USING_CMAKE=\"${VRPN_PATH_TO_CMAKE_CONFIG}\"")
 
 # Configuration options controlling what gets included in the build.
@@ -1130,6 +1126,20 @@ if(VRPN_BUILD_CLIENT_LIBRARY)
 endif()
 
 add_subdirectory(client_src)
+
+#-----------------------------------------------------------------------------
+# Set some internal cache variables to make life easier if we're a subproject
+
+set(VRPN_DEFINITIONS "-DVRPN_USING_CMAKE=\"${CMAKE_CURRENT_BINARY_DIR}/vrpn_Configure.h\""
+	CACHE INTERNAL "Definition to add if using as a subproject" FORCE)
+set(VRPN_CLIENT_LIBRARY ${VRPN_CLIENT_LIBRARY} CACHE INTERNAL "" FORCE)
+set(VRPN_SERVER_LIBRARY ${VRPN_SERVER_LIBRARY} CACHE INTERNAL "" FORCE)
+set(VRPN_INCLUDE_DIRS
+	"${CMAKE_CURRENT_BINARY_DIR}"
+	"${VRPN_SOURCE_DIR}"
+	"${VRPN_SOURCE_DIR}/atmellib"
+	"${VRPN_SOURCE_DIR}/quat"
+	CACHE INTERNAL "" FORCE)
 
 #-----------------------------------------------------------------------------
 # Build the server applications if we've been asked to and we didn't build
