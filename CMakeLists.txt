@@ -685,6 +685,10 @@ file(RELATIVE_PATH
 	VRPN_PATH_TO_CMAKE_CONFIG
 	"${CMAKE_CURRENT_SOURCE_DIR}"
 	"${PROJECT_BINARY_DIR}/vrpn_Configure.h")
+
+set(VRPN_DEFINITIONS "-DVRPN_USING_CMAKE=\"${CMAKE_CURRENT_BINARY_DIR}/vrpn_Configure.h\""
+	CACHE INTERNAL "Definition to add if using as a subproject")
+
 add_definitions("-DVRPN_USING_CMAKE=\"${VRPN_PATH_TO_CMAKE_CONFIG}\"")
 
 # Configuration options controlling what gets included in the build.
