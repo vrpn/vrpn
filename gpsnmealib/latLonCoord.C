@@ -65,14 +65,14 @@ LatLonCoord::LatLonCoord (const TypedCoord& other)
 /////////////////////////////////////////////////////////////////////////////
 // LatLonCoord operators
 
-const LatLonCoord& LatLonCoord::operator= (const LatLonCoord& other)
+LatLonCoord& LatLonCoord::operator= (const LatLonCoord& other)
 {
   copyLatLonCoord (other);
   return *this;
 }
 
 
-const LatLonCoord& LatLonCoord::operator= (const TypedCoord& other)
+LatLonCoord& LatLonCoord::operator= (const TypedCoord& other)
 {
   copyOtherCoord (other);
   return *this;

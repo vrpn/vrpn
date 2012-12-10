@@ -32,7 +32,7 @@ static double mod (double num, double divisor)
 /////////////////////////////////////////////////////////////////////////////
 // TypedCoord operators
 
-const TypedCoord& TypedCoord::operator= (const TypedCoord& other)
+TypedCoord& TypedCoord::operator= (const TypedCoord& other)
 {
   double lat, lon;
   other.getLatLonCoord (lat, lon);

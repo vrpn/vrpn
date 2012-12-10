@@ -53,8 +53,8 @@ public:
   UTMCoord (const UTMCoord& other);
   void copyUTMCoord (const UTMCoord& other);
   void copyOtherCoord (const TypedCoord& other);
-  const UTMCoord& operator= (const UTMCoord& other);
-  const UTMCoord& operator= (const TypedCoord& other);
+  UTMCoord& operator= (const UTMCoord& other);
+  UTMCoord& operator= (const TypedCoord& other);
   virtual const std::string& createCoordString (std::string& coordString) const;
   virtual void createDisplayStrings (std::string& topLeftString,
                                      std::string& topRightString, std::string& bottomLeftString,

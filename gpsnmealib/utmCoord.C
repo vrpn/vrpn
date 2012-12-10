@@ -106,14 +106,14 @@ UTMCoord::UTMCoord (const TypedCoord& other)
 /////////////////////////////////////////////////////////////////////////////
 // UTMCoord operators
 
-const UTMCoord& UTMCoord::operator= (const UTMCoord& other)
+UTMCoord& UTMCoord::operator= (const UTMCoord& other)
 {
   copyUTMCoord (other);
   return *this;
 }
 
 
-const UTMCoord& UTMCoord::operator= (const TypedCoord& other)
+UTMCoord& UTMCoord::operator= (const TypedCoord& other)
 {
   copyOtherCoord (other);
   return *this;
