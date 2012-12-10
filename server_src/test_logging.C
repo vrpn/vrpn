@@ -365,7 +365,9 @@ int main (int argc, char * argv [])
   // Clean up after ourselves by deleting the log files.
   printf("Deleting log files\n");
   // Don't complain about using "unlink"
+#ifdef _MSC_VER
 #pragma warning ( disable : 4996 )
+#endif
 
   char * name;
   name = make_server_incoming_name(SERVER_BASE_INCOMING_LOG,1);
