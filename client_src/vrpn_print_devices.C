@@ -255,11 +255,11 @@ int main (int argc, char * argv [])
       print_for_text = 0;
     } else if (!strcmp(argv[i], "-trackerstride")) {
       if (++i >= argc) { Usage(argv[0]); }
-      tracker_stride = atoi(argv[i]);
-      if (tracker_stride <= 0) {
+      if (atoi(argv[i]) <= 0) {
 	  fprintf(stderr, "-trackerstride argument must be 1 or greater\n");
 	  return -1;
       }
+      tracker_stride = atoi(argv[i]);
     } else {	// Create a device and connect to it.
 	device_info *dev;
 
