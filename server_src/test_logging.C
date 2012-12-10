@@ -366,10 +366,24 @@ int main (int argc, char * argv [])
   printf("Deleting log files\n");
   // Don't complain about using "unlink"
 #pragma warning ( disable : 4996 )
-  unlink(make_server_incoming_name(SERVER_BASE_INCOMING_LOG,1));
-  unlink(make_server_incoming_name(SERVER_BASE_INCOMING_LOG,2));
-  unlink(make_server_incoming_name(SERVER_BASE_INCOMING_LOG,3));
-  unlink(make_server_incoming_name(SERVER_BASE_INCOMING_LOG,4));
+
+  char * name;
+  name = make_server_incoming_name(SERVER_BASE_INCOMING_LOG,1);
+  unlink(name);
+  delete[] name;
+
+  name = make_server_incoming_name(SERVER_BASE_INCOMING_LOG,2);
+  unlink(name);
+  delete[] name;
+
+  name = make_server_incoming_name(SERVER_BASE_INCOMING_LOG,3);
+  unlink(name);
+  delete[] name;
+
+  name = make_server_incoming_name(SERVER_BASE_INCOMING_LOG,4);
+  unlink(name);
+  delete[] name;
+
   unlink(SERVER_BASE_OUTGOING_LOG);
   unlink(CLIENT_CLIENT_INCOMING_LOG);
   unlink(CLIENT_CLIENT_OUTGOING_LOG);
