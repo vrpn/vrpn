@@ -83,7 +83,7 @@ static	double	duration(struct timeval t1, struct timeval t2) {
 
 void	VRPN_CALLBACK handle_tracker_pos_quat (void *userdata, const vrpn_TRACKERCB t)
 {
-	t_user_callback	*t_data = (t_user_callback *)userdata;
+	t_user_callback	*t_data = static_cast<t_user_callback *>(userdata);
 
 	// Make sure we have a count value for this sensor
 	while (t_data->t_counts.size() <= static_cast<unsigned>(t.sensor)) {
@@ -116,7 +116,7 @@ void	VRPN_CALLBACK handle_tracker_pos_quat (void *userdata, const vrpn_TRACKERCB
 
 void	VRPN_CALLBACK handle_tracker_vel (void *userdata, const vrpn_TRACKERVELCB t)
 {
-	t_user_callback	*t_data = (t_user_callback *)userdata;
+	t_user_callback	*t_data = static_cast<t_user_callback *>(userdata);
 
 	// Make sure we have a count value for this sensor
 	while (t_data->t_counts.size() <= static_cast<unsigned>(t.sensor)) {
@@ -149,7 +149,7 @@ void	VRPN_CALLBACK handle_tracker_vel (void *userdata, const vrpn_TRACKERVELCB t
 
 void	VRPN_CALLBACK handle_tracker_acc (void *userdata, const vrpn_TRACKERACCCB t)
 {
-	t_user_callback	*t_data = (t_user_callback *)userdata;
+	t_user_callback	*t_data = static_cast<t_user_callback *>(userdata);
 
 	// Make sure we have a count value for this sensor
 	while (t_data->t_counts.size() <= static_cast<unsigned>(t.sensor)) {
