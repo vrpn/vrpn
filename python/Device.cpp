@@ -4,6 +4,7 @@
 #include "include/callback.hpp"
 #include <datetime.h>
 #include <iostream>
+#include <algorithm>
 
 namespace vrpn_python {
 
@@ -64,13 +65,7 @@ namespace vrpn_python {
   }
 
   void Device::removeCallback(void *callback) {
-    std::vector<void *>::iterator it = d_callbacks.begin();
-    while (it != d_callbacks.end()) {
-      if (*it == callback) {
-	break;
-      }
-      it++;
-    }
+    std::vector<void *>::iterator it = std::find(d_callbacks.begin(), d_callbacks.end(), callback);
     if (it != d_callbacks.end()) {
       d_callbacks.erase(it);
     }
