@@ -17,11 +17,11 @@
 
 vrpn_Connection		*conn;	// Connection pointer
 
-void	Usage(char *s)
+int	Usage(char *s)
 {
 	fprintf(stderr,"Usage: %s vrpn_connection_name\n", s);
 	fprintf(stderr,"      (Note: file:filename can be connection name)\n");
-	exit(-1);
+	return -1;
 }
 
 // This function does the work. It prints out the message type,
@@ -49,12 +49,10 @@ int	VRPN_CALLBACK msg_handler(void *, vrpn_HANDLERPARAM p)
 int	main(int argc, char *argv[])
 {
 	char	*conn_name;	// Name of the connection or file
-	int	num_registered_senders = 0;
-	int	num_registered_types = 0;
 
 	// Parse the command line
 	if (argc != 2) {
-		Usage(argv[0]);
+		return Usage(argv[0]);
 	} else {
 		conn_name = argv[1];
 	}
