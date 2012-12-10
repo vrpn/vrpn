@@ -80,8 +80,8 @@ public:
   LatLonCoord (double lat, double lon);
   LatLonCoord (const TypedCoord& other);
   LatLonCoord (const LatLonCoord& other);
-  const LatLonCoord& operator= (const LatLonCoord& other);
-  const LatLonCoord& operator= (const TypedCoord& other);
+  LatLonCoord& operator= (const LatLonCoord& other);
+  LatLonCoord& operator= (const TypedCoord& other);
   void copyLatLonCoord (const LatLonCoord& other);
   void copyOtherCoord (const TypedCoord& other);
   virtual const std::string& createCoordString (std::string& coordString) const;
