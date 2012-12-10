@@ -72,7 +72,7 @@ namespace vrpn_python {
   }
 
   Callback::Callback(void *data) {
-    d_entry = (callbackEntry *)data;
+    d_entry = static_cast<callbackEntry *>(data);
     d_userdata = d_entry->getUserData();
     d_callback = d_entry->getCallback();
 
@@ -99,7 +99,7 @@ namespace vrpn_python {
     Py_DECREF(d_userdata);
     Py_DECREF(d_callback);
   }
-    
+
   void Callback::increment() {
     d_entry->incrementReference();
   }
@@ -109,7 +109,7 @@ namespace vrpn_python {
   }
 
   void Callback::get(void *pointer, PyObject *&userdata, PyObject *&callback) {
-    callbackEntry* entry = (callbackEntry*)pointer; 
+    callbackEntry* entry = static_cast<callbackEntry*>(pointer);
     userdata = entry->getUserData();
     callback = entry->getCallback();
   }

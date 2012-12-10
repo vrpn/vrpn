@@ -46,7 +46,7 @@ namespace vrpn_python {
 	  DeviceException::launch(error);
 	  return;
 	}
-	d_connection = (Connection *)connection;
+	d_connection = static_cast<Connection *>connection;
       }
     }
   }
