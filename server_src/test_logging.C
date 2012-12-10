@@ -1,7 +1,7 @@
 // test_logging.C
 //    This is a VRPN test program that has both clients and servers
 // running within the same thread. It is intended to test the logging of
-// messages and the replay of those messages from the saved log filess
+// messages and the replay of those messages from the saved log files
 //    The program uses VRPN text send/receive to make the logged messages
 // flow from both the client to the server and the server to the client.
 
@@ -160,7 +160,7 @@ int check_for_messages_in(const char *device_name, const char *file_name)
   while ( now.tv_sec - start.tv_sec < 3 ) {
     r->mainloop();
     vrpn_gettimeofday(&now, NULL);
-  }  
+  }
 
   //---------------------------------------------------------------------
   // Delete the receiver, which should also get rid of the connection.
