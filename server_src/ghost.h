@@ -96,7 +96,7 @@
       d_inContact = inContact;
     }
     void addCollision(const vrpn_HapticPosition &point, const vrpn_HapticVector &dir) {
-      if (d_collisions.size() != 0) {
+      if (!d_collisions.empty()) {
 	fprintf(stderr, "vrpn_HapticCollisionState::addCollision(): Only one allowed\n");
       } else {
 	d_collisions.push_back(vrpn_HapticCollision(point, dir));
