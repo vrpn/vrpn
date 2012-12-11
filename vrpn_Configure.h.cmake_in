@@ -16,7 +16,19 @@
 // If true, only build the client-side code into the VRPN library.
 // This makes it smaller and requires less linking with external
 // libraries.
+//
+// If this is defined in this header file, it means that only the
+// client library was built, so the header file was able to show
+// this specialization. If it's not defined here, that may mean both
+// libraries were built, passing the definition for the client library
+// directly to the compiler, meaning that defining it in your app
+// is up to you.
+//
+// The ifndef here means that it's always safe for you to define
+// VRPN_CLIENT_ONLY without risking re-definition warnings/errors.
+#ifndef VRPN_CLIENT_ONLY
 #cmakedefine VRPN_CLIENT_ONLY
+#endif
 
 //--------------------------------------------------------------
 /* This file contains configuration options for VRPN.  The first
