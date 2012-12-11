@@ -35,12 +35,9 @@ if(PERL_FOUND)
 				"${PERL_EXECUTABLE}"
 				"-e"
 				"use ${module}; print \$INC{\"${modfilename}\"}"
-				RESULT_VARIABLE
-				result_code
-				OUTPUT_VARIABLE
-				filename
-				ERROR_VARIABLE
-				error_info
+				RESULT_VARIABLE result_code
+				OUTPUT_VARIABLE filename
+				ERROR_VARIABLE error_info
 				OUTPUT_STRIP_TRAILING_WHITESPACE)
 			if(result_code EQUAL 0)
 				if(NOT PerlModules_FIND_QUIETLY)
