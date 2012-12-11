@@ -216,7 +216,7 @@ int vrpn_Generic_Server_Object::setup_raw_SGIBox (char * & pch, char * line, FIL
   int tbutton;    // Button to toggle
   next();
   if (sscanf (pch, "%511s %511s", s2, s3) != 2) {
-    fprintf (stderr, "Bad vrpn_raw_SGIBox line: %s\n", line);
+    fprintf (stderr, "Bad vrpn_raw_SGIBox line: %511s\n", line);
     return -1;
   }
 
@@ -242,7 +242,7 @@ int vrpn_Generic_Server_Object::setup_raw_SGIBox (char * & pch, char * line, FIL
   //pch=s3;
   pch += strlen (s2) + 1; //advance past the name and port
   pch += strlen (s3) + 1;
-  while (sscanf (pch, "%s", s2) == 1) {
+  while (sscanf (pch, "%511s", s2) == 1) {
     pch += strlen (s2) + 1;
     tbutton = atoi (s2);
     // set the button to be a toggle,
@@ -284,7 +284,7 @@ int vrpn_Generic_Server_Object::setup_SGIBox (char * & pch, char * line, FILE * 
 
   //setting listed buttons to toggles instead of default momentary
   pch += strlen (s2) + 1;
-  while (sscanf (pch, "%s", s2) == 1) {
+  while (sscanf (pch, "%511s", s2) == 1) {
     pch += strlen (s2) + 1;
     tbutton = atoi (s2);
     vrpn_special_sgibox->set_toggle (tbutton,
@@ -539,7 +539,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_AnalogFly (char * & pch, char * li
 
     // get the first token
     char tok[LINESIZE];
-    sscanf (line, "%s", tok);
+    sscanf (line, "%511s", tok);
 
     if (strcmp (tok, "X") == 0) {
       if (get_AFline (line, &p.x)) {
@@ -2015,7 +2015,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_LibertyHS (char * & pch, char * li
   char    rcmd[5000];     // Reset command to send to LibertyHS
   next();
   // Get the arguments (class, tracker_name, num_sensors, baud, [whoami_len])
-  numparms = sscanf (pch, "%511s%d%d", s2, &i1, &i2, &i3);
+  numparms = sscanf (pch, "%511s%d%d%d", s2, &i1, &i2, &i3);
   if (numparms < 3) {
     fprintf (stderr, "Bad vrpn_Tracker_LibertyHS line: %s\n", line);
     return -1;
@@ -3835,7 +3835,7 @@ int vrpn_Generic_Server_Object::setup_Button_NI_DIO24 (char * & pch, char * line
 
   next();
   // Get the arguments (class, D24_name, numChannels)
-  numArgs = sscanf (pch, "%511s%d%d", DIO24name, &numChannels) ;
+  numArgs = sscanf (pch, "%511s%d", DIO24name, &numChannels) ;
   if (numArgs != 1 && numArgs != 2) {
     fprintf (stderr, "Bad vrpn_Button_NI_DIO24 line: %s\n", line);
     return -1;
