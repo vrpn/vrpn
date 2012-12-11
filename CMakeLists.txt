@@ -750,6 +750,11 @@ if(VRPN_BUILD_EXTRA_COMPILER_WARNINGS)
 	globally_enable_extra_compiler_warnings()
 endif()
 
+set(VRPN_CLIENT_ONLY)
+if(VRPN_BUILD_CLIENT_LIBRARY AND NOT VRPN_BUILD_SERVER_LIBRARY)
+	# We can define VRPN_CLIENT_ONLY in the header in this case!
+	set(VRPN_CLIENT_ONLY ON)
+endif()
 
 #-----------------------------------------------------------------------------
 # configure a header file to pass some of the CMake settings
@@ -1097,11 +1102,13 @@ if(VRPN_BUILD_CLIENT_LIBRARY)
 		PUBLIC_HEADER
 		${VRPN_CLIENT_PUBLIC_HEADERS})
 
-	set_property(TARGET
-		vrpn
-		PROPERTY
-		COMPILE_DEFINITIONS
-		"VRPN_CLIENT_ONLY")
+	if(NOT VRPN_CLIENT_ONLY)
+		set_property(TARGET
+			vrpn
+			PROPERTY
+			COMPILE_DEFINITIONS
+			"VRPN_CLIENT_ONLY")
+	endif()
 	set_property(TARGET
 		vrpn
 		PROPERTY
