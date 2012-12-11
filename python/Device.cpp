@@ -47,7 +47,9 @@ namespace vrpn_python {
 	  DeviceException::launch(error);
 	  return;
 	}
-	d_connection = static_cast<Connection *>connection;
+	/// @todo Why is this using/needing a c-style cast?
+	//d_connection = static_cast<Connection *>(connection);
+	d_connection = (Connection *)(connection);
       }
     }
   }
