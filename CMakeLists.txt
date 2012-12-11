@@ -692,16 +692,6 @@ endif()
 # as well as all #pragma comment (lib, "" ) lines, since cmake replaces
 # them more flexibly (include_directories and target_link_libraries)
 
-#-----------------------------------------------------------------------------
-# configure a header file to pass some of the CMake settings
-# to the source code
-configure_file("${PROJECT_SOURCE_DIR}/vrpn_Configure.h.cmake_in"
-	"${PROJECT_BINARY_DIR}/vrpn_Configure.h")
-file(RELATIVE_PATH
-	VRPN_PATH_TO_CMAKE_CONFIG
-	"${CMAKE_CURRENT_SOURCE_DIR}"
-	"${PROJECT_BINARY_DIR}/vrpn_Configure.h")
-add_definitions("-DVRPN_USING_CMAKE=\"${VRPN_PATH_TO_CMAKE_CONFIG}\"")
 
 # Configuration options controlling what gets included in the build.
 # These are the default options for libraries we can't yet detect -
@@ -732,10 +722,6 @@ option(VRPN_USE_FREESPACE
 option(VRPN_USE_TRIVISIOCOLIBRI
 	"Build with support for TrivisioColibri tracker"
 	OFF)
-option(VRPN_BUILD_EXTRA_COMPILER_WARNINGS
-	"Build with flags to enable extra warnings."
-	OFF)
-
 if(WIN32)
 	option(VRPN_USE_DIRECTINPUT
 		"Build with Microsoft DirectInput support"
@@ -743,22 +729,38 @@ if(WIN32)
 	option(VRPN_USE_SHARED_LIBRARY
 		"Enable to use DLLs on Windows (see vrpn_Configure.h for more info)"
 		OFF)
-elseif(UNIX)
+endif()
+
+if(UNIX)
 	option(VRPN_BUILD_PROFILING_SUPPORT
 		"Build with flags to enable profiling."
 		OFF)
+	if(VRPN_BUILD_PROFILING_SUPPORT)
+		include(EnableProfiling)
+		globally_enable_profiling()
+	endif()
 endif()
 
 
+option(VRPN_BUILD_EXTRA_COMPILER_WARNINGS
+	"Build with flags to enable extra warnings."
+	OFF)
 if(VRPN_BUILD_EXTRA_COMPILER_WARNINGS)
 	include(EnableExtraCompilerWarnings)
 	globally_enable_extra_compiler_warnings()
 endif()
 
-if(VRPN_BUILD_PROFILING_SUPPORT)
-	include(EnableProfiling)
-	globally_enable_profiling()
-endif()
+
+#-----------------------------------------------------------------------------
+# configure a header file to pass some of the CMake settings
+# to the source code
+configure_file("${PROJECT_SOURCE_DIR}/vrpn_Configure.h.cmake_in"
+	"${PROJECT_BINARY_DIR}/vrpn_Configure.h")
+file(RELATIVE_PATH
+	VRPN_PATH_TO_CMAKE_CONFIG
+	"${CMAKE_CURRENT_SOURCE_DIR}"
+	"${PROJECT_BINARY_DIR}/vrpn_Configure.h")
+add_definitions("-DVRPN_USING_CMAKE=\"${VRPN_PATH_TO_CMAKE_CONFIG}\"")
 
 if(SUBPROJECT)
 	set(BUILD_TESTING FALSE)
