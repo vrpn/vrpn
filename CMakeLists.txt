@@ -688,8 +688,9 @@ file(RELATIVE_PATH
 add_definitions("-DVRPN_USING_CMAKE=\"${VRPN_PATH_TO_CMAKE_CONFIG}\"")
 
 # Configuration options controlling what gets included in the build.
-# These are the default options - if a library is detected above it will
-# be pre-set to ON instead.
+# These are the default options for libraries we can't yet detect -
+# if a library can be detected above it will be pre-set to an appropriate
+# value by default.
 option(VRPN_INCLUDE_INTERSENSE
 	"Build with InterSense native library support"
 	OFF)
@@ -714,9 +715,6 @@ option(VRPN_USE_FREESPACE
 	OFF)
 option(VRPN_USE_TRIVISIOCOLIBRI
 	"Build with support for TrivisioColibri tracker"
-	OFF)
-option(VRPN_USE_JSONNET
-	"Build with support JSON over UDP (for Android widgets)"
 	OFF)
 option(VRPN_BUILD_EXTRA_COMPILER_WARNINGS
 	"Build with flags to enable extra warnings."
