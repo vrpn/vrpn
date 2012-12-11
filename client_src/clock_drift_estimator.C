@@ -166,7 +166,7 @@ protected:
   static int VRPN_CALLBACK handle_pong(void *userdata, vrpn_HANDLERPARAM p)
   {
     //printf("XXX PONG\n");
-    vrpn_Clock_Drift_Estimator  *me = (vrpn_Clock_Drift_Estimator *)(userdata);
+    vrpn_Clock_Drift_Estimator  *me = static_cast<vrpn_Clock_Drift_Estimator *>(userdata);
 
     // If we're currently estimating, then update the statistics based on
     // the time of the response and the time we asked for a response.
