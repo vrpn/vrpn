@@ -28,7 +28,7 @@
 
 class vrpn_Xkeys: public vrpn_BaseClass, protected vrpn_HidInterface {
 public:
-  vrpn_Xkeys(vrpn_HidAcceptor *filter, const char *name, vrpn_Connection *c = 0);
+  vrpn_Xkeys(vrpn_HidAcceptor *filter, const char *name, vrpn_Connection *c = 0, bool toggle_light = true);
   virtual ~vrpn_Xkeys();
 
   virtual void mainloop() = 0;
@@ -44,6 +44,7 @@ protected:
   virtual void decodePacket(size_t bytes, vrpn_uint8 *buffer) = 0;	
   struct timeval _timestamp;
   vrpn_HidAcceptor *_filter;
+  bool		_toggle_light;
 
   // No actual types to register, derived classes will be buttons, analogs, and/or dials
   int register_types(void) { return 0; }
@@ -120,7 +121,23 @@ protected:
   vrpn_uint8 _lastDial;
 };
 
-// end of _WIN32
+class vrpn_Xkeys_XK3: protected vrpn_Xkeys, public vrpn_Button_Filter {
+public:
+  vrpn_Xkeys_XK3(const char *name, vrpn_Connection *c = 0);
+  virtual ~vrpn_Xkeys_XK3() {};
+
+  virtual void mainloop();
+
+protected:
+  // Send report iff changed
+  void report_changes (void);
+  // Send report whether or not changed
+  void report (void);
+
+  void decodePacket(size_t bytes, vrpn_uint8 *buffer);
+};
+
+// end of VRPN_USE_HID
 #endif
 
 // end of VRPN_XKEYS_H

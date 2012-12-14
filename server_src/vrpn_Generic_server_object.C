@@ -4377,6 +4377,42 @@ int vrpn_Generic_Server_Object::setup_Xkeys_Jog_And_Shuttle (char * & pch, char 
   return 0;  // successful completion
 }
 
+int vrpn_Generic_Server_Object::setup_Xkeys_XK3 (char * & pch, char * line, FILE * config_file)
+{
+#if defined(VRPN_USE_HID)
+
+  char s2 [LINESIZE];
+
+  next();
+  if (sscanf (pch, "%511s", s2) != 1) {
+    fprintf (stderr, "Bad Xkeys_XK3 line: %s\n", line);
+    return -1;
+  }
+
+  // Open the Xkeys
+  // Make sure there's room for a new button
+  if (num_buttons >= VRPN_GSO_MAX_BUTTONS) {
+    fprintf (stderr, "vrpn_Xkeys_XK3: Too many buttons in config file");
+    return -1;
+  }
+
+  // Open the button
+  if (verbose) {
+    printf ("Opening vrpn_Xkeys_XK3 on host %s\n", s2);
+  }
+  if ( (buttons[num_buttons] = new vrpn_Xkeys_XK3 (s2, connection)) == NULL) {
+    fprintf (stderr, "Can't create new vrpn_Xkeys_XK3\n");
+    return -1;
+  } else {
+    num_buttons++;
+  }
+#else
+  fprintf (stderr, "vrpn_server: Can't open Xkeys: HID not compiled in.\n");
+#endif
+
+  return 0;  // successful completion
+}
+
 int vrpn_Generic_Server_Object::setup_3DConnexion_Navigator (char * & pch, char * line, FILE * config_file)
 {
   char s2 [LINESIZE];
@@ -5500,6 +5536,8 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object (vrpn_Connection *connect
         CHECK (setup_Xkeys_Joystick);
       } else if (isit ("vrpn_Xkeys_Jog_And_Shuttle")) {
         CHECK (setup_Xkeys_Jog_And_Shuttle);
+      } else if (isit ("vrpn_Xkeys_XK3")) {
+        CHECK (setup_Xkeys_XK3);
       } else if (isit ("vrpn_3DConnexion_Navigator")) {
         CHECK (setup_3DConnexion_Navigator);
       } else if (isit ("vrpn_3DConnexion_Navigator_for_Notebooks")) {

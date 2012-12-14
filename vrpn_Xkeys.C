@@ -9,25 +9,29 @@ static const vrpn_uint16 XKEYS_VENDOR = 0x05F3;
 static const vrpn_uint16 XKEYS_DESKTOP = 0x0281;
 static const vrpn_uint16 XKEYS_JOG_AND_SHUTTLE = 0x0241;
 static const vrpn_uint16 XKEYS_PRO = 0x0291;
-static const vrpn_uint16 XKEYS_JOYSTICK = 0x251;
+static const vrpn_uint16 XKEYS_JOYSTICK = 0x0251;
+static const vrpn_uint16 XKEYS_XK3 = 0x042C;
 
-vrpn_Xkeys::vrpn_Xkeys(vrpn_HidAcceptor *filter, const char *name, vrpn_Connection *c)
+vrpn_Xkeys::vrpn_Xkeys(vrpn_HidAcceptor *filter, const char *name, vrpn_Connection *c, bool toggle_light)
   : _filter(filter)
   , vrpn_HidInterface(_filter)
   , vrpn_BaseClass(name, c)
+  , _toggle_light(toggle_light)
 {
 	init_hid();
 }
 
 vrpn_Xkeys::~vrpn_Xkeys()
 {
+  if (_toggle_light) {
 	// Indicate we're no longer waiting for a connection by
         // turning off both the red and green LEDs.
 	vrpn_uint8 outputs[9] = {0};
 	outputs[8] = 0;
 	send_data(9, outputs);
 
-	delete _filter;
+  }
+  delete _filter;
 }
 
 void vrpn_Xkeys::init_hid() {
@@ -36,9 +40,11 @@ void vrpn_Xkeys::init_hid() {
 	register_autodeleted_handler(d_connection->register_message_type(vrpn_got_connection), on_connect, this);
 
 	// Indicate we're waiting for a connection by turning on the red LED
+  if (_toggle_light) {
 	vrpn_uint8 outputs[9] = {0};
 	outputs[8] = 128;
 	send_data(9, outputs);
+  }
 }
 
 void vrpn_Xkeys::on_data_received(size_t bytes, vrpn_uint8 *buffer)
@@ -46,23 +52,28 @@ void vrpn_Xkeys::on_data_received(size_t bytes, vrpn_uint8 *buffer)
   decodePacket(bytes, buffer);
 }
 
-int vrpn_Xkeys::on_last_disconnect(void *thisPtr, vrpn_HANDLERPARAM /*p*/) {
-	// Set light to red to indicate we have no active connections
-	vrpn_uint8 outputs[9] = {0};
-	outputs[8] = 128;
-
-	static_cast<vrpn_Xkeys *>(thisPtr)->send_data(9, outputs);
-
+int vrpn_Xkeys::on_last_disconnect(void *thisPtr, vrpn_HANDLERPARAM /*p*/)
+{
+	vrpn_Xkeys *me = static_cast<vrpn_Xkeys *>(thisPtr);
+	if (me->_toggle_light) {
+		// Set light to red to indicate we have no active connections
+		vrpn_uint8 outputs[9] = {0};
+		outputs[8] = 128;
+		me->send_data(9, outputs);
+	}
 	return 0;
 }
 
-int vrpn_Xkeys::on_connect(void *thisPtr, vrpn_HANDLERPARAM /*p*/) {
-	// Set light to green to indicate we have an active connection
-	vrpn_uint8 outputs[9] = {0};
-	outputs[8] = 64;
+int vrpn_Xkeys::on_connect(void *thisPtr, vrpn_HANDLERPARAM /*p*/)
+{
+	vrpn_Xkeys *me = static_cast<vrpn_Xkeys *>(thisPtr);
 
-	static_cast<vrpn_Xkeys *>(thisPtr)->send_data(9, outputs);
-
+	if (me->_toggle_light) {
+		// Set light to green to indicate we have an active connection
+		vrpn_uint8 outputs[9] = {0};
+		outputs[8] = 64;
+		me->send_data(9, outputs);
+	}
 	return 0;
 }
 
@@ -108,7 +119,7 @@ void vrpn_Xkeys_Desktop::decodePacket(size_t bytes, vrpn_uint8 *buffer) {
 
 		if (!(report[10] & 0x08)) {
 			// Apparently we got a corrupted report; skip this one.
-			fprintf(stderr, "vrpn_Xkeys: Found a corrupted report; # total bytes = %u\n", static_cast<unsigned>(bytes));
+			fprintf(stderr, "vrpn_Xkeys_Desktop: Found a corrupted report; # total bytes = %u\n", static_cast<unsigned>(bytes));
 			continue;
 		}
 
@@ -550,6 +561,63 @@ void vrpn_Xkeys_Pro::decodePacket(size_t bytes, vrpn_uint8 *buffer)
 	} else {
 		fprintf(stderr,"vrpn_Xkeys_Pro::decodePacket(): Unrecognized packet length (%u)\n", static_cast<unsigned>(bytes));
 		return;
+	}
+}
+
+vrpn_Xkeys_XK3::vrpn_Xkeys_XK3(const char *name, vrpn_Connection *c)
+  : vrpn_Xkeys(_filter = new vrpn_HidProductAcceptor(XKEYS_VENDOR, XKEYS_XK3), name, c, false)
+  , vrpn_Button_Filter(name, c)
+{
+  // 3 buttons
+  vrpn_Button::num_buttons = 3;
+
+  // Initialize the state of all the buttons
+  memset(buttons, 0, sizeof(buttons));
+  memset(lastbuttons, 0, sizeof(lastbuttons));
+}
+
+void vrpn_Xkeys_XK3::mainloop()
+{
+	update();
+	server_mainloop();
+	vrpn_gettimeofday(&_timestamp, NULL);
+	report_changes();
+
+	vrpn_Button::server_mainloop();
+}
+
+void vrpn_Xkeys_XK3::report(void) {
+	vrpn_Button::timestamp = _timestamp;
+	vrpn_Button::report_changes();
+}
+
+void vrpn_Xkeys_XK3::report_changes(void) {
+	vrpn_Button::timestamp = _timestamp;
+	vrpn_Button::report_changes();
+}
+
+void vrpn_Xkeys_XK3::decodePacket(size_t bytes, vrpn_uint8 *buffer) {
+	// Decode all full reports, each of which is 32 bytes long.
+        // Because there is only one type of report, the initial "0" report-type
+        // byte is removed by the HIDAPI driver.
+	// XXX Check to see that this works with HIDAPI, there may be two smaller reports.
+	for (size_t i = 0; i < bytes / 32; i++) {
+		vrpn_uint8 *report = buffer + (i * 32);
+
+		// The first two bytes of the report always seem to be
+		// 0x00 0x01.
+		if ((report[0] != 0x00) || (report[1] != 0x01) ) {
+			// Apparently we got a corrupted report; skip this one.
+			fprintf(stderr, "vrpn_Xkeys_XK3: Found a corrupted report; # total bytes = %u\n", static_cast<unsigned>(bytes));
+			continue;
+		}
+
+		// The left button is bit 1 (value 0x02) in the third byte
+		// The middle button is bit 2 (value 0x04) in the third byte
+		// The right button is bit 3 (value 0x08) in the third byte
+		buttons[0] = (report[2] & 0x02) != 0;
+		buttons[1] = (report[2] & 0x04) != 0;
+		buttons[2] = (report[2] & 0x08) != 0;
 	}
 }
 

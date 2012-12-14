@@ -333,6 +333,7 @@ class vrpn_Generic_Server_Object
     int setup_Xkeys_Pro (char * & pch, char * line, FILE * config_file) ;
     int setup_Xkeys_Joystick (char * & pch, char * line, FILE * config_file) ;
     int setup_Xkeys_Jog_And_Shuttle (char * & pch, char * line, FILE * config_file) ;
+    int setup_Xkeys_XK3 (char * & pch, char * line, FILE * config_file) ;
     int setup_3DConnexion_Navigator (char * & pch, char * line, FILE * config_file) ;
     int setup_3DConnexion_Navigator_for_Notebooks (char * & pch, char * line, FILE * config_file) ;
     int setup_3DConnexion_Traveler (char * & pch, char * line, FILE * config_file) ;

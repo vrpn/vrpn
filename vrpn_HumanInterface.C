@@ -69,7 +69,7 @@ bool vrpn_HidInterface::reconnect()
           device_info.manufacturer_string = loop->manufacturer_string;
           device_info.product_string = loop->product_string;
           device_info.interface_number = loop->interface_number;
-          //printf("XXX Found vendor %x, product %x, interface %d\n", (unsigned)(loop->vendor_id), (unsigned)(loop->product_id), (int)(loop->interface_number) );
+          //printf("XXX Found vendor 0x%x, product 0x%x, interface %d\n", (unsigned)(loop->vendor_id), (unsigned)(loop->product_id), (int)(loop->interface_number) );
 
           if (_acceptor->accept(device_info)) {
             _vendor = loop->vendor_id;
@@ -79,7 +79,7 @@ bool vrpn_HidInterface::reconnect()
             path = loop->path;
             found = true;
 #ifdef VRPN_HID_DEBUGGING
-            fprintf(stderr,"vrpn_HidInterface::reconnect(): Found %ls %ls (%04hx:%04hx) at path %s - will attempt to to open.\n",
+            fprintf(stderr,"vrpn_HidInterface::reconnect(): Found %ls %ls (%04hx:%04hx) at path %s - will attempt to open.\n",
 				loop->manufacturer_string, loop->product_string, _vendor, _product, loop->path);
 #endif
           }
@@ -90,10 +90,13 @@ bool vrpn_HidInterface::reconnect()
 		return false;
         }
 
-		// Initialize the HID interface and open the device.
-		_device = hid_open_path(path);
+	// Initialize the HID interface and open the device.
+        // XXX The path version didn't work on Windows for PI foot pedal,
+        // but then neither does the hid_open() version...
+//      _device = hid_open(loop->vendor_id, loop->product_id, loop->serial_number);
+        _device = hid_open_path(path);
         if (_device == NULL) {
-		fprintf(stderr,"vrpn_HidInterface::reconnect(): Could not open device\n");
+		fprintf(stderr,"vrpn_HidInterface::reconnect(): Could not open device %s\n", path);
 #ifdef linux
 		fprintf(stderr,"   (Did you remember to run as root?)\n");
 #endif
