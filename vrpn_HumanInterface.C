@@ -91,9 +91,6 @@ bool vrpn_HidInterface::reconnect()
         }
 
 	// Initialize the HID interface and open the device.
-        // XXX The path version didn't work on Windows for PI foot pedal,
-        // but then neither does the hid_open() version...
-//      _device = hid_open(loop->vendor_id, loop->product_id, loop->serial_number);
         _device = hid_open_path(path);
         if (_device == NULL) {
 		fprintf(stderr,"vrpn_HidInterface::reconnect(): Could not open device %s\n", path);
@@ -125,13 +122,6 @@ bool vrpn_HidInterface::reconnect()
 }
 
 // Check for incoming characters.  If we get some, pass them on to the handler code.
-// This is based on the source code for the hid_interrupt_read() function; it goes
-// down to the libusb interface directly to get any available characters.  Because
-// we're trying to support a generic device, we can't say in advance how large any
-// particular transfer should be.  So we try to one character at a time until we
-// don't have any more to read.  This update() routine must be called
-// frequently to make sure we don't get partial results, which would mean sending
-// truncated reports to the devices derived from us.
 
 void vrpn_HidInterface::update()
 {
