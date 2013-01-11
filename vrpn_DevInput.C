@@ -64,8 +64,7 @@ static const std::string &getDeviceNodes(const std::string &device_name) {
     return node_name->second;
   }
 
-
-  throw (std::string("Cannot find the device: ") + device_name).c_str();
+  throw (char*)(std::string("Cannot find the device: ") + device_name).c_str();
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -122,7 +121,7 @@ vrpn_DevInput::vrpn_DevInput( const char* name, vrpn_Connection * cxn, const cha
 
   d_fileDescriptor = open(node.c_str(), O_RDONLY);
   if(d_fileDescriptor < 0){
-    throw (std::string("Cannot open the device: ") + device_name + std::string(strerror(errno))).c_str();
+    throw (char*)(std::string("Cannot open the device: ") + device_name + std::string(strerror(errno))).c_str();
   }
 }
 
