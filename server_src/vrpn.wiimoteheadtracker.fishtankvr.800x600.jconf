@@ -346,7 +346,7 @@
          <proxy>VJSystemStopKernelProxy</proxy>
       </alias>
       <simulated_relative_position name="SimWandRelativePos" version="1">
-         <base_frame_proxy>Head Proxy</base_frame_proxy>
+         <base_frame_proxy>HeadProxy</base_frame_proxy>
          <relative_proxy>RelativeWand Proxy</relative_proxy>
          <device_host />
       </simulated_relative_position>
