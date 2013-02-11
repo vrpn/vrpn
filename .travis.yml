@@ -1,0 +1,11 @@
+compiler:
+  - clang
+  - gcc
+
+before_install:
+  - git submodule update --init --recursive
+  - sudo apt-get update -qq
+  - sudo apt-get install -qq libgpm-dev freeglut-dev libusb-1.0-0-dev libqt4-dev
+
+language: cpp
+script: mkdir build && cd build && cmake .. -DVRPN_GPL_SERVER:BOOL=TRUE -D  VRPN_BUILD_EXTRA_COMPILER_WARNINGS:BOOL=TRUE && make && make test
