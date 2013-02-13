@@ -93,6 +93,7 @@
 #include "vrpn_LUDL.h"
 #include "vrpn_Tracker_GameTrak.h"
 #include "vrpn_Tracker_SpacePoint.h"
+#include "vrpn_Tracker_Wintracker.h"
 #include "vrpn_Analog_5dtUSB.h"
 #include "vrpn_Tracker_RazerHydra.h"
 #include "vrpn_Tracker_zSight.h" // added by David Borland
@@ -344,6 +345,7 @@ class vrpn_Generic_Server_Object
     int setup_Tracker_GPS (char * & pch, char * line, FILE * config_file);
     int setup_WiiMote (char * & pch, char * line, FILE * config_file);
     int setup_SpacePoint (char * & pch, char * line, FILE * config_file);
+    int setup_Wintracker (char * & pch, char * line, FILE * config_file);
     int setup_Tracker_WiimoteHead (char * & pch, char * line, FILE * config_file);
     int setup_Freespace (char * & pch, char * line, FILE * config_file);
     int setup_DreamCheeky (char * & pch, char * line, FILE * config_file) ;

@@ -4637,6 +4637,50 @@ int vrpn_Generic_Server_Object::setup_SpacePoint (char * & pch, char * line, FIL
   return 0;  // successful completion
 }
 
+int vrpn_Generic_Server_Object::setup_Wintracker (char * & pch, char * line, FILE * config_file)
+{
+#ifdef VRPN_USE_HID
+
+  	char name[LINESIZE];
+	char s0[LINESIZE], s1[LINESIZE], s2[LINESIZE];
+	char ext[LINESIZE];
+	char hemi[LINESIZE];
+
+next();
+
+  if (sscanf (pch, "%511s%511s%511s%511s%511s%511s",name, s0, s1, s2, ext, hemi) != 6) {
+    fprintf (stderr, "Bad Wintracker line: %s\n", line);
+    fprintf (stderr, "NAME: %s\n", name);
+    return -1;
+  }
+
+
+  // Open the Wintracker
+  // Make sure there's room for a new tracker
+  if (num_trackers >= VRPN_GSO_MAX_TRACKERS) {
+    fprintf (stderr, "vrpn_Tracker_Wintracker: Too many trackers in config file");
+    return -1;
+  }
+
+  // Open the tracker
+  if (verbose) {
+	printf ("Parameters ->  name:%c, s0: %c, s1:  %c, s2: %c,ext: %c, hemi: %c\n", name[0], s0[0],s1[0],s2[0],ext[0],hemi[0]);
+	printf ("Opening vrpn_Tracker_Wintracker %s\n", name);
+  }
+
+  if ( (trackers[num_trackers] = new vrpn_Tracker_Wintracker (name, connection, s0[0], s1[0], s2[0], ext[0], hemi[0])) == NULL) {
+    fprintf (stderr, "Can't create new vrpn_Wintracker\n");
+    return -1;
+  } else {
+    num_trackers++;
+  }
+#else
+  fprintf (stderr, "Wintracker driver works only with VRPN_USE_HID defined!\n");
+#endif
+
+  return 0;  // successful completion
+}
+
 int vrpn_Generic_Server_Object::setup_Tracker_GameTrak (char *pch, char *line, FILE * config_file)
 {
   char s2[LINESIZE];
@@ -5566,6 +5610,8 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object (vrpn_Connection *connect
         CHECK (setup_Tracker_TrivisioColibri);
       } else if (isit ("vrpn_Tracker_SpacePoint")) {
         CHECK (setup_SpacePoint);
+      } else if (isit ("vrpn_Tracker_Wintracker")) {
+        CHECK (setup_Wintracker);
       } else if (isit ("vrpn_Tracker_GameTrak")) {
         CHECK (setup_Tracker_GameTrak);
       }
