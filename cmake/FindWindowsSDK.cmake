@@ -69,7 +69,8 @@ if(MSVC_VERSION GREATER 1310) # Newer than VS .NET/VS Toolkit 2003
 	foreach(_winsdkver v7.1 v7.0A v6.1 v6.0A v6.0)
 		get_filename_component(_sdkdir
 			"[HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Microsoft SDKs\\Windows\\${_winsdkver};InstallationFolder]"
-			ABSOLUTE)		if(EXISTS "${_sdkdir}")
+			ABSOLUTE)
+		if(EXISTS "${_sdkdir}")
 			list(APPEND _win_sdk_dirs "${_sdkdir}")
 			list(APPEND
 				_win_sdk_versanddirs
