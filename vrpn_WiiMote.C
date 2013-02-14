@@ -455,7 +455,6 @@ vrpn_WiiMote::~vrpn_WiiMote() {
 // VRPN main loop
 // Poll the device and let the VRPN change notifications fire
 void vrpn_WiiMote::mainloop() {
-	static time_t last_error = time(NULL);
 #ifndef vrpn_THREADS_AVAILABLE
 	static timeval last_reconnect_attempt;
 #endif
