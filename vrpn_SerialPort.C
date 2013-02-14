@@ -17,6 +17,10 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
+#if defined(_WIN32) && !defined(NO_MINMAX)
+#  define NOMINMAX
+#endif
+
 // Internal Includes
 #include "vrpn_SerialPort.h"
 #include "vrpn_Serial.h"
