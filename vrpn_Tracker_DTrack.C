@@ -72,7 +72,7 @@
 #include <string.h>                     // for strncmp, memset, strcat, etc
 
 #ifdef OS_WIN
-	#include <winsock.h>
+	#include <winsock2.h>
 #endif
 #ifdef OS_UNIX
 	#include <netinet/in.h>                 // for sockaddr_in, INADDR_ANY, etc
