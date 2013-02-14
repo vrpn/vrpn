@@ -1,0 +1,4 @@
+CMakeLists.txt	eol=lf
+*.cmake			eol=lf
+.gitignore		eol=lf export-ignore
+.gitattributes	eol=lf export-ignore
