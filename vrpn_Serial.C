@@ -16,7 +16,9 @@
 #include <sys/termios.h>
 #endif
 
-#if defined(_WIN32)
+#include "vrpn_Shared.h"                // for timeval, vrpn_gettimeofday, and making it safe to include windows headers
+
+#if defined(_WIN32) && !defined(_WIN32_WCE)
 #include <io.h>
 #if defined(__GNUC__) && !defined(__MINGW32__)
 #include <netinet/in.h>
@@ -27,7 +29,6 @@
 #endif
 
 #include "vrpn_Serial.h"
-#include "vrpn_Shared.h"                // for timeval, vrpn_gettimeofday
 
 //#define VERBOSE
 

@@ -3,11 +3,6 @@
 
 #include "vrpn_Configure.h"             // for VRPN_API
 
-#ifdef _WIN32
-#ifndef _WIN32_WCE
-#include <io.h>
-#endif
-#endif
 
 /// @file
 ///
