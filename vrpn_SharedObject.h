@@ -4,14 +4,14 @@
 #include <stddef.h>                     // for NULL
 
 #include "vrpn_Configure.h"             // for VRPN_CALLBACK, VRPN_API
+// This *must* be here to take care of winsock2.h and sys/time.h and other
+// assorted system-dependent details.
 #include "vrpn_Shared.h"                // for timeval
 #include "vrpn_Types.h"                 // for vrpn_int32, vrpn_bool, etc
 
 class VRPN_API vrpn_Connection;
 struct timeval;
 struct vrpn_HANDLERPARAM;
-  // This *must* be here to take care of winsock.h and sys/time.h and other
-  // assorted system-dependent details.
 
 class VRPN_API vrpn_LamportClock;  // from "vrpn_LamportClock.h"
 class VRPN_API vrpn_LamportTimestamp;
