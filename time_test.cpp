@@ -2,14 +2,13 @@
 #ifdef  _WIN32
 #define _CRT_SECURE_NO_WARNINGS
 
-#include <windows.h>
+#include "vrpn_Shared.h"
 #include <winbase.h>
 #include <stdio.h>
 #include <math.h>
 #include <sys/types.h>
 #include <sys/timeb.h>
 #include "vrpn_Types.h"
-#include "vrpn_Shared.h"
 
 /*
 void	get_time_using_GetLocalTime(unsigned long &sec, unsigned long &usec)

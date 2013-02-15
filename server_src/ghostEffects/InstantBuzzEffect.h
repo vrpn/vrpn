@@ -14,11 +14,7 @@
 #define FALSE 0
 #endif
 
-// RMT I hate that this has to be here, but things blow up in the compilation
-// if it is not.
-#if defined(_WIN32) || defined(__CYGWIN__)
-#include <windows.h>
-#endif
+#include "vrpn_Shared.h"
 
 #include <math.h>
 #include <stdio.h>

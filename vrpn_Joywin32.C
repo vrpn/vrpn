@@ -4,7 +4,7 @@
 #if defined(_WIN32)
 
 #pragma comment(lib,"winmm.lib")
-
+#include "vrpn_Shared.h"
 #include <windows.h>
 #include <stdio.h>
 #include <cmath>

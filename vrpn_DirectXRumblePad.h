@@ -12,6 +12,7 @@
 #ifndef DIRECTINPUT_VERSION
 #define	DIRECTINPUT_VERSION 0x0800
 #endif
+#include "vrpn_Shared.h"
 #include <dinput.h>
 #include <windows.h>
 
