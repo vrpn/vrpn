@@ -9,7 +9,8 @@
   Created: Mon Apr 27 14:26:09 1998
   Revised: Fri Jan 29 17:09:15 1999 by weberh
 \*****************************************************************************/
-#include <windows.h>
+#include "vrpn_Shared.h"
+
 #include <mmsystem.h>
 // link with winmm.lib
 

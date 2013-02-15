@@ -1,5 +1,6 @@
+#include "vrpn_Shared.h"
+
 #ifdef _WIN32
-#include <windows.h>
 #include <windowsx.h>
 #include <conio.h>
 #include "resource.h"

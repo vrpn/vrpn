@@ -1,9 +1,3 @@
-// RMT I hate that this has to be here, but things blow up in the compilation
-// if it is not.
-#ifdef __CYGWIN__
-#include <windows.h>
-#endif
-
 //XXX Problem: Recovery time seems to have gotten itself unimplemented over time.
 
 //XXX Buzzing and texture are not currently supported on HDAPI planes because
@@ -12,6 +6,7 @@
 
 #include  "vrpn_Configure.h"
 #ifdef	VRPN_USE_PHANTOM_SERVER
+#include "vrpn_Shared.h"
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>

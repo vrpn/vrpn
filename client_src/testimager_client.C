@@ -6,9 +6,7 @@
 #include <stdio.h>                      // for printf, NULL, fprintf, etc
 #include <stdlib.h>                     // for exit
 #include <string.h>                     // for strcmp
-#ifdef	_WIN32
-#include <windows.h>
-#endif
+
 #ifdef __APPLE__
 #include <GLUT/glut.h>
 #include <OpenGL/OpenGL.h>

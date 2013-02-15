@@ -2,12 +2,11 @@
 #define VRPN_SOUND_A3D_H
 
 #ifdef _WIN32
+#include "vrpn_Shared.h"
 
 #include <objbase.h>
 #include <stdlib.h>
 #include <cguid.h>
-
-#include <windows.h>
 
 #include <initguid.h>
 #include "ia3dutil.h"

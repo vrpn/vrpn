@@ -2,7 +2,7 @@
 #ifndef	DIRECTX_CAMERA_SERVER_H
 #define	DIRECTX_CAMERA_SERVER_H
 
-#include <windows.h>
+#include "vrpn_Shared.h"
 #include <stdio.h>
 #include <math.h>
 

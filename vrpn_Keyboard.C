@@ -5,8 +5,6 @@
 
 class VRPN_API vrpn_Connection;
 #ifdef	_WIN32
-#include <windows.h>
-
 #pragma comment (lib, "user32.lib")
 #endif
 

@@ -2,6 +2,7 @@
 #define VRPN_SOUND_ASM_H
 
 #ifdef _WIN32
+#include "vrpn_Shared.h"
 
 // Define PI if not already defined
 #ifndef PI
@@ -11,7 +12,6 @@
 #include <objbase.h>
 #include <stdlib.h>
 #include <cguid.h>
-#include <windows.h>
 #include "vrpn_Sound.h"
 #include "quat.h"
 #include "string.h"

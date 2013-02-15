@@ -11,9 +11,7 @@
 #else
 #include <gstPHANToM.h>
 #endif
-#ifdef _WIN32
-#include <windows.h>
-#endif
+
 #include <math.h>
 #include "InstantBuzzEffect.h"
 

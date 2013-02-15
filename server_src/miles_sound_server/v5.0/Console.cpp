@@ -24,7 +24,7 @@ by  u.  if you want to change  a particular variable and see the effect,
 You can use this.
 */
 
-#include <windows.h>
+#include "vrpn_Shared.h"
 #include <stdio.h>
 #include <fcntl.h>
 #include <io.h>
