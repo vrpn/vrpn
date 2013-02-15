@@ -7,11 +7,13 @@
 #ifndef PLANE_H
 #define PLANE_H
 
+#include "vrpn_Configure.h"
+
+
 #ifdef	VRPN_USE_PHANTOM_SERVER
 #include "vrpn_Shared.h"
 
 
-#include  "vrpn_Configure.h"
 #include "ghost.h"
 
 class Plane:public vrpn_HapticSurface
