@@ -675,8 +675,14 @@ endif()
 ###
 # Perl, for vrpn_rpc_gen
 ###
-find_package(Perl)
-find_package(PerlModules COMPONENTS Parse::RecDescent)
+if(NOT WIN32)
+	# TODO - a bit of a compatibility hack
+	# MiKTeX 2.9's perl is broken - missing libgcc-s-sjlj-1.dll -
+	# and can't seem to work around it without popping up dialogs
+	# which is no fun for automated builds.
+	find_package(Perl)
+	find_package(PerlModules COMPONENTS Parse::RecDescent)
+endif()
 
 option_requires(VRPN_BUILD_TEST_RPC_GENERATION
 	"Build VRPN RPC generation"
