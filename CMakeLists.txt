@@ -118,6 +118,29 @@ else()
 		"${CMAKE_CXX_FLAGS} ${CMAKE_SHARED_LIBRARY_CXX_FLAGS}")
 endif()
 
+# Set up correct defines for Windows header compilation:
+# This theoretically sets the lower-bound on operating system compatibility
+# http://msdn.microsoft.com/en-us/library/windows/desktop/aa383745(v=vs.85).aspx
+# NT4	0x0400
+# Win2k	0x0500
+# WinXP	0x0501
+# WS2003SP1/WinXPSP2 	0x0502
+# Vista 0x0600
+# Win7  0x0601
+# Win8  0x0601
+if(WIN32)
+	set(WIN_MIN_VER 0x0500) # Default to Windows 2000
+	if(MSVC AND MSVC_VERSION GREATER 1699)
+		# VS2012: defaults to vista+, update 1 added XP support in additional toolset.
+		if("${CMAKE_VS_PLATFORM_TOOLSET}" MATCHES "_xp")
+			set(WIN_MIN_VER 0x0501) # WinXP
+		else()
+			set(WIN_MIN_VER 0x0600) # Vista
+		endif()
+	endif()
+	add_definitions("-D_WIN32_WINNT=${WIN_MIN_VER}" "-DNTDDI_VERSION=${WIN_MIN_VER}0000")
+endif()
+
 #-----------------------------------------------------------------------------
 # Options that control what gets built and how.
 
