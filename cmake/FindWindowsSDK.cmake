@@ -99,7 +99,7 @@ if(MSVC_VERSION GREATER 1200)
 				list(APPEND _win_sdk_dirs "${_sdkdir}")
 				list(APPEND _win_sdk_versanddirs "${_platformsdkname}" "${_sdkdir}")
 			endif()
-		endif()
+		endforeach()
 	endforeach()
 endif()
 
