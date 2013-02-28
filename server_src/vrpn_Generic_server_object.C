@@ -5127,6 +5127,8 @@ int vrpn_Generic_Server_Object::setup_Tracker_G4(char * &pch, char * line, FILE 
   int numparms;
   int Hz = 10;
   char rcmd[5000];
+  vrpn_Tracker_G4_HubMap * pHMap = NULL;
+
 
 	next();
 	// Get the arguments (class, tracker_name)
@@ -5169,6 +5171,8 @@ int vrpn_Generic_Server_Object::setup_Tracker_G4(char * &pch, char * line, FILE 
     // that there is a newline at the end of the line, following the
     // backslash.
 	rcmd[0] = 0;
+
+
     while (line[strlen(line)-2] == '\\') {
         // Read the next line
         if (fgets(line, LINESIZE, config_file) == NULL) {
@@ -5176,19 +5180,64 @@ int vrpn_Generic_Server_Object::setup_Tracker_G4(char * &pch, char * line, FILE 
                 return -1;
         }
 
+		// G4DigIO name hubID #buttons
+		if (strncmp(line, "G4DigIO", strlen("G4DigIO")) == 0)
+		{
+			int nHub = 0;
+			int nButtons = 0;
+			char DigIOName[G4_HUB_NAME_SIZE];
+
+			if ( 3 != sscanf(line, "G4DigIO %64s %d %d", DigIOName, &nHub, &nButtons))
+			{
+				fprintf(stderr,"Invalid G4DigIO argument list: %s\n", line);
+			}
+			else
+			{
+
+				if (pHMap == NULL)
+					pHMap = new vrpn_Tracker_G4_HubMap();
+
+				pHMap->Add( nHub );
+				pHMap->ButtonInfo( nHub, DigIOName, nButtons );
+			}
+
+		}
+		else if (strncmp(line, "G4PowerTrak", strlen("G4PowerTrak")) == 0)
+		{
+			int nHub = 0;
+			char PowerTrakName[G4_HUB_NAME_SIZE];
+
+			if ( 2 != sscanf(line, "G4PowerTrak %64s %d", PowerTrakName, &nHub))
+			{
+				fprintf(stderr,"Invalid G4PowerTrak argument list: %s\n", line);
+			}
+			else
+			{
+
+				if (pHMap == NULL)
+					pHMap = new vrpn_Tracker_G4_HubMap();
+
+				pHMap->Add( nHub );
+				pHMap->ButtonInfo( nHub, PowerTrakName, G4_POWERTRAK_BUTTON_COUNT );
+			}
+		}
+		else
+		{
         // Copy the line into the remote command,
         // then replace \ with \0
         strncat(rcmd, line, LINESIZE);
-
+		}
     }
 
     if (strlen(rcmd) > 0) {
             printf("Additional reset commands found\n");
     }
 
-	if ( (trackers[num_trackers] = mytracker =
-	new vrpn_Tracker_G4(name, connection, filepath, Hz, rcmd)) == NULL) {
+	if ( (trackers[num_trackers] = mytracker =	new vrpn_Tracker_G4(name, connection, filepath, Hz, rcmd, pHMap)) == NULL) 
+	{
 		fprintf(stderr,"Can't create new vrpn_Tracker_G4\n");
+		if (pHMap)
+			delete pHMap;
 		return -1;
 	}
 
@@ -5208,6 +5257,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_FastrakPDI(char * &pch, char * lin
 	vrpn_Tracker_FastrakPDI *mytracker;
 	int Hz = 10;
 	char rcmd[5000];     // reset commands to send to Liberty
+	unsigned int nStylusMap = 0;
 	next();
 	// Get the arguments (class(already taken), tracker_name, reports per second)
 	sscanf(pch,"%511s%d",name,&Hz);
@@ -5240,17 +5290,30 @@ int vrpn_Generic_Server_Object::setup_Tracker_FastrakPDI(char * &pch, char * lin
 			return -1;
 		}
 
+		if (strncmp(line, "PDIStylus", strlen("PDIStylus")) == 0)
+		{
+			int nStylus = 0;
+			sscanf(line, "PDIStylus %d", &nStylus);
+			if (!((nStylus > 0) && (nStylus <= FT_MAX_SENSORS)))
+			{
+				fprintf(stderr, "PDIStylus command invalid station number: %s\r\n", line );
+				return -1;
+			}
+			else
+			{
+				nStylusMap |= (1 << (nStylus-1));
+			}
+		}
 		// Copy the line into rcmd if it is not a comment, or the tracker name line
-		if (line[0] != '#' && (line[0] != 'v' && line[1] != 'r'))
+		else if (line[0] != '#' && (line[0] != 'v' && line[1] != 'r'))
 			strncat(rcmd, line, LINESIZE);
 	}
 
 	if (rcmd[0] == 0)
 		printf(" no additional commands found\r\n");
 
-	if ( (trackers[num_trackers] = mytracker =
-	new vrpn_Tracker_FastrakPDI(name, connection, Hz, rcmd))
-		== NULL) {
+	if ( (trackers[num_trackers] = mytracker = new vrpn_Tracker_FastrakPDI(name, connection, Hz, rcmd, nStylusMap )) == NULL) 
+	{
 		fprintf(stderr," can't create new vrpn_Tracker_FastrakPDI\r\n");
 		return -1;
 	}
@@ -5264,12 +5327,14 @@ int vrpn_Generic_Server_Object::setup_Tracker_FastrakPDI(char * &pch, char * lin
 #endif
 }
 
-int vrpn_Generic_Server_Object::setup_Tracker_LibertyPDI(char * &pch, char * line, FILE * config_file) {
+int vrpn_Generic_Server_Object::setup_Tracker_LibertyPDI(char * &pch, char * line, FILE * config_file) 
+{
 #ifdef  VRPN_USE_PDI
   const int LINESIZE = 512;
   char name [LINESIZE];
   vrpn_Tracker_LibertyPDI *mytracker;
   int Hz = 10;
+  unsigned int nStylusMap = 0;
   char rcmd[5000];     // reset commands to send to Liberty
 
   next();
@@ -5304,17 +5369,30 @@ int vrpn_Generic_Server_Object::setup_Tracker_LibertyPDI(char * &pch, char * lin
 			return -1;
 		}
 
+		if (strncmp(line, "PDIStylus", strlen("PDIStylus")) == 0)
+		{
+			int nStylus = 0;
+			sscanf(line, "PDIStylus %d", &nStylus);
+			if (!((nStylus > 0) && (nStylus <= LIBERTY_MAX_SENSORS)))
+			{
+				fprintf(stderr, "PDIStylus command invalid station number: %s\r\n", line );
+				return -1;
+			}
+			else
+			{
+				nStylusMap |= (1 << (nStylus-1));
+			}
+		}
 		// Copy the line into rcmd if it is not a comment, or the tracker name line
-		if (line[0] != '#' && line[0] != 'v' && line[1] != 'r')
+		else if (line[0] != '#' && line[0] != 'v' && line[1] != 'r')
 			strncat(rcmd, line, LINESIZE);
 	}
 
 	if (rcmd[0] == 0)
 		printf(" no additional commands found\r\n");
 
-	if ( (trackers[num_trackers] = mytracker =
-	new vrpn_Tracker_LibertyPDI(name, connection, Hz, rcmd))
-		== NULL) {
+	if ( (trackers[num_trackers] = mytracker = new vrpn_Tracker_LibertyPDI(name, connection, Hz, rcmd, nStylusMap )) == NULL) 
+	{
 		fprintf(stderr," can't create new vrpn_Tracker_LibertyPDI\r\n");
 		return -1;
 	}
