@@ -5193,6 +5193,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_G4(char * &pch, char * line, FILE 
 			}
 			else
 			{
+				printf("\nCreating G4DigIO %s on Hub %d with inputs 0-%d\n", DigIOName, nHub, nButtons-1);
 
 				if (pHMap == NULL)
 					pHMap = new vrpn_Tracker_G4_HubMap();
@@ -5213,6 +5214,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_G4(char * &pch, char * line, FILE 
 			}
 			else
 			{
+				printf("\nCreating G4PowerTrak %s on Hub %d with buttons 0-%d\n", PowerTrakName, nHub, G4_POWERTRAK_BUTTON_COUNT-1);
 
 				if (pHMap == NULL)
 					pHMap = new vrpn_Tracker_G4_HubMap();
@@ -5301,6 +5303,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_FastrakPDI(char * &pch, char * lin
 			}
 			else
 			{
+				printf("Creating PDIStylus button on station %d \r\n", nStylus);
 				nStylusMap |= (1 << (nStylus-1));
 			}
 		}
@@ -5380,6 +5383,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_LibertyPDI(char * &pch, char * lin
 			}
 			else
 			{
+				printf("Creating PDIStylus button on station %d \r\n", nStylus);
 				nStylusMap |= (1 << (nStylus-1));
 			}
 		}
