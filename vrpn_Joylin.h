@@ -21,8 +21,10 @@ public:
 
   void mainloop(void);
 
+#ifdef VRPN_USE_JOYLIN
 protected:
   int init();
+#endif
 private:
   int namelen;
   int fd;
