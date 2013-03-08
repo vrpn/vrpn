@@ -599,6 +599,19 @@ if(VRPN_USE_GPM_MOUSE)
 endif()
 
 ###
+# INTERSENSE
+###
+find_package(InterSense)
+option_requires(VRPN_USE_INTERSENSE
+        "Build with InterSense support"
+        ${DEFAULT_OFF_IF_SUBPROJECT}
+        INTERSENSE_FOUND)
+
+if(VRPN_USE_INTERSENSE)
+        list(APPEND SERVER_EXTRA_LIBS ${INTERSENSE_LIBRARIES})
+endif()
+
+###
 # NIDAQMX
 ###
 find_package(NIDAQmx)
