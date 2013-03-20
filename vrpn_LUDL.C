@@ -1,5 +1,8 @@
 // Device drivers for the LUDL family of translation stage controllers.
 
+// XXX I think we're using ASCII send and response because Ryan had some kind of trouble
+// with the binary send/response.  Not sure about this, though.  It sure would be
+// faster to read and easier to parse the binary ones, which all have the same length.
 // XXX If we don't recenter, then we definitely need a way to figure out where
 //     our analogs are.
 // XXX Need to parse more than one report if there is more than one in the buffer
@@ -20,6 +23,19 @@
 static const vrpn_uint16 LUDL_VENDOR = 0x6969;
 static const vrpn_uint16 LUDL_USBMAC6000 = 0x1235;
 
+// Constants used in the LUDL commands and responses.
+static const vrpn_uint16 LUDL_GET_LONG_DATA = 84;
+static const vrpn_uint16 LUDL_SET_LONG_DATA = 83;
+static const vrpn_uint16 LUDL_MOTOR_ACTION = 65;
+
+// Index constants used by the above commands and responses.
+static const vrpn_uint16 LUDL_MOTOR_POSITION = 5;
+static const vrpn_uint16 LUDL_MODULE_BUSY = 63;
+static const vrpn_uint16 LUDL_START_MOTOR_TARGET = 0;
+static const vrpn_uint16 LUDL_CENTER_HOME = 7;
+
+// Device number for the interface we're connected to.
+static const vrpn_uint16 LUDL_INTERFACE_ADDRESS = 32;
 
 vrpn_LUDL_USBMAC6000::vrpn_LUDL_USBMAC6000(const char *name, vrpn_Connection *c, bool do_recenter)
   : vrpn_Analog(name, c)
@@ -58,7 +74,7 @@ vrpn_LUDL_USBMAC6000::vrpn_LUDL_USBMAC6000(const char *name, vrpn_Connection *c,
   }
 
   // Initialize our analog values.
-  vrpn_Analog::num_channel = 2;
+  vrpn_Analog::num_channel = 4;
   memset(channel, 0, sizeof(channel));
   memset(last, 0, sizeof(last));
 
@@ -96,14 +112,14 @@ vrpn_LUDL_USBMAC6000::vrpn_LUDL_USBMAC6000(const char *name, vrpn_Connection *c,
   }
 
   // Allocate space to store the axis status and record that the axes are stopped.
-  if ( (_axis_moving = new bool[vrpn_Analog::num_channel]) == NULL) {
+  if ( (_axis_moving = new bool[o_num_channel]) == NULL) {
     fprintf(stderr,"vrpn_LUDL_USBMAC6000: Out of memory\n");
   }
-  if ( (_axis_destination = new vrpn_float64[vrpn_Analog::num_channel]) == NULL) {
+  if ( (_axis_destination = new vrpn_float64[o_num_channel]) == NULL) {
     fprintf(stderr,"vrpn_LUDL_USBMAC6000: Out of memory\n");
   }
   int i;
-  for (i = 0; i < vrpn_Analog::num_channel; i++) {
+  for (i = 0; i < o_num_channel; i++) {
     _axis_moving[i] = false;
   }
 }
@@ -181,13 +197,24 @@ void vrpn_LUDL_USBMAC6000::mainloop()
   // gotten where we asked it to go).
   if (!_axis_moving || !_axis_destination) { return; }
   int i;
-  for (i = 0; i < vrpn_Analog::num_channel; i++) {
+  for (i = 0; i < o_num_channel; i++) {
     if (_axis_moving[i]) {
       if (!ludl_axis_moving(i+1)) {
         vrpn_Analog::channel[i] = _axis_destination[i];
         _axis_moving[i] = false;
       }
     }
+  }
+
+  // Ask for and record the positions of the two axes.
+  // Remember that the axes are numbered starting from 1 on the
+  // LUDL controller but they go in Analog channels 2 and 3.
+  vrpn_int32  position;
+  if (ludl_axis_position(1, &position)) {
+    channel[2] = position;
+  }
+  if (ludl_axis_position(2, &position)) {
+    channel[3] = position;
   }
 
   // Let all of the servers do their thing.
@@ -199,12 +226,14 @@ void vrpn_LUDL_USBMAC6000::mainloop()
   vrpn_Analog::server_mainloop();
 }
 
-void vrpn_LUDL_USBMAC6000::report(vrpn_uint32 class_of_service) {
+void vrpn_LUDL_USBMAC6000::report(vrpn_uint32 class_of_service)
+{
 	vrpn_Analog::timestamp = _timestamp;
 	vrpn_Analog::report(class_of_service);
 }
 
-void vrpn_LUDL_USBMAC6000::report_changes(vrpn_uint32 class_of_service) {
+void vrpn_LUDL_USBMAC6000::report_changes(vrpn_uint32 class_of_service)
+{
 	vrpn_Analog::timestamp = _timestamp;
 	vrpn_Analog::report_changes(class_of_service);
 }
@@ -263,7 +292,11 @@ bool vrpn_LUDL_USBMAC6000::send_usbmac_command(unsigned device, unsigned command
 // in the return parameter.
 // I got the format for this message from the code in USBMAC6000.cpp from
 // the video project, as implemented by Ryan Schubert at UNC.
-bool vrpn_LUDL_USBMAC6000::interpret_usbmac_ascii_response(const vrpn_uint8 *buffer, int *value_return)
+bool vrpn_LUDL_USBMAC6000::interpret_usbmac_ascii_response(const vrpn_uint8 *buffer,
+    int *device_return,
+    int *command_return,
+    int *index_return,
+    int *value_return)
 {
   if (buffer == NULL) { return false; }
   const char *charbuf = static_cast<const char *>(static_cast<const void *>(buffer));
@@ -275,6 +308,9 @@ bool vrpn_LUDL_USBMAC6000::interpret_usbmac_ascii_response(const vrpn_uint8 *buf
     return false;
   }
 
+  *device_return = device;
+  *command_return = command;
+  *index_return = index;
   *value_return = value;
   return true;
 }
@@ -287,7 +323,7 @@ bool vrpn_LUDL_USBMAC6000::recenter(void)
 {
   // Send the command to make the X axis go to both ends of its
   // range and then move into the center.
-  if (!send_usbmac_command(1, 65, 7, 100000)) {
+  if (!send_usbmac_command(1, LUDL_MOTOR_ACTION, LUDL_CENTER_HOME, 100000)) {
     REPORT_ERROR("vrpn_LUDL_USBMAC6000::recenter(): Could not send command 1");
     return false;
   }
@@ -320,7 +356,7 @@ bool vrpn_LUDL_USBMAC6000::recenter(void)
   // range on the UNC Monoptes system between the stops set to keep the
   // objective from running into the walls of the plate.  XXX Replace this
   // with a more meaningful constant, perhaps 0.
-  if (!send_usbmac_command(1, 83, 5, 694576)) {
+  if (!send_usbmac_command(1, LUDL_SET_LONG_DATA, LUDL_MOTOR_POSITION, 694576)) {
     REPORT_ERROR("vrpn_LUDL_USBMAC6000::recenter(): Could not send command 2");
     return false;
   }
@@ -328,7 +364,7 @@ bool vrpn_LUDL_USBMAC6000::recenter(void)
 
   // Send the command to make the Y axis go to both ends of its
   // range and then move into the center.
-  if (!send_usbmac_command(2, 65, 7, 100000)) {
+  if (!send_usbmac_command(2, LUDL_MOTOR_ACTION, LUDL_CENTER_HOME, 100000)) {
     REPORT_ERROR("vrpn_LUDL_USBMAC6000::recenter(): Could not send command 3");
     return false;
   }
@@ -358,7 +394,7 @@ bool vrpn_LUDL_USBMAC6000::recenter(void)
   // range on the UNC Monoptes system between the stops set to keep the
   // objective from running into the walls of the plate.  XXX Replace this
   // with a more meaningful constant, perhaps 0.
-  if (!send_usbmac_command(2, 83, 5, 1124201)) {
+  if (!send_usbmac_command(2, LUDL_SET_LONG_DATA, LUDL_MOTOR_POSITION, 1124201)) {
     REPORT_ERROR("vrpn_LUDL_USBMAC6000::recenter(): Could not send command 4");
     return false;
   }
@@ -376,7 +412,7 @@ bool vrpn_LUDL_USBMAC6000::ludl_axis_moving(unsigned axis)
   // Request the status of the axis.  In particular, we look at the
   // bits telling whether each axis is busy.
   flush_input_from_ludl();
-  if (!send_usbmac_command(32, 84, 63, 0)) {
+  if (!send_usbmac_command(LUDL_INTERFACE_ADDRESS, LUDL_GET_LONG_DATA, LUDL_MODULE_BUSY, 0)) {
     REPORT_ERROR("vrpn_LUDL_USBMAC6000::ludl_axis_moving(): Could not send command 1");
     return false;
   }
@@ -394,7 +430,7 @@ bool vrpn_LUDL_USBMAC6000::ludl_axis_moving(unsigned axis)
     // XXX We should not be losing characters... figure out what is causing us to
     // have to resend.
     if (++watchdog == 25) {  // 25 ms (timeout is 1ms)
-      if (!send_usbmac_command(32, 84, 63, 0)) {
+      if (!send_usbmac_command(LUDL_INTERFACE_ADDRESS, LUDL_GET_LONG_DATA, LUDL_MODULE_BUSY, 0)) {
         REPORT_ERROR("vrpn_LUDL_USBMAC6000::ludl_axis_moving(): Could not resend command 1");
         return false;
       }
@@ -402,13 +438,59 @@ bool vrpn_LUDL_USBMAC6000::ludl_axis_moving(unsigned axis)
     }
   }
   int status = 0;
-  if (!interpret_usbmac_ascii_response(_inbuffer, &status)) {
+  int device, command, index;
+  if (!interpret_usbmac_ascii_response(_inbuffer, &device, &command, &index, &status)) {
     REPORT_ERROR("vrpn_LUDL_USBMAC6000::ludl_axis_moving(): Could not parse report");
     return false;
   }
   _incount = 0; // XXX Should parse more than one report if there is one.
   int axisMaskBit = 0x0001 << axis;
   return (status & axisMaskBit) != 0;
+}
+
+// The first axis is 1 in this function.
+bool vrpn_LUDL_USBMAC6000::ludl_axis_position(unsigned axis, vrpn_int32 *position_return)
+{
+  // Request the position of the axis.
+  flush_input_from_ludl();
+  if (!send_usbmac_command(axis, LUDL_GET_LONG_DATA, LUDL_MOTOR_POSITION, 0)) {
+    REPORT_ERROR("vrpn_LUDL_USBMAC6000::ludl_axis_position(): Could not send command 1");
+    return false;
+  }
+
+  // Read from the device to find the status.  We call the check_for_data() method
+  // to look for a response.
+  unsigned watchdog = 0;
+  while (_incount == 0) {
+    if (!check_for_data()) {
+      REPORT_ERROR("vrpn_LUDL_USBMAC6000::ludl_axis_position(): Could not get report");
+      return false;
+    }
+
+    // If it has been too long, re-send the request to the stage.
+    // XXX We should not be losing characters... figure out what is causing us to
+    // have to resend.
+    if (++watchdog == 25) {  // 25 ms (timeout is 1ms)
+      if (!send_usbmac_command(axis, LUDL_GET_LONG_DATA, LUDL_MOTOR_POSITION, 0)) {
+        REPORT_ERROR("vrpn_LUDL_USBMAC6000::ludl_axis_position(): Could not resend command 1");
+        return false;
+      }
+      watchdog = 0;
+    }
+  }
+  int position = 0;
+  int device, command, index;
+  if (!interpret_usbmac_ascii_response(_inbuffer, &device, &command, &index, &position)) {
+    REPORT_ERROR("vrpn_LUDL_USBMAC6000::ludl_axis_position(): Could not parse report");
+    return false;
+  }
+  _incount = 0; // XXX Should parse more than one report if there is one.
+  if ( (command != LUDL_GET_LONG_DATA) || (index != LUDL_MOTOR_POSITION) ) {
+    REPORT_ERROR("vrpn_LUDL_USBMAC6000::ludl_axis_position(): Bad command or index in report");
+    return false;
+  }
+  *position_return = position;
+  return true;
 }
 
 bool vrpn_LUDL_USBMAC6000::move_axis_to_position(int axis, int position)
@@ -424,9 +506,7 @@ bool vrpn_LUDL_USBMAC6000::move_axis_to_position(int axis, int position)
   }
 
   // Send the command to the device asking it to move.
-  // command: 65 - MOTOR_ACTION
-  // index:   0  - START_MOTOR_TARGET
-  if (!send_usbmac_command(axis, 65, 0, position)) {
+  if (!send_usbmac_command(axis, LUDL_MOTOR_ACTION, LUDL_START_MOTOR_TARGET, position)) {
     REPORT_ERROR("vrpn_LUDL_USBMAC6000::move_axis_to_position(): Could not send command");
     return false;
   }
