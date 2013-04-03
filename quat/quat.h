@@ -120,6 +120,11 @@
 #define Q_Z    2
 #define Q_W    3
 
+/* For accessing the elements of a q_vec_type describing Euler angles */
+#define Q_YAW   0
+#define Q_PITCH 1
+#define Q_ROLL  2
+
 /* tolerance for quaternion operations */
 #define  Q_EPSILON   (1e-10)
 
@@ -306,7 +311,12 @@ void q_slerp (q_type destQuat, const q_type startQuat, const q_type endQuat, dou
 void q_from_euler (q_type destQuat, double yaw, double pitch, double roll);
 
 /* converts quat to euler angles (yaw, pitch, roll).  see
- * q_col_matrix_to_euler() for conventions.
+ * q_col_matrix_to_euler() for conventions.  Note that you
+ * cannot use Q_X, Q_Y, and Q_Z to pull the elements out of
+ * the Euler as if they were rotations about these angles --
+ * this will invert X and Z.  You need to instead use Q_YAW
+ * (rotation about Z), Q_PITCH (rotation about Y) and Q_ROLL
+ * (rotation about X) to get them.
  */
 void q_to_euler(q_vec_type yawPitchRoll, const q_type q);
 
@@ -464,9 +474,14 @@ void q_euler_to_col_matrix (q_matrix_type destMatrix,
     
     notes:
       - written by Gary Bishop
+      - you cannot use Q_X, Q_Y, and Q_Z to pull the elements out of
+        the Euler as if they were rotations about these angles --
+        this will invert X and Z.  You need to instead use Q_YAW
+        (rotation about Z), Q_PITCH (rotation about Y) and Q_ROLL
+        (rotation about X) to get them.
  *
  *****************************************************************************/
-void q_col_matrix_to_euler (q_vec_type angles, const q_matrix_type colMatrix);
+void q_col_matrix_to_euler (q_vec_type yawpitchroll, const q_matrix_type colMatrix);
 
 /* prints 4x4 matrix */
 void q_print_matrix (const q_matrix_type matrix);

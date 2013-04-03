@@ -504,8 +504,14 @@ void q_from_two_vecs(q_type destQuat, const q_vec_type v1, const q_vec_type v2 )
    }
 }  /* q_from_two_vecs */
 
-// given quaternion q, returns euler angles in radians.  see notes for
-// q_col_matrix_to_euler for details.
+/* converts quat to euler angles (yaw, pitch, roll).  see
+ * q_col_matrix_to_euler() for conventions.  Note that you
+ * cannot use Q_X, Q_Y, and Q_Z to pull the elements out of
+ * the Euler as if they were rotations about these angles --
+ * this will invert X and Z.  You need to instead use Q_YAW
+ * (rotation about Z), Q_PITCH (rotation about Y) and Q_ROLL
+ * (rotation about X) to get them.
+ */
 void q_to_euler(q_vec_type yawPitchRoll, const q_type q)
 {
    q_matrix_type matrix;

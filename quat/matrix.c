@@ -129,9 +129,14 @@ void q_euler_to_col_matrix(q_matrix_type destMatrix,
     
     notes:
     	- written by Gary Bishop
+        - you cannot use Q_X, Q_Y, and Q_Z to pull the elements out of
+          the Euler as if they were rotations about these angles --
+          this will invert X and Z.  You need to instead use Q_YAW
+          (rotation about Z), Q_PITCH (rotation about Y) and Q_ROLL
+          (rotation about X) to get them.
  *
  *****************************************************************************/
-void q_col_matrix_to_euler(q_vec_type angles, const q_matrix_type colMatrix)
+void q_col_matrix_to_euler(q_vec_type yawpitchroll, const q_matrix_type colMatrix)
 {
 
    double sinPitch, cosPitch, sinRoll, cosRoll, sinYaw, cosYaw;
@@ -156,13 +161,13 @@ void q_col_matrix_to_euler(q_vec_type angles, const q_matrix_type colMatrix)
    }
 
    /* yaw */
-   angles[0] = atan2(sinYaw, cosYaw);
+   yawpitchroll[Q_YAW] = atan2(sinYaw, cosYaw);
 
    /* pitch */
-   angles[1] = atan2(sinPitch, cosPitch);
+   yawpitchroll[Q_PITCH] = atan2(sinPitch, cosPitch);
 
    /* roll */
-   angles[2] = atan2(sinRoll, cosRoll);
+   yawpitchroll[Q_ROLL] = atan2(sinRoll, cosRoll);
 
 } /* col_matrix_to_euler */
 
