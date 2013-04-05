@@ -1,0 +1,12 @@
+--indent-classes
+--indent-switches
+--indent-cases
+--indent-namespaces
+--pad-oper
+--pad-header
+--pad-paren-out
+--unpad-paren
+--indent=spaces=2
+--brackets=linux
+--add-brackets
+--lineend=linux
