@@ -129,7 +129,7 @@ void vrpn_Generic_Server_Object::closeDevices (void)
 // imports from main:  pch
 // returns nonzero on error
 
-int vrpn_Generic_Server_Object::setup_raw_SGIBox (char * & pch, char * line, FILE * config_file)
+int vrpn_Generic_Server_Object::setup_raw_SGIBox (char * & pch, char * line, FILE * /*config_file*/)
 {
 
   char s2 [LINESIZE], s3 [LINESIZE];
@@ -168,7 +168,7 @@ int vrpn_Generic_Server_Object::setup_raw_SGIBox (char * & pch, char * line, FIL
   return 0;  // successful completion
 }
 
-int vrpn_Generic_Server_Object::setup_SGIBox (char * & pch, char * line, FILE * config_file)
+int vrpn_Generic_Server_Object::setup_SGIBox (char * & pch, char * line, FILE * /*config_file*/)
 {
 
 #ifdef SGI_BDBOX
@@ -209,7 +209,7 @@ int vrpn_Generic_Server_Object::setup_SGIBox (char * & pch, char * line, FILE * 
 }
 
 
-int vrpn_Generic_Server_Object::setup_Timecode_Generator (char * & pch, char * line, FILE * config_file)
+int vrpn_Generic_Server_Object::setup_Timecode_Generator (char * & pch, char * line, FILE * /*config_file*/)
 {
 #ifdef VRPN_INCLUDE_TIMECODE_SERVER
   char s2 [LINESIZE];
@@ -233,7 +233,7 @@ int vrpn_Generic_Server_Object::setup_Timecode_Generator (char * & pch, char * l
 }
 
 
-int vrpn_Generic_Server_Object::setup_Phantom (char * &pch, char *line, FILE * config_file)
+int vrpn_Generic_Server_Object::setup_Phantom (char * &pch, char *line, FILE * /*config_file*/)
 {
 #ifdef VRPN_USE_PHANTOM_SERVER
   char	s2[512];	// String parameters
@@ -285,7 +285,7 @@ int vrpn_Generic_Server_Object::setup_Phantom (char * &pch, char *line, FILE * c
 #endif
 }
 
-int vrpn_Generic_Server_Object::setup_JoyFly (char * & pch, char * line, FILE * config_file)
+int vrpn_Generic_Server_Object::setup_JoyFly (char * & pch, char * line, FILE * /*config_file*/)
 {
   char s2 [LINESIZE], s3 [LINESIZE], s4 [LINESIZE];
 
@@ -610,7 +610,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_ButtonFly (char * & pch, char * li
   return 0;
 }
 
-int vrpn_Generic_Server_Object::setup_Joystick (char * & pch, char * line, FILE * config_file)
+int vrpn_Generic_Server_Object::setup_Joystick (char * & pch, char * line, FILE * /*config_file*/)
 {
   char s2 [LINESIZE], s3 [LINESIZE];
   int i1;
@@ -633,7 +633,7 @@ int vrpn_Generic_Server_Object::setup_Joystick (char * & pch, char * line, FILE 
   return 0;
 }
 
-int vrpn_Generic_Server_Object::setup_Example_Button (char * & pch, char * line, FILE * config_file)
+int vrpn_Generic_Server_Object::setup_Example_Button (char * & pch, char * line, FILE * /*config_file*/)
 {
   char s2 [LINESIZE];
   int i1;
@@ -656,7 +656,7 @@ int vrpn_Generic_Server_Object::setup_Example_Button (char * & pch, char * line,
   return 0;
 }
 
-int vrpn_Generic_Server_Object::setup_Example_Dial (char * & pch, char * line, FILE * config_file)
+int vrpn_Generic_Server_Object::setup_Example_Dial(char * & pch, char * line, FILE * /*config_file*/)
 {
   char s2 [LINESIZE];
   int i1;
@@ -679,7 +679,7 @@ int vrpn_Generic_Server_Object::setup_Example_Dial (char * & pch, char * line, F
   return 0;
 }
 
-int vrpn_Generic_Server_Object::setup_CerealBox (char * & pch, char * line, FILE * config_file)
+int vrpn_Generic_Server_Object::setup_CerealBox (char * & pch, char * line, FILE * /*config_file*/)
 {
   char s2 [LINESIZE], s3 [LINESIZE];
   int i1, i2, i3, i4;
@@ -702,7 +702,7 @@ int vrpn_Generic_Server_Object::setup_CerealBox (char * & pch, char * line, FILE
   return 0;
 }
 
-int vrpn_Generic_Server_Object::setup_Magellan (char * & pch, char * line, FILE * config_file)
+int vrpn_Generic_Server_Object::setup_Magellan (char * & pch, char * line, FILE * /*config_file*/)
 {
   char s2[LINESIZE], s3[LINESIZE], s4[LINESIZE];
   int i1;
@@ -737,7 +737,7 @@ int vrpn_Generic_Server_Object::setup_Magellan (char * & pch, char * line, FILE 
 }
 
 
-int vrpn_Generic_Server_Object::setup_Spaceball (char * & pch, char * line, FILE * config_file)
+int vrpn_Generic_Server_Object::setup_Spaceball (char * & pch, char * line, FILE * /*config_file*/)
 {
   char s2 [LINESIZE], s3 [LINESIZE];
   int i1;
@@ -758,7 +758,7 @@ int vrpn_Generic_Server_Object::setup_Spaceball (char * & pch, char * line, FILE
   return 0;
 }
 
-int vrpn_Generic_Server_Object::setup_Radamec_SPI (char * & pch, char * line, FILE * config_file)
+int vrpn_Generic_Server_Object::setup_Radamec_SPI (char * & pch, char * line, FILE * /*config_file*/)
 {
   char s2 [LINESIZE], s3 [LINESIZE];
   int i1;
@@ -779,7 +779,7 @@ int vrpn_Generic_Server_Object::setup_Radamec_SPI (char * & pch, char * line, FI
   return 0;
 }
 
-int vrpn_Generic_Server_Object::setup_Zaber (char * & pch, char * line, FILE * config_file)
+int vrpn_Generic_Server_Object::setup_Zaber (char * & pch, char * line, FILE * /*config_file*/)
 {
   char s2 [LINESIZE], s3 [LINESIZE];
 
@@ -799,7 +799,7 @@ int vrpn_Generic_Server_Object::setup_Zaber (char * & pch, char * line, FILE * c
   return 0;
 }
 
-int vrpn_Generic_Server_Object::setup_BiosciencesTools (char * & pch, char * line, FILE * config_file)
+int vrpn_Generic_Server_Object::setup_BiosciencesTools (char * & pch, char * line, FILE * /*config_file*/)
 {
   char s2 [LINESIZE], s3 [LINESIZE];
   int i1;
@@ -822,7 +822,7 @@ int vrpn_Generic_Server_Object::setup_BiosciencesTools (char * & pch, char * lin
   return 0;
 }
 
-int vrpn_Generic_Server_Object::setup_IDEA (char * & pch, char * line, FILE * config_file)
+int vrpn_Generic_Server_Object::setup_IDEA (char * & pch, char * line, FILE * /*config_file*/)
 {
   char s2 [LINESIZE], s3 [LINESIZE];
   int run_speed, start_speed, end_speed, accel_rate, decel_rate;
@@ -858,7 +858,7 @@ int vrpn_Generic_Server_Object::setup_IDEA (char * & pch, char * line, FILE * co
   return 0;
 }
 
-int vrpn_Generic_Server_Object::setup_NationalInstrumentsOutput (char * & pch, char * line, FILE * config_file)
+int vrpn_Generic_Server_Object::setup_NationalInstrumentsOutput (char * & pch, char * line, FILE * /*config_file*/)
 {
 
 #ifndef	VRPN_USE_NATIONAL_INSTRUMENTS
@@ -887,7 +887,7 @@ int vrpn_Generic_Server_Object::setup_NationalInstrumentsOutput (char * & pch, c
   return 0;
 }
 
-int vrpn_Generic_Server_Object::setup_NationalInstruments (char * & pch, char * line, FILE * config_file)
+int vrpn_Generic_Server_Object::setup_NationalInstruments (char * & pch, char * line, FILE * /*config_file*/)
 {
 
 #if	defined(VRPN_USE_NATIONAL_INSTRUMENTS) || defined(VRPN_USE_NATIONAL_INSTRUMENTS_MX)
@@ -925,7 +925,7 @@ int vrpn_Generic_Server_Object::setup_NationalInstruments (char * & pch, char * 
   return 0;
 }
 
-int vrpn_Generic_Server_Object::setup_ImmersionBox (char * & pch, char * line, FILE * config_file)
+int vrpn_Generic_Server_Object::setup_ImmersionBox (char * & pch, char * line, FILE * /*config_file*/)
 {
   char s2 [LINESIZE], s3 [LINESIZE];
   int i1, i2, i3, i4;
@@ -946,7 +946,7 @@ int vrpn_Generic_Server_Object::setup_ImmersionBox (char * & pch, char * line, F
   return 0;
 }
 
-int vrpn_Generic_Server_Object::setup_5dt (char * & pch, char * line, FILE * config_file)
+int vrpn_Generic_Server_Object::setup_5dt (char * & pch, char * line, FILE * /*config_file*/)
 {
   char name [LINESIZE], device [LINESIZE];
   int baud_rate, mode, tenbytes;
@@ -968,7 +968,7 @@ int vrpn_Generic_Server_Object::setup_5dt (char * & pch, char * line, FILE * con
   return 0;
 }
 
-int vrpn_Generic_Server_Object::setup_5dt16 (char * & pch, char * line, FILE * config_file)
+int vrpn_Generic_Server_Object::setup_5dt16 (char * & pch, char * line, FILE * /*config_file*/)
 {
   char name [LINESIZE], device [LINESIZE];
   int baud_rate;
@@ -991,7 +991,7 @@ int vrpn_Generic_Server_Object::setup_5dt16 (char * & pch, char * line, FILE * c
 }
 
 
-int vrpn_Generic_Server_Object::setup_Keyboard (char * & pch, char * line, FILE * config_file)
+int vrpn_Generic_Server_Object::setup_Keyboard (char * & pch, char * line, FILE * /*config_file*/)
 {
   char name [LINESIZE];
 
@@ -1012,7 +1012,7 @@ int vrpn_Generic_Server_Object::setup_Keyboard (char * & pch, char * line, FILE 
 }
 
 
-int vrpn_Generic_Server_Object::setup_Button_USB (char * & pch, char * line, FILE * config_file)
+int vrpn_Generic_Server_Object::setup_Button_USB (char * & pch, char * line, FILE * /*config_file*/)
 {
   char name[LINESIZE], deviceName[LINESIZE];
 
@@ -1030,15 +1030,16 @@ int vrpn_Generic_Server_Object::setup_Button_USB (char * & pch, char * line, FIL
   }
 #ifdef	_WIN32
   _devices.add(new vrpn_Button_USB (name, deviceName, connection));
+  return 0;
 #else
   printf ("vrpn_Button_USB only compiled for Windows.\n");
+  return -1;
 #endif
 
-  return 0;
 
 }
 
-int vrpn_Generic_Server_Object::setup_Button_5DT_Server (char * & pch, char * line, FILE * config_file)
+int vrpn_Generic_Server_Object::setup_Button_5DT_Server (char * & pch, char * line, FILE * /*config_file*/)
 {
   char name[LINESIZE], deviceName[LINESIZE];
   double center[16];
@@ -1063,7 +1064,7 @@ int vrpn_Generic_Server_Object::setup_Button_5DT_Server (char * & pch, char * li
   return 0;
 }
 
-int vrpn_Generic_Server_Object::setup_Wanda (char * & pch, char * line, FILE * config_file)
+int vrpn_Generic_Server_Object::setup_Wanda (char * & pch, char * line, FILE * /*config_file*/)
 {
   char s2 [LINESIZE], s3 [LINESIZE];
   int i1;
@@ -1087,7 +1088,7 @@ int vrpn_Generic_Server_Object::setup_Wanda (char * & pch, char * line, FILE * c
   return 0;
 }
 
-int vrpn_Generic_Server_Object::setup_Tracker_Dyna (char * & pch, char * line, FILE * config_file)
+int vrpn_Generic_Server_Object::setup_Tracker_Dyna (char * & pch, char * line, FILE * /*config_file*/)
 {
   char s2 [LINESIZE], s3 [LINESIZE];
   int i1, i2;
@@ -1111,7 +1112,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_Dyna (char * & pch, char * line, F
   return 0;
 }
 
-int vrpn_Generic_Server_Object::setup_Tracker_3DMouse (char * & pch, char * line, FILE * config_file)
+int vrpn_Generic_Server_Object::setup_Tracker_3DMouse (char * & pch, char * line, FILE * /*config_file*/)
 {
   char s2 [LINESIZE], s3 [LINESIZE], s4 [LINESIZE];
   int i1;
@@ -1145,7 +1146,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_3DMouse (char * & pch, char * line
   return 0;
 }
 
-int vrpn_Generic_Server_Object::setup_Tracker_NovintFalcon (char * & pch, char *line, FILE * config_file)
+int vrpn_Generic_Server_Object::setup_Tracker_NovintFalcon (char * & pch, char *line, FILE * /*config_file*/)
 {
 #if defined(VRPN_USE_LIBNIFALCON)
   char s2[LINESIZE], s3[LINESIZE], s4[LINESIZE], s5[LINESIZE];
@@ -1626,7 +1627,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_LibertyHS (char * & pch, char * li
   return 0;
 }
 
-int vrpn_Generic_Server_Object::setup_Tracker_3Space (char * & pch, char * line, FILE * config_file)
+int vrpn_Generic_Server_Object::setup_Tracker_3Space (char * & pch, char * line, FILE * /*config_file*/)
 {
 
   char s2 [LINESIZE], s3 [LINESIZE];
@@ -1647,7 +1648,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_3Space (char * & pch, char * line,
   return 0;
 }
 
-int vrpn_Generic_Server_Object::setup_Tracker_Flock (char * & pch, char * line, FILE * config_file)
+int vrpn_Generic_Server_Object::setup_Tracker_Flock (char * & pch, char * line, FILE * /*config_file*/)
 {
 
   char s2 [LINESIZE], s3 [LINESIZE];
@@ -1711,7 +1712,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_Flock (char * & pch, char * line, 
   return 0;
 }
 
-int vrpn_Generic_Server_Object::setup_Tracker_Flock_Parallel (char * & pch, char * line, FILE * config_file)
+int vrpn_Generic_Server_Object::setup_Tracker_Flock_Parallel (char * & pch, char * line, FILE * /*config_file*/)
 {
 
   char s2 [LINESIZE], s3 [LINESIZE];
@@ -1762,7 +1763,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_Flock_Parallel (char * & pch, char
   return 0;
 }
 
-int vrpn_Generic_Server_Object::setup_Tracker_NULL (char * & pch, char * line, FILE * config_file)
+int vrpn_Generic_Server_Object::setup_Tracker_NULL (char * & pch, char * line, FILE * /*config_file*/)
 {
 
   char s2 [LINESIZE];
@@ -1785,7 +1786,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_NULL (char * & pch, char * line, F
   return 0;
 }
 
-int vrpn_Generic_Server_Object::setup_Button_Python (char * & pch, char * line, FILE * config_file)
+int vrpn_Generic_Server_Object::setup_Button_Python (char * & pch, char * line, FILE * /*config_file*/)
 {
 
   char s2 [LINESIZE];
@@ -1809,7 +1810,7 @@ int vrpn_Generic_Server_Object::setup_Button_Python (char * & pch, char * line, 
 }
 
 //================================
-int vrpn_Generic_Server_Object::setup_Button_SerialMouse (char * & pch, char * line, FILE * config_file)
+int vrpn_Generic_Server_Object::setup_Button_SerialMouse (char * & pch, char * line, FILE * /*config_file*/)
 {
 
   char s2 [LINESIZE];
@@ -1844,7 +1845,7 @@ int vrpn_Generic_Server_Object::setup_Button_SerialMouse (char * & pch, char * l
 }
 
 //================================
-int vrpn_Generic_Server_Object::setup_Button_PinchGlove (char* &pch, char *line, FILE *config_file)
+int vrpn_Generic_Server_Object::setup_Button_PinchGlove (char* &pch, char *line, FILE * /*config_file*/)
 {
 
   char name[LINESIZE], port[LINESIZE];
@@ -1868,7 +1869,7 @@ int vrpn_Generic_Server_Object::setup_Button_PinchGlove (char* &pch, char *line,
 }
 
 //================================
-int vrpn_Generic_Server_Object::setup_DevInput (char * & pch, char * line, FILE * config_file) {
+int vrpn_Generic_Server_Object::setup_DevInput (char * & pch, char * line, FILE * /*config_file*/) {
   char s2 [LINESIZE], s3 [LINESIZE] , s4 [LINESIZE];
   int int_param = 0;
   next();
@@ -1904,7 +1905,7 @@ int vrpn_Generic_Server_Object::setup_DevInput (char * & pch, char * line, FILE 
 }
 
 //================================
-int vrpn_Generic_Server_Object::setup_Joylin (char * & pch, char * line, FILE * config_file)
+int vrpn_Generic_Server_Object::setup_Joylin (char * & pch, char * line, FILE * /*config_file*/)
 {
   char s2[LINESIZE];
   char s3[LINESIZE];
@@ -1930,7 +1931,7 @@ int vrpn_Generic_Server_Object::setup_Joylin (char * & pch, char * line, FILE * 
 }
 
 //================================
-int vrpn_Generic_Server_Object::setup_Joywin32 (char * & pch, char * line, FILE * config_file)
+int vrpn_Generic_Server_Object::setup_Joywin32 (char * & pch, char * line, FILE * /*config_file*/)
 {
   char s2[LINESIZE];
   int joyId;
@@ -1959,7 +1960,7 @@ int vrpn_Generic_Server_Object::setup_Joywin32 (char * & pch, char * line, FILE 
 }
 
 //================================
-int vrpn_Generic_Server_Object::setup_Tng3 (char * & pch, char * line, FILE * config_file)
+int vrpn_Generic_Server_Object::setup_Tng3 (char * & pch, char * line, FILE * /*config_file*/)
 {
   char s2 [LINESIZE], s3 [LINESIZE];
   int i1, i2;
@@ -1978,7 +1979,7 @@ int vrpn_Generic_Server_Object::setup_Tng3 (char * & pch, char * line, FILE * co
 }
 
 //================================
-int vrpn_Generic_Server_Object::setup_Mouse (char * & pch, char * line, FILE * config_file)
+int vrpn_Generic_Server_Object::setup_Mouse (char * & pch, char * line, FILE * /*config_file*/)
 {
   char s2 [LINESIZE];
   next();
@@ -2008,7 +2009,7 @@ int vrpn_Generic_Server_Object::setup_Mouse (char * & pch, char * line, FILE * c
 }
 
 //================================
-int vrpn_Generic_Server_Object::setup_Tracker_Crossbow (char * & pch, char *line, FILE *config_file)
+int vrpn_Generic_Server_Object::setup_Tracker_Crossbow (char * & pch, char * line, FILE * /*config_file*/)
 {
   char port[LINESIZE], name[LINESIZE];
   long baud;
@@ -2034,7 +2035,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_Crossbow (char * & pch, char *line
 }
 
 //================================
-int vrpn_Generic_Server_Object::setup_3DMicroscribe (char * & pch, char * line, FILE * config_file)
+int vrpn_Generic_Server_Object::setup_3DMicroscribe (char * & pch, char * line, FILE * /*config_file*/)
 {
   char name [LINESIZE], device [LINESIZE];
   int baud_rate;
@@ -2268,7 +2269,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_InterSense (char * &pch, char *lin
 }
 
 //================================
-int vrpn_Generic_Server_Object::setup_DirectXFFJoystick (char * & pch, char * line, FILE * config_file)
+int vrpn_Generic_Server_Object::setup_DirectXFFJoystick (char * & pch, char * line, FILE * /*config_file*/)
 {
 #ifdef	VRPN_USE_DIRECTINPUT
   char s2 [LINESIZE];
@@ -2297,7 +2298,7 @@ int vrpn_Generic_Server_Object::setup_DirectXFFJoystick (char * & pch, char * li
 
 
 //================================
-int vrpn_Generic_Server_Object::setup_RumblePad (char * & pch, char * line, FILE * config_file)
+int vrpn_Generic_Server_Object::setup_RumblePad (char * & pch, char * line, FILE * /*config_file*/)
 {
 #ifdef	VRPN_USE_DIRECTINPUT
   char s2 [LINESIZE];
@@ -2323,7 +2324,7 @@ int vrpn_Generic_Server_Object::setup_RumblePad (char * & pch, char * line, FILE
 }
 
 //================================
-int vrpn_Generic_Server_Object::setup_XInputPad (char * & pch, char * line, FILE * config_file)
+int vrpn_Generic_Server_Object::setup_XInputPad (char * & pch, char * line, FILE * /*config_file*/)
 {
 #if defined(VRPN_USE_DIRECTINPUT) && defined(VRPN_USE_WINDOWS_XINPUT)
   char s2 [LINESIZE];
@@ -2349,7 +2350,7 @@ int vrpn_Generic_Server_Object::setup_XInputPad (char * & pch, char * line, FILE
 #endif
 }
 
-int vrpn_Generic_Server_Object::setup_GlobalHapticsOrb (char * & pch, char * line, FILE * config_file)
+int vrpn_Generic_Server_Object::setup_GlobalHapticsOrb (char * & pch, char * line, FILE * /*config_file*/)
 {
   char s2[LINESIZE], s3[LINESIZE];
   int  i1;
@@ -2372,7 +2373,7 @@ int vrpn_Generic_Server_Object::setup_GlobalHapticsOrb (char * & pch, char * lin
 }
 
 //================================
-int vrpn_Generic_Server_Object::setup_ADBox (char* &pch, char *line, FILE *config_file)
+int vrpn_Generic_Server_Object::setup_ADBox (char* &pch, char * line, FILE * /*config_file*/)
 {
 
   char name[LINESIZE], port[LINESIZE];
@@ -2395,7 +2396,7 @@ int vrpn_Generic_Server_Object::setup_ADBox (char* &pch, char *line, FILE *confi
   return 0;
 }
 
-int vrpn_Generic_Server_Object::setup_VPJoystick (char* &pch, char *line, FILE *config_file)
+int vrpn_Generic_Server_Object::setup_VPJoystick (char* &pch, char * line, FILE * /*config_file*/)
 {
 
   char name[LINESIZE], port[LINESIZE];
@@ -2418,7 +2419,7 @@ int vrpn_Generic_Server_Object::setup_VPJoystick (char* &pch, char *line, FILE *
   return 0;
 }
 
-int vrpn_Generic_Server_Object::setup_Tracker_JsonNet (char* &pch, char* line, FILE* config_file)
+int vrpn_Generic_Server_Object::setup_Tracker_JsonNet (char* &pch, char * line, FILE * /*config_file*/)
 {
   /*
    * Parses the section of the configuration file related to the device
@@ -2474,7 +2475,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_JsonNet (char* &pch, char* line, F
 #endif // VRPN_USE_JsonNet
 }
 
-int vrpn_Generic_Server_Object::setup_DTrack (char* &pch, char* line, FILE* config_file)
+int vrpn_Generic_Server_Object::setup_DTrack (char* &pch, char* line, FILE * /*config_file*/)
 {
   char* s2;
   char* str[LINESIZE];
@@ -2694,7 +2695,7 @@ int vrpn_Generic_Server_Object::setup_Poser_Analog (char * & pch, char * line, F
   return 0;
 }
 
-int vrpn_Generic_Server_Object::setup_nikon_controls (char * & pch, char * line, FILE * config_file)
+int vrpn_Generic_Server_Object::setup_nikon_controls (char * & pch, char * line, FILE * /*config_file*/)
 {
   char s2 [LINESIZE], s3 [LINESIZE];
 
@@ -2714,7 +2715,7 @@ int vrpn_Generic_Server_Object::setup_nikon_controls (char * & pch, char * line,
   return 0;
 }
 
-int vrpn_Generic_Server_Object::setup_Poser_Tek4662 (char * & pch, char * line, FILE * config_file)
+int vrpn_Generic_Server_Object::setup_Poser_Tek4662 (char * & pch, char * line, FILE * /*config_file*/)
 {
   char s2 [LINESIZE], s3 [LINESIZE];
   int i1;
@@ -2742,7 +2743,7 @@ int vrpn_Generic_Server_Object::setup_Poser_Tek4662 (char * & pch, char * line, 
 /******************************************************************************/
 /* setup Atmel microcontroller */
 /******************************************************************************/
-int vrpn_Generic_Server_Object::setup_Atmel (char* &pch, char *line, FILE *config_file)
+int vrpn_Generic_Server_Object::setup_Atmel (char* &pch, char *line, FILE * /*config_file*/)
 {
 #ifndef _WIN32
   char name[LINESIZE];
@@ -2869,7 +2870,7 @@ int vrpn_Generic_Server_Object::setup_Atmel (char* &pch, char *line, FILE *confi
 /******************************************************************************/
 /* setup mouse connected via event interface */
 /******************************************************************************/
-int vrpn_Generic_Server_Object::setup_Event_Mouse (char* &pch, char *line, FILE *config_file)
+int vrpn_Generic_Server_Object::setup_Event_Mouse (char* &pch, char *line, FILE * /*config_file*/)
 {
 
   char name[LINESIZE], port[LINESIZE];
@@ -2897,7 +2898,7 @@ int vrpn_Generic_Server_Object::setup_Event_Mouse (char* &pch, char *line, FILE 
  *  inertiamouse config file setup routine
  *
  */
-int vrpn_Generic_Server_Object::setup_inertiamouse (char * & pch, char * line, FILE * config_file)
+int vrpn_Generic_Server_Object::setup_inertiamouse (char * & pch, char * line, FILE * /*config_file*/)
 {
   char name[LINESIZE], port[LINESIZE];
   int baud;
@@ -2930,7 +2931,7 @@ int vrpn_Generic_Server_Object::setup_inertiamouse (char * & pch, char * line, F
 // ----------------------------------------------------------------------
 
 
-int vrpn_Generic_Server_Object::setup_Analog_USDigital_A2 (char * & pch, char * line, FILE * config_file)
+int vrpn_Generic_Server_Object::setup_Analog_USDigital_A2 (char * & pch, char * line, FILE * /*config_file*/)
 {
 #ifdef  VRPN_USE_USDIGITAL
   char A2name[LINESIZE];
@@ -2980,7 +2981,7 @@ int vrpn_Generic_Server_Object::setup_Analog_USDigital_A2 (char * & pch, char * 
 }    //  setup_USDigital_A2
 
 
-int vrpn_Generic_Server_Object::setup_Button_NI_DIO24 (char * & pch, char * line, FILE * config_file)
+int vrpn_Generic_Server_Object::setup_Button_NI_DIO24 (char * & pch, char * line, FILE * /*config_file*/)
 {
 #ifdef VRPN_USE_NATIONAL_INSTRUMENTS_MX
   char DIO24name[LINESIZE];
@@ -3025,7 +3026,7 @@ int vrpn_Generic_Server_Object::setup_Button_NI_DIO24 (char * & pch, char * line
 
 }    //  setup_Button_NI_DIO24
 
-int vrpn_Generic_Server_Object::setup_Tracker_PhaseSpace (char * & pch, char * line, FILE * config_file)
+int vrpn_Generic_Server_Object::setup_Tracker_PhaseSpace (char * & pch, char * line, FILE * /*config_file*/)
 {
 #ifdef VRPN_INCLUDE_PHASESPACE
 
@@ -3164,7 +3165,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_NDI_Polaris (char * & pch, char * 
   return (0); //success
 }
 
-int vrpn_Generic_Server_Object::setup_Logger (char * & pch, char * line, FILE * config_file)
+int vrpn_Generic_Server_Object::setup_Logger (char * & pch, char * line, FILE * /*config_file*/)
 {
 
   char s2 [LINESIZE], s3 [LINESIZE];
@@ -3185,7 +3186,7 @@ int vrpn_Generic_Server_Object::setup_Logger (char * & pch, char * line, FILE * 
   return 0;  // successful completion
 }
 
-int vrpn_Generic_Server_Object::setup_ImageStream (char * & pch, char * line, FILE * config_file)
+int vrpn_Generic_Server_Object::setup_ImageStream (char * & pch, char * line, FILE * /*config_file*/)
 {
 
   char s2 [LINESIZE], s3 [LINESIZE];
@@ -3206,7 +3207,7 @@ int vrpn_Generic_Server_Object::setup_ImageStream (char * & pch, char * line, FI
   return 0;  // successful completion
 }
 
-int vrpn_Generic_Server_Object::setup_WiiMote (char * & pch, char * line, FILE * config_file)
+int vrpn_Generic_Server_Object::setup_WiiMote (char * & pch, char * line, FILE * /*config_file*/)
 {
 #ifdef	VRPN_USE_WIIUSE
   char sBDADDR [LINESIZE];
@@ -3238,7 +3239,7 @@ int vrpn_Generic_Server_Object::setup_WiiMote (char * & pch, char * line, FILE *
 #endif
 }
 
-int vrpn_Generic_Server_Object::setup_Tracker_WiimoteHead (char * & pch, char * line, FILE * config_file)
+int vrpn_Generic_Server_Object::setup_Tracker_WiimoteHead (char * & pch, char * line, FILE * /*config_file*/)
 {
   char s2[LINESIZE], s3[LINESIZE];
   float f1, f2;
@@ -3270,7 +3271,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_WiimoteHead (char * & pch, char * 
   return 0;
 }
 
-int vrpn_Generic_Server_Object::setup_Freespace (char * & pch, char * line, FILE * config_file)
+int vrpn_Generic_Server_Object::setup_Freespace (char * & pch, char * line, FILE * /*config_file*/)
 {
 #ifdef	VRPN_USE_FREESPACE
   char s2 [LINESIZE];
@@ -3294,7 +3295,7 @@ int vrpn_Generic_Server_Object::setup_Freespace (char * & pch, char * line, FILE
 #endif
 }
 
-int vrpn_Generic_Server_Object::setup_Xkeys_Desktop (char * & pch, char * line, FILE * config_file)
+int vrpn_Generic_Server_Object::setup_Xkeys_Desktop (char * & pch, char * line, FILE * /*config_file*/)
 {
 #if defined(VRPN_USE_HID)
 
@@ -3320,7 +3321,7 @@ int vrpn_Generic_Server_Object::setup_Xkeys_Desktop (char * & pch, char * line, 
   return 0;  // successful completion
 }
 
-int vrpn_Generic_Server_Object::setup_Xkeys_Pro (char * & pch, char * line, FILE * config_file)
+int vrpn_Generic_Server_Object::setup_Xkeys_Pro (char * & pch, char * line, FILE * /*config_file*/)
 {
 #if defined(VRPN_USE_HID)
 
@@ -3344,7 +3345,7 @@ int vrpn_Generic_Server_Object::setup_Xkeys_Pro (char * & pch, char * line, FILE
   return 0;  // successful completion
 }
 
-int vrpn_Generic_Server_Object::setup_Xkeys_Joystick (char * & pch, char * line, FILE * config_file)
+int vrpn_Generic_Server_Object::setup_Xkeys_Joystick (char * & pch, char * line, FILE * /*config_file*/)
 {
 #if defined(VRPN_USE_HID)
 
@@ -3370,7 +3371,7 @@ int vrpn_Generic_Server_Object::setup_Xkeys_Joystick (char * & pch, char * line,
   return 0;  // successful completion
 }
 
-int vrpn_Generic_Server_Object::setup_Xkeys_Jog_And_Shuttle (char * & pch, char * line, FILE * config_file)
+int vrpn_Generic_Server_Object::setup_Xkeys_Jog_And_Shuttle (char * & pch, char * line, FILE * /*config_file*/)
 {
 #if defined(VRPN_USE_HID)
 
@@ -3396,7 +3397,7 @@ int vrpn_Generic_Server_Object::setup_Xkeys_Jog_And_Shuttle (char * & pch, char 
   return 0;  // successful completion
 }
 
-int vrpn_Generic_Server_Object::setup_Xkeys_XK3 (char * & pch, char * line, FILE * config_file)
+int vrpn_Generic_Server_Object::setup_Xkeys_XK3 (char * & pch, char * line, FILE * /*config_file*/)
 {
 #if defined(VRPN_USE_HID)
 
@@ -3422,7 +3423,7 @@ int vrpn_Generic_Server_Object::setup_Xkeys_XK3 (char * & pch, char * line, FILE
   return 0;  // successful completion
 }
 
-int vrpn_Generic_Server_Object::setup_3DConnexion_Navigator (char * & pch, char * line, FILE * config_file)
+int vrpn_Generic_Server_Object::setup_3DConnexion_Navigator (char * & pch, char * line, FILE * /*config_file*/)
 {
   char s2 [LINESIZE];
 
@@ -3443,7 +3444,7 @@ int vrpn_Generic_Server_Object::setup_3DConnexion_Navigator (char * & pch, char 
   return 0;  // successful completion
 }
 
-int vrpn_Generic_Server_Object::setup_3DConnexion_Navigator_for_Notebooks (char * & pch, char * line, FILE * config_file)
+int vrpn_Generic_Server_Object::setup_3DConnexion_Navigator_for_Notebooks (char * & pch, char * line, FILE * /*config_file*/)
 {
   char s2 [LINESIZE];
 
@@ -3464,7 +3465,7 @@ int vrpn_Generic_Server_Object::setup_3DConnexion_Navigator_for_Notebooks (char 
   return 0;  // successful completion
 }
 
-int vrpn_Generic_Server_Object::setup_3DConnexion_Traveler (char * & pch, char * line, FILE * config_file)
+int vrpn_Generic_Server_Object::setup_3DConnexion_Traveler (char * & pch, char * line, FILE * /*config_file*/)
 {
   char s2 [LINESIZE];
 
@@ -3485,7 +3486,7 @@ int vrpn_Generic_Server_Object::setup_3DConnexion_Traveler (char * & pch, char *
   return 0;  // successful completion
 }
 
-int vrpn_Generic_Server_Object::setup_3DConnexion_SpaceMouse (char * & pch, char * line, FILE * config_file)
+int vrpn_Generic_Server_Object::setup_3DConnexion_SpaceMouse (char * & pch, char * line, FILE * /*config_file*/)
 {
   char s2 [LINESIZE];
 
@@ -3506,7 +3507,7 @@ int vrpn_Generic_Server_Object::setup_3DConnexion_SpaceMouse (char * & pch, char
   return 0;  // successful completion
 }
 
-int vrpn_Generic_Server_Object::setup_3DConnexion_SpaceExplorer (char * & pch, char * line, FILE * config_file)
+int vrpn_Generic_Server_Object::setup_3DConnexion_SpaceExplorer (char * & pch, char * line, FILE * /*config_file*/)
 {
   char s2 [LINESIZE];
 
@@ -3527,7 +3528,7 @@ int vrpn_Generic_Server_Object::setup_3DConnexion_SpaceExplorer (char * & pch, c
   return 0;  // successful completion
 }
 
-int vrpn_Generic_Server_Object::setup_3DConnexion_SpaceBall5000 (char * & pch, char * line, FILE * config_file)
+int vrpn_Generic_Server_Object::setup_3DConnexion_SpaceBall5000 (char * & pch, char * line, FILE * /*config_file*/)
 {
   char s2 [LINESIZE];
 
@@ -3548,7 +3549,7 @@ int vrpn_Generic_Server_Object::setup_3DConnexion_SpaceBall5000 (char * & pch, c
   return 0;  // successful completion
 }
 
-int vrpn_Generic_Server_Object::setup_SpacePoint (char * & pch, char * line, FILE * config_file)
+int vrpn_Generic_Server_Object::setup_SpacePoint (char * & pch, char * line, FILE * /*config_file*/)
 {
 #ifdef VRPN_USE_HID
 
@@ -3576,7 +3577,7 @@ int vrpn_Generic_Server_Object::setup_SpacePoint (char * & pch, char * line, FIL
   return 0;  // successful completion
 }
 
-int vrpn_Generic_Server_Object::setup_Wintracker (char * & pch, char * line, FILE * config_file)
+int vrpn_Generic_Server_Object::setup_Wintracker (char * & pch, char * line, FILE * /*config_file*/)
 {
 
   char name[LINESIZE];
@@ -3655,7 +3656,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_GameTrak (char *pch, char *line, F
   return 0;  // successful completion
 }
 
-int vrpn_Generic_Server_Object::setup_Tracker_MotionNode (char * & pch, char * line, FILE * config_file)
+int vrpn_Generic_Server_Object::setup_Tracker_MotionNode (char * & pch, char * line, FILE * /*config_file*/)
 {
   char name[LINESIZE];
   unsigned num_sensors = 0;
@@ -3684,7 +3685,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_MotionNode (char * & pch, char * l
   return 0;
 }
 
-int vrpn_Generic_Server_Object::setup_Tracker_GPS (char * & pch, char * line, FILE * config_file)
+int vrpn_Generic_Server_Object::setup_Tracker_GPS(char * & pch, char * line, FILE * /*config_file*/)
 {
   unsigned num_sensors = 0;
   char address[LINESIZE] = "/dev/tty.someserialport";
@@ -3717,7 +3718,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_GPS (char * & pch, char * line, FI
   return 0;
 }
 
-int vrpn_Generic_Server_Object::setup_DreamCheeky (char * & pch, char * line, FILE * config_file)
+int vrpn_Generic_Server_Object::setup_DreamCheeky (char * & pch, char * line, FILE * /*config_file*/)
 {
   char s2 [LINESIZE];
 
@@ -3744,7 +3745,7 @@ int vrpn_Generic_Server_Object::setup_DreamCheeky (char * & pch, char * line, FI
 #endif
 }
 
-int vrpn_Generic_Server_Object::setup_Tracker_TrivisioColibri (char * & pch, char * line, FILE * config_file)
+int vrpn_Generic_Server_Object::setup_Tracker_TrivisioColibri (char * & pch, char * line, FILE * /*config_file*/)
 {
 #ifdef	VRPN_USE_TRIVISIOCOLIBRI
   char s2 [LINESIZE];
@@ -3772,7 +3773,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_TrivisioColibri (char * & pch, cha
 #endif
 }
 
-int vrpn_Generic_Server_Object::setup_LUDL_USBMAC6000 (char * & pch, char * line, FILE * config_file)
+int vrpn_Generic_Server_Object::setup_LUDL_USBMAC6000 (char * & pch, char * line, FILE * /*config_file*/)
 {
   char s2 [LINESIZE];
   int recenter;
@@ -3802,7 +3803,7 @@ int vrpn_Generic_Server_Object::setup_LUDL_USBMAC6000 (char * & pch, char * line
 }
 
 template<class T>
-int setup_Analog_5dtUSB (const char * specialization, bool verbose, vrpn_Connection * connection, vrpn_MainloopContainer & _devices, char * &pch, char * line, FILE * config_file)
+int setup_Analog_5dtUSB (const char * specialization, bool verbose, vrpn_Connection * connection, vrpn_MainloopContainer & _devices, char * &pch, char * line)
 {
   char s2 [LINESIZE];
   // Get the arguments
@@ -3832,31 +3833,31 @@ typedef int vrpn_Analog_5dtUSB_Glove5Right;
 typedef int vrpn_Analog_5dtUSB_Glove14Left;
 typedef int vrpn_Analog_5dtUSB_Glove14Right;
 #endif
-int vrpn_Generic_Server_Object::setup_Analog_5dtUSB_Glove5Left (char * &pch, char * line, FILE * config_file)
+int vrpn_Generic_Server_Object::setup_Analog_5dtUSB_Glove5Left (char * &pch, char * line, FILE * /*config_file*/)
 {
   next();
-  return setup_Analog_5dtUSB<vrpn_Analog_5dtUSB_Glove5Left> ("Glove5Left", verbose, connection, _devices, pch, line, config_file);
+  return setup_Analog_5dtUSB<vrpn_Analog_5dtUSB_Glove5Left> ("Glove5Left", verbose, connection, _devices, pch, line);
 }
 
-int vrpn_Generic_Server_Object::setup_Analog_5dtUSB_Glove5Right (char * &pch, char * line, FILE * config_file)
+int vrpn_Generic_Server_Object::setup_Analog_5dtUSB_Glove5Right (char * &pch, char * line, FILE * /*config_file*/)
 {
   next();
-  return setup_Analog_5dtUSB<vrpn_Analog_5dtUSB_Glove5Right> ("Glove5Right", verbose, connection, _devices, pch, line, config_file);
+  return setup_Analog_5dtUSB<vrpn_Analog_5dtUSB_Glove5Right> ("Glove5Right", verbose, connection, _devices, pch, line);
 }
 
-int vrpn_Generic_Server_Object::setup_Analog_5dtUSB_Glove14Left (char * &pch, char * line, FILE * config_file)
+int vrpn_Generic_Server_Object::setup_Analog_5dtUSB_Glove14Left (char * &pch, char * line, FILE * /*config_file*/)
 {
   next();
-  return setup_Analog_5dtUSB<vrpn_Analog_5dtUSB_Glove14Left> ("Glove14Left", verbose, connection, _devices, pch, line, config_file);
+  return setup_Analog_5dtUSB<vrpn_Analog_5dtUSB_Glove14Left> ("Glove14Left", verbose, connection, _devices, pch, line);
 }
 
-int vrpn_Generic_Server_Object::setup_Analog_5dtUSB_Glove14Right (char * &pch, char * line, FILE * config_file)
+int vrpn_Generic_Server_Object::setup_Analog_5dtUSB_Glove14Right (char * &pch, char * line, FILE * /*config_file*/)
 {
   next();
-  return setup_Analog_5dtUSB<vrpn_Analog_5dtUSB_Glove14Right> ("Glove14Right", verbose, connection, _devices, pch, line, config_file);
+  return setup_Analog_5dtUSB<vrpn_Analog_5dtUSB_Glove14Right> ("Glove14Right", verbose, connection, _devices, pch, line);
 }
 
-int vrpn_Generic_Server_Object::setup_Tracker_RazerHydra (char * &pch, char * line, FILE * config_file)
+int vrpn_Generic_Server_Object::setup_Tracker_RazerHydra (char * &pch, char * line, FILE * /*config_file*/)
 {
   char s2 [LINESIZE];
 
@@ -3882,7 +3883,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_RazerHydra (char * &pch, char * li
 #endif
 }
 
-int vrpn_Generic_Server_Object::setup_Tracker_zSight (char * & pch, char * line, FILE * config_file)
+int vrpn_Generic_Server_Object::setup_Tracker_zSight (char * & pch, char * line, FILE * /*config_file*/)
 {
 #if defined(_WIN32) && defined(VRPN_USE_DIRECTINPUT) && defined(VRPN_HAVE_ATLBASE)
   char s2 [LINESIZE];
@@ -3908,7 +3909,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_zSight (char * & pch, char * line,
 #endif
 }
 
-int vrpn_Generic_Server_Object::setup_Tracker_ViewPoint (char * & pch, char * line, FILE * config_file)
+int vrpn_Generic_Server_Object::setup_Tracker_ViewPoint (char * & pch, char * line, FILE * /*config_file*/)
 {
 #ifdef	VRPN_USE_VIEWPOINT
   char s2 [LINESIZE];  // Get the arguments
