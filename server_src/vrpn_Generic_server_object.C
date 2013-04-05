@@ -5702,7 +5702,7 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object (vrpn_Connection *connect
       } else if (isit ("vrpn_Mouse")) {
         CHECK (setup_Mouse);
       } else if (isit("vrpn_DevInput")) {
-	CHECK(setup_DevInput);
+        CHECK(setup_DevInput);
       } else if (isit ("vrpn_Tng3")) {
         CHECK (setup_Tng3);
       } else if (isit ("vrpn_TimeCode_Generator")) {
@@ -5795,15 +5795,12 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object (vrpn_Connection *connect
         CHECK (setup_Wintracker);
       } else if (isit ("vrpn_Tracker_GameTrak")) {
         CHECK (setup_Tracker_GameTrak);
-      }
-// BUW additions
-      else if (isit ("vrpn_Atmel")) {
+      } else if (isit ("vrpn_Atmel")) {
         CHECK (setup_Atmel);
       } else if (isit ("vrpn_inertiamouse")) {
         CHECK (setup_inertiamouse);
       } else if (isit ("vrpn_Event_Mouse")) {
         CHECK (setup_Event_Mouse);
-// end of BUW additions
       } else if (isit ("vrpn_Dream_Cheeky_USB_roll_up_drums")) {
         CHECK (setup_DreamCheeky);
       } else if (isit ("vrpn_LUDL_USBMAC6000")) {
@@ -5822,9 +5819,7 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object (vrpn_Connection *connect
         CHECK (setup_Tracker_zSight);
       } else if (isit ("vrpn_Tracker_ViewPoint")) {
         CHECK (setup_Tracker_ViewPoint);
-      }
-// Polhemus additions
-      else if (isit ("vrpn_Tracker_G4")) {
+      } else if (isit ("vrpn_Tracker_G4")) {
         CHECK(setup_Tracker_G4);
       } else if (isit ("vrpn_Tracker_LibertyPDI")) {
         CHECK(setup_Tracker_LibertyPDI);

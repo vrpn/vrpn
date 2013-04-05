@@ -42,8 +42,6 @@ class VRPN_API vrpn_DevInput;
 class VRPN_API vrpn_WiiMote;
 class VRPN_API vrpn_Freespace;
 
-//#include "vrpn_Cirque_Extended.h"
-
 
 const int VRPN_GSO_MAX_TRACKERS =             100;
 const int VRPN_GSO_MAX_BUTTONS =              100;
@@ -60,7 +58,7 @@ const int VRPN_GSO_MAX_DIALS =                8;
 const int VRPN_GSO_MAX_NDI_POLARIS_RIGIDBODIES = 20; //FIXME find out from the NDI specs if there is a maximum;
 const int VRPN_GSO_MAX_TIMECODE_GENERATORS =  8;
 const int VRPN_GSO_MAX_TNG3S =	              8;
-const int VRPN_GSO_MAX_DIRECTXJOYS =           8;
+const int VRPN_GSO_MAX_DIRECTXJOYS =          8;
 const int VRPN_GSO_MAX_RUMBLEPADS =           8;
 const int VRPN_GSO_MAX_XINPUTPADS =           8;
 const int VRPN_GSO_MAX_WIN32JOYS =            100;
@@ -75,10 +73,8 @@ const int VRPN_GSO_MAX_LOGGER =               10;
 const int VRPN_GSO_MAX_IMAGE_STREAM =         10;
 const int VRPN_GSO_MAX_WIIMOTES =             4;
 const int VRPN_GSO_MAX_FREESPACES =           10;
-
-// BUW additions
 const int VRPN_GSO_MAX_INERTIAMOUSES =        8;
-const int VRPN_GSO_MAX_JSONNETS =			  4;
+const int VRPN_GSO_MAX_JSONNETS =             4;
 
 class vrpn_Generic_Server_Object
 {
@@ -124,10 +120,10 @@ class vrpn_Generic_Server_Object
     vrpn_Tng3       *tng3s[VRPN_GSO_MAX_TNG3S];
     int             num_tng3s;
     vrpn_DirectXFFJoystick   * DirectXJoys [VRPN_GSO_MAX_DIRECTXJOYS];
-    vrpn_DirectXRumblePad    * RumblePads  [VRPN_GSO_MAX_RUMBLEPADS ];
-    vrpn_XInputGamepad       * XInputPads  [VRPN_GSO_MAX_XINPUTPADS ];
     int  num_DirectXJoys;
+    vrpn_DirectXRumblePad    * RumblePads  [VRPN_GSO_MAX_RUMBLEPADS ];
     int  num_RumblePads;
+    vrpn_XInputGamepad       * XInputPads  [VRPN_GSO_MAX_XINPUTPADS ];
     int  num_XInputPads;
     vrpn_Joywin32 *win32joys[VRPN_GSO_MAX_WIN32JOYS];
     int		num_Win32Joys;
@@ -155,9 +151,6 @@ class vrpn_Generic_Server_Object
     int           num_wiimotes;
     vrpn_Freespace  * freespaces [VRPN_GSO_MAX_FREESPACES];
     int           num_freespaces;
-
-
-    // BUW additions
     vrpn_inertiamouse * inertiamouses [VRPN_GSO_MAX_INERTIAMOUSES];
     int             num_inertiamouses;
 
@@ -262,17 +255,12 @@ class vrpn_Generic_Server_Object
     int setup_Tracker_RazerHydra (char * &pch, char * line, FILE * config_file);
     int setup_Tracker_zSight (char * &pch, char * line, FILE * config_file);
     int setup_Tracker_ViewPoint (char * &pch, char * line, FILE * config_file);
-
-    // BUW additions
     int setup_Atmel (char* &pch, char *line, FILE *config_file);
     int setup_Event_Mouse (char* &pch, char *line, FILE *config_file);
     int setup_inertiamouse (char * & pch, char * line, FILE * config_file);
-
-    // Polhemus additions
-    int setup_Tracker_G4(char* &pch, char* line, FILE* config_file); 
-    int setup_Tracker_LibertyPDI(char* &pch, char* line, FILE* config_file); 
-    int setup_Tracker_FastrakPDI(char* &pch, char* line, FILE* config_file); 
-
+    int setup_Tracker_G4(char* &pch, char* line, FILE* config_file);
+    int setup_Tracker_LibertyPDI(char* &pch, char* line, FILE* config_file);
+    int setup_Tracker_FastrakPDI(char* &pch, char* line, FILE* config_file);
     int setup_Tracker_JsonNet (char* &pch, char* line, FILE* config_file);
 
 };
