@@ -3738,16 +3738,16 @@ int vrpn_Generic_Server_Object::setup_Atmel (char* &pch, char *line, FILE *confi
   //set the mode array
   int mode_int;
 
-#define is_mode(s) !strcmp(pch=strtok(mode," \t"),s)
+#define IS_MODE(s) !strcmp(pch=strtok(mode," \t"),s)
 
   // convert the char * in an integer
-  if (is_mode ("RW")) {
+  if (IS_MODE ("RW")) {
     mode_int = VRPN_ATMEL_MODE_RW;
-  } else if (is_mode ("RO")) {
+  } else if (IS_MODE ("RO")) {
     mode_int = VRPN_ATMEL_MODE_RO;
-  } else if (is_mode ("WO")) {
+  } else if (IS_MODE ("WO")) {
     mode_int = VRPN_ATMEL_MODE_WO;
-  } else if (is_mode ("NA")) {
+  } else if (IS_MODE ("NA")) {
     mode_int = VRPN_ATMEL_MODE_NA;
   } else {
     fprintf (stderr, "unknown io-mode: %s\n\n", mode);
@@ -3756,6 +3756,8 @@ int vrpn_Generic_Server_Object::setup_Atmel (char* &pch, char *line, FILE *confi
 
   // write it to the array
   setup_vrpn_Atmel::channel_mode[channel] = mode_int;
+
+#undef IS_MODE
 
 #else
   fprintf (stderr, "vrpn_Generic_Server_Object::setup_Atmel(): Not implemented on this architecture\n");
