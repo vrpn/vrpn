@@ -258,9 +258,9 @@ class vrpn_Generic_Server_Object
     int setup_Atmel (char* &pch, char *line, FILE *config_file);
     int setup_Event_Mouse (char* &pch, char *line, FILE *config_file);
     int setup_inertiamouse (char * & pch, char * line, FILE * config_file);
-    int setup_Tracker_G4(char* &pch, char* line, FILE* config_file);
-    int setup_Tracker_LibertyPDI(char* &pch, char* line, FILE* config_file);
-    int setup_Tracker_FastrakPDI(char* &pch, char* line, FILE* config_file);
+    int setup_Tracker_G4 (char* &pch, char* line, FILE* config_file);
+    int setup_Tracker_LibertyPDI (char* &pch, char* line, FILE* config_file);
+    int setup_Tracker_FastrakPDI (char* &pch, char* line, FILE* config_file);
     int setup_Tracker_JsonNet (char* &pch, char* line, FILE* config_file);
 
 };
