@@ -3741,16 +3741,16 @@ int vrpn_Generic_Server_Object::setup_Atmel (char* &pch, char *line, FILE *confi
   //set the mode array
   int mode_int;
 
-#define IS_MODE(s) !strcmp(pch=strtok(mode," \t"),s)
+#define VRPN_ATMEL_IS_MODE(s) !strcmp(pch=strtok(mode," \t"),s)
 
   // convert the char * in an integer
-  if (IS_MODE ("RW")) {
+  if (VRPN_ATMEL_IS_MODE ("RW")) {
     mode_int = VRPN_ATMEL_MODE_RW;
-  } else if (IS_MODE ("RO")) {
+  } else if (VRPN_ATMEL_IS_MODE ("RO")) {
     mode_int = VRPN_ATMEL_MODE_RO;
-  } else if (IS_MODE ("WO")) {
+  } else if (VRPN_ATMEL_IS_MODE ("WO")) {
     mode_int = VRPN_ATMEL_MODE_WO;
-  } else if (IS_MODE ("NA")) {
+  } else if (VRPN_ATMEL_IS_MODE ("NA")) {
     mode_int = VRPN_ATMEL_MODE_NA;
   } else {
     fprintf (stderr, "unknown io-mode: %s\n\n", mode);
@@ -3760,7 +3760,7 @@ int vrpn_Generic_Server_Object::setup_Atmel (char* &pch, char *line, FILE *confi
   // write it to the array
   setup_vrpn_Atmel::channel_mode[channel] = mode_int;
 
-#undef IS_MODE
+#undef VRPN_ATMEL_IS_MODE
 
 #else
   fprintf (stderr, "vrpn_Generic_Server_Object::setup_Atmel(): Not implemented on this architecture\n");
@@ -5612,7 +5612,7 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object (vrpn_Connection *connect
       // WARNING: SUBSTRINGS WILL MATCH THE EARLIER STRING, SO
       // ADD AN EMPTY SPACE TO THE END OF STATIC STRINGS!!!!
 
-#define isit(s) !strcmp(pch=strtok(scrap," \t"),s)
+#define VRPN_ISIT(s) !strcmp(pch=strtok(scrap," \t"),s)
 
       // Rewritten to move all this code out-of-line by Tom Hudson
       // August 99.  We could even make it table-driven now.
@@ -5623,208 +5623,208 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object (vrpn_Connection *connect
       // are in a config file by listing them close together here
       // instead of hiding them in the middle of functions.
 
-      if (isit ("vrpn_raw_SGIBox")) {
+      if (VRPN_ISIT ("vrpn_raw_SGIBox")) {
         CHECK (setup_raw_SGIBox);
-      } else if (isit ("vrpn_SGIBOX")) {
+      } else if (VRPN_ISIT ("vrpn_SGIBOX")) {
         CHECK (setup_SGIBox);
-      } else if (isit ("vrpn_JoyFly")) {
+      } else if (VRPN_ISIT ("vrpn_JoyFly")) {
         CHECK (setup_JoyFly);
-      } else if (isit ("vrpn_Tracker_AnalogFly")) {
+      } else if (VRPN_ISIT ("vrpn_Tracker_AnalogFly")) {
         CHECK (setup_Tracker_AnalogFly);
-      } else if (isit ("vrpn_Tracker_ButtonFly")) {
+      } else if (VRPN_ISIT ("vrpn_Tracker_ButtonFly")) {
         CHECK (setup_Tracker_ButtonFly);
-      } else if (isit ("vrpn_Joystick")) {
+      } else if (VRPN_ISIT ("vrpn_Joystick")) {
         CHECK (setup_Joystick);
-      } else if (isit ("vrpn_Joylin")) {
+      } else if (VRPN_ISIT ("vrpn_Joylin")) {
         CHECK (setup_Joylin);
-      } else if (isit ("vrpn_Joywin32")) {
+      } else if (VRPN_ISIT ("vrpn_Joywin32")) {
         CHECK (setup_Joywin32);
-      } else if (isit ("vrpn_Button_Example")) {
+      } else if (VRPN_ISIT ("vrpn_Button_Example")) {
         CHECK (setup_Example_Button);
-      } else if (isit ("vrpn_Dial_Example")) {
+      } else if (VRPN_ISIT ("vrpn_Dial_Example")) {
         CHECK (setup_Example_Dial);
-      } else if (isit ("vrpn_CerealBox")) {
+      } else if (VRPN_ISIT ("vrpn_CerealBox")) {
         CHECK (setup_CerealBox);
-      } else if (isit ("vrpn_Magellan")) {
+      } else if (VRPN_ISIT ("vrpn_Magellan")) {
         CHECK (setup_Magellan);
-      } else if (isit ("vrpn_Spaceball")) {
+      } else if (VRPN_ISIT ("vrpn_Spaceball")) {
         CHECK (setup_Spaceball);
-      } else if (isit ("vrpn_Radamec_SPI")) {
+      } else if (VRPN_ISIT ("vrpn_Radamec_SPI")) {
         CHECK (setup_Radamec_SPI);
-      } else if (isit ("vrpn_Zaber")) {
+      } else if (VRPN_ISIT ("vrpn_Zaber")) {
         CHECK (setup_Zaber);
-      } else if (isit ("vrpn_BiosciencesTools")) {
+      } else if (VRPN_ISIT ("vrpn_BiosciencesTools")) {
         CHECK (setup_BiosciencesTools);
-      } else if (isit ("vrpn_IDEA")) {
+      } else if (VRPN_ISIT ("vrpn_IDEA")) {
         CHECK (setup_IDEA);
-      } else if (isit ("vrpn_5dt")) {
+      } else if (VRPN_ISIT ("vrpn_5dt")) {
         CHECK (setup_5dt);
-      } else if (isit ("vrpn_5dt16")) {
+      } else if (VRPN_ISIT ("vrpn_5dt16")) {
         CHECK (setup_5dt16);
-      } else if (isit ("vrpn_Button_5DT_Server")) {
+      } else if (VRPN_ISIT ("vrpn_Button_5DT_Server")) {
         CHECK (setup_Button_5DT_Server);
-      } else if (isit ("vrpn_ImmersionBox")) {
+      } else if (VRPN_ISIT ("vrpn_ImmersionBox")) {
         CHECK (setup_ImmersionBox);
-      } else if (isit ("vrpn_Tracker_Dyna")) {
+      } else if (VRPN_ISIT ("vrpn_Tracker_Dyna")) {
         CHECK (setup_Tracker_Dyna);
-      } else if (isit ("vrpn_Tracker_Fastrak")) {
+      } else if (VRPN_ISIT ("vrpn_Tracker_Fastrak")) {
         CHECK (setup_Tracker_Fastrak);
-      } else if (isit ("vrpn_Tracker_NDI_Polaris")) {
+      } else if (VRPN_ISIT ("vrpn_Tracker_NDI_Polaris")) {
         CHECK (setup_Tracker_NDI_Polaris);
-      } else if (isit ("vrpn_Tracker_Isotrak")) {
+      } else if (VRPN_ISIT ("vrpn_Tracker_Isotrak")) {
         CHECK (setup_Tracker_Isotrak);
-      } else if (isit ("vrpn_Tracker_NDI_Polaris")) {
+      } else if (VRPN_ISIT ("vrpn_Tracker_NDI_Polaris")) {
         CHECK (setup_Tracker_NDI_Polaris);
-      } else if (isit ("vrpn_Tracker_Liberty")) {
+      } else if (VRPN_ISIT ("vrpn_Tracker_Liberty")) {
         CHECK (setup_Tracker_Liberty);
-      } else if (isit ("vrpn_Tracker_LibertyHS")) {
+      } else if (VRPN_ISIT ("vrpn_Tracker_LibertyHS")) {
         CHECK (setup_Tracker_LibertyHS);
-      } else if (isit ("vrpn_Tracker_3Space")) {
+      } else if (VRPN_ISIT ("vrpn_Tracker_3Space")) {
         CHECK (setup_Tracker_3Space);
-      } else if (isit ("vrpn_Tracker_Flock")) {
+      } else if (VRPN_ISIT ("vrpn_Tracker_Flock")) {
         CHECK (setup_Tracker_Flock);
-      } else if (isit ("vrpn_Tracker_Flock_Parallel")) {
+      } else if (VRPN_ISIT ("vrpn_Tracker_Flock_Parallel")) {
         CHECK (setup_Tracker_Flock_Parallel);
-      } else if (isit ("vrpn_Tracker_3DMouse")) {
+      } else if (VRPN_ISIT ("vrpn_Tracker_3DMouse")) {
         CHECK (setup_Tracker_3DMouse);
-      } else if (isit ("vrpn_Tracker_NULL")) {
+      } else if (VRPN_ISIT ("vrpn_Tracker_NULL")) {
         CHECK (setup_Tracker_NULL);
-      } else if (isit ("vrpn_Button_Python")) {
+      } else if (VRPN_ISIT ("vrpn_Button_Python")) {
         CHECK (setup_Button_Python);
-      } else if (isit ("vrpn_Button_PinchGlove")) {
+      } else if (VRPN_ISIT ("vrpn_Button_PinchGlove")) {
         CHECK (setup_Button_PinchGlove);
-      } else if (isit ("vrpn_Button_SerialMouse")) {
+      } else if (VRPN_ISIT ("vrpn_Button_SerialMouse")) {
         CHECK (setup_Button_SerialMouse);
-      } else if (isit ("vrpn_Wanda")) {
+      } else if (VRPN_ISIT ("vrpn_Wanda")) {
         CHECK (setup_Wanda);
-      } else if (isit ("vrpn_Mouse")) {
+      } else if (VRPN_ISIT ("vrpn_Mouse")) {
         CHECK (setup_Mouse);
-      } else if (isit("vrpn_DevInput")) {
+      } else if (VRPN_ISIT("vrpn_DevInput")) {
         CHECK(setup_DevInput);
-      } else if (isit ("vrpn_Tng3")) {
+      } else if (VRPN_ISIT ("vrpn_Tng3")) {
         CHECK (setup_Tng3);
-      } else if (isit ("vrpn_TimeCode_Generator")) {
+      } else if (VRPN_ISIT ("vrpn_TimeCode_Generator")) {
         CHECK (setup_Timecode_Generator);
-      } else if (isit ("vrpn_Tracker_InterSense")) {
+      } else if (VRPN_ISIT ("vrpn_Tracker_InterSense")) {
         CHECK (setup_Tracker_InterSense);
-      } else if (isit ("vrpn_DirectXFFJoystick")) {
+      } else if (VRPN_ISIT ("vrpn_DirectXFFJoystick")) {
         CHECK (setup_DirectXFFJoystick);
-      } else if (isit ("vrpn_DirectXRumblePad")) {
+      } else if (VRPN_ISIT ("vrpn_DirectXRumblePad")) {
         CHECK (setup_RumblePad);
-      } else if (isit ("vrpn_XInputGamepad")) {
+      } else if (VRPN_ISIT ("vrpn_XInputGamepad")) {
         CHECK (setup_XInputPad);
-      } else if (isit ("vrpn_GlobalHapticsOrb")) {
+      } else if (VRPN_ISIT ("vrpn_GlobalHapticsOrb")) {
         CHECK (setup_GlobalHapticsOrb);
-      } else if (isit ("vrpn_Phantom")) {
+      } else if (VRPN_ISIT ("vrpn_Phantom")) {
         CHECK (setup_Phantom);
-      } else if (isit ("vrpn_ADBox")) {
+      } else if (VRPN_ISIT ("vrpn_ADBox")) {
         CHECK (setup_ADBox);
-      } else if (isit ("vrpn_VPJoystick")) {
+      } else if (VRPN_ISIT ("vrpn_VPJoystick")) {
         CHECK (setup_VPJoystick);
-      } else if (isit ("vrpn_Tracker_DTrack")) {
+      } else if (VRPN_ISIT ("vrpn_Tracker_DTrack")) {
         CHECK (setup_DTrack);
-      } else if (isit ("vrpn_NI_Analog_Output")) {
+      } else if (VRPN_ISIT ("vrpn_NI_Analog_Output")) {
         CHECK (setup_NationalInstrumentsOutput);
-      } else if (isit ("vrpn_National_Instruments")) {
+      } else if (VRPN_ISIT ("vrpn_National_Instruments")) {
         CHECK (setup_NationalInstruments);
-      } else if (isit ("vrpn_nikon_controls")) {
+      } else if (VRPN_ISIT ("vrpn_nikon_controls")) {
         CHECK (setup_nikon_controls);
-      } else if (isit ("vrpn_Tek4662")) {
+      } else if (VRPN_ISIT ("vrpn_Tek4662")) {
         CHECK (setup_Poser_Tek4662);
-      } else if (isit ("vrpn_Poser_Analog")) {
+      } else if (VRPN_ISIT ("vrpn_Poser_Analog")) {
         CHECK (setup_Poser_Analog);
-      } else if (isit ("vrpn_Tracker_Crossbow")) {
+      } else if (VRPN_ISIT ("vrpn_Tracker_Crossbow")) {
         CHECK (setup_Tracker_Crossbow);
-      } else if (isit ("vrpn_3DMicroscribe")) {
+      } else if (VRPN_ISIT ("vrpn_3DMicroscribe")) {
         CHECK (setup_3DMicroscribe);
-      } else if (isit ("vrpn_Keyboard")) {
+      } else if (VRPN_ISIT ("vrpn_Keyboard")) {
         CHECK (setup_Keyboard);
-      } else if (isit ("vrpn_Button_USB")) {
+      } else if (VRPN_ISIT ("vrpn_Button_USB")) {
         CHECK (setup_Button_USB);
-      } else if (isit ("vrpn_Analog_USDigital_A2")) {
+      } else if (VRPN_ISIT ("vrpn_Analog_USDigital_A2")) {
         CHECK (setup_Analog_USDigital_A2);
-      } else if (isit ("vrpn_Button_NI_DIO24")) {
+      } else if (VRPN_ISIT ("vrpn_Button_NI_DIO24")) {
         CHECK (setup_Button_NI_DIO24);
-      } else if (isit ("vrpn_Tracker_PhaseSpace")) {
+      } else if (VRPN_ISIT ("vrpn_Tracker_PhaseSpace")) {
         CHECK (setup_Tracker_PhaseSpace);
-      } else if (isit ("vrpn_Auxiliary_Logger_Server_Generic")) {
+      } else if (VRPN_ISIT ("vrpn_Auxiliary_Logger_Server_Generic")) {
         CHECK (setup_Logger);
-      } else if (isit ("vrpn_Imager_Stream_Buffer")) {
+      } else if (VRPN_ISIT ("vrpn_Imager_Stream_Buffer")) {
         CHECK (setup_ImageStream);
-      } else if (isit ("vrpn_Xkeys_Desktop")) {
+      } else if (VRPN_ISIT ("vrpn_Xkeys_Desktop")) {
         CHECK (setup_Xkeys_Desktop);
-      } else if (isit ("vrpn_Xkeys_Pro")) {
+      } else if (VRPN_ISIT ("vrpn_Xkeys_Pro")) {
         CHECK (setup_Xkeys_Pro);
-      } else if (isit ("vrpn_Xkeys_Joystick")) {
+      } else if (VRPN_ISIT ("vrpn_Xkeys_Joystick")) {
         CHECK (setup_Xkeys_Joystick);
-      } else if (isit ("vrpn_Xkeys_Jog_And_Shuttle")) {
+      } else if (VRPN_ISIT ("vrpn_Xkeys_Jog_And_Shuttle")) {
         CHECK (setup_Xkeys_Jog_And_Shuttle);
-      } else if (isit ("vrpn_Xkeys_XK3")) {
+      } else if (VRPN_ISIT ("vrpn_Xkeys_XK3")) {
         CHECK (setup_Xkeys_XK3);
-      } else if (isit ("vrpn_3DConnexion_Navigator")) {
+      } else if (VRPN_ISIT ("vrpn_3DConnexion_Navigator")) {
         CHECK (setup_3DConnexion_Navigator);
-      } else if (isit ("vrpn_3DConnexion_Navigator_for_Notebooks")) {
+      } else if (VRPN_ISIT ("vrpn_3DConnexion_Navigator_for_Notebooks")) {
         CHECK (setup_3DConnexion_Navigator_for_Notebooks);
-      } else if (isit ("vrpn_3DConnexion_Traveler")) {
+      } else if (VRPN_ISIT ("vrpn_3DConnexion_Traveler")) {
         CHECK (setup_3DConnexion_Traveler);
-      } else if (isit ("vrpn_3DConnexion_SpaceExplorer")) {
+      } else if (VRPN_ISIT ("vrpn_3DConnexion_SpaceExplorer")) {
         CHECK (setup_3DConnexion_SpaceExplorer);
-      } else if (isit ("vrpn_3DConnexion_SpaceMouse")) {
+      } else if (VRPN_ISIT ("vrpn_3DConnexion_SpaceMouse")) {
         CHECK (setup_3DConnexion_SpaceMouse);
-      } else if (isit ("vrpn_3DConnexion_SpaceBall5000")) {
+      } else if (VRPN_ISIT ("vrpn_3DConnexion_SpaceBall5000")) {
         CHECK (setup_3DConnexion_SpaceBall5000);
-      } else if (isit ("vrpn_Tracker_MotionNode")) {
+      } else if (VRPN_ISIT ("vrpn_Tracker_MotionNode")) {
         CHECK (setup_Tracker_MotionNode);
-      } else if (isit("vrpn_Tracker_GPS")) {
+      } else if (VRPN_ISIT("vrpn_Tracker_GPS")) {
         CHECK(setup_Tracker_GPS);
-      } else if (isit ("vrpn_WiiMote")) {
+      } else if (VRPN_ISIT ("vrpn_WiiMote")) {
         CHECK (setup_WiiMote);
-      } else if (isit ("vrpn_Tracker_WiimoteHead")) {
+      } else if (VRPN_ISIT ("vrpn_Tracker_WiimoteHead")) {
         CHECK (setup_Tracker_WiimoteHead);
-      } else if (isit ("vrpn_Freespace")) {
+      } else if (VRPN_ISIT ("vrpn_Freespace")) {
         CHECK (setup_Freespace);
-      } else if (isit ("vrpn_Tracker_NovintFalcon")) {
+      } else if (VRPN_ISIT ("vrpn_Tracker_NovintFalcon")) {
         CHECK (setup_Tracker_NovintFalcon);
-      } else if (isit ("vrpn_Tracker_TrivisioColibri")) {
+      } else if (VRPN_ISIT ("vrpn_Tracker_TrivisioColibri")) {
         CHECK (setup_Tracker_TrivisioColibri);
-      } else if (isit ("vrpn_Tracker_SpacePoint")) {
+      } else if (VRPN_ISIT ("vrpn_Tracker_SpacePoint")) {
         CHECK (setup_SpacePoint);
-      } else if (isit ("vrpn_Tracker_Wintracker")) {
+      } else if (VRPN_ISIT ("vrpn_Tracker_Wintracker")) {
         CHECK (setup_Wintracker);
-      } else if (isit ("vrpn_Tracker_GameTrak")) {
+      } else if (VRPN_ISIT ("vrpn_Tracker_GameTrak")) {
         CHECK (setup_Tracker_GameTrak);
-      } else if (isit ("vrpn_Atmel")) {
+      } else if (VRPN_ISIT ("vrpn_Atmel")) {
         CHECK (setup_Atmel);
-      } else if (isit ("vrpn_inertiamouse")) {
+      } else if (VRPN_ISIT ("vrpn_inertiamouse")) {
         CHECK (setup_inertiamouse);
-      } else if (isit ("vrpn_Event_Mouse")) {
+      } else if (VRPN_ISIT ("vrpn_Event_Mouse")) {
         CHECK (setup_Event_Mouse);
-      } else if (isit ("vrpn_Dream_Cheeky_USB_roll_up_drums")) {
+      } else if (VRPN_ISIT ("vrpn_Dream_Cheeky_USB_roll_up_drums")) {
         CHECK (setup_DreamCheeky);
-      } else if (isit ("vrpn_LUDL_USBMAC6000")) {
+      } else if (VRPN_ISIT ("vrpn_LUDL_USBMAC6000")) {
         CHECK (setup_LUDL_USBMAC6000);
-      } else if (isit ("vrpn_Analog_5dtUSB_Glove5Left")) {
+      } else if (VRPN_ISIT ("vrpn_Analog_5dtUSB_Glove5Left")) {
         CHECK (setup_Analog_5dtUSB_Glove5Left);
-      } else if (isit ("vrpn_Analog_5dtUSB_Glove5Right")) {
+      } else if (VRPN_ISIT ("vrpn_Analog_5dtUSB_Glove5Right")) {
         CHECK (setup_Analog_5dtUSB_Glove5Right);
-      } else if (isit ("vrpn_Analog_5dtUSB_Glove14Left")) {
+      } else if (VRPN_ISIT ("vrpn_Analog_5dtUSB_Glove14Left")) {
         CHECK (setup_Analog_5dtUSB_Glove14Left);
-      } else if (isit ("vrpn_Analog_5dtUSB_Glove14Right")) {
+      } else if (VRPN_ISIT ("vrpn_Analog_5dtUSB_Glove14Right")) {
         CHECK (setup_Analog_5dtUSB_Glove14Right);
-      } else if (isit ("vrpn_Tracker_RazerHydra")) {
+      } else if (VRPN_ISIT ("vrpn_Tracker_RazerHydra")) {
         CHECK (setup_Tracker_RazerHydra);
-      } else if (isit ("vrpn_Tracker_zSight")) {
+      } else if (VRPN_ISIT ("vrpn_Tracker_zSight")) {
         CHECK (setup_Tracker_zSight);
-      } else if (isit ("vrpn_Tracker_ViewPoint")) {
+      } else if (VRPN_ISIT ("vrpn_Tracker_ViewPoint")) {
         CHECK (setup_Tracker_ViewPoint);
-      } else if (isit ("vrpn_Tracker_G4")) {
+      } else if (VRPN_ISIT ("vrpn_Tracker_G4")) {
         CHECK(setup_Tracker_G4);
-      } else if (isit ("vrpn_Tracker_LibertyPDI")) {
+      } else if (VRPN_ISIT ("vrpn_Tracker_LibertyPDI")) {
         CHECK(setup_Tracker_LibertyPDI);
-      } else if (isit ("vrpn_Tracker_FastrakPDI")) {
+      } else if (VRPN_ISIT ("vrpn_Tracker_FastrakPDI")) {
         CHECK(setup_Tracker_FastrakPDI);
       }
-      else if (isit ("vrpn_Tracker_JsonNet")) {
+      else if (VRPN_ISIT ("vrpn_Tracker_JsonNet")) {
         CHECK (setup_Tracker_JsonNet);
       }
       else {	// Never heard of it
@@ -5839,6 +5839,8 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object (vrpn_Connection *connect
       }
     }
   }
+
+#undef VRPN_ISIT
 
   // Close the configuration file
   fclose (config_file);
