@@ -1565,7 +1565,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_LibertyHS (char * & pch, char * li
   char    rcmd[5000];     // Reset command to send to LibertyHS
   next();
   // Get the arguments (class, tracker_name, num_sensors, baud, [whoami_len])
-  numparms = sscanf (pch, "%511s%d%d", s2, &i1, &i2, &i3);
+  numparms = sscanf (pch, "%511s%d%d", s2, &i1, &i2, &i3); /// @todo warning: data argument not used by format string [-Wformat-extra-args]
   if (numparms < 3) {
     fprintf (stderr, "Bad vrpn_Tracker_LibertyHS line: %s\n", line);
     return -1;
@@ -4187,6 +4187,7 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object (vrpn_Connection *connect
   , d_bail_on_open_error (bail_on_open_error)
 
 {
+  /// @todo warning: unused parameter 'port' [-Wunused-parameter]
   FILE    * config_file;
 
   // Open the configuration file
