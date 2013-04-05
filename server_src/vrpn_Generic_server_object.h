@@ -157,7 +157,7 @@ class vrpn_Generic_Server_Object
     void closeDevices (void);
 
     // Helper functions for the functions below
-    int   get_AFline (char *line, vrpn_TAF_axis *axis);
+    int get_AFline (char *line, vrpn_TAF_axis *axis);
     int	get_poser_axis_line (FILE *config_file, const char *axis_name, vrpn_PA_axis *axis, vrpn_float64 *min, vrpn_float64 *max);
 
     // Functions to parse each kind of device from the configuration file
