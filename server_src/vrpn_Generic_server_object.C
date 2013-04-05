@@ -3242,7 +3242,6 @@ int vrpn_Generic_Server_Object::setup_VPJoystick (char* &pch, char *line, FILE *
   return 0;
 }
 
-#ifdef VRPN_USE_JSONNET
 int vrpn_Generic_Server_Object::setup_Tracker_JsonNet (char* &pch, char* line, FILE* config_file)
 {
   /*
@@ -3290,6 +3289,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_JsonNet (char* &pch, char* line, F
   s2 = str[0];
   port = (int) strtol (str[1], &s, 0);
 
+#ifdef VRPN_USE_JSONNET
   // Open vrpn_Tracker_JsonNet:
 
   if (verbose) {
@@ -3304,8 +3304,11 @@ int vrpn_Generic_Server_Object::setup_Tracker_JsonNet (char* &pch, char* line, F
   num_trackers++;
 
   return 0;
-}
+#else
+  fprintf(stderr, "vrpn_Tracker_JsonNet support not compiled in.\n");
+  return -1;
 #endif // VRPN_USE_JsonNet
+}
 
 int vrpn_Generic_Server_Object::setup_DTrack (char* &pch, char* line, FILE* config_file)
 {
@@ -5828,11 +5831,9 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object (vrpn_Connection *connect
       } else if (isit ("vrpn_Tracker_FastrakPDI")) {
         CHECK(setup_Tracker_FastrakPDI);
       }
-#ifdef VRPN_USE_JSONNET
       else if (isit ("vrpn_Tracker_JsonNet")) {
         CHECK (setup_Tracker_JsonNet);
       }
-#endif
       else {	// Never heard of it
         sscanf (line, "%511s", s1);	// Find out the class name
         fprintf (stderr, "vrpn_server: Unknown Device: %s\n", s1);
