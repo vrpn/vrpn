@@ -3436,7 +3436,7 @@ int vrpn_Generic_Server_Object::setup_DTrack (char* &pch, char* line, FILE* conf
 
   return 0;
 #else
-  fprintf(stderr, "vrpn_Tracker_DTrack not supported on this arhitecture\n");
+  fprintf(stderr, "vrpn_Tracker_DTrack not supported on this architecture\n");
   return -1;
 #endif
 }
