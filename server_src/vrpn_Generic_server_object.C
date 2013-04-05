@@ -5612,7 +5612,6 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object (vrpn_Connection *connect
       // WARNING: SUBSTRINGS WILL MATCH THE EARLIER STRING, SO
       // ADD AN EMPTY SPACE TO THE END OF STATIC STRINGS!!!!
 
-      //    #define isit(s) !strncmp(line,s,strlen(s))
 #define isit(s) !strcmp(pch=strtok(scrap," \t"),s)
 
       // Rewritten to move all this code out-of-line by Tom Hudson
