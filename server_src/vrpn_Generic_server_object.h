@@ -7,74 +7,12 @@
 #include "vrpn_MainloopContainer.h"     // for vrpn_MainloopContainer
 #include "vrpn_Types.h"                 // for vrpn_float64
 
-class VRPN_API vrpn_Analog;
-class VRPN_API vrpn_Analog_Output;
-class VRPN_API vrpn_Auxiliary_Logger_Server_Generic;
-class VRPN_API vrpn_Button;
-class VRPN_API vrpn_CerealBox;
-class VRPN_API vrpn_Connection;
-class VRPN_API vrpn_DevInput;
-class VRPN_API vrpn_Dial;
-class VRPN_API vrpn_GlobalHapticsOrb;
-class VRPN_API vrpn_Imager_Stream_Buffer;
-class VRPN_API vrpn_ImmersionBox;
-class VRPN_API vrpn_Keyboard;
-class VRPN_API vrpn_Magellan;
-class VRPN_API vrpn_Mouse;
-class VRPN_API vrpn_PA_axis;
-class VRPN_API vrpn_Poser;
-class VRPN_API vrpn_Sound;
-class VRPN_API vrpn_Spaceball;
-class VRPN_API vrpn_TAF_axis;
-class VRPN_API vrpn_Tng3;
-class VRPN_API vrpn_Tracker;
-class VRPN_API vrpn_Tracker_DTrack;
-class VRPN_API vrpn_inertiamouse;
-class VRPN_API vrpn_raw_SGIBox;
-class VRPN_API vrpn_Timecode_Generator;
-class VRPN_API vrpn_DirectXFFJoystick;
-class VRPN_API vrpn_DirectXRumblePad;
-class VRPN_API vrpn_XInputGamepad;
-class VRPN_API vrpn_Joywin32;
-class VRPN_API vrpn_Phantom;
-class VRPN_API vrpn_Tracker_DTrack;
-class VRPN_API vrpn_DevInput;
-class VRPN_API vrpn_WiiMote;
-class VRPN_API vrpn_Freespace;
 
 
-const int VRPN_GSO_MAX_TRACKERS =             100;
-const int VRPN_GSO_MAX_BUTTONS =              100;
-const int VRPN_GSO_MAX_SOUNDS =               2;
-const int VRPN_GSO_MAX_ANALOG =               8;
-const int VRPN_GSO_MAX_ANALOGOUT =            8;
-const int VRPN_GSO_MAX_SGIBOX =               2;
-const int VRPN_GSO_MAX_CEREALS =              8;
-const int VRPN_GSO_MAX_MAGELLANS =            8;
-const int VRPN_GSO_MAX_MAGELLANSUSB =         8;
-const int VRPN_GSO_MAX_SPACEBALLS =           8;
-const int VRPN_GSO_MAX_IBOXES =               8;
-const int VRPN_GSO_MAX_DIALS =                8;
 const int VRPN_GSO_MAX_NDI_POLARIS_RIGIDBODIES = 20; //FIXME find out from the NDI specs if there is a maximum;
-const int VRPN_GSO_MAX_TIMECODE_GENERATORS =  8;
-const int VRPN_GSO_MAX_TNG3S =	              8;
-const int VRPN_GSO_MAX_DIRECTXJOYS =          8;
-const int VRPN_GSO_MAX_RUMBLEPADS =           8;
-const int VRPN_GSO_MAX_XINPUTPADS =           8;
-const int VRPN_GSO_MAX_WIN32JOYS =            100;
-const int VRPN_GSO_MAX_GLOBALHAPTICSORBS =    8;
-const int VRPN_GSO_MAX_PHANTOMS =             10;
-const int VRPN_GSO_MAX_DTRACKS =              5;
-const int VRPN_GSO_MAX_POSER =	              8;
-const int VRPN_GSO_MAX_MOUSES =	              8;
-const int VRPN_GSO_MAX_DEV_INPUTS =           16;
-const int VRPN_GSO_MAX_KEYBOARD =             1;
-const int VRPN_GSO_MAX_LOGGER =               10;
-const int VRPN_GSO_MAX_IMAGE_STREAM =         10;
-const int VRPN_GSO_MAX_WIIMOTES =             4;
-const int VRPN_GSO_MAX_FREESPACES =           10;
-const int VRPN_GSO_MAX_INERTIAMOUSES =        8;
-const int VRPN_GSO_MAX_JSONNETS =             4;
+
+class VRPN_API vrpn_TAF_axis;
+class VRPN_API vrpn_PA_axis;
 
 class vrpn_Generic_Server_Object
 {
@@ -95,64 +33,6 @@ class vrpn_Generic_Server_Object
 
     // Lists of devices
     vrpn_MainloopContainer _devices;
-    vrpn_Tracker	* trackers [VRPN_GSO_MAX_TRACKERS];
-    int		num_trackers;
-    vrpn_Button	* buttons [VRPN_GSO_MAX_BUTTONS];
-    int		num_buttons;
-    vrpn_Sound	* sounds [VRPN_GSO_MAX_SOUNDS];
-    int		num_sounds;
-    vrpn_Analog	* analogs [VRPN_GSO_MAX_ANALOG];
-    int		num_analogs;
-    vrpn_raw_SGIBox	* sgiboxes [VRPN_GSO_MAX_SGIBOX];
-    int		num_sgiboxes;
-    vrpn_CerealBox	* cereals [VRPN_GSO_MAX_CEREALS];
-    int		num_cereals;
-    vrpn_Magellan	* magellans [VRPN_GSO_MAX_MAGELLANS];
-    int		num_magellans;
-    vrpn_Spaceball  * spaceballs [VRPN_GSO_MAX_SPACEBALLS];
-    int             num_spaceballs;
-    vrpn_ImmersionBox  *iboxes[VRPN_GSO_MAX_IBOXES];
-    int             num_iboxes;
-    vrpn_Dial	* dials [VRPN_GSO_MAX_DIALS];
-    int		num_dials;
-    vrpn_Timecode_Generator * timecode_generators[VRPN_GSO_MAX_TIMECODE_GENERATORS];
-    int		num_generators;
-    vrpn_Tng3       *tng3s[VRPN_GSO_MAX_TNG3S];
-    int             num_tng3s;
-    vrpn_DirectXFFJoystick   * DirectXJoys [VRPN_GSO_MAX_DIRECTXJOYS];
-    int  num_DirectXJoys;
-    vrpn_DirectXRumblePad    * RumblePads  [VRPN_GSO_MAX_RUMBLEPADS ];
-    int  num_RumblePads;
-    vrpn_XInputGamepad       * XInputPads  [VRPN_GSO_MAX_XINPUTPADS ];
-    int  num_XInputPads;
-    vrpn_Joywin32 *win32joys[VRPN_GSO_MAX_WIN32JOYS];
-    int		num_Win32Joys;
-    vrpn_GlobalHapticsOrb *ghos[VRPN_GSO_MAX_GLOBALHAPTICSORBS];
-    int		num_GlobalHapticsOrbs;
-    vrpn_Phantom	*phantoms[VRPN_GSO_MAX_PHANTOMS];
-    int		num_phantoms;
-    vrpn_Tracker_DTrack *DTracks[VRPN_GSO_MAX_DTRACKS];
-    int num_DTracks;
-    vrpn_Analog_Output	* analogouts [VRPN_GSO_MAX_ANALOG];
-    int		num_analogouts;
-    vrpn_Poser	* posers [VRPN_GSO_MAX_POSER];
-    int		num_posers;
-    vrpn_Mouse	* mouses [VRPN_GSO_MAX_MOUSES];
-    int		num_mouses;
-    vrpn_DevInput       * dev_inputs [VRPN_GSO_MAX_DEV_INPUTS];
-    int		num_dev_inputs;
-    vrpn_Keyboard * Keyboards [VRPN_GSO_MAX_KEYBOARD];
-    int		num_Keyboards;
-    vrpn_Auxiliary_Logger_Server_Generic * loggers [VRPN_GSO_MAX_LOGGER];
-    int           num_loggers;
-    vrpn_Imager_Stream_Buffer * imagestreams [VRPN_GSO_MAX_IMAGE_STREAM];
-    int           num_imagestreams;
-    vrpn_WiiMote  * wiimotes [VRPN_GSO_MAX_WIIMOTES];
-    int           num_wiimotes;
-    vrpn_Freespace  * freespaces [VRPN_GSO_MAX_FREESPACES];
-    int           num_freespaces;
-    vrpn_inertiamouse * inertiamouses [VRPN_GSO_MAX_INERTIAMOUSES];
-    int             num_inertiamouses;
 
     void closeDevices (void);
 
