@@ -879,7 +879,7 @@ bool NMEAParser::parseDegrees (double& degrees, const char* degString) const
   double tempMinutes  = (tempPosition - (tempDegrees * 100.0));
   tempPosition = tempDegrees + (tempMinutes / 60.0);
   
-  if (tempPosition >= 0.0 || tempPosition <= 180.0)
+  if (tempPosition >= 0.0 && tempPosition <= 180.0)
     {
       degrees = tempPosition;
       return true;

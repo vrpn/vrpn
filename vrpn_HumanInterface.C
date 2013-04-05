@@ -71,7 +71,7 @@ bool vrpn_HidInterface::reconnect()
           device_info.manufacturer_string = loop->manufacturer_string;
           device_info.product_string = loop->product_string;
           device_info.interface_number = loop->interface_number;
-          //printf("XXX Found vendor %x, product %x, interface %d\n", (unsigned)(loop->vendor_id), (unsigned)(loop->product_id), (int)(loop->interface_number) );
+          //printf("XXX Found vendor 0x%x, product 0x%x, interface %d\n", (unsigned)(loop->vendor_id), (unsigned)(loop->product_id), (int)(loop->interface_number) );
 
           if (_acceptor->accept(device_info)) {
             _vendor = loop->vendor_id;
@@ -81,7 +81,7 @@ bool vrpn_HidInterface::reconnect()
             path = loop->path;
             found = true;
 #ifdef VRPN_HID_DEBUGGING
-            fprintf(stderr,"vrpn_HidInterface::reconnect(): Found %ls %ls (%04hx:%04hx) at path %s - will attempt to to open.\n",
+            fprintf(stderr,"vrpn_HidInterface::reconnect(): Found %ls %ls (%04hx:%04hx) at path %s - will attempt to open.\n",
 				loop->manufacturer_string, loop->product_string, _vendor, _product, loop->path);
 #endif
           }
@@ -92,10 +92,10 @@ bool vrpn_HidInterface::reconnect()
 		return false;
         }
 
-		// Initialize the HID interface and open the device.
-		_device = hid_open_path(path);
+	// Initialize the HID interface and open the device.
+        _device = hid_open_path(path);
         if (_device == NULL) {
-		fprintf(stderr,"vrpn_HidInterface::reconnect(): Could not open device\n");
+		fprintf(stderr,"vrpn_HidInterface::reconnect(): Could not open device %s\n", path);
 #ifdef linux
 		fprintf(stderr,"   (Did you remember to run as root?)\n");
 #endif
@@ -124,13 +124,6 @@ bool vrpn_HidInterface::reconnect()
 }
 
 // Check for incoming characters.  If we get some, pass them on to the handler code.
-// This is based on the source code for the hid_interrupt_read() function; it goes
-// down to the libusb interface directly to get any available characters.  Because
-// we're trying to support a generic device, we can't say in advance how large any
-// particular transfer should be.  So we try to one character at a time until we
-// don't have any more to read.  This update() routine must be called
-// frequently to make sure we don't get partial results, which would mean sending
-// truncated reports to the devices derived from us.
 
 void vrpn_HidInterface::update()
 {

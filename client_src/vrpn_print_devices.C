@@ -141,7 +141,9 @@ void	VRPN_CALLBACK handle_button (void *userdata, const vrpn_BUTTONCB b)
 {
     const char *name = (const char *)userdata;
 
-    printf("Button %s, number %d was just %s\n",
+	printf("##########################################\r\n"
+		   "Button %s, number %d was just %s\n"
+		   "##########################################\r\n",
 	name, b.button, b.state?"pressed":"released");
 }
 
