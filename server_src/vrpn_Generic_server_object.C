@@ -171,11 +171,9 @@ int vrpn_Generic_Server_Object::setup_raw_SGIBox (char * & pch, char * line, FIL
 int vrpn_Generic_Server_Object::setup_SGIBox (char * & pch, char * line, FILE * /*config_file*/)
 {
 
-#ifdef SGI_BDBOX
 
   char s2 [LINESIZE];
 
-  int tbutton;
   next();
   if (sscanf (pch, "%511s", s2) != 1) {
     fprintf (stderr, "Bad vrpn_SGIBox line: %s\n", line);
@@ -186,8 +184,10 @@ int vrpn_Generic_Server_Object::setup_SGIBox (char * & pch, char * line, FILE * 
   if (verbose) {
     printf ("Opening vrpn_SGIBox on host %s\n", s2);
   }
+#ifdef SGI_BDBOX
   vrpn_special_sgibox = _devices.add(new vrpn_SGIBox (s2, connection));
 
+  int tbutton;
   //setting listed buttons to toggles instead of default momentary
   pch += strlen (s2) + 1;
   while (sscanf (pch, "%s", s2) == 1) {
@@ -201,17 +201,17 @@ int vrpn_Generic_Server_Object::setup_SGIBox (char * & pch, char * line, FILE * 
   }
   printf ("Opening vrpn_SGIBox on host %s done\n", s2);
 
+  return 0;  // successful completion
 #else
   fprintf (stderr, "vrpn_server: Can't open SGIbox: not an SGI!  Try raw_SGIbox instead.\n");
+  return -1;
 #endif
 
-  return 0;  // successful completion
 }
 
 
 int vrpn_Generic_Server_Object::setup_Timecode_Generator (char * & pch, char * line, FILE * /*config_file*/)
 {
-#ifdef VRPN_INCLUDE_TIMECODE_SERVER
   char s2 [LINESIZE];
 
   next();
@@ -220,6 +220,7 @@ int vrpn_Generic_Server_Object::setup_Timecode_Generator (char * & pch, char * l
     return -1;
   }
 
+#ifdef VRPN_INCLUDE_TIMECODE_SERVER
   // open the timecode generator
   if (verbose) {
     printf ("Opening vrpn_Timecode_Generator on host %s\n", s2);
@@ -235,7 +236,6 @@ int vrpn_Generic_Server_Object::setup_Timecode_Generator (char * & pch, char * l
 
 int vrpn_Generic_Server_Object::setup_Phantom (char * &pch, char *line, FILE * /*config_file*/)
 {
-#ifdef VRPN_USE_PHANTOM_SERVER
   char	s2[512];	// String parameters
   int	i1;		// Integer parameters
   float	f1;		// Float parameters
@@ -257,6 +257,7 @@ int vrpn_Generic_Server_Object::setup_Phantom (char * &pch, char *line, FILE * /
     return -1;
   }
 
+#ifdef VRPN_USE_PHANTOM_SERVER
   // Jean SIMARD <jean.simard@limsi.fr>
   // Put a more verbose version when a PHANToM connection is opened.
   if (verbose) {
@@ -297,6 +298,7 @@ int vrpn_Generic_Server_Object::setup_JoyFly (char * & pch, char * line, FILE * 
 
 #ifdef  _WIN32
   fprintf (stderr, "JoyFly tracker not yet defined for NT\n");
+  return -1;
 #else
 
   // Open the tracker
@@ -315,9 +317,9 @@ int vrpn_Generic_Server_Object::setup_JoyFly (char * & pch, char * line, FILE * 
     _devices.add(
       new vrpn_Tracker_JoyFly (s2, connection, s3, s4));
   }
-#endif
 
   return 0;
+#endif
 }
 
 // This function will read one line of the vrpn_AnalogFly configuration (matching
@@ -861,10 +863,6 @@ int vrpn_Generic_Server_Object::setup_IDEA (char * & pch, char * line, FILE * /*
 int vrpn_Generic_Server_Object::setup_NationalInstrumentsOutput (char * & pch, char * line, FILE * /*config_file*/)
 {
 
-#ifndef	VRPN_USE_NATIONAL_INSTRUMENTS
-  fprintf (stderr, "Attempting to use National Instruments board, but not compiled in\n");
-  fprintf (stderr, "  (Define VRPN_USE_NATIONAL_INSTRUMENTS in vrpn_Configuration.h\n");
-#else
   fprintf (stderr, "Warning: vrpn_NI_Analog_Output is deprecated: use vrpn_National_Instruments instead\n");
   char s2 [LINESIZE], s3 [LINESIZE];
   int i1, i2;
@@ -877,20 +875,24 @@ int vrpn_Generic_Server_Object::setup_NationalInstrumentsOutput (char * & pch, c
     return -1;
   }
 
+#ifdef	VRPN_USE_NATIONAL_INSTRUMENTS
   // Open the device
   if (verbose) {
     printf ("Opening vrpn_NI_Analog_Output: %s with %d channels\n", s2, i1);
   }
   _devices.add(new vrpn_Analog_Output_Server_NI (s2, connection, s3, i1, i2 != 0, f1, f2));
-#endif
 
   return 0;
+#else
+  fprintf (stderr, "Attempting to use National Instruments board, but not compiled in\n");
+  fprintf (stderr, "  (Define VRPN_USE_NATIONAL_INSTRUMENTS in vrpn_Configuration.h\n");
+  return -1;
+#endif
 }
 
 int vrpn_Generic_Server_Object::setup_NationalInstruments (char * & pch, char * line, FILE * /*config_file*/)
 {
 
-#if	defined(VRPN_USE_NATIONAL_INSTRUMENTS) || defined(VRPN_USE_NATIONAL_INSTRUMENTS_MX)
   char s2 [LINESIZE], s3 [LINESIZE];
   int num_in_channels, in_polarity, in_mode, in_range, in_drive_ais, in_gain;
   int num_out_channels, out_polarity;
@@ -907,6 +909,7 @@ int vrpn_Generic_Server_Object::setup_NationalInstruments (char * & pch, char * 
     return -1;
   }
 
+#if	defined(VRPN_USE_NATIONAL_INSTRUMENTS) || defined(VRPN_USE_NATIONAL_INSTRUMENTS_MX)
   // Open the device
   if (verbose) {
     printf ("Opening vrpn_National_Instruments_Server: %s with %d in and %d out channels\n", s2, num_in_channels, num_out_channels);
@@ -917,12 +920,13 @@ int vrpn_Generic_Server_Object::setup_NationalInstruments (char * & pch, char * 
   _devices.add(new vrpn_National_Instruments_Server (s2, connection, s3, num_in_channels, num_out_channels,
               minimum_delay, in_polarity != 0, in_mode, in_range, in_drive_ais != 0, in_gain,
               out_polarity != 0, min_out_voltage, max_out_voltage));
+
+  return 0;
 #else
   fprintf (stderr, "Attempting to use National Instruments board, but not compiled in\n");
   fprintf (stderr, "  (Define VRPN_USE_NATIONAL_INSTRUMENTS in vrpn_Configuration.h\n");
+  return -1;
 #endif
-
-  return 0;
 }
 
 int vrpn_Generic_Server_Object::setup_ImmersionBox (char * & pch, char * line, FILE * /*config_file*/)
@@ -1148,7 +1152,6 @@ int vrpn_Generic_Server_Object::setup_Tracker_3DMouse (char * & pch, char * line
 
 int vrpn_Generic_Server_Object::setup_Tracker_NovintFalcon (char * & pch, char *line, FILE * /*config_file*/)
 {
-#if defined(VRPN_USE_LIBNIFALCON)
   char s2[LINESIZE], s3[LINESIZE], s4[LINESIZE], s5[LINESIZE];
   int i1;
   int numparms;
@@ -1174,14 +1177,17 @@ int vrpn_Generic_Server_Object::setup_Tracker_NovintFalcon (char * & pch, char *
     strcpy (s3, "4-button");
   }
 
+#if defined(VRPN_USE_LIBNIFALCON)
   // Open the tracker
   if (verbose) {
     printf ("Opening vrpn_Tracker_NovintFalcon: %s device: %d, grip: %s, kinematics: %s damping: %s\n", s2, i1, s3, s4, s5);
   }
 
   _devices.add(new vrpn_Tracker_NovintFalcon (s2, connection, i1, s3, s4, s5));
-#endif
   return 0;
+#else
+  return -1;
+#endif
 }
 
 int vrpn_Generic_Server_Object::setup_Tracker_Fastrak (char * & pch, char * line, FILE * config_file)
@@ -1557,7 +1563,6 @@ int vrpn_Generic_Server_Object::setup_Tracker_Liberty (char * & pch, char * line
 
 int vrpn_Generic_Server_Object::setup_Tracker_LibertyHS (char * & pch, char * line, FILE * config_file)
 {
-#if defined(VRPN_USE_LIBUSB_1_0)
   char s2 [LINESIZE];
   int i1, i2, i3;
   int numparms;
@@ -1609,6 +1614,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_LibertyHS (char * & pch, char * li
     printf ("%s\n", rcmd);
   }
 
+#if defined(VRPN_USE_LIBUSB_1_0)
   // Open the tracker
   if (verbose) printf (
       "Opening vrpn_Tracker_LibertyHS: %s on USB port, baud %d\n",
@@ -1619,12 +1625,12 @@ int vrpn_Generic_Server_Object::setup_Tracker_LibertyHS (char * & pch, char * li
   } else {
     _devices.add(new vrpn_Tracker_LibertyHS (s2, connection, i2, 0, i1, 1, rcmd, i3));
   }
+  return 0;
 #else
   printf ("Can't create new vrpn_Tracker_LibertyHS: Server not compiled with VRPN_USE_LIBUSB_1_0 defined.\n");
   return -1;
 #endif
 
-  return 0;
 }
 
 int vrpn_Generic_Server_Object::setup_Tracker_3Space (char * & pch, char * line, FILE * /*config_file*/)
@@ -2055,16 +2061,16 @@ int vrpn_Generic_Server_Object::setup_3DMicroscribe (char * & pch, char * line, 
   }
 #ifdef VRPN_USE_MICROSCRIBE
   _devices.add(new vrpn_3DMicroscribe (name, connection, device, baud_rate, x, y, z, s));
+  return 0;
 #else
   fprintf (stderr, "3DMicroscribe support not configured in VRPN, edit vrpn_Configure.h and rebuild\n");
+  return -1;
 #endif
-  return 0;
 }
 
 //================================
 int vrpn_Generic_Server_Object::setup_Tracker_InterSense (char * &pch, char *line, FILE * config_file)
 {
-#ifdef	VRPN_INCLUDE_INTERSENSE
   char trackerName[LINESIZE];
   char commStr[100];
   int commPort;
@@ -2183,6 +2189,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_InterSense (char * &pch, char *lin
     printf ("%s\n", rcmd);
   }
 
+#ifdef	VRPN_INCLUDE_INTERSENSE
 
   // Open the tracker
   if (verbose)
@@ -2260,18 +2267,17 @@ int vrpn_Generic_Server_Object::setup_Tracker_InterSense (char * &pch, char *lin
 
   _devices.add(mytracker);
 
+  return 0;
+
 #else
   fprintf (stderr, "vrpn_server: Can't open Intersense native server: VRPN_INCLUDE_INTERSENSE not defined in vrpn_Configure.h!\n");
   return -1;
 #endif
-
-  return 0;
 }
 
 //================================
 int vrpn_Generic_Server_Object::setup_DirectXFFJoystick (char * & pch, char * line, FILE * /*config_file*/)
 {
-#ifdef	VRPN_USE_DIRECTINPUT
   char s2 [LINESIZE];
   float f1, f2;
 
@@ -2282,6 +2288,7 @@ int vrpn_Generic_Server_Object::setup_DirectXFFJoystick (char * & pch, char * li
     return -1;
   }
 
+#ifdef	VRPN_USE_DIRECTINPUT
   // Open the joystick
   if (verbose) {
     printf ("Opening vrpn_DirectXFFJoystick: %s, read rate %g, force rate %g\n",
@@ -2300,7 +2307,6 @@ int vrpn_Generic_Server_Object::setup_DirectXFFJoystick (char * & pch, char * li
 //================================
 int vrpn_Generic_Server_Object::setup_RumblePad (char * & pch, char * line, FILE * /*config_file*/)
 {
-#ifdef	VRPN_USE_DIRECTINPUT
   char s2 [LINESIZE];
 
   next();
@@ -2310,6 +2316,7 @@ int vrpn_Generic_Server_Object::setup_RumblePad (char * & pch, char * line, FILE
     return -1;
   }
 
+#ifdef	VRPN_USE_DIRECTINPUT
   // Open the joystick
   if (verbose) {
     printf ("Opening vrpn_DirectXRumblePad: %s\n", s2);
@@ -2326,7 +2333,6 @@ int vrpn_Generic_Server_Object::setup_RumblePad (char * & pch, char * line, FILE
 //================================
 int vrpn_Generic_Server_Object::setup_XInputPad (char * & pch, char * line, FILE * /*config_file*/)
 {
-#if defined(VRPN_USE_DIRECTINPUT) && defined(VRPN_USE_WINDOWS_XINPUT)
   char s2 [LINESIZE];
   unsigned controller;
 
@@ -2337,6 +2343,7 @@ int vrpn_Generic_Server_Object::setup_XInputPad (char * & pch, char * line, FILE
     return -1;
   }
 
+#if defined(VRPN_USE_DIRECTINPUT) && defined(VRPN_USE_WINDOWS_XINPUT)
   // Open the joystick
   if (verbose) {
     printf ("Opening vrpn_XInputGamepad: %s\n", s2);
@@ -2488,7 +2495,6 @@ int vrpn_Generic_Server_Object::setup_DTrack (char* &pch, char* line, FILE * /*c
   int idbf[512];
   bool actTracing, act3DOFout;
 
-#ifndef sgi
   next();
 
   // Get the arguments:
@@ -2588,12 +2594,14 @@ int vrpn_Generic_Server_Object::setup_DTrack (char* &pch, char* line, FILE * /*c
     printf ("\n");
   }
 
+#ifndef sgi
+
   _devices.add(new vrpn_Tracker_DTrack (s2, connection, dtrackPort, timeToReachJoy,
       nob, nof, pidbf, actTracing));
 
   return 0;
 #else
-  fprintf (stderr, "vrpn_Tracker_DTrack not supported on this architecture\n");
+  fprintf(stderr, "vrpn_Tracker_DTrack not supported on this architecture\n");
   return -1;
 #endif
 }
@@ -2603,7 +2611,7 @@ int vrpn_Generic_Server_Object::setup_DTrack (char* &pch, char* line, FILE * /*c
 // from, and the axis to fill in are passed as parameters. It returns 0 on success
 // and -1 on failure.
 
-int	vrpn_Generic_Server_Object::get_poser_axis_line (FILE *config_file, const char *axis_name, vrpn_PA_axis *axis, vrpn_float64 *min, vrpn_float64 *max)
+int	vrpn_Generic_Server_Object::get_poser_axis_line (FILE * config_file, const char *axis_name, vrpn_PA_axis *axis, vrpn_float64 *min, vrpn_float64 *max)
 {
   char	line[LINESIZE];
   char	_axis_name[LINESIZE];
@@ -2745,7 +2753,6 @@ int vrpn_Generic_Server_Object::setup_Poser_Tek4662 (char * & pch, char * line, 
 /******************************************************************************/
 int vrpn_Generic_Server_Object::setup_Atmel (char* &pch, char *line, FILE * /*config_file*/)
 {
-#ifndef _WIN32
   char name[LINESIZE];
   char port[LINESIZE];
   int baud = 0;
@@ -2808,6 +2815,7 @@ int vrpn_Generic_Server_Object::setup_Atmel (char* &pch, char *line, FILE * /*co
   //last line of vrpn_Atmel
   if (channel == -1) {
 
+#ifndef _WIN32
     // here we use a factory interface because a lot of init things have to be done
     _devices.add (vrpn_Atmel::Create (name,
                                       connection,
@@ -2824,6 +2832,10 @@ int vrpn_Generic_Server_Object::setup_Atmel (char* &pch, char *line, FILE * /*co
     // the Analog_Output is handled implict by analog like done in Zaber
 
     return 0;
+#else
+    fprintf (stderr, "vrpn_Generic_Server_Object::setup_Atmel(): Not implemented on this architecture\n");
+    return -1;
+#endif
   }
 
   // check if it is a valid channel
@@ -2859,10 +2871,6 @@ int vrpn_Generic_Server_Object::setup_Atmel (char* &pch, char *line, FILE * /*co
 
 #undef VRPN_ATMEL_IS_MODE
 
-#else
-  fprintf (stderr, "vrpn_Generic_Server_Object::setup_Atmel(): Not implemented on this architecture\n");
-#endif
-
   return 0;
 }
 
@@ -2882,10 +2890,8 @@ int vrpn_Generic_Server_Object::setup_Event_Mouse (char* &pch, char *line, FILE 
     return -1;
   }
 
-
   // Open the button
   if (verbose) {
-
     printf ("Opening vrpn_Event_Mouse: %s on port %s\n", name, port);
   }
 
@@ -2933,7 +2939,6 @@ int vrpn_Generic_Server_Object::setup_inertiamouse (char * & pch, char * line, F
 
 int vrpn_Generic_Server_Object::setup_Analog_USDigital_A2 (char * & pch, char * line, FILE * /*config_file*/)
 {
-#ifdef  VRPN_USE_USDIGITAL
   char A2name[LINESIZE];
   int  comPort, numChannels, numArgs, reportChange;
 
@@ -2963,6 +2968,7 @@ int vrpn_Generic_Server_Object::setup_Analog_USDigital_A2 (char * & pch, char * 
     return -1;
   }
 
+#ifdef  VRPN_USE_USDIGITAL
   // Open the device
   if (verbose)
     printf (
@@ -2983,7 +2989,6 @@ int vrpn_Generic_Server_Object::setup_Analog_USDigital_A2 (char * & pch, char * 
 
 int vrpn_Generic_Server_Object::setup_Button_NI_DIO24 (char * & pch, char * line, FILE * /*config_file*/)
 {
-#ifdef VRPN_USE_NATIONAL_INSTRUMENTS_MX
   char DIO24name[LINESIZE];
   int  numChannels ;
   int  numArgs ;
@@ -3011,6 +3016,7 @@ int vrpn_Generic_Server_Object::setup_Button_NI_DIO24 (char * & pch, char * line
     numChannels = vrpn_Button_NI_DIO24::vrpn_Button_NI_DIO24_CHANNEL_MAX ;
   }
 
+#ifdef VRPN_USE_NATIONAL_INSTRUMENTS_MX
   // Open the device
   if (verbose)
     printf ("Opening vrpn_Button_NI_DIO24: %s with up to %d buttons\n",
@@ -3028,7 +3034,6 @@ int vrpn_Generic_Server_Object::setup_Button_NI_DIO24 (char * & pch, char * line
 
 int vrpn_Generic_Server_Object::setup_Tracker_PhaseSpace (char * & pch, char * line, FILE * /*config_file*/)
 {
-#ifdef VRPN_INCLUDE_PHASESPACE
 
   char trackerName[LINESIZE];
   char device[LINESIZE];
@@ -3043,6 +3048,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_PhaseSpace (char * & pch, char * l
   }
 
 
+#ifdef VRPN_INCLUDE_PHASESPACE
   vrpn_Tracker_PhaseSpace* pstracker =  new vrpn_Tracker_PhaseSpace (trackerName, connection, device, framerate, readflag, slaveflag);
 
   char tag[LINESIZE];
@@ -3116,12 +3122,12 @@ int vrpn_Generic_Server_Object::setup_Tracker_PhaseSpace (char * & pch, char * l
   }
   _devices.add(pstracker);
 
+  return 0;
+
 #else
   fprintf (stderr, "vrpn_server: Can't open PhaseSpace OWL server: VRPN_INCLUDE_PHASESPACE not defined in vrpn_Configure.h!\n");
   return -1;
 #endif
-
-  return 0;
 }
 
 int vrpn_Generic_Server_Object::setup_Tracker_NDI_Polaris (char * & pch, char * line, FILE * config_file)
@@ -3209,7 +3215,6 @@ int vrpn_Generic_Server_Object::setup_ImageStream (char * & pch, char * line, FI
 
 int vrpn_Generic_Server_Object::setup_WiiMote (char * & pch, char * line, FILE * /*config_file*/)
 {
-#ifdef	VRPN_USE_WIIUSE
   char sBDADDR [LINESIZE];
   char s2 [LINESIZE];
   unsigned controller, useMS, useIR, reorderBtns;
@@ -3222,6 +3227,7 @@ int vrpn_Generic_Server_Object::setup_WiiMote (char * & pch, char * line, FILE *
     return -1;
   }
 
+#ifdef	VRPN_USE_WIIUSE
   // Open the WiiMote
   if (verbose) {
     printf ("Opening vrpn_WiiMote: %s\n", s2);
@@ -3273,7 +3279,6 @@ int vrpn_Generic_Server_Object::setup_Tracker_WiimoteHead (char * & pch, char * 
 
 int vrpn_Generic_Server_Object::setup_Freespace (char * & pch, char * line, FILE * /*config_file*/)
 {
-#ifdef	VRPN_USE_FREESPACE
   char s2 [LINESIZE];
   unsigned controller, sendbody, senduser;
 
@@ -3284,6 +3289,7 @@ int vrpn_Generic_Server_Object::setup_Freespace (char * & pch, char * line, FILE
     return -1;
   }
 
+#ifdef	VRPN_USE_FREESPACE
   // Open the Freespace if we can.
   _devices.add(vrpn_Freespace::create (s2, connection, controller,
                                      (sendbody != 0), (senduser != 0)));
@@ -3297,7 +3303,6 @@ int vrpn_Generic_Server_Object::setup_Freespace (char * & pch, char * line, FILE
 
 int vrpn_Generic_Server_Object::setup_Xkeys_Desktop (char * & pch, char * line, FILE * /*config_file*/)
 {
-#if defined(VRPN_USE_HID)
 
   char s2 [LINESIZE];
 
@@ -3309,6 +3314,7 @@ int vrpn_Generic_Server_Object::setup_Xkeys_Desktop (char * & pch, char * line, 
 
   // Open the Xkeys
 
+#if defined(VRPN_USE_HID)
   // Open the button
   if (verbose) {
     printf ("Opening vrpn_Xkeys_Desktop on host %s\n", s2);
@@ -3323,8 +3329,6 @@ int vrpn_Generic_Server_Object::setup_Xkeys_Desktop (char * & pch, char * line, 
 
 int vrpn_Generic_Server_Object::setup_Xkeys_Pro (char * & pch, char * line, FILE * /*config_file*/)
 {
-#if defined(VRPN_USE_HID)
-
   char s2 [LINESIZE];
 
   next();
@@ -3332,6 +3336,8 @@ int vrpn_Generic_Server_Object::setup_Xkeys_Pro (char * & pch, char * line, FILE
     fprintf (stderr, "Bad Xkeys_Pro line: %s\n", line);
     return -1;
   }
+
+#if defined(VRPN_USE_HID)
 
   // Open the button
   if (verbose) {
@@ -3347,7 +3353,6 @@ int vrpn_Generic_Server_Object::setup_Xkeys_Pro (char * & pch, char * line, FILE
 
 int vrpn_Generic_Server_Object::setup_Xkeys_Joystick (char * & pch, char * line, FILE * /*config_file*/)
 {
-#if defined(VRPN_USE_HID)
 
   char s2 [LINESIZE];
 
@@ -3359,6 +3364,7 @@ int vrpn_Generic_Server_Object::setup_Xkeys_Joystick (char * & pch, char * line,
 
   // Open the Xkeys
 
+#if defined(VRPN_USE_HID)
   // Open the button
   if (verbose) {
     printf ("Opening vrpn_Xkeys_Joystick on host %s\n", s2);
@@ -3373,7 +3379,6 @@ int vrpn_Generic_Server_Object::setup_Xkeys_Joystick (char * & pch, char * line,
 
 int vrpn_Generic_Server_Object::setup_Xkeys_Jog_And_Shuttle (char * & pch, char * line, FILE * /*config_file*/)
 {
-#if defined(VRPN_USE_HID)
 
   char s2 [LINESIZE];
 
@@ -3385,6 +3390,7 @@ int vrpn_Generic_Server_Object::setup_Xkeys_Jog_And_Shuttle (char * & pch, char 
 
   // Open the Xkeys
 
+#if defined(VRPN_USE_HID)
   // Open the button
   if (verbose) {
     printf ("Opening vrpn_Xkeys_Jog_And_Shuttle on host %s\n", s2);
@@ -3399,7 +3405,6 @@ int vrpn_Generic_Server_Object::setup_Xkeys_Jog_And_Shuttle (char * & pch, char 
 
 int vrpn_Generic_Server_Object::setup_Xkeys_XK3 (char * & pch, char * line, FILE * /*config_file*/)
 {
-#if defined(VRPN_USE_HID)
 
   char s2 [LINESIZE];
 
@@ -3410,6 +3415,7 @@ int vrpn_Generic_Server_Object::setup_Xkeys_XK3 (char * & pch, char * line, FILE
   }
 
   // Open the Xkeys
+#if defined(VRPN_USE_HID)
 
   // Open the button
   if (verbose) {
@@ -3551,7 +3557,6 @@ int vrpn_Generic_Server_Object::setup_3DConnexion_SpaceBall5000 (char * & pch, c
 
 int vrpn_Generic_Server_Object::setup_SpacePoint (char * & pch, char * line, FILE * /*config_file*/)
 {
-#ifdef VRPN_USE_HID
 
   char s2[LINESIZE];
 
@@ -3564,6 +3569,7 @@ int vrpn_Generic_Server_Object::setup_SpacePoint (char * & pch, char * line, FIL
 
   // Open the SpacePoint
 
+#ifdef VRPN_USE_HID
   // Open the tracker
   if (verbose) {
     printf ("Opening vrpn_Tracker_SpacePoint %s\n", s2);
@@ -3679,10 +3685,11 @@ int vrpn_Generic_Server_Object::setup_Tracker_MotionNode (char * & pch, char * l
   }
 
   _devices.add(new vrpn_Tracker_MotionNode (name, connection, num_sensors, address, port));
+  return 0;
 #else
   fprintf (stderr, "vrpn_Tracker_MotionNode: Not compiled in (add VRPN_USE_MOTIONNODE to vrpn_Configure.h and recompile)\n");
+  return -1;
 #endif
-  return 0;
 }
 
 int vrpn_Generic_Server_Object::setup_Tracker_GPS(char * & pch, char * line, FILE * /*config_file*/)
@@ -3747,7 +3754,6 @@ int vrpn_Generic_Server_Object::setup_DreamCheeky (char * & pch, char * line, FI
 
 int vrpn_Generic_Server_Object::setup_Tracker_TrivisioColibri (char * & pch, char * line, FILE * /*config_file*/)
 {
-#ifdef	VRPN_USE_TRIVISIOCOLIBRI
   char s2 [LINESIZE];
   int numSensors, Hz, bufLen;
 
@@ -3758,6 +3764,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_TrivisioColibri (char * & pch, cha
     return -1;
   }
 
+#ifdef	VRPN_USE_TRIVISIOCOLIBRI
   // Open the Trivisio Colibri if we can.
   if (verbose) {
     printf ("Opening vrpn_Tracker_TrivisioColibri: %s with %d sensors, %d Hz, and %d bufLen",
@@ -3885,7 +3892,6 @@ int vrpn_Generic_Server_Object::setup_Tracker_RazerHydra (char * &pch, char * li
 
 int vrpn_Generic_Server_Object::setup_Tracker_zSight (char * & pch, char * line, FILE * /*config_file*/)
 {
-#if defined(_WIN32) && defined(VRPN_USE_DIRECTINPUT) && defined(VRPN_HAVE_ATLBASE)
   char s2 [LINESIZE];
 
   next();
@@ -3895,6 +3901,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_zSight (char * & pch, char * line,
     return -1;
   }
 
+#if defined(_WIN32) && defined(VRPN_USE_DIRECTINPUT) && defined(VRPN_HAVE_ATLBASE)
   // Open the zSight if we can.
   if (verbose) {
     printf ("Opening vrpn_Tracker_zSight: %s", s2);
@@ -3911,7 +3918,6 @@ int vrpn_Generic_Server_Object::setup_Tracker_zSight (char * & pch, char * line,
 
 int vrpn_Generic_Server_Object::setup_Tracker_ViewPoint (char * & pch, char * line, FILE * /*config_file*/)
 {
-#ifdef	VRPN_USE_VIEWPOINT
   char s2 [LINESIZE];  // Get the arguments
   int smoothedData;
 
@@ -3923,6 +3929,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_ViewPoint (char * & pch, char * li
   }
 
 
+#ifdef	VRPN_USE_VIEWPOINT
   // Open the ViewPoint EyeTracker if we can.
   if (verbose) {
     printf ("Opening vrpn_Tracker_ViewPoint: %s", s2);
@@ -3938,15 +3945,12 @@ int vrpn_Generic_Server_Object::setup_Tracker_ViewPoint (char * & pch, char * li
 #endif
 }
 
-int vrpn_Generic_Server_Object::setup_Tracker_G4 (char * &pch, char * line, FILE * config_file)
-{
-#ifdef  VRPN_USE_PDI
+int vrpn_Generic_Server_Object::setup_Tracker_G4(char * &pch, char * line, FILE * config_file) {
   const int LINESIZE = 512;
   char name [LINESIZE], filepath [LINESIZE];
   int numparms;
   int Hz = 10;
   char rcmd[5000];
-  vrpn_Tracker_G4_HubMap * pHMap = NULL;
 
   next();
   // Get the arguments (class, tracker_name)
@@ -3978,6 +3982,8 @@ int vrpn_Generic_Server_Object::setup_Tracker_G4 (char * &pch, char * line, FILE
 
   printf ("%s\n", filepath);
 
+#ifdef  VRPN_USE_PDI
+  vrpn_Tracker_G4_HubMap * pHMap = NULL;
   // If the last character in the line is a backslash, '\', then
   // the following line is an additional command to send to the
   // G4 at reset time. So long as we find lines with slashes
@@ -3985,8 +3991,6 @@ int vrpn_Generic_Server_Object::setup_Tracker_G4 (char * &pch, char * line, FILE
   // that there is a newline at the end of the line, following the
   // backslash.
   rcmd[0] = 0;
-
-
   while (line[strlen (line) - 2] == '\\') {
     // Read the next line
     if (fgets (line, LINESIZE, config_file) == NULL) {
@@ -4049,10 +4053,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_G4 (char * &pch, char * line, FILE
 #endif
 }
 
-int vrpn_Generic_Server_Object::setup_Tracker_FastrakPDI (char * &pch, char * line, FILE * config_file)
-{
-#ifdef  VRPN_USE_PDI
-  const int LINESIZE = 512;
+int vrpn_Generic_Server_Object::setup_Tracker_FastrakPDI(char * &pch, char * line, FILE * config_file) {
   const int FT_MAX_SENSORS = 16; /// @todo this constant is used elsewhere but defined nowhere
   char name [LINESIZE];
   int Hz = 10;
@@ -4105,6 +4106,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_FastrakPDI (char * &pch, char * li
     printf (" no additional commands found\r\n");
   }
 
+#ifdef  VRPN_USE_PDI
   _devices.add (new vrpn_Tracker_FastrakPDI (name, connection, Hz, rcmd, nStylusMap));
 
   return 0;
@@ -4114,10 +4116,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_FastrakPDI (char * &pch, char * li
 #endif
 }
 
-int vrpn_Generic_Server_Object::setup_Tracker_LibertyPDI (char * &pch, char * line, FILE * config_file)
-{
-#ifdef  VRPN_USE_PDI
-  const int LINESIZE = 512;
+int vrpn_Generic_Server_Object::setup_Tracker_LibertyPDI(char * &pch, char * line, FILE * config_file) {
   const int LIBERTY_MAX_SENSORS = 16; /// @todo this constant is used elsewhere but defined nowhere
   char name [LINESIZE];
   int Hz = 10;
@@ -4171,6 +4170,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_LibertyPDI (char * &pch, char * li
     printf (" no additional commands found\r\n");
   }
 
+#ifdef  VRPN_USE_PDI
   _devices.add (new vrpn_Tracker_LibertyPDI (name, connection, Hz, rcmd, nStylusMap));
 
   return 0;
