@@ -4052,6 +4052,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_FastrakPDI (char * &pch, char * li
 {
 #ifdef  VRPN_USE_PDI
   const int LINESIZE = 512;
+  const int FT_MAX_SENSORS = 16; /// @todo this constant is used elsewhere but defined nowhere
   char name [LINESIZE];
   int Hz = 10;
   char rcmd[5000];     // reset commands to send to Liberty
@@ -4116,6 +4117,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_LibertyPDI (char * &pch, char * li
 {
 #ifdef  VRPN_USE_PDI
   const int LINESIZE = 512;
+  const int LIBERTY_MAX_SENSORS = 16; /// @todo this constant is used elsewhere but defined nowhere
   char name [LINESIZE];
   int Hz = 10;
   unsigned int nStylusMap = 0;
