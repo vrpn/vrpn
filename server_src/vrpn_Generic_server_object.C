@@ -216,7 +216,7 @@ int vrpn_Generic_Server_Object::setup_Timecode_Generator (char * & pch, char * l
 
   next();
   if (sscanf (pch, "%511s", s2) != 1) {
-    fprintf (stderr, "Timecode_Generator line: %s\n", line);
+    fprintf (stderr, "Bad vrpn_Timecode_Generator line: %s\n", line);
     return -1;
   }
 
@@ -2470,7 +2470,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_JsonNet (char* &pch, char * line, 
 
   return 0;
 #else
-  fprintf (stderr, "vrpn_Tracker_JsonNet support not compiled in.\n");
+  fprintf (stderr, "vrpn_server: Can't open vrpn_Tracker_JsonNet: VRPN_USE_JSONNET not defined in vrpn_Configure.h!\n");
   return -1;
 #endif // VRPN_USE_JsonNet
 }
