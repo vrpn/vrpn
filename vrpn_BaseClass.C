@@ -23,12 +23,6 @@ d_level_to_print(0)
 /** Deletes any callbacks that are still registered. */
 vrpn_TextPrinter::~vrpn_TextPrinter()
 {
-    /* XXX This code causes seg faults on exit,when it is trying to unregister
-       handlers, apparently from nonexistent connections.  For now, this has
-       been removed; this will cause user code to segfault if they dynamically
-       create a vrpn_TextPrinter and then delete it.  This is the more rare
-       case.
-
     vrpn_TextPrinter_Watch_Entry    *victim, *next;
     vrpn_BaseClass  *obj;
 
@@ -36,11 +30,16 @@ vrpn_TextPrinter::~vrpn_TextPrinter()
     while (victim != NULL) {
 	next = victim->next;
 	obj = victim->obj;
-	obj->connectionPtr()->unregister_handler(obj->d_text_message_id, text_message_handler, victim, obj->d_sender_id);
+
+        // Guard against the case where the object has set its connection pointer
+        // to NULL, which is how some objects notify themselves that they are
+        // broken.
+        if (obj->connectionPtr()) {
+          obj->connectionPtr()->unregister_handler(obj->d_text_message_id, text_message_handler, victim, obj->d_sender_id);
+        }
 	delete victim;
 	victim = next;
     }
-    XXX */
 }
 
 /** Adds an object to the list of watched objects.  Returns 0 on success and
@@ -128,10 +127,14 @@ void	vrpn_TextPrinter::remove_object(vrpn_BaseClass *o)
             
     // If the object is on the list, unregister its callback and delete it.
     if (victim != NULL) {
-	// Unregister the callback for the object
-    	if (o->d_connection->unregister_handler(o->d_text_message_id, text_message_handler, victim, o->d_sender_id) != 0) {
-	    fprintf(stderr,"vrpn_TextPrinter::remove_object(): Can't unregister callback\n");
-	}
+	// Unregister the callback for the object, unless its d_connetion pointer
+        // is NULL (which is a convention used by devices to indicate that they
+        // are broken, so we need to guard against it here).
+        if (o->d_connection) {
+    	  if (o->d_connection->unregister_handler(o->d_text_message_id, text_message_handler, victim, o->d_sender_id) != 0) {
+	      fprintf(stderr,"vrpn_TextPrinter::remove_object(): Can't unregister callback\n");
+	  }
+        }
 
 	// Remove the entry from the list
 	*snitch = victim->next;
