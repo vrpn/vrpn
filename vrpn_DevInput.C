@@ -25,11 +25,14 @@
 #include <string>
 #include <sstream>
 
+#define	REPORT_ERROR(msg) { send_text_message(msg, timestamp, vrpn_TEXT_ERROR); }
+
 static const std::string &getDeviceNodes(const std::string &device_name) {
   static std::map<std::string, std::string> s_devicesNodes;
   static bool s_initialized = false;
 
   static std::string default_node="unknown";
+  static std::string none_found="";
 
   if (!s_initialized) {
     bool permission_missing = false;
@@ -64,14 +67,15 @@ static const std::string &getDeviceNodes(const std::string &device_name) {
     return node_name->second;
   }
 
-  throw (char*)(std::string("Cannot find the device: ") + device_name).c_str();
+  return none_found;
 }
 
 ///////////////////////////////////////////////////////////////////////////
 
-vrpn_DevInput::vrpn_DevInput( const char* name, vrpn_Connection * cxn, const char *device_name, const char * type, int int_param ) :
-  vrpn_Analog( name, cxn ),
-  vrpn_Button_Filter( name, cxn )
+vrpn_DevInput::vrpn_DevInput( const char* name, vrpn_Connection * cxn, const char *device_name, const char * type, int int_param )
+  : vrpn_Analog( name, cxn )
+  , vrpn_Button_Filter( name, cxn )
+  , d_fileDescriptor(-1)	// None found yet, device broken.
 {
   int i;
 
@@ -82,7 +86,8 @@ vrpn_DevInput::vrpn_DevInput( const char* name, vrpn_Connection * cxn, const cha
   } else if (strcmp(type, "relative") == 0) {
     d_type = DEVICE_MOUSE_RELATIVE;
   } else {
-    throw (char *)"Third parameter must be keyboard, absolute or relative";
+    REPORT_ERROR("Third parameter must be keyboard, absolute or relative");
+    return;
   }
 
   vrpn_Button_Filter::num_buttons = 0;
@@ -91,7 +96,8 @@ vrpn_DevInput::vrpn_DevInput( const char* name, vrpn_Connection * cxn, const cha
   switch (d_type) {
   case DEVICE_KEYBOARD:
     if ((int_param < 1) || (int_param >= vrpn_BUTTON_MAX_BUTTONS)) {
-      throw (char *)"In case of keyboard, the value must be between 1 and 256";
+      REPORT_ERROR("In case of keyboard, the value must be between 1 and 256");
+      return;
     }
     vrpn_Button_Filter::num_buttons = int_param;
     break;
@@ -118,10 +124,21 @@ vrpn_DevInput::vrpn_DevInput( const char* name, vrpn_Connection * cxn, const cha
   }
 
   std::string node = getDeviceNodes(device_name);
+  if (node.length() == 0) {
+	char msg[4096];
+	sprintf(msg, "vrpn_DevInput::vrpn_DevInput(): Could not get device %s",
+		device_name);
+	REPORT_ERROR(msg);
+	return;
+  }
 
   d_fileDescriptor = open(node.c_str(), O_RDONLY);
   if(d_fileDescriptor < 0){
-    throw (char*)(std::string("Cannot open the device: ") + device_name + std::string(strerror(errno))).c_str();
+	char msg[4096];
+	sprintf(msg, "vrpn_DevInput::vrpn_DevInput(): Could not open device %s (%s)",
+		device_name, strerror(errno));
+	REPORT_ERROR(msg);
+	return;
   }
 }
 
