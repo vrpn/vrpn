@@ -35,7 +35,7 @@
 
 #include <libusb.h>
 
-#define	INCHES_TO_METERS	(2.54/100.0)
+#define	INCHES_TO_METERS	(2.54f/100.0f)
 static bool METRIC_UNITS = true;
 static bool DEBUG = false;  // General Debug Messages
 static bool DEBUGA = false; // Only errors
@@ -375,7 +375,7 @@ void vrpn_Tracker_LibertyHS::reset()
 	char	*next_line;
 	char	add_cmd_copy[sizeof(add_reset_cmd)];
 	char	string_to_send[sizeof(add_reset_cmd)];
-	int	seconds_to_wait, receptor, count;
+	int	seconds_to_wait, count;
 
 	printf("  LibertyHS writing extended reset commands...\n");
 
@@ -545,7 +545,7 @@ int vrpn_Tracker_LibertyHS::get_report(void)
      }
 
      // Try to get next character.  If none, just return and go back to Syncing mode.
-     if (sync_index + bufcount >= read_len - 1) {
+     if ( static_cast<vrpn_int32>(sync_index + bufcount) >= (read_len - 1) ) {
        return 0;
      }
 
@@ -575,7 +575,7 @@ int vrpn_Tracker_LibertyHS::get_report(void)
      // stopped sending characters).
      //--------------------------------------------------------------------
 
-     if (read_len - sync_index < REPORT_LEN) {
+     if (read_len - sync_index < static_cast<vrpn_int32>(REPORT_LEN)) {
        if (DEBUG) fprintf(stderr,"[DEBUG]: Don't have full report (%i of %i)\n",
                           read_len - sync_index,REPORT_LEN);
        return 0;

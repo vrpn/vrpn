@@ -235,9 +235,9 @@ vrpn_Tracker_Flock::vrpn_Tracker_Flock(char *name, vrpn_Connection *c,
   fStream(fStreamMode), fGroupMode(1), cSyncs(0), fFirstStatusReport(1), d_useERT(useERT),
   activeHemisphere(active_hemisphere),
   d_invertQuaternion(invertQuaternion) {
-    if (cSensors>MAX_SENSORS) {
-      fprintf(stderr, "\nvrpn_Tracker_Flock: too many sensors requested ... only %d allowed (%d specified)", MAX_SENSORS, cSensors );
-      cSensors = MAX_SENSORS;
+    if (cSensors>VRPN_FLOCK_MAX_SENSORS) {
+      fprintf(stderr, "\nvrpn_Tracker_Flock: too many sensors requested ... only %d allowed (%d specified)", VRPN_FLOCK_MAX_SENSORS, cSensors );
+      cSensors = VRPN_FLOCK_MAX_SENSORS;
     }
     fprintf(stderr, "\nvrpn_Tracker_Flock: starting up (FOBHack)...");
 }
@@ -312,7 +312,7 @@ void vrpn_Tracker_Flock::reset()
 {
    int i;
    int resetLen;
-   unsigned char reset[6*(MAX_SENSORS+1)+10];
+   unsigned char reset[6*(VRPN_FLOCK_MAX_SENSORS+1)+10];
 
    // If the RTS/CTS pins are in the cable that connects the Flock
    // to the computer, we need to raise and drop the RTS/CTS line

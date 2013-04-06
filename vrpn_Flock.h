@@ -12,7 +12,7 @@
 #include "vrpn_Tracker.h"
 
 // only 13 receivers allowed in normal addressing mode
-#define MAX_SENSORS 13
+#define VRPN_FLOCK_MAX_SENSORS 13
 
 // This is a class which provides a server for an Ascension 
 // Flock of Birds tracker.  The server will send out messages

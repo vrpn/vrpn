@@ -2236,7 +2236,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_Flock_Parallel (char * & pch, char
   strtok (NULL, " \t");
   // pch points to invertQuaternion, next strtok will give first port name
 
-  char *rgs[MAX_SENSORS];
+  char *rgs[VRPN_FLOCK_MAX_SENSORS];
   // get sensor ports
   for (int iSlaves = 0; iSlaves < i1; iSlaves++) {
     rgs[iSlaves] = new char[LINESIZE];
@@ -5296,7 +5296,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_FastrakPDI(char * &pch, char * lin
 		{
 			int nStylus = 0;
 			sscanf(line, "PDIStylus %d", &nStylus);
-			if (!((nStylus > 0) && (nStylus <= FT_MAX_SENSORS)))
+			if (!((nStylus > 0) && (nStylus <= VRPN_FT_MAX_SENSORS)))
 			{
 				fprintf(stderr, "PDIStylus command invalid station number: %s\r\n", line );
 				return -1;
@@ -5376,7 +5376,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_LibertyPDI(char * &pch, char * lin
 		{
 			int nStylus = 0;
 			sscanf(line, "PDIStylus %d", &nStylus);
-			if (!((nStylus > 0) && (nStylus <= LIBERTY_MAX_SENSORS)))
+			if (!((nStylus > 0) && (nStylus <= VRPN_LIBERTY_MAX_SENSORS)))
 			{
 				fprintf(stderr, "PDIStylus command invalid station number: %s\r\n", line );
 				return -1;

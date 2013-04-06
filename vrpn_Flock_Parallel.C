@@ -332,7 +332,7 @@ void vrpn_Tracker_Flock_Parallel_Slave::reset()
 // wait for first report)
 
 // Allow enough time for startup of many sensors -- 1 second per sensor
-#define MAX_TIME_INTERVAL       (MAX_SENSORS*1000000)
+#define MAX_TIME_INTERVAL       (VRPN_FLOCK_MAX_SENSORS*1000000)
 
 static	unsigned long	duration(struct timeval t1, struct timeval t2)
 {
