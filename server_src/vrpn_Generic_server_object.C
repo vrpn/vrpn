@@ -92,7 +92,8 @@
 
 class VRPN_API vrpn_Connection;
 
-const int LINESIZE = 512;
+/// File-static constant of max line size.
+static const int LINESIZE = 512;
 
 #define VRPN_CONFIG_NEXT() pch += strlen(pch) + 1
 
