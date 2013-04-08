@@ -4,10 +4,9 @@
 #include <stdio.h>                      // for FILE
 
 #include "vrpn_Configure.h"             // for VRPN_USE_DEV_INPUT, etc
-#include "vrpn_MainloopContainer.h"     // for vrpn_MainloopContainer
 #include "vrpn_Types.h"                 // for vrpn_float64
 
-
+class vrpn_MainloopContainer;
 
 const int VRPN_GSO_MAX_NDI_POLARIS_RIGIDBODIES = 20; //FIXME find out from the NDI specs if there is a maximum;
 
@@ -32,7 +31,8 @@ class vrpn_Generic_Server_Object
     bool            d_bail_on_open_error; //< Should we bail if we have an error opening a device?
 
     // Lists of devices
-    vrpn_MainloopContainer _devices;
+    vrpn_MainloopContainer * _devices;          //< semi-pimpl idiom so we can use <vector> and not scare Sensable GHOST.
+
 
     void closeDevices (void);
 

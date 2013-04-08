@@ -1,5 +1,6 @@
 #include <stdlib.h>                     // for strtol, atoi, strtod
 #include <string.h>                     // for strcmp, strlen, strtok, etc
+#include "vrpn_MainloopContainer.h"     // for vrpn_MainloopContainer
 
 #include "timecode_generator_server/vrpn_timecode_generator.h"
 #include "vrpn_3DConnexion.h"           // for vrpn_3DConnexion_Navigator, etc
@@ -117,7 +118,7 @@ vrpn_SGIBox	* vrpn_special_sgibox;
 
 void vrpn_Generic_Server_Object::closeDevices (void)
 {
-  _devices.clear();
+  _devices->clear();
 
   if (verbose) {
     fprintf (stderr, "\nAll devices closed...\n");
@@ -146,7 +147,7 @@ int vrpn_Generic_Server_Object::setup_raw_SGIBox (char * & pch, char * line, FIL
   if (verbose) {
     printf ("Opening vrpn_raw_SGIBox %s on serial port %s\n", s2, s3);
   }
-  vrpn_raw_SGIBox * device = _devices.add(new vrpn_raw_SGIBox (s2, connection, s3));
+  vrpn_raw_SGIBox * device = _devices->add(new vrpn_raw_SGIBox (s2, connection, s3));
 
   //setting listed buttons to toggles instead of default momentary
   //pch=s3;
@@ -185,7 +186,7 @@ int vrpn_Generic_Server_Object::setup_SGIBox (char * & pch, char * line, FILE * 
     printf ("Opening vrpn_SGIBox on host %s\n", s2);
   }
 #ifdef SGI_BDBOX
-  vrpn_special_sgibox = _devices.add(new vrpn_SGIBox (s2, connection));
+  vrpn_special_sgibox = _devices->add(new vrpn_SGIBox (s2, connection));
 
   int tbutton;
   //setting listed buttons to toggles instead of default momentary
@@ -225,7 +226,7 @@ int vrpn_Generic_Server_Object::setup_Timecode_Generator (char * & pch, char * l
   if (verbose) {
     printf ("Opening vrpn_Timecode_Generator on host %s\n", s2);
   }
-  _devices.add(new vrpn_Timecode_Generator (s2, connection));
+  _devices->add(new vrpn_Timecode_Generator (s2, connection));
   return 0; // successful completion
 #else
   fprintf (stderr, "vrpn_server: Can't open Timecode Generator: INCLUDE_TIMECODE_GENERATOR not defined in vrpn_Configure.h!\n");
@@ -277,7 +278,7 @@ int vrpn_Generic_Server_Object::setup_Phantom (char * &pch, char *line, FILE * /
 
   // Jean SIMARD <jean.simard@limsi.fr>
   // Modification of the call of the constructor
-  _devices.add(new vrpn_Phantom (s2, connection, f1, sconf));
+  _devices->add(new vrpn_Phantom (s2, connection, f1, sconf));
 
   return 0;
 #else
@@ -310,11 +311,11 @@ int vrpn_Generic_Server_Object::setup_JoyFly (char * & pch, char * line, FILE * 
   // HACK HACK HACK
   // Check for illegal character leading '*' to see if it's local
   if (s3[0] == '*') {
-    _devices.add(
+    _devices->add(
       new vrpn_Tracker_JoyFly (s2, connection, &s3[1], s4,
                                connection));
   } else {
-    _devices.add(
+    _devices->add(
       new vrpn_Tracker_JoyFly (s2, connection, s3, s4));
   }
 
@@ -476,7 +477,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_AnalogFly (char * & pch, char * li
     }
   }
 
-  _devices.add(new vrpn_Tracker_AnalogFly (s2, connection, &p, f1, absolute, false, worldFrame));
+  _devices->add(new vrpn_Tracker_AnalogFly (s2, connection, &p, f1, absolute, false, worldFrame));
 
   return 0;
 }
@@ -607,7 +608,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_ButtonFly (char * & pch, char * li
     }
   }
 
-  _devices.add(new vrpn_Tracker_ButtonFly (s2, connection, &p, f1));
+  _devices->add(new vrpn_Tracker_ButtonFly (s2, connection, &p, f1));
 
   return 0;
 }
@@ -630,7 +631,7 @@ int vrpn_Generic_Server_Object::setup_Joystick (char * & pch, char * line, FILE 
     printf ("Opening vrpn_Joystick:  "
             "%s on port %s baud %d, min update rate = %.2f\n",
             s2, s3, i1, fhz);
-  _devices.add(new vrpn_Joystick (s2, connection, s3, i1, fhz));
+  _devices->add(new vrpn_Joystick (s2, connection, s3, i1, fhz));
 
   return 0;
 }
@@ -653,7 +654,7 @@ int vrpn_Generic_Server_Object::setup_Example_Button (char * & pch, char * line,
   if (verbose) printf (
       "Opening vrpn_Button_Example: %s with %d sensors, toggle rate %f\n",
       s2, i1, f1);
-  _devices.add(new vrpn_Button_Example_Server (s2, connection, i1, f1));
+  _devices->add(new vrpn_Button_Example_Server (s2, connection, i1, f1));
 
   return 0;
 }
@@ -676,7 +677,7 @@ int vrpn_Generic_Server_Object::setup_Example_Dial(char * & pch, char * line, FI
   if (verbose) printf (
       "Opening vrpn_Dial_Example: %s with %d sensors, spinrate %f, update %f\n",
       s2, i1, f1, f2);
-  _devices.add(new vrpn_Dial_Example_Server (s2, connection, i1, f1, f2));
+  _devices->add(new vrpn_Dial_Example_Server (s2, connection, i1, f1, f2));
 
   return 0;
 }
@@ -699,7 +700,7 @@ int vrpn_Generic_Server_Object::setup_CerealBox (char * & pch, char * line, FILE
     printf ("Opening vrpn_Cereal: %s on port %s, baud %d, %d dig, "
             " %d ana, %d enc\n",
             s2, s3, i1, i2, i3, i4);
-  _devices.add(new vrpn_CerealBox (s2, connection, s3, i1, i2, i3, i4));
+  _devices->add(new vrpn_CerealBox (s2, connection, s3, i1, i2, i3, i4));
 
   return 0;
 }
@@ -733,7 +734,7 @@ int vrpn_Generic_Server_Object::setup_Magellan (char * & pch, char * line, FILE 
   if (verbose) {
     printf ("Opening vrpn_Magellan: %s on port %s, baud %d\n", s2, s3, i1);
   }
-  _devices.add(new vrpn_Magellan (s2, connection, s3, i1, altreset));
+  _devices->add(new vrpn_Magellan (s2, connection, s3, i1, altreset));
 
   return 0;
 }
@@ -755,7 +756,7 @@ int vrpn_Generic_Server_Object::setup_Spaceball (char * & pch, char * line, FILE
   if (verbose)
     printf ("Opening vrpn_Spaceball: %s on port %s, baud %d\n",
             s2, s3, i1);
-  _devices.add(new vrpn_Spaceball (s2, connection, s3, i1));
+  _devices->add(new vrpn_Spaceball (s2, connection, s3, i1));
 
   return 0;
 }
@@ -776,7 +777,7 @@ int vrpn_Generic_Server_Object::setup_Radamec_SPI (char * & pch, char * line, FI
   if (verbose)
     printf ("Opening vrpn_Radamec_SPI: %s on port %s, baud %d\n",
             s2, s3, i1);
-  _devices.add(new vrpn_Radamec_SPI (s2, connection, s3, i1));
+  _devices->add(new vrpn_Radamec_SPI (s2, connection, s3, i1));
 
   return 0;
 }
@@ -796,7 +797,7 @@ int vrpn_Generic_Server_Object::setup_Zaber (char * & pch, char * line, FILE * /
   if (verbose) {
     printf ("Opening vrpn_Zaber: %s on port %s\n", s2, s3);
   }
-  _devices.add(new vrpn_Zaber (s2, connection, s3));
+  _devices->add(new vrpn_Zaber (s2, connection, s3));
 
   return 0;
 }
@@ -819,7 +820,7 @@ int vrpn_Generic_Server_Object::setup_BiosciencesTools (char * & pch, char * lin
     printf ("Opening vrpn_BiosciencesTools: %s on port %s\n", s2, s3);
     printf ("    Temperatures: %g %g, control %d\n", f1, f2, i1);
   }
-  _devices.add(new vrpn_BiosciencesTools (s2, connection, s3, f1, f2, (i1 != 0)));
+  _devices->add(new vrpn_BiosciencesTools (s2, connection, s3, f1, f2, (i1 != 0)));
 
   return 0;
 }
@@ -850,7 +851,7 @@ int vrpn_Generic_Server_Object::setup_IDEA (char * & pch, char * line, FILE * /*
   if (verbose) {
     printf ("Opening vrpn_IDEA: %s on port %s\n", s2, s3);
   }
-  _devices.add (new vrpn_IDEA (s2, connection, s3,
+  _devices->add (new vrpn_IDEA (s2, connection, s3,
                                run_speed, start_speed, end_speed, accel_rate, decel_rate,
                                run_current, hold_current, accel_current, decel_current,
                                delay, step, high_limit, low_limit,
@@ -880,7 +881,7 @@ int vrpn_Generic_Server_Object::setup_NationalInstrumentsOutput (char * & pch, c
   if (verbose) {
     printf ("Opening vrpn_NI_Analog_Output: %s with %d channels\n", s2, i1);
   }
-  _devices.add(new vrpn_Analog_Output_Server_NI (s2, connection, s3, i1, i2 != 0, f1, f2));
+  _devices->add(new vrpn_Analog_Output_Server_NI (s2, connection, s3, i1, i2 != 0, f1, f2));
 
   return 0;
 #else
@@ -917,7 +918,7 @@ int vrpn_Generic_Server_Object::setup_NationalInstruments (char * & pch, char * 
     printf ("  In driveAIS %d, In gain %d\n", in_drive_ais, in_gain);
     printf ("  Out polarity %d, Min out voltage %f, Max out voltage %f\n", out_polarity, min_out_voltage, max_out_voltage);
   }
-  _devices.add(new vrpn_National_Instruments_Server (s2, connection, s3, num_in_channels, num_out_channels,
+  _devices->add(new vrpn_National_Instruments_Server (s2, connection, s3, num_in_channels, num_out_channels,
               minimum_delay, in_polarity != 0, in_mode, in_range, in_drive_ais != 0, in_gain,
               out_polarity != 0, min_out_voltage, max_out_voltage));
 
@@ -946,7 +947,7 @@ int vrpn_Generic_Server_Object::setup_ImmersionBox (char * & pch, char * line, F
     printf ("Opening vrpn_ImmersionBox: %s on port %s, baud %d, %d digital, "
             " %d analog, %d encoders\n", s2, s3, i1, i2, i3, i4);
 
-  _devices.add(new vrpn_ImmersionBox (s2, connection, s3, i1, i2, i3, i4));
+  _devices->add(new vrpn_ImmersionBox (s2, connection, s3, i1, i2, i3, i4));
   return 0;
 }
 
@@ -967,7 +968,7 @@ int vrpn_Generic_Server_Object::setup_5dt (char * & pch, char * line, FILE * /*c
     printf ("Opening vrpn_5dt: %s on port %s, baud %d\n",
             name, device, baud_rate);
   }
-  _devices.add(new vrpn_5dt (name, connection, device, baud_rate, mode, tenbytes != 0));
+  _devices->add(new vrpn_5dt (name, connection, device, baud_rate, mode, tenbytes != 0));
 
   return 0;
 }
@@ -989,7 +990,7 @@ int vrpn_Generic_Server_Object::setup_5dt16 (char * & pch, char * line, FILE * /
     printf ("Opening vrpn_5dt16: %s on port %s, baud %d\n",
             name, device, baud_rate);
   }
-  _devices.add(new vrpn_5dt16 (name, connection, device, baud_rate));
+  _devices->add(new vrpn_5dt16 (name, connection, device, baud_rate));
 
   return 0;
 }
@@ -1010,7 +1011,7 @@ int vrpn_Generic_Server_Object::setup_Keyboard (char * & pch, char * line, FILE 
   if (verbose) {
     printf ("Opening Keyboard: %s\n", name);
   }
-  _devices.add(new vrpn_Keyboard (name, connection));
+  _devices->add(new vrpn_Keyboard (name, connection));
 
   return 0;
 }
@@ -1033,7 +1034,7 @@ int vrpn_Generic_Server_Object::setup_Button_USB (char * & pch, char * line, FIL
     printf ("Opening vrpn_Button_USB: %s \n", name);
   }
 #ifdef	_WIN32
-  _devices.add(new vrpn_Button_USB (name, deviceName, connection));
+  _devices->add(new vrpn_Button_USB (name, deviceName, connection));
   return 0;
 #else
   printf ("vrpn_Button_USB only compiled for Windows.\n");
@@ -1063,7 +1064,7 @@ int vrpn_Generic_Server_Object::setup_Button_5DT_Server (char * & pch, char * li
   if (verbose) {
     printf ("Opening vrpn_Button_5dt_Server: %s \n", name);
   }
-  _devices.add(new vrpn_Button_5DT_Server (name, deviceName, connection, center));
+  _devices->add(new vrpn_Button_5DT_Server (name, deviceName, connection, center));
 
   return 0;
 }
@@ -1087,7 +1088,7 @@ int vrpn_Generic_Server_Object::setup_Wanda (char * & pch, char * line, FILE * /
             "%s on port %s baud %d, min update rate = %.2f\n",
             s2, s3, i1, fhz);
 
-  _devices.add(new vrpn_Wanda (s2, connection, s3, i1, fhz));
+  _devices->add(new vrpn_Wanda (s2, connection, s3, i1, fhz));
 
   return 0;
 }
@@ -1111,7 +1112,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_Dyna (char * & pch, char * line, F
     printf ("Opening vrpn_Tracker_Dyna: %s on port %s, baud %d, "
             "%d sensors\n",
             s2, s3, i1, i2);
-  _devices.add(new vrpn_Tracker_Dyna (s2, connection, i2, s3, i1));
+  _devices->add(new vrpn_Tracker_Dyna (s2, connection, i2, s3, i1));
 
   return 0;
 }
@@ -1145,7 +1146,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_3DMouse (char * & pch, char * line
     printf ("Opening vrpn_Tracker_3DMouse: %s on port %s, baud %d\n", s2, s3, i1);
   }
 
-  _devices.add(new vrpn_Tracker_3DMouse (s2, connection, s3, i1, filtering_count));
+  _devices->add(new vrpn_Tracker_3DMouse (s2, connection, s3, i1, filtering_count));
 
   return 0;
 }
@@ -1183,7 +1184,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_NovintFalcon (char * & pch, char *
     printf ("Opening vrpn_Tracker_NovintFalcon: %s device: %d, grip: %s, kinematics: %s damping: %s\n", s2, i1, s3, s4, s5);
   }
 
-  _devices.add(new vrpn_Tracker_NovintFalcon (s2, connection, i1, s3, s4, s5));
+  _devices->add(new vrpn_Tracker_NovintFalcon (s2, connection, i1, s3, s4, s5));
   return 0;
 #else
   return -1;
@@ -1340,7 +1341,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_Fastrak (char * & pch, char * line
 
   }
 
-  _devices.add(mytracker);
+  _devices->add(mytracker);
 
   return 0;
 }
@@ -1445,7 +1446,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_Isotrak (char * & pch, char * line
     }
   }
 
-  _devices.add(mytracker);
+  _devices->add(mytracker);
 
   return 0;
 }
@@ -1556,7 +1557,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_Liberty (char * & pch, char * line
     }
 
   }
-  _devices.add(mytracker);
+  _devices->add(mytracker);
 
   return 0;
 }
@@ -1621,9 +1622,9 @@ int vrpn_Generic_Server_Object::setup_Tracker_LibertyHS (char * & pch, char * li
       s2, i2);
 
   if (numparms == 3) {
-    _devices.add(new vrpn_Tracker_LibertyHS (s2, connection, i2, 0, i1, 1, rcmd));
+    _devices->add(new vrpn_Tracker_LibertyHS (s2, connection, i2, 0, i1, 1, rcmd));
   } else {
-    _devices.add(new vrpn_Tracker_LibertyHS (s2, connection, i2, 0, i1, 1, rcmd, i3));
+    _devices->add(new vrpn_Tracker_LibertyHS (s2, connection, i2, 0, i1, 1, rcmd, i3));
   }
   return 0;
 #else
@@ -1650,7 +1651,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_3Space (char * & pch, char * line,
   if (verbose) printf (
       "Opening vrpn_Tracker_3Space: %s on port %s, baud %d\n",
       s2, s3, i1);
-  _devices.add(new vrpn_Tracker_3Space (s2, connection, s3, i1));
+  _devices->add(new vrpn_Tracker_3Space (s2, connection, s3, i1));
   return 0;
 }
 
@@ -1713,7 +1714,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_Flock (char * & pch, char * line, 
             "%s (%d sensors, on port %s, baud %d) %s ERT\n",
             s2, i1, s3, i2, buseERT ? "with" : "without");
   }
-  _devices.add(new vrpn_Tracker_Flock (s2, connection, i1, s3, i2, 1, buseERT, invertQuaternion, hemi_id));
+  _devices->add(new vrpn_Tracker_Flock (s2, connection, i1, s3, i2, 1, buseERT, invertQuaternion, hemi_id));
 
   return 0;
 }
@@ -1763,7 +1764,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_Flock_Parallel (char * & pch, char
     printf ("Opening vrpn_Tracker_Flock_Parallel: "
             "%s (%d sensors, on port %s, baud %d)\n",
             s2, i1, s3, i2);
-  _devices.add(new vrpn_Tracker_Flock_Parallel (s2, connection, i1, s3, i2,
+  _devices->add(new vrpn_Tracker_Flock_Parallel (s2, connection, i1, s3, i2,
                rgs, invertQuaternion));
 
   return 0;
@@ -1787,7 +1788,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_NULL (char * & pch, char * line, F
   if (verbose) printf (
       "Opening vrpn_Tracker_NULL: %s with %d sensors, rate %f\n",
       s2, i1, f1);
-  _devices.add(new vrpn_Tracker_NULL (s2, connection, i1, f1));
+  _devices->add(new vrpn_Tracker_NULL (s2, connection, i1, f1));
 
   return 0;
 }
@@ -1809,7 +1810,7 @@ int vrpn_Generic_Server_Object::setup_Button_Python (char * & pch, char * line, 
   // Open the button
   if (verbose) printf (
       "Opening vrpn_Button_Python: %s on port %d\n", s2, i1);
-  _devices.add(new vrpn_Button_Python (s2, connection, i1, i2));
+  _devices->add(new vrpn_Button_Python (s2, connection, i1, i2));
 
   return 0;
 
@@ -1846,7 +1847,7 @@ int vrpn_Generic_Server_Object::setup_Button_SerialMouse (char * & pch, char * l
   if (verbose) {
     printf ("Opening vrpn_SerialMouse_Button: %s on port %s\n", s2, s3);
   }
-  _devices.add(new vrpn_Button_SerialMouse (s2, connection, s3, 1200, mType));
+  _devices->add(new vrpn_Button_SerialMouse (s2, connection, s3, 1200, mType));
   return 0;
 }
 
@@ -1868,7 +1869,7 @@ int vrpn_Generic_Server_Object::setup_Button_PinchGlove (char* &pch, char *line,
   if (verbose) {
     printf ("Opening vrpn_Button_PinchGlove: %s on port %s at %d baud\n", name, port, baud);
   }
-  _devices.add(new vrpn_Button_PinchGlove (name, connection, port, baud));
+  _devices->add(new vrpn_Button_PinchGlove (name, connection, port, baud));
 
   return 0;
 
@@ -1895,7 +1896,7 @@ int vrpn_Generic_Server_Object::setup_DevInput (char * & pch, char * line, FILE 
     printf("Opening vrpn_DevInput: %s\n",s2);
 
   try {
-    _devices.add (new vrpn_DevInput (s2, connection, s3, s4, int_param));
+    _devices->add (new vrpn_DevInput (s2, connection, s3, s4, int_param));
   } catch (char *&error) {
     fprintf (stderr, "could not create vrpn_DevInput : %s\n", error);
     return -1;
@@ -1928,7 +1929,7 @@ int vrpn_Generic_Server_Object::setup_Joylin (char * & pch, char * line, FILE * 
   if (verbose) {
     printf ("Opening vrpn_Joylin: %s on port %s\n", s2, s3);
   }
-  _devices.add(new vrpn_Joylin (s2, connection, s3));
+  _devices->add(new vrpn_Joylin (s2, connection, s3));
   return 0;
 #else
   fprintf(stderr,"vrpn_Joylin support not compiled in\n");
@@ -1957,7 +1958,7 @@ int vrpn_Generic_Server_Object::setup_Joywin32 (char * & pch, char * line, FILE 
   if (verbose) {
     printf ("Opening vrpn_Joywin32: %s (device %d), baud rate:%d, mode:%d, dead zone:%d\n", s2, joyId, readRate, mode, deadZone);
   }
-  _devices.add(new vrpn_Joywin32 (s2, connection, joyId, readRate, mode, deadZone));
+  _devices->add(new vrpn_Joywin32 (s2, connection, joyId, readRate, mode, deadZone));
   return 0;
 #else
   fprintf (stderr, "Joywin32 is for use under Windows only");
@@ -1980,7 +1981,7 @@ int vrpn_Generic_Server_Object::setup_Tng3 (char * & pch, char * line, FILE * /*
   if (verbose)
     printf ("Opening vrpn_Tng3: %s on port %s, baud %d, %d digital, "
             " %d analog\n", s2, s3, 19200, i1, i2);
-  _devices.add(new vrpn_Tng3 (s2, connection, s3, 19200, i1, i2));
+  _devices->add(new vrpn_Tng3 (s2, connection, s3, 19200, i1, i2));
   return 0;
 }
 
@@ -2002,7 +2003,7 @@ int vrpn_Generic_Server_Object::setup_Mouse (char * & pch, char * line, FILE * /
   }
 
   try {
-    _devices.add(new vrpn_Mouse (s2, connection));
+    _devices->add(new vrpn_Mouse (s2, connection));
   } catch (...) {
     fprintf (stderr, "could not create vrpn_Mouse\n");
 #ifdef linux
@@ -2035,7 +2036,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_Crossbow (char * & pch, char * lin
     printf ("Opening vrpn_Tracker_Crossbow: %s on %s with baud %ld, G-range %f, and A-range %f\n",
             name, port, baud, gRange, aRange);
 
-  _devices.add(new vrpn_Tracker_Crossbow (name, connection, port, baud, gRange, aRange));
+  _devices->add(new vrpn_Tracker_Crossbow (name, connection, port, baud, gRange, aRange));
 
   return 0;
 }
@@ -2060,7 +2061,7 @@ int vrpn_Generic_Server_Object::setup_3DMicroscribe (char * & pch, char * line, 
             name, device, baud_rate);
   }
 #ifdef VRPN_USE_MICROSCRIBE
-  _devices.add(new vrpn_3DMicroscribe (name, connection, device, baud_rate, x, y, z, s));
+  _devices->add(new vrpn_3DMicroscribe (name, connection, device, baud_rate, x, y, z, s));
   return 0;
 #else
   fprintf (stderr, "3DMicroscribe support not configured in VRPN, edit vrpn_Configure.h and rebuild\n");
@@ -2265,7 +2266,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_InterSense (char * &pch, char *lin
     }
   }
 
-  _devices.add(mytracker);
+  _devices->add(mytracker);
 
   return 0;
 
@@ -2294,7 +2295,7 @@ int vrpn_Generic_Server_Object::setup_DirectXFFJoystick (char * & pch, char * li
     printf ("Opening vrpn_DirectXFFJoystick: %s, read rate %g, force rate %g\n",
             s2, f1, f2);
   }
-  _devices.add(new vrpn_DirectXFFJoystick (s2, connection, f1, f2));
+  _devices->add(new vrpn_DirectXFFJoystick (s2, connection, f1, f2));
 
   return 0;
 #else
@@ -2321,7 +2322,7 @@ int vrpn_Generic_Server_Object::setup_RumblePad (char * & pch, char * line, FILE
   if (verbose) {
     printf ("Opening vrpn_DirectXRumblePad: %s\n", s2);
   }
-  _devices.add(new vrpn_DirectXRumblePad (s2, connection));
+  _devices->add(new vrpn_DirectXRumblePad (s2, connection));
 
   return 0;
 #else
@@ -2348,7 +2349,7 @@ int vrpn_Generic_Server_Object::setup_XInputPad (char * & pch, char * line, FILE
   if (verbose) {
     printf ("Opening vrpn_XInputGamepad: %s\n", s2);
   }
-  _devices.add(new vrpn_XInputGamepad (s2, connection, controller));
+  _devices->add(new vrpn_XInputGamepad (s2, connection, controller));
 
   return 0;
 #else
@@ -2374,7 +2375,7 @@ int vrpn_Generic_Server_Object::setup_GlobalHapticsOrb (char * & pch, char * lin
     printf ("Opening vrpn_GlobalHapticsOrb: %s, port %s, baud rate %d\n",
             s2, s3, i1);
   }
-  _devices.add(new vrpn_GlobalHapticsOrb (s2, connection, s3, i1));
+  _devices->add(new vrpn_GlobalHapticsOrb (s2, connection, s3, i1));
 
   return 0;
 }
@@ -2398,7 +2399,7 @@ int vrpn_Generic_Server_Object::setup_ADBox (char* &pch, char * line, FILE * /*c
     printf ("Opening vrpn_ADBox: %s on port %s at %d baud\n", name, port, baud);
   }
 
-  _devices.add(new vrpn_ADBox (name, connection, port, baud));
+  _devices->add(new vrpn_ADBox (name, connection, port, baud));
 
   return 0;
 }
@@ -2421,7 +2422,7 @@ int vrpn_Generic_Server_Object::setup_VPJoystick (char* &pch, char * line, FILE 
     printf ("Opening vrpn_VPJoystick: %s on port %s at %d baud\n", name, port, baud);
   }
 
-  _devices.add(new vrpn_VPJoystick (name, connection, port, baud));
+  _devices->add(new vrpn_VPJoystick (name, connection, port, baud));
 
   return 0;
 }
@@ -2473,7 +2474,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_JsonNet (char* &pch, char * line, 
     printf ("Opening vrpn_Tracker_JsonNet: %s at port %d\n", s2, port);
   }
 
-  _devices.add(new vrpn_Tracker_JsonNet (s2, connection, port));
+  _devices->add(new vrpn_Tracker_JsonNet (s2, connection, port));
 
   return 0;
 #else
@@ -2596,7 +2597,7 @@ int vrpn_Generic_Server_Object::setup_DTrack (char* &pch, char* line, FILE * /*c
 
 #ifndef sgi
 
-  _devices.add(new vrpn_Tracker_DTrack (s2, connection, dtrackPort, timeToReachJoy,
+  _devices->add(new vrpn_Tracker_DTrack (s2, connection, dtrackPort, timeToReachJoy,
       nob, nof, pidbf, actTracing));
 
   return 0;
@@ -2701,7 +2702,7 @@ int vrpn_Generic_Server_Object::setup_Poser_Analog (char * & pch, char * line, F
     return -1;
   }
 
-  _devices.add(new vrpn_Poser_Analog (s2, connection, &p, i1 != 0));
+  _devices->add(new vrpn_Poser_Analog (s2, connection, &p, i1 != 0));
 
   return 0;
 }
@@ -2721,7 +2722,7 @@ int vrpn_Generic_Server_Object::setup_nikon_controls (char * & pch, char * line,
   if (verbose)
     printf ("Opening vrpn_nikon_control %s on port %s \n",
             s2, s3);
-  _devices.add(new vrpn_Nikon_Controls (s2, connection, s3));
+  _devices->add(new vrpn_Nikon_Controls (s2, connection, s3));
 
   return 0;
 }
@@ -2742,7 +2743,7 @@ int vrpn_Generic_Server_Object::setup_Poser_Tek4662 (char * & pch, char * line, 
             , s2, s3, i1);
   }
 
-  _devices.add(new vrpn_Poser_Tek4662 (s2, connection, s3, i1));
+  _devices->add(new vrpn_Poser_Tek4662 (s2, connection, s3, i1));
 
   return 0;
 }
@@ -2820,7 +2821,7 @@ int vrpn_Generic_Server_Object::setup_Atmel (char* &pch, char *line, FILE * /*co
 
 #ifndef _WIN32
     // here we use a factory interface because a lot of init things have to be done
-    _devices.add (vrpn_Atmel::Create (name,
+    _devices->add (vrpn_Atmel::Create (name,
                                       connection,
                                       port,
                                       baud,
@@ -2898,7 +2899,7 @@ int vrpn_Generic_Server_Object::setup_Event_Mouse (char* &pch, char *line, FILE 
     printf ("Opening vrpn_Event_Mouse: %s on port %s\n", name, port);
   }
 
-  _devices.add(new vrpn_Event_Mouse (name, connection, port));
+  _devices->add(new vrpn_Event_Mouse (name, connection, port));
 
   return 0;
 }
@@ -2928,7 +2929,7 @@ int vrpn_Generic_Server_Object::setup_inertiamouse (char * & pch, char * line, F
             port,
             baud);
   }
-  _devices.add (vrpn_inertiamouse::create (name,
+  _devices->add (vrpn_inertiamouse::create (name,
                 connection,
                 port,
                 baud));
@@ -2978,7 +2979,7 @@ int vrpn_Generic_Server_Object::setup_Analog_USDigital_A2 (char * & pch, char * 
       "Opening vrpn_Analog_USDigital_A2: %s on port %d (%u=search for port), with %d channels, reporting %s\n",
       A2name, comPort, vrpn_Analog_USDigital_A2::vrpn_Analog_USDigital_A2_FIND_PORT,
       numChannels, (reportChange == 0) ? "always" : "on change");
-  _devices.add(new vrpn_Analog_USDigital_A2 (A2name, connection, (vrpn_uint32) comPort,
+  _devices->add(new vrpn_Analog_USDigital_A2 (A2name, connection, (vrpn_uint32) comPort,
                                         (vrpn_uint32) numChannels,
                                         (reportChange != 0)));
 
@@ -3025,7 +3026,7 @@ int vrpn_Generic_Server_Object::setup_Button_NI_DIO24 (char * & pch, char * line
     printf ("Opening vrpn_Button_NI_DIO24: %s with up to %d buttons\n",
             DIO24name, numChannels);
 
-  _devices.add(new vrpn_Button_NI_DIO24 (DIO24name, connection, numChannels));
+  _devices->add(new vrpn_Button_NI_DIO24 (DIO24name, connection, numChannels));
 
   return 0;
 #else
@@ -3123,7 +3124,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_PhaseSpace (char * & pch, char * l
     delete pstracker;
     return -1;
   }
-  _devices.add(pstracker);
+  _devices->add(pstracker);
 
   return 0;
 
@@ -3165,7 +3166,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_NDI_Polaris (char * & pch, char * 
 
   }
 
-  _devices.add(new vrpn_Tracker_NDI_Polaris (trackerName, connection, device, numRigidBodies, (const char **) rigidBodyFileNames));
+  _devices->add(new vrpn_Tracker_NDI_Polaris (trackerName, connection, device, numRigidBodies, (const char **) rigidBodyFileNames));
 
   //free the .rom filename strings
   for (rbNum = 0; rbNum < numRigidBodies; rbNum++) {
@@ -3190,7 +3191,7 @@ int vrpn_Generic_Server_Object::setup_Logger (char * & pch, char * line, FILE * 
   if (verbose) {
     printf ("Opening vrpn_Auxiliary_Logger_Server_Generic %s\n", s2);
   }
-  _devices.add(new vrpn_Auxiliary_Logger_Server_Generic (s2, s3, connection));
+  _devices->add(new vrpn_Auxiliary_Logger_Server_Generic (s2, s3, connection));
 
   return 0;  // successful completion
 }
@@ -3211,7 +3212,7 @@ int vrpn_Generic_Server_Object::setup_ImageStream (char * & pch, char * line, FI
   if (verbose) {
     printf ("Opening vrpn_Imager_Stream_Buffer %s\n", s2);
   }
-  _devices.add(new vrpn_Imager_Stream_Buffer (s2, s3, connection));
+  _devices->add(new vrpn_Imager_Stream_Buffer (s2, s3, connection));
 
   return 0;  // successful completion
 }
@@ -3236,9 +3237,9 @@ int vrpn_Generic_Server_Object::setup_WiiMote (char * & pch, char * line, FILE *
     printf ("Opening vrpn_WiiMote: %s\n", s2);
   }
   if (numParms == 5) {
-    _devices.add(new vrpn_WiiMote (s2, connection, controller, useMS, useIR, reorderBtns));
+    _devices->add(new vrpn_WiiMote (s2, connection, controller, useMS, useIR, reorderBtns));
   } else {
-    _devices.add(new vrpn_WiiMote (s2, connection, controller, useMS, useIR, reorderBtns, sBDADDR));
+    _devices->add(new vrpn_WiiMote (s2, connection, controller, useMS, useIR, reorderBtns, sBDADDR));
   }
 
   return 0;
@@ -3276,7 +3277,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_WiimoteHead (char * & pch, char * 
     printf ("Opening vrpn_Tracker_WiimoteHead: %s wiimote: %s, updaterate: %f, leddistance: %f\n", s2, s3, f1, f2);
   }
 
-  _devices.add(new vrpn_Tracker_WiimoteHead (s2, connection, s3, f1, f2));
+  _devices->add(new vrpn_Tracker_WiimoteHead (s2, connection, s3, f1, f2));
   return 0;
 }
 
@@ -3294,7 +3295,7 @@ int vrpn_Generic_Server_Object::setup_Freespace (char * & pch, char * line, FILE
 
 #ifdef	VRPN_USE_FREESPACE
   // Open the Freespace if we can.
-  _devices.add(vrpn_Freespace::create (s2, connection, controller,
+  _devices->add(vrpn_Freespace::create (s2, connection, controller,
                                      (sendbody != 0), (senduser != 0)));
 
   return 0;
@@ -3322,7 +3323,7 @@ int vrpn_Generic_Server_Object::setup_Xkeys_Desktop (char * & pch, char * line, 
   if (verbose) {
     printf ("Opening vrpn_Xkeys_Desktop on host %s\n", s2);
   }
-  _devices.add(new vrpn_Xkeys_Desktop (s2, connection));
+  _devices->add(new vrpn_Xkeys_Desktop (s2, connection));
 #else
   fprintf (stderr, "vrpn_server: Can't open Xkeys: HID not compiled in.\n");
 #endif
@@ -3346,7 +3347,7 @@ int vrpn_Generic_Server_Object::setup_Xkeys_Pro (char * & pch, char * line, FILE
   if (verbose) {
     printf ("Opening vrpn_Xkeys_Pro on host %s\n", s2);
   }
-  _devices.add(new vrpn_Xkeys_Pro (s2, connection));
+  _devices->add(new vrpn_Xkeys_Pro (s2, connection));
 #else
   fprintf (stderr, "vrpn_server: Can't open Xkeys: HID not compiled in.\n");
 #endif
@@ -3372,7 +3373,7 @@ int vrpn_Generic_Server_Object::setup_Xkeys_Joystick (char * & pch, char * line,
   if (verbose) {
     printf ("Opening vrpn_Xkeys_Joystick on host %s\n", s2);
   }
-  _devices.add(new vrpn_Xkeys_Joystick (s2, connection));
+  _devices->add(new vrpn_Xkeys_Joystick (s2, connection));
 #else
   fprintf (stderr, "vrpn_server: Can't open Xkeys: HID not compiled in.\n");
 #endif
@@ -3398,7 +3399,7 @@ int vrpn_Generic_Server_Object::setup_Xkeys_Jog_And_Shuttle (char * & pch, char 
   if (verbose) {
     printf ("Opening vrpn_Xkeys_Jog_And_Shuttle on host %s\n", s2);
   }
-  _devices.add(new vrpn_Xkeys_Jog_And_Shuttle (s2, connection));
+  _devices->add(new vrpn_Xkeys_Jog_And_Shuttle (s2, connection));
 #else
   fprintf (stderr, "vrpn_server: Can't open Xkeys: HID not compiled in.\n");
 #endif
@@ -3424,7 +3425,7 @@ int vrpn_Generic_Server_Object::setup_Xkeys_XK3 (char * & pch, char * line, FILE
   if (verbose) {
     printf ("Opening vrpn_Xkeys_XK3 on host %s\n", s2);
   }
-  _devices.add(new vrpn_Xkeys_XK3 (s2, connection));
+  _devices->add(new vrpn_Xkeys_XK3 (s2, connection));
 #else
   fprintf (stderr, "vrpn_server: Can't open Xkeys: HID not compiled in.\n");
 #endif
@@ -3448,7 +3449,7 @@ int vrpn_Generic_Server_Object::setup_3DConnexion_Navigator (char * & pch, char 
   if (verbose) {
     printf ("Opening vrpn_3DConnexion_Navigator %s\n", s2);
   }
-  _devices.add(new vrpn_3DConnexion_Navigator (s2, connection));
+  _devices->add(new vrpn_3DConnexion_Navigator (s2, connection));
 
   return 0;  // successful completion
 }
@@ -3469,7 +3470,7 @@ int vrpn_Generic_Server_Object::setup_3DConnexion_Navigator_for_Notebooks (char 
   if (verbose) {
     printf ("Opening vrpn_3DConnexion_Navigator_for_Notebooks %s\n", s2);
   }
-  _devices.add(new vrpn_3DConnexion_Navigator_for_Notebooks (s2, connection));
+  _devices->add(new vrpn_3DConnexion_Navigator_for_Notebooks (s2, connection));
 
   return 0;  // successful completion
 }
@@ -3490,7 +3491,7 @@ int vrpn_Generic_Server_Object::setup_3DConnexion_Traveler (char * & pch, char *
   if (verbose) {
     printf ("Opening vrpn_3DConnexion_Traveler %s\n", s2);
   }
-  _devices.add(new vrpn_3DConnexion_Traveler (s2, connection));
+  _devices->add(new vrpn_3DConnexion_Traveler (s2, connection));
 
   return 0;  // successful completion
 }
@@ -3511,7 +3512,7 @@ int vrpn_Generic_Server_Object::setup_3DConnexion_SpaceMouse (char * & pch, char
   if (verbose) {
     printf ("Opening vrpn_3DConnexion_SpaceMouse %s\n", s2);
   }
-  _devices.add(new vrpn_3DConnexion_SpaceMouse (s2, connection));
+  _devices->add(new vrpn_3DConnexion_SpaceMouse (s2, connection));
 
   return 0;  // successful completion
 }
@@ -3532,7 +3533,7 @@ int vrpn_Generic_Server_Object::setup_3DConnexion_SpaceExplorer (char * & pch, c
   if (verbose) {
     printf ("Opening vrpn_3DConnexion_SpaceExplorer %s\n", s2);
   }
-  _devices.add(new vrpn_3DConnexion_SpaceExplorer (s2, connection));
+  _devices->add(new vrpn_3DConnexion_SpaceExplorer (s2, connection));
 
   return 0;  // successful completion
 }
@@ -3553,7 +3554,7 @@ int vrpn_Generic_Server_Object::setup_3DConnexion_SpaceBall5000 (char * & pch, c
   if (verbose) {
     printf ("Opening vrpn_3DConnexion_SpaceBall5000 %s\n", s2);
   }
-  _devices.add(new vrpn_3DConnexion_SpaceBall5000 (s2, connection));
+  _devices->add(new vrpn_3DConnexion_SpaceBall5000 (s2, connection));
 
   return 0;  // successful completion
 }
@@ -3578,7 +3579,7 @@ int vrpn_Generic_Server_Object::setup_SpacePoint (char * & pch, char * line, FIL
     printf ("Opening vrpn_Tracker_SpacePoint %s\n", s2);
   }
 
-  _devices.add(new vrpn_Tracker_SpacePoint (s2, connection));
+  _devices->add(new vrpn_Tracker_SpacePoint (s2, connection));
 #else
   fprintf (stderr, "SpacePoint driver works only with VRPN_USE_HID defined!\n");
 #endif
@@ -3612,7 +3613,7 @@ int vrpn_Generic_Server_Object::setup_Wintracker (char * & pch, char * line, FIL
     printf ("Opening vrpn_Tracker_Wintracker %s\n", name);
   }
 
-  _devices.add(new vrpn_Tracker_Wintracker (name, connection, s0[0], s1[0], s2[0], ext[0], hemi[0]));
+  _devices->add(new vrpn_Tracker_Wintracker (name, connection, s0[0], s1[0], s2[0], ext[0], hemi[0]));
 #else
   fprintf (stderr, "Wintracker driver works only with VRPN_USE_HID defined!\n");
 #endif
@@ -3660,7 +3661,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_GameTrak (char *pch, char *line, F
     printf ("GameTrak axis mapping: %d %d %d %d %d %d\n", mapping[0], mapping[1], mapping[2], mapping[3], mapping[4], mapping[5]);
   }
 
-  _devices.add(new vrpn_Tracker_GameTrak (s2, connection, s3, mapping));
+  _devices->add(new vrpn_Tracker_GameTrak (s2, connection, s3, mapping));
 
   return 0;  // successful completion
 }
@@ -3687,7 +3688,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_MotionNode (char * & pch, char * l
             name, num_sensors, address, port);
   }
 
-  _devices.add(new vrpn_Tracker_MotionNode (name, connection, num_sensors, address, port));
+  _devices->add(new vrpn_Tracker_MotionNode (name, connection, num_sensors, address, port));
   return 0;
 #else
   fprintf (stderr, "vrpn_Tracker_MotionNode: Not compiled in (add VRPN_USE_MOTIONNODE to vrpn_Configure.h and recompile)\n");
@@ -3722,8 +3723,8 @@ int vrpn_Generic_Server_Object::setup_Tracker_GPS(char * & pch, char * line, FIL
             trackerName, num_sensors, address, baud);
   }
 
-  //_devices.add(new vrpn_Tracker_GPS(name, connection, num_sensors, address, port));
-  _devices.add(new vrpn_Tracker_GPS(trackerName,connection, address, baud, useUTM, 0));
+  //_devices->add(new vrpn_Tracker_GPS(name, connection, num_sensors, address, port));
+  _devices->add(new vrpn_Tracker_GPS(trackerName,connection, address, baud, useUTM, 0));
 
   return 0;
 }
@@ -3745,7 +3746,7 @@ int vrpn_Generic_Server_Object::setup_DreamCheeky (char * & pch, char * line, FI
   if (verbose) {
     printf ("Opening vrpn_Dream_Cheeky_USB_roll_up_drums as device %s\n", s2);
   }
-  _devices.add(new vrpn_DreamCheeky_Drum_Kit (s2, connection));
+  _devices->add(new vrpn_DreamCheeky_Drum_Kit (s2, connection));
 
   return 0;  // successful completion
 
@@ -3774,7 +3775,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_TrivisioColibri (char * & pch, cha
             s2, numSensors, Hz, bufLen);
   }
 
-  _devices.add(new vrpn_Tracker_TrivisioColibri (s2, connection, numSensors, Hz, bufLen));
+  _devices->add(new vrpn_Tracker_TrivisioColibri (s2, connection, numSensors, Hz, bufLen));
 
   return 0;
 #else
@@ -3802,7 +3803,7 @@ int vrpn_Generic_Server_Object::setup_LUDL_USBMAC6000 (char * & pch, char * line
   if (verbose) {
     printf ("Opening vrpn_LUDL_USBMAC6000 as device %s\n", s2);
   }
-  _devices.add(new vrpn_LUDL_USBMAC6000 (s2, connection, recenter != 0));
+  _devices->add(new vrpn_LUDL_USBMAC6000 (s2, connection, recenter != 0));
 
   return 0;  // successful completion
 
@@ -3813,7 +3814,7 @@ int vrpn_Generic_Server_Object::setup_LUDL_USBMAC6000 (char * & pch, char * line
 }
 
 template<class T>
-int setup_Analog_5dtUSB (const char * specialization, bool verbose, vrpn_Connection * connection, vrpn_MainloopContainer & _devices, char * &pch, char * line)
+int setup_Analog_5dtUSB (const char * specialization, bool verbose, vrpn_Connection * connection, vrpn_MainloopContainer * _devices, char * &pch, char * line)
 {
   char s2 [LINESIZE];
   // Get the arguments
@@ -3827,7 +3828,7 @@ int setup_Analog_5dtUSB (const char * specialization, bool verbose, vrpn_Connect
   if (verbose) {
     printf ("Opening vrpn_Analog_5dtUSB_%s as device %s\n", specialization, s2);
   }
-  _devices.add(new T (s2, connection));
+  _devices->add(new T (s2, connection));
   return 0;
 #else
   fprintf (stderr, "vrpn_server: Can't open vrpn_Analog_5dtUSB_%s: VRPN_USE_HID not defined in vrpn_Configure.h!\n", specialization);
@@ -3883,7 +3884,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_RazerHydra (char * &pch, char * li
   if (verbose) {
     printf ("Opening vrpn_Tracker_RazerHydra as device %s\n", s2);
   }
-  _devices.add(new vrpn_Tracker_RazerHydra (s2, connection));
+  _devices->add(new vrpn_Tracker_RazerHydra (s2, connection));
 
   return 0;  // successful completion
 
@@ -3910,7 +3911,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_zSight (char * & pch, char * line,
     printf ("Opening vrpn_Tracker_zSight: %s", s2);
   }
 
-  _devices.add(new vrpn_Tracker_zSight (s2, connection));
+  _devices->add(new vrpn_Tracker_zSight (s2, connection));
 
   return 0;
 #else
@@ -3939,7 +3940,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_ViewPoint (char * & pch, char * li
   }
 
   bool smooth = smoothedData == 1;
-  _devices.add(new vrpn_Tracker_ViewPoint (s2, connection, smooth));
+  _devices->add(new vrpn_Tracker_ViewPoint (s2, connection, smooth));
 
   return 0;
 #else
@@ -4047,7 +4048,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_G4(char * &pch, char * line, FILE 
     printf ("Additional reset commands found\n");
   }
 
-  _devices.add (new vrpn_Tracker_G4 (name, connection, filepath, Hz, rcmd, pHMap));
+  _devices->add (new vrpn_Tracker_G4 (name, connection, filepath, Hz, rcmd, pHMap));
 
   return 0;
 #else
@@ -4110,7 +4111,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_FastrakPDI(char * &pch, char * lin
   }
 
 #ifdef  VRPN_USE_PDI
-  _devices.add (new vrpn_Tracker_FastrakPDI (name, connection, Hz, rcmd, nStylusMap));
+  _devices->add (new vrpn_Tracker_FastrakPDI (name, connection, Hz, rcmd, nStylusMap));
 
   return 0;
 #else
@@ -4174,7 +4175,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_LibertyPDI(char * &pch, char * lin
   }
 
 #ifdef  VRPN_USE_PDI
-  _devices.add (new vrpn_Tracker_LibertyPDI (name, connection, Hz, rcmd, nStylusMap));
+  _devices->add (new vrpn_Tracker_LibertyPDI (name, connection, Hz, rcmd, nStylusMap));
 
   return 0;
 #else
@@ -4188,6 +4189,7 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object (vrpn_Connection *connect
   , d_doing_okay (true)
   , verbose (be_verbose)
   , d_bail_on_open_error (bail_on_open_error)
+  , _devices (new vrpn_MainloopContainer)
 
 {
   /// @todo warning: unused parameter 'port' [-Wunused-parameter]
@@ -4494,10 +4496,12 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object (vrpn_Connection *connect
 vrpn_Generic_Server_Object::~vrpn_Generic_Server_Object()
 {
   closeDevices();
+  delete _devices;
+  _devices = NULL;
 }
 
 void  vrpn_Generic_Server_Object::mainloop (void)
 {
-  _devices.mainloop();
+  _devices->mainloop();
 }
 
