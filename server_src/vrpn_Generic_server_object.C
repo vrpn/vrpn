@@ -3942,7 +3942,6 @@ int vrpn_Generic_Server_Object::setup_Tracker_ViewPoint (char * & pch, char * li
 }
 
 int vrpn_Generic_Server_Object::setup_Tracker_G4(char * &pch, char * line, FILE * config_file) {
-  const int LINESIZE = 512;
   char name [LINESIZE], filepath [LINESIZE];
   int numparms;
   int Hz = 10;
