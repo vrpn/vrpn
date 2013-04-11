@@ -21,8 +21,6 @@
 
 #define VRPN_G4_HUB_NAME_SIZE 64
 #define VRPN_G4_POWERTRAK_BUTTON_COUNT 4
-#define VRPN_LIBERTY_MAX_SENSORS 16
-#define VRPN_FT_MAX_SENSORS 4
 
 //vrpn_Tracker_G4_HubMap_El and vrpn_Tracker_G4_HubMap
 //classes are used in place of STL vector or list for listing
@@ -215,7 +213,7 @@ class VRPN_API vrpn_Tracker_FastrakPDI: public vrpn_Tracker {
 	DWORD		m_nStylusMap; // Map of sensors with stylus
 	int			m_nHeaderSize;// Num byte in P&O frame header
 	int			m_nFrameSize; // Num bytes in entire P&O frame (inc header)
-	vrpn_Button_Server	* FTstylusBtns[VRPN_FT_MAX_SENSORS];	//< Pointer to button on each sensor (NULL if none)
+	vrpn_Button_Server	* FTstylusBtns[FT_MAX_SENSORS];	//< Pointer to button on each sensor (NULL if none)
 
 	HANDLE  hContEvent;
 	HWND	hwnd;
@@ -262,7 +260,7 @@ class VRPN_API vrpn_Tracker_LibertyPDI: public vrpn_Tracker {
 	int			m_nHeaderSize;// Num byte in P&O frame header
 	int			m_nFrameSize; // Num bytes in entire P&O frame (inc header)
 
-	vrpn_Button_Server	* StylusBtns[VRPN_LIBERTY_MAX_SENSORS];	//< Pointer to button on each sensor (NULL if none)
+	vrpn_Button_Server	* StylusBtns[LIBERTY_MAX_SENSORS];	//< Pointer to button on each sensor (NULL if none)
 
 	HANDLE  hContEvent;
 	HWND	hwnd;

@@ -1086,7 +1086,7 @@ vrpn_Tracker_FastrakPDI::~vrpn_Tracker_FastrakPDI(void)
 		  StopCont();
 	  Disconnect();
 
-	  for (int i=0; i<VRPN_FT_MAX_SENSORS; i++)
+	  for (int i=0; i<FT_MAX_SENSORS; i++)
 	  {
 		  if (FTstylusBtns[i])
 			  delete FTstylusBtns[i];
@@ -1164,7 +1164,7 @@ BOOL vrpn_Tracker_FastrakPDI::InitStylusBtns()
 {
 	BOOL bRet = TRUE;
 	int mask = 1;
-	for (int i=0; i<VRPN_FT_MAX_SENSORS; i++)
+	for (int i=0; i<FT_MAX_SENSORS; i++)
 	{
 		if (((1<<i) & m_nStylusMap) != 0)
 		{
@@ -1648,7 +1648,7 @@ vrpn_Tracker_LibertyPDI::~vrpn_Tracker_LibertyPDI(void){
 		  StopCont();
 	  Disconnect();
 
-	  for (int i=0; i<VRPN_LIBERTY_MAX_SENSORS; i++)
+	  for (int i=0; i<LIBERTY_MAX_SENSORS; i++)
 	  {
 		  if (StylusBtns[i])
 			  delete StylusBtns[i];
@@ -1726,7 +1726,7 @@ BOOL vrpn_Tracker_LibertyPDI::InitStylusBtns()
 {
 	BOOL bRet = TRUE;
 	int mask = 1;
-	for (int i=0; i<VRPN_LIBERTY_MAX_SENSORS; i++)
+	for (int i=0; i<LIBERTY_MAX_SENSORS; i++)
 	{
 		if (((1<<i) & m_nStylusMap) != 0)
 		{
