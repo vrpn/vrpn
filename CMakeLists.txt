@@ -971,6 +971,7 @@ set(VRPN_SERVER_SOURCES
 	vrpn_Tracker_PhaseSpace.C
 	vrpn_Tracker_RazerHydra.C
 	vrpn_Tracker_SpacePoint.C
+	vrpn_Tracker_Wintracker.C
 	vrpn_Tracker_TrivisioColibri.C
 	vrpn_Tracker_WiimoteHead.C
 	vrpn_Tracker_zSight.C
@@ -1059,6 +1060,7 @@ set(VRPN_SERVER_PUBLIC_HEADERS
 	vrpn_Tracker_PhaseSpace.h
 	vrpn_Tracker_RazerHydra.h
 	vrpn_Tracker_SpacePoint.h
+	vrpn_Tracker_Wintracker.h
 	vrpn_Tracker_TrivisioColibri.h
 	vrpn_Tracker_WiimoteHead.h
 	vrpn_Tracker_zSight.h

@@ -42,26 +42,45 @@ vrpn_Joylin::vrpn_Joylin(char * name,
   num_buttons = 2;      // inherited : this value is corrected by the ioctl call below.
   fd = -1;
   version = 0x000800;
-  name = new char[namelen];
+  devname = (char *) calloc(namelen, sizeof(char));
+  if (devname == NULL) {
+    fprintf(stderr,"vrpn_Joylin::vrpn_Joylin(): Out of memory\n");
+    return;
+  }
 
-  strncpy(name, "Unknown", namelen); // paranoia for future changes of namelen
-  name[namelen-1] = 0;
-  
-  if ((fd = open(portname, O_RDONLY)) < 0) {  /* FIX LATER */
-    fprintf(stderr, "vrpn_Joylin constructor could not open %s", portname);
+  device = strdup(portname);
+  init();
+}
+
+vrpn_Joylin::~vrpn_Joylin()
+{
+  if (devname != NULL) {
+	delete [] devname;
+	devname = NULL;
+  }
+}
+
+/****************************************************************************/
+/* Initialize the device
+*/
+int vrpn_Joylin::init()
+{
+  if ((fd = open(device, O_RDONLY)) < 0) {  /* FIX LATER */
+    fprintf(stderr, "vrpn_Joylin constructor could not open %s", device);
     perror(" joystick device");
-    exit(1);
+    return -1;
   }
 
   ioctl(fd, JSIOCGVERSION, &version);
   ioctl(fd, JSIOCGAXES, &num_channel);
   ioctl(fd, JSIOCGBUTTONS, &num_buttons);
-  ioctl(fd, JSIOCGNAME(namelen), name);
+  ioctl(fd, JSIOCGNAME(namelen), devname);
   
   fprintf(stderr, "Joystick (%s) has %d axes and %d buttons. Driver version is %d.%d.%d.\n",
-	  name, num_channel, num_buttons, version >> 16, (version >> 8) & 0xff, version & 0xff);
-}
+	  devname, num_channel, num_buttons, version >> 16, (version >> 8) & 0xff, version & 0xff);
 
+  return 0;
+}
 
 void vrpn_Joylin::mainloop(void) {
   struct timeval zerotime;
@@ -79,21 +98,29 @@ void vrpn_Joylin::mainloop(void) {
   FD_ZERO(&fdset);                      /* clear fdset              */
   FD_SET(fd, &fdset);                   /* include fd in fdset      */ 
   select(fd+1, &fdset, NULL, NULL, &zerotime);
+
     if (FD_ISSET(fd, &fdset)){            
       if (read(fd, &js, sizeof(struct js_event)) != sizeof(struct js_event)) {
-		  send_text_message("Error reading from joystick", vrpn_Analog::timestamp, vrpn_TEXT_ERROR);
-		  if (d_connection) { d_connection->send_pending_reports(); }
-		  return;
+	  send_text_message("Error reading from joystick", vrpn_Analog::timestamp, vrpn_TEXT_ERROR);
+	  if (d_connection) { d_connection->send_pending_reports(); }
+
+	  /* try to reopen the device, e.g. wireless joysticks 
+	   * like to disconnect when not in use to save battery */
+	  close(fd);
+	  vrpn_SleepMsecs(5000);
+	  init();
+	  return;
       }
+
       switch(js.type & ~JS_EVENT_INIT) {
       case JS_EVENT_BUTTON:
-                  vrpn_gettimeofday((timeval *)&this->vrpn_Button::timestamp, NULL);
-		  buttons[js.number] = js.value;
-		  break;
+          vrpn_gettimeofday((timeval *)&this->vrpn_Button::timestamp, NULL);
+	  buttons[js.number] = js.value;
+	  break;
       case JS_EVENT_AXIS:
-		  vrpn_gettimeofday((timeval *)&this->vrpn_Analog::timestamp, NULL);
-		  channel[js.number] = js.value / 32767.0;           /* FIX LATER */
-		  break;
+	  vrpn_gettimeofday((timeval *)&this->vrpn_Analog::timestamp, NULL);
+	  channel[js.number] = js.value / 32767.0;           /* FIX LATER */
+	  break;
       }
 
 #ifdef DEBUG
@@ -127,15 +154,14 @@ vrpn_Joylin::vrpn_Joylin(char * name,
 { 
 	  fprintf(stderr,"vrpn_Joylin::vrpn_Joylin: Can't open Linux joystick on non-Linux machine\n");
 }
-void vrpn_Joylin::mainloop(void) {
+
+vrpn_Joylin::~vrpn_Joylin()
+{
+}
+
+void vrpn_Joylin::mainloop(void)
+{
 }
 
 #endif
-
-/****************************************************************************/
-/* Send request for status to joysticks and reads response.
-*/
-int vrpn_Joylin::init() {
-	return 0;
-}
 

@@ -20,16 +20,20 @@ class VRPN_API vrpn_Connection;
 class VRPN_API vrpn_Joylin :public vrpn_Analog, public vrpn_Button_Filter {
 public:
   vrpn_Joylin(char * name, vrpn_Connection * c, char * portname);
+  ~vrpn_Joylin();
 
   void mainloop(void);
 
+#ifdef VRPN_USE_JOYLIN
 protected:
   int init();
+#endif
 private:
   int namelen;
   int fd;
   int version;
-  char *name;
+  char *devname;
+  char *device;
 };
 
 

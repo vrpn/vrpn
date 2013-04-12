@@ -42,8 +42,6 @@ class VRPN_API vrpn_DevInput;
 class VRPN_API vrpn_WiiMote;
 class VRPN_API vrpn_Freespace;
 
-//#include "vrpn_Cirque_Extended.h"
-
 
 const int VRPN_GSO_MAX_TRACKERS =             100;
 const int VRPN_GSO_MAX_BUTTONS =              100;
@@ -58,20 +56,14 @@ const int VRPN_GSO_MAX_SPACEBALLS =           8;
 const int VRPN_GSO_MAX_IBOXES =               8;
 const int VRPN_GSO_MAX_DIALS =                8;
 const int VRPN_GSO_MAX_NDI_POLARIS_RIGIDBODIES = 20; //FIXME find out from the NDI specs if there is a maximum;
-#ifdef VRPN_INCLUDE_TIMECODE_SERVER
 const int VRPN_GSO_MAX_TIMECODE_GENERATORS =  8;
-#endif
 const int VRPN_GSO_MAX_TNG3S =	              8;
-#ifdef	VRPN_USE_DIRECTINPUT
-const int VRPN_GSO_MAX_DIRECTXJOYS =           8;
+const int VRPN_GSO_MAX_DIRECTXJOYS =          8;
 const int VRPN_GSO_MAX_RUMBLEPADS =           8;
 const int VRPN_GSO_MAX_XINPUTPADS =           8;
-#endif
 const int VRPN_GSO_MAX_WIN32JOYS =            100;
 const int VRPN_GSO_MAX_GLOBALHAPTICSORBS =    8;
-#ifdef	VRPN_USE_PHANTOM_SERVER
 const int VRPN_GSO_MAX_PHANTOMS =             10;
-#endif
 const int VRPN_GSO_MAX_DTRACKS =              5;
 const int VRPN_GSO_MAX_POSER =	              8;
 const int VRPN_GSO_MAX_MOUSES =	              8;
@@ -81,13 +73,8 @@ const int VRPN_GSO_MAX_LOGGER =               10;
 const int VRPN_GSO_MAX_IMAGE_STREAM =         10;
 const int VRPN_GSO_MAX_WIIMOTES =             4;
 const int VRPN_GSO_MAX_FREESPACES =           10;
-
-// BUW additions
 const int VRPN_GSO_MAX_INERTIAMOUSES =        8;
-
-#ifdef VRPN_USE_JSONNET
-const int VRPN_GSO_MAX_JSONNETS =			  4;
-#endif
+const int VRPN_GSO_MAX_JSONNETS =             4;
 
 class vrpn_Generic_Server_Object
 {
@@ -128,35 +115,23 @@ class vrpn_Generic_Server_Object
     int             num_iboxes;
     vrpn_Dial	* dials [VRPN_GSO_MAX_DIALS];
     int		num_dials;
-#ifdef VRPN_INCLUDE_TIMECODE_SERVER
     vrpn_Timecode_Generator * timecode_generators[VRPN_GSO_MAX_TIMECODE_GENERATORS];
-#endif
     int		num_generators;
     vrpn_Tng3       *tng3s[VRPN_GSO_MAX_TNG3S];
     int             num_tng3s;
-#ifdef	VRPN_USE_DIRECTINPUT
     vrpn_DirectXFFJoystick   * DirectXJoys [VRPN_GSO_MAX_DIRECTXJOYS];
-    vrpn_DirectXRumblePad    * RumblePads  [VRPN_GSO_MAX_RUMBLEPADS ];
-#ifdef VRPN_USE_WINDOWS_XINPUT
-    vrpn_XInputGamepad       * XInputPads  [VRPN_GSO_MAX_XINPUTPADS ];
-#endif
-#endif
     int  num_DirectXJoys;
+    vrpn_DirectXRumblePad    * RumblePads  [VRPN_GSO_MAX_RUMBLEPADS ];
     int  num_RumblePads;
+    vrpn_XInputGamepad       * XInputPads  [VRPN_GSO_MAX_XINPUTPADS ];
     int  num_XInputPads;
-#ifdef	_WIN32
     vrpn_Joywin32 *win32joys[VRPN_GSO_MAX_WIN32JOYS];
-#endif
     int		num_Win32Joys;
     vrpn_GlobalHapticsOrb *ghos[VRPN_GSO_MAX_GLOBALHAPTICSORBS];
     int		num_GlobalHapticsOrbs;
-#ifdef	VRPN_USE_PHANTOM_SERVER
     vrpn_Phantom	*phantoms[VRPN_GSO_MAX_PHANTOMS];
-#endif
     int		num_phantoms;
-#ifndef sgi
     vrpn_Tracker_DTrack *DTracks[VRPN_GSO_MAX_DTRACKS];
-#endif
     int num_DTracks;
     vrpn_Analog_Output	* analogouts [VRPN_GSO_MAX_ANALOG];
     int		num_analogouts;
@@ -164,9 +139,7 @@ class vrpn_Generic_Server_Object
     int		num_posers;
     vrpn_Mouse	* mouses [VRPN_GSO_MAX_MOUSES];
     int		num_mouses;
-#ifdef VRPN_USE_DEV_INPUT
     vrpn_DevInput       * dev_inputs [VRPN_GSO_MAX_DEV_INPUTS];
-#endif
     int		num_dev_inputs;
     vrpn_Keyboard * Keyboards [VRPN_GSO_MAX_KEYBOARD];
     int		num_Keyboards;
@@ -174,17 +147,10 @@ class vrpn_Generic_Server_Object
     int           num_loggers;
     vrpn_Imager_Stream_Buffer * imagestreams [VRPN_GSO_MAX_IMAGE_STREAM];
     int           num_imagestreams;
-#ifdef	VRPN_USE_WIIUSE
     vrpn_WiiMote  * wiimotes [VRPN_GSO_MAX_WIIMOTES];
     int           num_wiimotes;
-#endif
-#ifdef	VRPN_USE_FREESPACE
     vrpn_Freespace  * freespaces [VRPN_GSO_MAX_FREESPACES];
     int           num_freespaces;
-#endif
-
-
-    // BUW additions
     vrpn_inertiamouse * inertiamouses [VRPN_GSO_MAX_INERTIAMOUSES];
     int             num_inertiamouses;
 
@@ -263,6 +229,7 @@ class vrpn_Generic_Server_Object
     int setup_Xkeys_Pro (char * & pch, char * line, FILE * config_file) ;
     int setup_Xkeys_Joystick (char * & pch, char * line, FILE * config_file) ;
     int setup_Xkeys_Jog_And_Shuttle (char * & pch, char * line, FILE * config_file) ;
+    int setup_Xkeys_XK3 (char * & pch, char * line, FILE * config_file) ;
     int setup_3DConnexion_Navigator (char * & pch, char * line, FILE * config_file) ;
     int setup_3DConnexion_Navigator_for_Notebooks (char * & pch, char * line, FILE * config_file) ;
     int setup_3DConnexion_Traveler (char * & pch, char * line, FILE * config_file) ;
@@ -273,6 +240,7 @@ class vrpn_Generic_Server_Object
     int setup_Tracker_GPS (char * & pch, char * line, FILE * config_file);
     int setup_WiiMote (char * & pch, char * line, FILE * config_file);
     int setup_SpacePoint (char * & pch, char * line, FILE * config_file);
+    int setup_Wintracker (char * & pch, char * line, FILE * config_file);
     int setup_Tracker_WiimoteHead (char * & pch, char * line, FILE * config_file);
     int setup_Freespace (char * & pch, char * line, FILE * config_file);
     int setup_DreamCheeky (char * & pch, char * line, FILE * config_file) ;
@@ -287,20 +255,13 @@ class vrpn_Generic_Server_Object
     int setup_Tracker_RazerHydra (char * &pch, char * line, FILE * config_file);
     int setup_Tracker_zSight (char * &pch, char * line, FILE * config_file);
     int setup_Tracker_ViewPoint (char * &pch, char * line, FILE * config_file);
-
-    // BUW additions
     int setup_Atmel (char* &pch, char *line, FILE *config_file);
     int setup_Event_Mouse (char* &pch, char *line, FILE *config_file);
     int setup_inertiamouse (char * & pch, char * line, FILE * config_file);
-
-    // Polhemus additions
-    int setup_Tracker_G4(char* &pch, char* line, FILE* config_file); 
-    int setup_Tracker_LibertyPDI(char* &pch, char* line, FILE* config_file); 
-    int setup_Tracker_FastrakPDI(char* &pch, char* line, FILE* config_file); 
-
-#ifdef VRPN_USE_JSONNET
+    int setup_Tracker_G4 (char* &pch, char* line, FILE* config_file);
+    int setup_Tracker_LibertyPDI (char* &pch, char* line, FILE* config_file);
+    int setup_Tracker_FastrakPDI (char* &pch, char* line, FILE* config_file);
     int setup_Tracker_JsonNet (char* &pch, char* line, FILE* config_file);
-#endif
 
 };
 

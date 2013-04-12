@@ -15,6 +15,7 @@ class HidDebug: public vrpn_HidInterface {
 	public:
 		HidDebug(vrpn_HidAcceptor *a);
 		~HidDebug() { }
+
 	protected:
 		void on_data_received(size_t bytes, vrpn_uint8 *buffer);
 };

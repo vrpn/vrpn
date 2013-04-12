@@ -15,8 +15,8 @@ static	unsigned long	duration(struct timeval t1, struct timeval t2)
 }
 
 // Constructor
-vrpn_Tracker_G4::vrpn_Tracker_G4 (const char *name, vrpn_Connection *c, const char *filepath, vrpn_float64 Hz, const char *rcmd) :
-  vrpn_Tracker(name, c), update_rate(Hz)
+vrpn_Tracker_G4::vrpn_Tracker_G4 (const char *name, vrpn_Connection *c, const char *filepath, vrpn_float64 Hz, const char *rcmd, vrpn_Tracker_G4_HubMap * pHMap) :
+  vrpn_Tracker(name, c), update_rate(Hz), m_pHMap(pHMap)
   {
 		srcCalPath = LPCTSTR(filepath);
 	    cmd = (char*)(rcmd); // extra commands - See SendCommand(char *scmd)
@@ -24,6 +24,11 @@ vrpn_Tracker_G4::vrpn_Tracker_G4 (const char *name, vrpn_Connection *c, const ch
 		if(!(Initialize()))
 		{
 			cout<<"G4: Could not initialize\r\n";
+			status = vrpn_TRACKER_FAIL;
+		}
+		else if (pHMap && !(InitDigIOBtns()))
+		{
+			cout<<"G4: Could not configure DigIO buttons\r\n";
 			status = vrpn_TRACKER_FAIL;
 		}
 		else if(!(Connect()))
@@ -52,6 +57,11 @@ vrpn_Tracker_G4::~vrpn_Tracker_G4(void){
 	if(isCont)
 		StopCont();
 	Disconnect();
+
+	if (m_pHMap)
+	{
+		delete m_pHMap;
+	}
 }
 
 
@@ -113,6 +123,35 @@ BOOL vrpn_Tracker_G4::Initialize(VOID){
 
 	bCnxReady = FALSE;
 	dwStationMap = 0;
+
+	return bRet;
+}
+
+
+BOOL vrpn_Tracker_G4::InitDigIOBtns()
+{
+	BOOL bRet = TRUE;
+
+	if (m_pHMap)
+	{
+
+		HUBMAP_ENTRY * pHub = m_pHMap->Begin();
+
+		while (pHub)
+		{
+			if (pHub->nBtnCount)
+			{
+				pHub->pBtnSrv = new vrpn_Button_Server(pHub->BtnName, d_connection, pHub->nBtnCount );
+				if (pHub->pBtnSrv == NULL)
+				{
+					cout << "Cannot create button device " << pHub->BtnName << endl;
+					bRet = FALSE;
+					break;
+				}
+			}
+			pHub = pHub->Next();
+		}
+	}
 
 	return bRet;
 }
@@ -956,6 +995,18 @@ void vrpn_Tracker_G4::ParseG4NativeFrame( PBYTE pBuf, DWORD dwSize, timeval curr
 		UINT	nSensorMap = pHubFrame->dwSensorMap;
 		UINT	nDigIO = pHubFrame->dwDigIO;
 
+		HUBMAP_ENTRY * pH = 0;
+		int nButtons = 0;
+		// handle digios if necessary
+		if (m_pHMap && (pH = m_pHMap->Find( nHubID )) && (nButtons = pH->nBtnCount) )
+		{
+			for (int i=0; i<nButtons; i++)
+			{
+				pH->pBtnSrv->set_button(i, (nDigIO & (1<<i)) >> i);
+				pH->pBtnSrv->mainloop();
+			}
+		}
+
 		UINT	nSensMask = 1;
 
 		for (int j=0; j<G4_MAX_SENSORS_PER_HUB; j++)
@@ -988,16 +1039,26 @@ void vrpn_Tracker_G4::ParseG4NativeFrame( PBYTE pBuf, DWORD dwSize, timeval curr
 			}
 		}
 
+	
+	
 	} // end while dwsize
 }
 
 // Constructor
 vrpn_Tracker_FastrakPDI::vrpn_Tracker_FastrakPDI (const char * name, vrpn_Connection *cn,
-	           vrpn_float64 Hz, const char * rcmd) :
-  vrpn_Tracker(name, cn), update_rate(Hz){
+	           vrpn_float64 Hz, const char * rcmd, unsigned int nStylusMap) :
+  vrpn_Tracker(name, cn), update_rate(Hz) 
+	, m_nStylusMap(nStylusMap)
+	, m_nHeaderSize(3)
+	, m_nFrameSize(nStylusMap?33:31)
+  {
 	    cmd = (char*)(rcmd);
 		register_server_handlers();
 		if(!(Initialize())){
+			status = vrpn_TRACKER_FAIL;
+		}
+		else if (nStylusMap & !(InitStylusBtns()))
+		{
 			status = vrpn_TRACKER_FAIL;
 		}
 		else if(!(Connect())){
@@ -1005,6 +1066,7 @@ vrpn_Tracker_FastrakPDI::vrpn_Tracker_FastrakPDI (const char * name, vrpn_Connec
 		}
 		else if(!(SetupDevice())){
 			status = vrpn_TRACKER_FAIL;
+			cout << "FasTrakPDI: Device setup failed\r\n";
 		}
 		else if(!(StartCont())){
 			isCont = FALSE;
@@ -1018,10 +1080,17 @@ vrpn_Tracker_FastrakPDI::vrpn_Tracker_FastrakPDI (const char * name, vrpn_Connec
   }
 
 // Deconstructor
-vrpn_Tracker_FastrakPDI::~vrpn_Tracker_FastrakPDI(void){
+vrpn_Tracker_FastrakPDI::~vrpn_Tracker_FastrakPDI(void)
+{
 	  if(isCont)
 		  StopCont();
 	  Disconnect();
+
+	  for (int i=0; i<FT_MAX_SENSORS; i++)
+	  {
+		  if (FTstylusBtns[i])
+			  delete FTstylusBtns[i];
+	  }
   }
 
 // Called by the vrpn_Generic_Sever class in order to report its status.
@@ -1069,16 +1138,19 @@ int	vrpn_Tracker_FastrakPDI::encode_to(char *buf)
 
 
 // Initialize the device and some variables
-BOOL vrpn_Tracker_FastrakPDI::Initialize(VOID){
+BOOL vrpn_Tracker_FastrakPDI::Initialize(VOID)
+{
+	BOOL	bRet = TRUE;
 	
 	pos[0]=0; pos[1]=0;	pos[2]=0;
 	d_quat[0]=0; d_quat[1]=0; d_quat[2]=0; d_quat[3]=0;
+
+	memset( FTstylusBtns, 0, sizeof(FTstylusBtns));
 
 	hContEvent = NULL;
 	hwnd = NULL;
 	dwOverflowCount = 0;
 
-	BOOL	bRet = TRUE;
 
 	pdiDev.Trace(TRUE, 5); // Report debugging information to IDE output
 
@@ -1088,6 +1160,30 @@ BOOL vrpn_Tracker_FastrakPDI::Initialize(VOID){
 	return bRet;
 }
 
+BOOL vrpn_Tracker_FastrakPDI::InitStylusBtns()
+{
+	BOOL bRet = TRUE;
+	int mask = 1;
+	for (int i=0; i<FT_MAX_SENSORS; i++)
+	{
+		if (((1<<i) & m_nStylusMap) != 0)
+		{
+			char btnName[512];
+			sprintf( btnName, "%sStylus%d", d_servicename, i+1);
+			FTstylusBtns[i] = new vrpn_Button_Server( btnName, d_connection, 1 );
+			if (FTstylusBtns[i] == NULL)
+			{
+				cout << "Cannot create button device " << btnName << endl;
+				bRet = FALSE;
+			}
+			else
+			{
+				cout << "Button device " << btnName << " created." << endl;
+			}
+		}
+	}
+	return bRet;
+}
 // Connect to the Fastrak using the filepath provided in the config file
 // Sets tracker to default VRPN units and frames
 BOOL vrpn_Tracker_FastrakPDI::Connect( VOID )
@@ -1133,11 +1229,15 @@ BOOL vrpn_Tracker_FastrakPDI::Connect( VOID )
 			pdiDev.ClearBITErrs();
 	
 		// Set VRPN defaults for position, orientation and frame structure
+		//m_nFrameSize = 28;
 		pdiMDat.Empty();
+		if (m_nStylusMap)
+		{
+			pdiMDat.Append(PDI_MODATA_STYLUS);
+		}
 		pdiMDat.Append( PDI_MODATA_POS );
 		pdiMDat.Append( PDI_MODATA_QTRN );
 		pdiDev.SetSDataList( -1, pdiMDat );
-	
 		pdiDev.SetMetric(TRUE);
 		isMetric = TRUE;
 		isBinary = TRUE;
@@ -1441,18 +1541,19 @@ VOID vrpn_Tracker_FastrakPDI::DisplaySingle( timeval ct )
 VOID vrpn_Tracker_FastrakPDI::ParseFastrakFrame( PBYTE pBuf, DWORD dwSize, timeval current_time )
 {
 
-	DWORD dw = 0;
+	DWORD index = 0;
 	char msgbuf[1000];
 	vrpn_int32 len;
 
-    while (dw < dwSize){		
+    while (index < dwSize){		
+		DWORD dw = index;
 		BYTE ucSensor = pBuf[dw+1];
 		BYTE ucInitCommand = pBuf[dw];
 		BYTE ucErrorNum = pBuf[dw+2];
 		d_sensor = atoi((char*)(&ucSensor));
 		
         // skip rest of header
-        dw += 3;
+        dw += m_nHeaderSize;//3;
 
 		// Catch command response frames sent when tracker is in continuous mode
 		// and don't parse them but do provide output to the server screen
@@ -1460,6 +1561,19 @@ VOID vrpn_Tracker_FastrakPDI::ParseFastrakFrame( PBYTE pBuf, DWORD dwSize, timev
 			printf("FastrakPDI: received record type %x while in continuous mode, record error byte was %x \r\n", ucInitCommand, ucErrorNum);
 		}
 		else{
+
+			if (m_nStylusMap)
+			{
+				if ((m_nStylusMap & (1 << (d_sensor-1))) != 0) //FTstylusBtns[ucSensor-1])
+				{
+					CHAR StyFlag = pBuf[dw+1];
+
+					FTstylusBtns[d_sensor-1]->set_button(0, StyFlag -  '0');	
+					FTstylusBtns[d_sensor-1]->mainloop();
+				}
+				dw +=2;
+			}
+
 			PFLOAT pPno = (PFLOAT)(&pBuf[dw]); // Position and Orientation data
 
 			if (isMetric == TRUE){
@@ -1479,6 +1593,7 @@ VOID vrpn_Tracker_FastrakPDI::ParseFastrakFrame( PBYTE pBuf, DWORD dwSize, timev
 			d_quat[2] = float(pPno[6]);
 			d_quat[3] = float(pPno[3]);
 
+
 			// Grab the current time and create a timestamp
 			timestamp.tv_sec = current_time.tv_sec;
 			timestamp.tv_usec = current_time.tv_usec;
@@ -1489,17 +1604,25 @@ VOID vrpn_Tracker_FastrakPDI::ParseFastrakFrame( PBYTE pBuf, DWORD dwSize, timev
 					position_m_id, d_sender_id, msgbuf, vrpn_CONNECTION_LOW_LATENCY);
 			}		
 		}
-		dw += 28;
+		index += m_nFrameSize;//28;
 	}
 }
 
 // Constructor
 vrpn_Tracker_LibertyPDI::vrpn_Tracker_LibertyPDI (const char * name, vrpn_Connection *cn,
-	           vrpn_float64 Hz, const char * rcmd) :
-  vrpn_Tracker(name, cn), update_rate(Hz){
+	           vrpn_float64 Hz, const char * rcmd, unsigned int nStylusMap) :
+  vrpn_Tracker(name, cn), update_rate(Hz)
+ 	, m_nStylusMap(nStylusMap)
+	, m_nHeaderSize(8)
+	, m_nFrameSize(nStylusMap?40:36)
+ {
 	    cmd = (char*)(rcmd);
 		register_server_handlers();
 		if(!(Initialize())){
+			status = vrpn_TRACKER_FAIL;
+		}
+		else if (nStylusMap & !(InitStylusBtns()))
+		{
 			status = vrpn_TRACKER_FAIL;
 		}
 		else if(!(Connect())){
@@ -1524,6 +1647,12 @@ vrpn_Tracker_LibertyPDI::~vrpn_Tracker_LibertyPDI(void){
 	  if(isCont)
 		  StopCont();
 	  Disconnect();
+
+	  for (int i=0; i<LIBERTY_MAX_SENSORS; i++)
+	  {
+		  if (StylusBtns[i])
+			  delete StylusBtns[i];
+	  }
   }
 
 // Called by the vrpn_Generic_Sever class in order to report its status.
@@ -1576,6 +1705,8 @@ BOOL vrpn_Tracker_LibertyPDI::Initialize(VOID){
 	pos[0]=0; pos[1]=0;	pos[2]=0;
 	d_quat[0]=0; d_quat[1]=0; d_quat[2]=0; d_quat[3]=0;
 
+	memset( StylusBtns, 0, sizeof(StylusBtns));
+
 	hContEvent = NULL;
 	hwnd = NULL;
 	dwOverflowCount = 0;
@@ -1587,6 +1718,32 @@ BOOL vrpn_Tracker_LibertyPDI::Initialize(VOID){
 	bCnxReady = FALSE;
 	dwStationMap = 0;
 
+	return bRet;
+}
+
+
+BOOL vrpn_Tracker_LibertyPDI::InitStylusBtns()
+{
+	BOOL bRet = TRUE;
+	int mask = 1;
+	for (int i=0; i<LIBERTY_MAX_SENSORS; i++)
+	{
+		if (((1<<i) & m_nStylusMap) != 0)
+		{
+			char btnName[512];
+			sprintf( btnName, "%sStylus%d", d_servicename, i+1);
+			StylusBtns[i] = new vrpn_Button_Server( btnName, d_connection, 1 );
+			if (StylusBtns[i] == NULL)
+			{
+				cout << "Cannot create button device " << btnName << endl;
+				bRet = FALSE;
+			}
+			else
+			{
+				cout << "Button device " << btnName << " created." << endl;
+			}
+		}
+	}
 	return bRet;
 }
 
@@ -1636,6 +1793,10 @@ BOOL vrpn_Tracker_LibertyPDI::Connect( VOID )
 	
 		// Set VRPN defaults for position, orientation and frame structure
 		pdiMDat.Empty();
+		if (m_nStylusMap)
+		{
+			pdiMDat.Append(PDI_MODATA_STYLUS);
+		}
 		pdiMDat.Append( PDI_MODATA_POS );
 		pdiMDat.Append( PDI_MODATA_QTRN );
 		pdiDev.SetSDataList( -1, pdiMDat );
@@ -1703,7 +1864,8 @@ VOID vrpn_Tracker_LibertyPDI::UpdateStationMap( VOID )
 }
 
 // Sends commands to the tracker, the syntax is explained in vrpn_LibertyPDI.cfg
-VOID vrpn_Tracker_LibertyPDI::SendCommand(char *scmd){	
+VOID vrpn_Tracker_LibertyPDI::SendCommand(char *scmd)
+{	
 	char szCmd[PI_MAX_CMD_BUF_LEN] = "\0";
 	DWORD dwRspSize = 5000;
 	char szRsp[5000] = "\0";
@@ -1994,11 +2156,12 @@ VOID vrpn_Tracker_LibertyPDI::DisplaySingle( timeval ct )
 VOID vrpn_Tracker_LibertyPDI::ParseLibertyFrame( PBYTE pBuf, DWORD dwSize, timeval current_time )
 {
 
-	DWORD dw = 0;
+	DWORD index = 0;
 	char msgbuf[1000];
 	vrpn_int32 len;
 
-    while (dw < dwSize){		
+    while (index < dwSize){		
+		DWORD dw = index;
 		BYTE ucSensor = pBuf[dw+2];
 		BYTE ucInitCommand = pBuf[dw+3];
 		BYTE ucErrorNum = pBuf[dw+4];
@@ -2006,7 +2169,7 @@ VOID vrpn_Tracker_LibertyPDI::ParseLibertyFrame( PBYTE pBuf, DWORD dwSize, timev
 		d_sensor = unsigned short(ucSensor);
 		
         // skip rest of header
-        dw += 8;
+        dw += m_nHeaderSize;//8;
 
 		// Catch command response frames sent when tracker is in continuous mode
 		// and don't parse them but do provide output to the server screen
@@ -2014,6 +2177,19 @@ VOID vrpn_Tracker_LibertyPDI::ParseLibertyFrame( PBYTE pBuf, DWORD dwSize, timev
 			printf("LibertyPDI: received command %x while in continuous mode, tracker response was %x \r\n", ucInitCommand, ucErrorNum);
 		}
 		else{
+			if (m_nStylusMap)
+			{
+				if ((m_nStylusMap & (1 << (d_sensor-1))) != 0) 
+				{
+					DWORD m_dwStylus = *((DWORD*)&pBuf[dw]);
+ 					
+					StylusBtns[d_sensor-1]->set_button(0, m_dwStylus);	
+					StylusBtns[d_sensor-1]->mainloop();
+				}
+				dw += sizeof(DWORD);;
+			}
+
+
 			PFLOAT pPno = (PFLOAT)(&pBuf[dw]); // Position and Orientation data
 
 			if (isMetric == TRUE){
@@ -2043,7 +2219,7 @@ VOID vrpn_Tracker_LibertyPDI::ParseLibertyFrame( PBYTE pBuf, DWORD dwSize, timev
 					position_m_id, d_sender_id, msgbuf, vrpn_CONNECTION_LOW_LATENCY);
 			}		
 		}
-		dw += shSize;
+		index += m_nFrameSize;
 	}
 }
 
