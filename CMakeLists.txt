@@ -599,6 +599,19 @@ if(VRPN_USE_GPM_MOUSE)
 endif()
 
 ###
+# INTERSENSE
+###
+find_package(InterSense)
+option_requires(VRPN_USE_INTERSENSE
+        "Build with InterSense support"
+        ${DEFAULT_OFF_IF_SUBPROJECT}
+        INTERSENSE_FOUND)
+
+if(VRPN_USE_INTERSENSE)
+        list(APPEND SERVER_EXTRA_LIBS ${INTERSENSE_LIBRARIES})
+endif()
+
+###
 # NIDAQMX
 ###
 find_package(NIDAQmx)
@@ -709,7 +722,6 @@ endif()
 ###
 # XXX Other libraries needing detection and handling (TODO)
 ###
-# InterSense Interface Libraries SDK
 # National Instruments Nidaq traditional
 # US Digital SEI/A2
 # microscribe3D library
@@ -726,9 +738,6 @@ endif()
 # These are the default options for libraries we can't yet detect -
 # if a library can be detected above it will be pre-set to an appropriate
 # value by default.
-option(VRPN_INCLUDE_INTERSENSE
-	"Build with InterSense native library support"
-	OFF)
 option(VRPN_USE_NATIONAL_INSTRUMENTS
 	"Build with National Instruments (old library) support"
 	OFF)
