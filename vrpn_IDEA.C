@@ -204,7 +204,7 @@ bool  vrpn_IDEA::send_move_request(vrpn_float64 location_in_steps, double scale)
   return send_command(cmd);
 }
 
-// This routine will reset the IDEA drive.
+// This routine will parse a location response from the drive.
 //   Commands		  Responses	            Meanings
 //    l                     `l<value>[cr]`l#[cr]      Location of the drive
 
