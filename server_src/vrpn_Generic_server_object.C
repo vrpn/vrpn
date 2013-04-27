@@ -80,6 +80,7 @@
 #include "vrpn_Tracker_TrivisioColibri.h" // added by David Borland
 #include "vrpn_Tracker_ViewPoint.h" // added by David Borland
 #include "vrpn_Tracker_WiimoteHead.h"   // for vrpn_Tracker_WiimoteHead
+#include "vrpn_Tracker_Wintracker.h"   // for vrpn_Tracker_Wintracker
 #include "vrpn_Tracker_zSight.h" // added by David Borland
 #include "vrpn_UNC_Joystick.h"          // for vrpn_Joystick
 #include "vrpn_VPJoystick.h"            // for vrpn_VPJoystick
