@@ -15,6 +15,11 @@
 // Distributed under the Boost Software License, Version 1.0.
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
+//
+// *** WARNING: This file must only be included in a .cpp or .C file, not
+// in a .h file, because it includes <vector>, and we can't have any standard
+// library files in the VRPN headers because that will make VRPN incompatible
+// with libraries that use the other flavor of <vector.h>.
 
 #pragma once
 #ifndef INCLUDED_vrpn_MainloopContainer_h_GUID_2146c66c_1925_4ac3_a192_354d10d7a39f
