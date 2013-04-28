@@ -3999,7 +3999,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_G4(char * &pch, char * line, FILE 
     if (strncmp (line, "G4DigIO", strlen ("G4DigIO")) == 0) {
       int nHub = 0;
       int nButtons = 0;
-      char DigIOName[G4_HUB_NAME_SIZE];
+      char DigIOName[VRPN_G4_HUB_NAME_SIZE];
 
       if (3 != sscanf (line, "G4DigIO %64s %d %d", DigIOName, &nHub, &nButtons)) {
         fprintf (stderr, "Invalid G4DigIO argument list: %s\n", line);
@@ -4016,19 +4016,19 @@ int vrpn_Generic_Server_Object::setup_Tracker_G4(char * &pch, char * line, FILE 
 
     } else if (strncmp (line, "G4PowerTrak", strlen ("G4PowerTrak")) == 0) {
       int nHub = 0;
-      char PowerTrakName[G4_HUB_NAME_SIZE];
+      char PowerTrakName[VRPN_G4_HUB_NAME_SIZE];
 
       if (2 != sscanf (line, "G4PowerTrak %64s %d", PowerTrakName, &nHub)) {
         fprintf (stderr, "Invalid G4PowerTrak argument list: %s\n", line);
       } else {
-        printf ("\nCreating G4PowerTrak %s on Hub %d with buttons 0-%d\n", PowerTrakName, nHub, G4_POWERTRAK_BUTTON_COUNT - 1);
+        printf ("\nCreating G4PowerTrak %s on Hub %d with buttons 0-%d\n", PowerTrakName, nHub, VRPN_G4_POWERTRAK_BUTTON_COUNT - 1);
 
         if (pHMap == NULL) {
           pHMap = new vrpn_Tracker_G4_HubMap();
         }
 
         pHMap->Add (nHub);
-        pHMap->ButtonInfo (nHub, PowerTrakName, G4_POWERTRAK_BUTTON_COUNT);
+        pHMap->ButtonInfo (nHub, PowerTrakName, VRPN_G4_POWERTRAK_BUTTON_COUNT);
       }
     } else {
       // Copy the line into the remote command,
