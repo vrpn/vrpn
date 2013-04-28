@@ -704,6 +704,7 @@ if(VRPN_USE_PDI)
 	list(APPEND
 		SERVER_EXTRA_LIBS
 		"C:/Program Files (x86)/Polhemus/PDI/PDI_90/Lib/Win32/PDI.lib")
+        set(PDI_SOURCES vrpn_Tracker_PDI.C)
 endif()
 
 ###
@@ -972,7 +973,8 @@ set(VRPN_SERVER_SOURCES
 	vrpn_Tracker_LibertyHS.C
 	vrpn_Zaber.C
 	server_src/vrpn_Generic_server_object.C
-	${HIDAPI_SOURCES})
+	${HIDAPI_SOURCES}
+        ${PDI_SOURCES})
 
 set(VRPN_SERVER_PUBLIC_HEADERS
 	${VRPN_CLIENT_PUBLIC_HEADERS}
