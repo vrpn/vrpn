@@ -4051,7 +4051,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_G4(char * &pch, char * line, FILE 
 }
 
 int vrpn_Generic_Server_Object::setup_Tracker_FastrakPDI(char * &pch, char * line, FILE * config_file) {
-  const int FT_MAX_SENSORS = 16; /// @todo this constant is used elsewhere but defined nowhere
+#ifdef  VRPN_USE_PDI
   char name [LINESIZE];
   int Hz = 10;
   char rcmd[5000];     // reset commands to send to Liberty
@@ -4103,7 +4103,6 @@ int vrpn_Generic_Server_Object::setup_Tracker_FastrakPDI(char * &pch, char * lin
     printf (" no additional commands found\r\n");
   }
 
-#ifdef  VRPN_USE_PDI
   _devices->add (new vrpn_Tracker_FastrakPDI (name, connection, Hz, rcmd, nStylusMap));
 
   return 0;
@@ -4114,7 +4113,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_FastrakPDI(char * &pch, char * lin
 }
 
 int vrpn_Generic_Server_Object::setup_Tracker_LibertyPDI(char * &pch, char * line, FILE * config_file) {
-  const int LIBERTY_MAX_SENSORS = 16; /// @todo this constant is used elsewhere but defined nowhere
+#ifdef  VRPN_USE_PDI
   char name [LINESIZE];
   int Hz = 10;
   unsigned int nStylusMap = 0;
@@ -4167,7 +4166,6 @@ int vrpn_Generic_Server_Object::setup_Tracker_LibertyPDI(char * &pch, char * lin
     printf (" no additional commands found\r\n");
   }
 
-#ifdef  VRPN_USE_PDI
   _devices->add (new vrpn_Tracker_LibertyPDI (name, connection, Hz, rcmd, nStylusMap));
 
   return 0;
