@@ -20,9 +20,6 @@ vrpn_Tracker_SpacePoint::vrpn_Tracker_SpacePoint(const char * name, vrpn_Connect
                     vrpn_Tracker(name, trackercon), vrpn_Button(name, trackercon),
                     vrpn_HidInterface(new vrpn_HidProductAcceptor(SPACEPOINT_VENDOR, SPACEPOINT_PRODUCT))
 {
-    _name = name;
-    _con = trackercon;
-
     memset(d_quat, 0, 4 * sizeof(float));
     d_quat[3] = 1.0;
 

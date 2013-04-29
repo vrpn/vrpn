@@ -3947,7 +3947,6 @@ int vrpn_Generic_Server_Object::setup_Tracker_G4(char * &pch, char * line, FILE 
   char name [LINESIZE], filepath [LINESIZE];
   int numparms;
   int Hz = 10;
-  char rcmd[5000];
 
   VRPN_CONFIG_NEXT();
   // Get the arguments (class, tracker_name)
@@ -3980,6 +3979,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_G4(char * &pch, char * line, FILE 
   printf ("%s\n", filepath);
 
 #ifdef  VRPN_USE_PDI
+  char rcmd[5000];
   vrpn_Tracker_G4_HubMap * pHMap = NULL;
   // If the last character in the line is a backslash, '\', then
   // the following line is an additional command to send to the
