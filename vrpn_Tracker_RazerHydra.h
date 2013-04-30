@@ -22,18 +22,13 @@
 #include "quat.h"                       // for q_vec_type
 #include "vrpn_Analog.h"                // for vrpn_Analog
 #include "vrpn_Button.h"                // for vrpn_Button_Filter
-#include "vrpn_Configure.h"             // for VRPN_API, VRPN_USE_HID
-#include "vrpn_Shared.h"                // for timeval
 #include "vrpn_Tracker.h"               // for vrpn_Tracker
-#include "vrpn_Types.h"                 // for vrpn_uint8
 
 // Library/third-party includes
 // - none
 
 // Standard includes
 // - none
-
-class VRPN_API vrpn_Connection;
 
 #ifdef VRPN_USE_HID
 

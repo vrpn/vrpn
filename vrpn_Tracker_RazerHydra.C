@@ -21,10 +21,7 @@
 #include "vrpn_Tracker_RazerHydra.h"
 
 #ifdef VRPN_USE_HID
-#include "quat.h"                       // for q_vec_type, q_normalize, etc
-#include "vrpn_BaseClass.h"
 #include "vrpn_BufferUtils.h"
-#include "vrpn_Connection.h"            // for vrpn_CONNECTION_LOW_LATENCY, etc
 #include "vrpn_HumanInterface.h"        // for vrpn_HidInterface, etc
 #include "vrpn_OneEuroFilter.h"         // for OneEuroFilterQuat, etc
 #include "vrpn_SendTextMessageStreamProxy.h"  // for operator<<, etc
