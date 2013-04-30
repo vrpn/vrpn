@@ -22,14 +22,8 @@
 // Library/third-party includes
 // - none
 
-// Standard includes
-#ifdef SGI
-#  include <math.h>
-#else
-#  include <cmath>                       // for sqrt, acos
-using std::sqrt;
-using std::acos;
-#endif
+// Standard includes for sqrt() and acos()
+#include <math.h>
 
 // "One Euro" filter for reducing jitter
 // http://hal.inria.fr/hal-00670496/
@@ -97,7 +91,7 @@ class VectorFilterable {
 			for (int i = 0; i < DIMENSION; ++i) {
 				sqnorm += dx[i] * dx[i];
 			}
-			return sqrt(sqnorm);
+			return sqrt(static_cast<vrpn_float64>(sqnorm));
 		}
 
 };
@@ -236,7 +230,7 @@ class QuatFilterable {
 		}
 		static scalar_type computeDerivativeMagnitude(derivative_value_type const dx) {
 			/// Should be safe since the quaternion we're given has been normalized.
-			return 2.0 * acos(dx[Q_W]);
+			return 2.0 * acos(static_cast<vrpn_float64>(dx[Q_W]));
 		}
 
 };
