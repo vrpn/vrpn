@@ -188,7 +188,7 @@ vrpn_Tracker_AnalogFly::~vrpn_Tracker_AnalogFly (void)
 // update the value there. The value is used by the matrix-generation code in
 // mainloop() to update the transformations; that work is not done here.
 
-void	vrpn_Tracker_AnalogFly::handle_analog_update
+void	VRPN_CALLBACK vrpn_Tracker_AnalogFly::handle_analog_update
                      (void *userdata, const vrpn_ANALOGCB info)
 {
 	vrpn_TAF_fullaxis	*full = (vrpn_TAF_fullaxis *)userdata;
@@ -219,7 +219,7 @@ void	vrpn_Tracker_AnalogFly::handle_analog_update
 // This routine will reset the matrix to identity when the reset button is
 // pressed.
 
-void vrpn_Tracker_AnalogFly::handle_reset_press
+void VRPN_CALLBACK vrpn_Tracker_AnalogFly::handle_reset_press
                      (void *userdata, const vrpn_BUTTONCB info)
 {
 	vrpn_Tracker_AnalogFly	*me = (vrpn_Tracker_AnalogFly*)userdata;
@@ -233,7 +233,7 @@ void vrpn_Tracker_AnalogFly::handle_reset_press
 
 // This handle state changes associated with the clutch button.
 
-void vrpn_Tracker_AnalogFly::handle_clutch_press
+void VRPN_CALLBACK vrpn_Tracker_AnalogFly::handle_clutch_press
                      (void *userdata, const vrpn_BUTTONCB info)
 {
   vrpn_Tracker_AnalogFly	*me = (vrpn_Tracker_AnalogFly*)userdata;
@@ -306,7 +306,7 @@ int	vrpn_Tracker_AnalogFly::teardown_channel(vrpn_TAF_fullaxis *full)
 }
  
 // static
-int vrpn_Tracker_AnalogFly::handle_newConnection(void * userdata,
+int VRPN_CALLBACK vrpn_Tracker_AnalogFly::handle_newConnection(void * userdata,
                                                  vrpn_HANDLERPARAM)
 {
      
