@@ -58,7 +58,7 @@ vrpn_Tracker_NDI_Polaris::vrpn_Tracker_NDI_Polaris(const char *name,
 #endif
 
 		//0 = 20hz(default), 1= 30Hz, 2=60Hz
-		sendCommand("IRATE 2"); //set the illumination to 60Hz
+		sendCommand("IRATE 0"); //set the illumination to the default
         readResponse();
 #ifdef DEBUG
 		printf("DEBUG: IRATE response: >%s<\n",latestResponseStr);	
@@ -148,9 +148,7 @@ int vrpn_Tracker_NDI_Polaris::get_report(void)
 		
 	}// for  
 	
-	
 	return(gotAtLeastOneReport); //return 1 if something was sent, 0 otherwise
-	
 }
 
 
