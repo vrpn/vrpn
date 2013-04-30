@@ -218,8 +218,8 @@ struct vrpn_Tracker_RazerHydra::FilterData {
 			_qfilters[i].setDerivativeCutoff(1.2);
 		}
 	}
-	OneEuroFilterVec _filters[vrpn_Tracker_RazerHydra::POSE_CHANNELS];
-	OneEuroFilterQuat _qfilters[vrpn_Tracker_RazerHydra::POSE_CHANNELS];
+	vrpn_OneEuroFilterVec _filters[vrpn_Tracker_RazerHydra::POSE_CHANNELS];
+	vrpn_OneEuroFilterQuat _qfilters[vrpn_Tracker_RazerHydra::POSE_CHANNELS];
 };
 
 vrpn_Tracker_RazerHydra::vrpn_Tracker_RazerHydra(const char * name, vrpn_Connection * con)
