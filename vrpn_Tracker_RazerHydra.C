@@ -36,7 +36,6 @@
 #include <stdio.h>                      // for fprintf, NULL, stderr
 #include <string.h>                     // for memset
 
-
 const unsigned int HYDRA_VENDOR = 0x1532;
 const unsigned int HYDRA_PRODUCT = 0x0300;
 const unsigned int HYDRA_INTERFACE = 0x0;
