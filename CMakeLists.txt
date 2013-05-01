@@ -947,6 +947,7 @@ set(VRPN_SERVER_SOURCES
 	vrpn_Tracker_Crossbow.C
 	vrpn_Tracker_DTrack.C
 	vrpn_Tracker_Fastrak.C
+	vrpn_Tracker_Filter.C
 	vrpn_Tracker_GameTrak.C
 	vrpn_Tracker_GPS.C
 	vrpn_Tracker_isense.C
@@ -1037,6 +1038,7 @@ set(VRPN_SERVER_PUBLIC_HEADERS
 	vrpn_Tracker_Crossbow.h
 	vrpn_Tracker_DTrack.h
 	vrpn_Tracker_Fastrak.h
+	vrpn_Tracker_Filter.h
 	vrpn_Tracker_GameTrak.h
 	vrpn_Tracker_GPS.h
 	vrpn_Tracker_isense.h

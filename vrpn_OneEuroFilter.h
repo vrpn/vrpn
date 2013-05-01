@@ -1,5 +1,7 @@
 /** @file
-	@brief Header
+	@brief Header file that completely implements a direction and
+        orientation filter on tracking reports; it does not implement
+        an actual server, it is intended to be built into a server.
 
 	@date 2012
 

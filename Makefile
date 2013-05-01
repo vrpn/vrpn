@@ -691,6 +691,7 @@ SLIB_FILES =  $(LIB_FILES) \
 	vrpn_Tracker_Crossbow.C \
 	vrpn_Tracker_DTrack.C \
 	vrpn_Tracker_Fastrak.C \
+	vrpn_Tracker_Filter.C \
 	vrpn_Tracker_GameTrak.C \
 	vrpn_Tracker_isense.C \
 	vrpn_Tracker_Isotrak.C \
@@ -766,6 +767,7 @@ SLIB_INCLUDES = $(LIB_INCLUDES) \
 	vrpn_Tracker_Crossbow.h \
 	vrpn_Tracker_DTrack.h \
 	vrpn_Tracker_Fastrak.h \
+	vrpn_Tracker_Filter.h \
 	vrpn_Tracker_GameTrak.h \
 	vrpn_Tracker_isense.h \
 	vrpn_Tracker_Isotrak.h \

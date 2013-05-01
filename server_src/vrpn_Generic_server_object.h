@@ -33,7 +33,6 @@ class vrpn_Generic_Server_Object
     // Lists of devices
     vrpn_MainloopContainer * _devices;          //< semi-pimpl idiom so we can use <vector> and not scare Sensable GHOST.
 
-
     void closeDevices (void);
 
     // Helper functions for the functions below
@@ -133,6 +132,7 @@ class vrpn_Generic_Server_Object
     int setup_Analog_5dtUSB_Glove14Left (char * &pch, char * line, FILE * /*config_file*/);
     int setup_Analog_5dtUSB_Glove14Right (char * &pch, char * line, FILE * /*config_file*/);
     int setup_Tracker_RazerHydra (char * &pch, char * line, FILE * /*config_file*/);
+    int setup_Tracker_FilterOneEuro (char * &pch, char * line, FILE * /*config_file*/);
     int setup_Tracker_zSight (char * &pch, char * line, FILE * /*config_file*/);
     int setup_Tracker_ViewPoint (char * &pch, char * line, FILE * /*config_file*/);
     int setup_Atmel (char * &pch, char * line, FILE * /*config_file*/);
@@ -142,7 +142,6 @@ class vrpn_Generic_Server_Object
     int setup_Tracker_LibertyPDI(char* &pch, char* line, FILE* config_file);
     int setup_Tracker_FastrakPDI(char* &pch, char* line, FILE* config_file);
     int setup_Tracker_JsonNet (char * &pch, char * line, FILE * /*config_file*/);
-
 };
 
 #endif
