@@ -128,10 +128,6 @@ class VRPN_API vrpn_Tracker_RazerHydra: public vrpn_Analog, public vrpn_Button_F
 		int _mirror[POSE_CHANNELS];
 		q_vec_type _old_position[POSE_CHANNELS];
 
-		struct FilterData;
-
-		FilterData * _f;
-
 		// This device has both a control and a data interface.
 		// On the mac, we may need to swap these because we can't tell which
 		// is which when we open them.

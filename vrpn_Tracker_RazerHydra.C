@@ -23,7 +23,6 @@
 #ifdef VRPN_USE_HID
 #include "vrpn_BufferUtils.h"
 #include "vrpn_HumanInterface.h"        // for vrpn_HidInterface, etc
-#include "vrpn_OneEuroFilter.h"         // for OneEuroFilterQuat, etc
 #include "vrpn_SendTextMessageStreamProxy.h"  // for operator<<, etc
 
 // Library/third-party includes
@@ -206,22 +205,6 @@ class vrpn_Tracker_RazerHydra::MyInterface : public vrpn_HidInterface {
 		vrpn_Tracker_RazerHydra *d_hydra;
 };
 
-struct vrpn_Tracker_RazerHydra::FilterData {
-	FilterData() {
-		for (int i = 0; i < vrpn_Tracker_RazerHydra::POSE_CHANNELS; ++i) {
-			_filters[i].setMinCutoff(1.150);
-			_filters[i].setBeta(.5);
-			_filters[i].setDerivativeCutoff(1.2);
-
-			_qfilters[i].setMinCutoff(1.5);
-			_qfilters[i].setBeta(.5);
-			_qfilters[i].setDerivativeCutoff(1.2);
-		}
-	}
-	vrpn_OneEuroFilterVec _filters[vrpn_Tracker_RazerHydra::POSE_CHANNELS];
-	vrpn_OneEuroFilterQuat _qfilters[vrpn_Tracker_RazerHydra::POSE_CHANNELS];
-};
-
 vrpn_Tracker_RazerHydra::vrpn_Tracker_RazerHydra(const char * name, vrpn_Connection * con)
 	: vrpn_Analog(name, con)
 	, vrpn_Button_Filter(name, con)
@@ -229,7 +212,7 @@ vrpn_Tracker_RazerHydra::vrpn_Tracker_RazerHydra(const char * name, vrpn_Connect
 	, status(HYDRA_WAITING_FOR_CONNECT)
 	, _wasInGamepadMode(false) /// assume not - if we have to send a command, then set to true
 	, _attempt(0)
-	, _f(new FilterData()) {
+{
 	// Set up the control and data channels
 	_ctrl = new MyInterface(HYDRA_CONTROL_INTERFACE, this);
 	_data = new MyInterface(HYDRA_INTERFACE, this);
@@ -264,7 +247,6 @@ vrpn_Tracker_RazerHydra::~vrpn_Tracker_RazerHydra() {
 	}
 
 	delete _ctrl;
-	delete _f;
 }
 
 void vrpn_Tracker_RazerHydra::mainloop() {
@@ -445,7 +427,6 @@ void vrpn_Tracker_RazerHydra::_report_for_sensor(int sensorNum, vrpn_uint8 * dat
 		                     (-pos[1] - _old_position[sensorNum][1]) * (-pos[1] - _old_position[sensorNum][1]) +
 		                     (-pos[2] - _old_position[sensorNum][2]) * (-pos[2] - _old_position[sensorNum][2]);
 
-
 		// too big jump, likely hemisphere switch
 		// in that case the coordinates given are mirrored symmetrically across the base
 		if (dist_direct - dist_mirror > 10 * Q_EPSILON) {
@@ -472,14 +453,6 @@ void vrpn_Tracker_RazerHydra::_report_for_sensor(int sensorNum, vrpn_uint8 * dat
 	q_vec_copy(_old_position[sensorNum], pos);
 
 	vrpn_uint8 buttonBits = vrpn_unbuffer_from_little_endian<vrpn_uint8>(data);
-
-	// jitter filtering
-	const vrpn_float64 *filtered = _f->_filters[sensorNum].filter(dt, pos);
-
-	q_vec_copy(pos, filtered);
-
-	const double *q_filtered = _f->_qfilters[sensorNum].filter(dt, d_quat);
-	q_normalize(d_quat, q_filtered);
 
 	/// "middle" button
 	buttons[0 + buttonOffset] = (buttonBits & 0x20) != 0;
