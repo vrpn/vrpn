@@ -17,6 +17,8 @@
 //          http://www.boost.org/LICENSE_1_0.txt)
 
 #pragma once
+#ifndef INCLUDED_vrpn_Tracker_RazerHydra_h_GUID_8c30e762_d7e7_40c5_9308_b9bc118959fd
+#define INCLUDED_vrpn_Tracker_RazerHydra_h_GUID_8c30e762_d7e7_40c5_9308_b9bc118959fd
 
 // Internal Includes
 #include "quat.h"                       // for q_vec_type
@@ -138,3 +140,5 @@ class VRPN_API vrpn_Tracker_RazerHydra: public vrpn_Analog, public vrpn_Button_F
 };
 
 #endif
+
+#endif // INCLUDED_vrpn_Tracker_RazerHydra_h_GUID_8c30e762_d7e7_40c5_9308_b9bc118959fd
