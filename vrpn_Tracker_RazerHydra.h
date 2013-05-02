@@ -16,7 +16,7 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#pragma once
+
 #ifndef INCLUDED_vrpn_Tracker_RazerHydra_h_GUID_8c30e762_d7e7_40c5_9308_b9bc118959fd
 #define INCLUDED_vrpn_Tracker_RazerHydra_h_GUID_8c30e762_d7e7_40c5_9308_b9bc118959fd
 

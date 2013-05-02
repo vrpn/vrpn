@@ -16,7 +16,7 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#pragma once
+
 #ifndef INCLUDED_QuickChart_h_GUID_bb3e58a9_c33a_4e30_82e5_c721df4f0df7
 #define INCLUDED_QuickChart_h_GUID_bb3e58a9_c33a_4e30_82e5_c721df4f0df7
 

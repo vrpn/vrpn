@@ -16,7 +16,7 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#pragma once
+
 #ifndef INCLUDED_Inspector_h_GUID_02c5132a_e54b_4e32_a8ce_d9bf088b0d47
 #define INCLUDED_Inspector_h_GUID_02c5132a_e54b_4e32_a8ce_d9bf088b0d47
 

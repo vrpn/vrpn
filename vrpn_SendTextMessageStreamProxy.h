@@ -26,7 +26,7 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#pragma once
+
 #ifndef INCLUDED_vrpn_SendTextMessageStreamProxy_h_GUID_4845c20b_f6d9_46ae_87f2_eb0a08f8a584
 #define INCLUDED_vrpn_SendTextMessageStreamProxy_h_GUID_4845c20b_f6d9_46ae_87f2_eb0a08f8a584
 

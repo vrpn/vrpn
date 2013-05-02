@@ -21,7 +21,7 @@
 // library files in the VRPN headers because that will make VRPN incompatible
 // with libraries that use the other flavor of <vector.h>.
 
-#pragma once
+
 #ifndef INCLUDED_vrpn_MainloopContainer_h_GUID_2146c66c_1925_4ac3_a192_354d10d7a39f
 #define INCLUDED_vrpn_MainloopContainer_h_GUID_2146c66c_1925_4ac3_a192_354d10d7a39f
 

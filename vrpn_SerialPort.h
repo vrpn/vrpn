@@ -16,7 +16,7 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#pragma once
+
 #ifndef INCLUDED_vrpn_SerialPort_h_GUID_5d4c63a9_e038_4893_bfd7_116c43950dfa
 #define INCLUDED_vrpn_SerialPort_h_GUID_5d4c63a9_e038_4893_bfd7_116c43950dfa
 

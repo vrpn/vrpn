@@ -16,7 +16,7 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#pragma once
+
 #ifndef INCLUDED_HIDDevice_h_GUID_15239204_33b6_4b81_80f3_315b52f17eef
 #define INCLUDED_HIDDevice_h_GUID_15239204_33b6_4b81_80f3_315b52f17eef
 

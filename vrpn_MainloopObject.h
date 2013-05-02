@@ -16,7 +16,7 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#pragma once
+
 #ifndef INCLUDED_vrpn_MainloopObject_h_GUID_38f638e4_40e0_4c6d_bebc_21c463794b88
 #define INCLUDED_vrpn_MainloopObject_h_GUID_38f638e4_40e0_4c6d_bebc_21c463794b88
 
