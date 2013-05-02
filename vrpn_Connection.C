@@ -1415,8 +1415,8 @@ void vrpn_TypeDispatcher::clear (void) {
 }
 
 
-vrpn_ConnectionManager::~vrpn_ConnectionManager (void) {
-
+vrpn_ConnectionManager::~vrpn_ConnectionManager (void)
+{
   //fprintf(stderr, "In ~vrpn_ConnectionManager:  tearing down the list.\n");
 
   // Call the destructor of every known connection.
@@ -1428,11 +1428,11 @@ vrpn_ConnectionManager::~vrpn_ConnectionManager (void) {
   while (d_anonList) {
     delete d_anonList->connection;
   }
-
 }
 
 // static
-vrpn_ConnectionManager & vrpn_ConnectionManager::instance (void) {
+vrpn_ConnectionManager & vrpn_ConnectionManager::instance (void)
+{
   static vrpn_ConnectionManager manager;
   return manager;
 }
@@ -1463,7 +1463,8 @@ void vrpn_ConnectionManager::deleteConnection (vrpn_Connection * c)
 }
 
 void vrpn_ConnectionManager::deleteConnection (vrpn_Connection * c,
-                                               knownConnection ** snitch) {
+                                               knownConnection ** snitch)
+{
   knownConnection * victim = *snitch;
 
   while (victim && (victim->connection != c)) {
@@ -1479,7 +1480,8 @@ void vrpn_ConnectionManager::deleteConnection (vrpn_Connection * c,
   }
 }
 
-vrpn_Connection * vrpn_ConnectionManager::getByName (const char * name) {
+vrpn_Connection * vrpn_ConnectionManager::getByName (const char * name)
+{
   knownConnection * p;
   for (p = d_kcList; p && strcmp(p->name, name); p = p->next) {
     // do nothing

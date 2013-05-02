@@ -93,6 +93,9 @@ class VRPN_API vrpn_TextPrinter {
     /// Adds an object to the list of watched objects (multiple registration
     /// of the same object will result in only one printing for each message
     /// from the object). Returns 0 on success and -1 on failure.
+    /// YOU MUST REMOVE any objects from a vrpn_TextPrinter that you create
+    /// before detroying the printer if any connection objects survive, otherwise
+    /// they may call a callback function on the destroyed object.
     int    add_object(vrpn_BaseClass *o);
 
     /// Remove an object from the list of watched objects (multiple deletions

@@ -25,6 +25,13 @@ d_level_to_print(0)
 /** Deletes any callbacks that are still registered. */
 vrpn_TextPrinter::~vrpn_TextPrinter()
 {
+  /* XXX No longer removes these.  We get into trouble with the
+     system-defined vrpn_System_TextPrinter destructor because it
+     may run after the vrpn_ConnectionManager destructor has run,
+     which (if we have some undeleted objects) will leave objects
+     that don't have a NULL connection pointer, but whose pointers
+     point to already-deleted connections.  This causes a crash.
+
     vrpn_TextPrinter_Watch_Entry    *victim, *next;
     vrpn_BaseClass  *obj;
 
@@ -42,6 +49,7 @@ vrpn_TextPrinter::~vrpn_TextPrinter()
 	delete victim;
 	victim = next;
     }
+    XXX */
 }
 
 /** Adds an object to the list of watched objects.  Returns 0 on success and
