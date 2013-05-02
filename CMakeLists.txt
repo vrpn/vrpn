@@ -155,24 +155,25 @@ if(NOT SUBPROJECT)
 	# Build various applications if we want them.
 	option(VRPN_BUILD_CLIENTS "Build VRPN client apps and tests" ON)
 	option(VRPN_BUILD_SERVERS "Build VRPN servers" ON)
+
+	# Development tools
+	if(MSVC)
+		option(VRPN_BUILD_WITH_PROJECT_FOLDERS
+			"Use project folders in build system - not compatible with Visual C++ Express editions!"
+			OFF)
+	else()
+		set(VRPN_BUILD_WITH_PROJECT_FOLDERS ON)
+	endif()
+
+	set_property(GLOBAL
+		PROPERTY
+		USE_FOLDERS
+		${VRPN_BUILD_WITH_PROJECT_FOLDERS})
+
+	# Set a default build type
+	set_default_build_type("RelWithDebInfo")
+
 endif()
-
-# Development tools
-if(MSVC)
-	option(VRPN_BUILD_WITH_PROJECT_FOLDERS
-		"Use project folders in build system - not compatible with Visual C++ Express editions!"
-		OFF)
-else()
-	set(VRPN_BUILD_WITH_PROJECT_FOLDERS ON)
-endif()
-
-set_property(GLOBAL
-	PROPERTY
-	USE_FOLDERS
-	${VRPN_BUILD_WITH_PROJECT_FOLDERS})
-
-# Set a default build type
-set_default_build_type("RelWithDebInfo")
 
 # Force use of our CMake-processed configuration header before the stock one.
 include_directories("${PROJECT_BINARY_DIR}")
