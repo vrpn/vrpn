@@ -160,8 +160,7 @@ $(OBJ_DIR)/%.o: %.cpp
 	$(CC) $(CXXFLAGS) -o $@ -c $<
 
 INSTALL_APPS := vrpn_print_devices forcedevice_test_client vrpn_ping \
-	add_vrpn_cookie vrpn_print_performance
-# vrpn_print_messages
+	add_vrpn_cookie vrpn_print_performance vrpn_print_messages
 
 APPS := $(INSTALL_APPS) printvals printcereal checklogfile logfilesenders \
 	logfiletypes text forwarderClient bdbox_client ff_client phan_client \
@@ -171,6 +170,9 @@ all:	$(APPS)
 
 .PHONY:	vrpn_print_devices
 vrpn_print_devices:	$(OBJ_DIR)/vrpn_print_devices
+
+.PHONY:	vrpn_print_messages
+vrpn_print_messages:	$(OBJ_DIR)/vrpn_print_messages
 
 .PHONY:	vrpn_print_performance
 vrpn_print_performance:	$(OBJ_DIR)/vrpn_print_performance
@@ -241,6 +243,10 @@ $(OBJ_DIR)/printvals: $(OBJ_DIR)/printvals.o $(LIB_DIR)/libvrpn.a
 $(OBJ_DIR)/vrpn_print_devices: $(OBJ_DIR)/vrpn_print_devices.o $(LIB_DIR)/libvrpn.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/vrpn_print_devices \
 		$(OBJ_DIR)/vrpn_print_devices.o -lvrpn $(ARCH_LIBS)
+
+$(OBJ_DIR)/vrpn_print_messages: $(OBJ_DIR)/vrpn_print_messages.o $(LIB_DIR)/libvrpn.a
+	$(CC) $(LFLAGS) -o $(OBJ_DIR)/vrpn_print_messages \
+		$(OBJ_DIR)/vrpn_print_messages.o -lvrpn $(ARCH_LIBS)
 
 $(OBJ_DIR)/vrpn_print_performance: $(OBJ_DIR)/vrpn_print_performance.o $(LIB_DIR)/libvrpn.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/vrpn_print_performance \
