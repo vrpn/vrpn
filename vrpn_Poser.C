@@ -507,7 +507,7 @@ int vrpn_Poser_Remote::request_pose_relative( const struct timeval t,
 											  const vrpn_float64 quaternion[4]) 
 {
     // Set the requested pose 
-    set_pose(t, position_delta, quaternion);
+    set_pose_relative(t, position_delta, quaternion);
 
     // Send position request
     if (client_send_pose_relative() != 0) {
