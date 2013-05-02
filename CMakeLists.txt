@@ -1109,13 +1109,6 @@ if(VRPN_BUILD_SERVER_LIBRARY)
 		COMPONENT
 		serversdk)
 
-	if(VRPN_USE_LOCAL_HIDAPI)
-		install(FILES
-			${CMAKE_CURRENT_SOURCE_DIR}/submodules/hidapi/hidapi/hidapi.h
-			DESTINATION
-			include/submodules/hidapi/hidapi)
-	endif()
-
 	add_cppcheck(vrpnserver STYLE UNUSED_FUNCTIONS)
 endif()
 
