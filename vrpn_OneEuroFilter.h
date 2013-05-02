@@ -27,8 +27,9 @@
 // Library/third-party includes
 // - none
 
-// Standard includes for sqrt() and acos()
-#include <math.h>
+// Standard includes
+#include <math.h> // for sqrt() and acos()
+#include <string.h> // for memcpy
 
 // "One Euro" filter for reducing jitter
 // http://hal.inria.fr/hal-00670496/
