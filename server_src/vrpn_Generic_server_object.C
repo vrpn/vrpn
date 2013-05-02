@@ -3471,132 +3471,6 @@ int vrpn_Generic_Server_Object::setup_Xkeys_XK3 (char * & pch, char * line, FILE
   return 0;  // successful completion
 }
 
-int vrpn_Generic_Server_Object::setup_3DConnexion_Navigator (char * & pch, char * line, FILE * /*config_file*/)
-{
-  char s2 [LINESIZE];
-
-  VRPN_CONFIG_NEXT();
-  if (sscanf (pch, "%511s", s2) != 1) {
-    fprintf (stderr, "Bad 3DConnexion_Navigator line: %s\n", line);
-    return -1;
-  }
-
-  // Open the 3DConnexion_Navigator
-
-  // Open the button
-  if (verbose) {
-    printf ("Opening vrpn_3DConnexion_Navigator %s\n", s2);
-  }
-  _devices->add(new vrpn_3DConnexion_Navigator (s2, connection));
-
-  return 0;  // successful completion
-}
-
-int vrpn_Generic_Server_Object::setup_3DConnexion_Navigator_for_Notebooks (char * & pch, char * line, FILE * /*config_file*/)
-{
-  char s2 [LINESIZE];
-
-  VRPN_CONFIG_NEXT();
-  if (sscanf (pch, "%511s", s2) != 1) {
-    fprintf (stderr, "Bad 3DConnexion_Navigator_for_Notebooks line: %s\n", line);
-    return -1;
-  }
-
-  // Open the 3DConnexion_Navigator_for_Notebooks
-
-  // Open the button
-  if (verbose) {
-    printf ("Opening vrpn_3DConnexion_Navigator_for_Notebooks %s\n", s2);
-  }
-  _devices->add(new vrpn_3DConnexion_Navigator_for_Notebooks (s2, connection));
-
-  return 0;  // successful completion
-}
-
-int vrpn_Generic_Server_Object::setup_3DConnexion_Traveler (char * & pch, char * line, FILE * /*config_file*/)
-{
-  char s2 [LINESIZE];
-
-  VRPN_CONFIG_NEXT();
-  if (sscanf (pch, "%511s", s2) != 1) {
-    fprintf (stderr, "Bad 3DConnexion_Traveler line: %s\n", line);
-    return -1;
-  }
-
-  // Open the 3DConnexion_Traveler
-
-  // Open the button
-  if (verbose) {
-    printf ("Opening vrpn_3DConnexion_Traveler %s\n", s2);
-  }
-  _devices->add(new vrpn_3DConnexion_Traveler (s2, connection));
-
-  return 0;  // successful completion
-}
-
-int vrpn_Generic_Server_Object::setup_3DConnexion_SpaceMouse (char * & pch, char * line, FILE * /*config_file*/)
-{
-  char s2 [LINESIZE];
-
-  VRPN_CONFIG_NEXT();
-  if (sscanf (pch, "%511s", s2) != 1) {
-    fprintf (stderr, "Bad 3DConnexion_Traveler line: %s\n", line);
-    return -1;
-  }
-
-  // Open the 3DConnexion_Traveler
-
-  // Open the button
-  if (verbose) {
-    printf ("Opening vrpn_3DConnexion_SpaceMouse %s\n", s2);
-  }
-  _devices->add(new vrpn_3DConnexion_SpaceMouse (s2, connection));
-
-  return 0;  // successful completion
-}
-
-int vrpn_Generic_Server_Object::setup_3DConnexion_SpaceExplorer (char * & pch, char * line, FILE * /*config_file*/)
-{
-  char s2 [LINESIZE];
-
-  VRPN_CONFIG_NEXT();
-  if (sscanf (pch, "%511s", s2) != 1) {
-    fprintf (stderr, "Bad 3DConnexion_SpaceExplorer line: %s\n", line);
-    return -1;
-  }
-
-  // Open the 3DConnexion_Traveler
-
-  // Open the button
-  if (verbose) {
-    printf ("Opening vrpn_3DConnexion_SpaceExplorer %s\n", s2);
-  }
-  _devices->add(new vrpn_3DConnexion_SpaceExplorer (s2, connection));
-
-  return 0;  // successful completion
-}
-
-int vrpn_Generic_Server_Object::setup_3DConnexion_SpaceBall5000 (char * & pch, char * line, FILE * /*config_file*/)
-{
-  char s2 [LINESIZE];
-
-  VRPN_CONFIG_NEXT();
-  if (sscanf (pch, "%511s", s2) != 1) {
-    fprintf (stderr, "Bad 3DConnexion_SpaceBall5000 line: %s\n", line);
-    return -1;
-  }
-
-  // Open the 3DConnexion_SpaceBall5000
-
-  // Open the button
-  if (verbose) {
-    printf ("Opening vrpn_3DConnexion_SpaceBall5000 %s\n", s2);
-  }
-  _devices->add(new vrpn_3DConnexion_SpaceBall5000 (s2, connection));
-
-  return 0;  // successful completion
-}
-
 int vrpn_Generic_Server_Object::setup_SpacePoint (char * & pch, char * line, FILE * /*config_file*/)
 {
 
@@ -3904,32 +3778,6 @@ int vrpn_Generic_Server_Object::setup_Analog_5dtUSB_Glove14Right (char * &pch, c
 {
   VRPN_CONFIG_NEXT();
   return setup_Analog_5dtUSB<vrpn_Analog_5dtUSB_Glove14Right> ("Glove14Right", verbose, connection, _devices, pch, line);
-}
-
-int vrpn_Generic_Server_Object::setup_Tracker_RazerHydra (char * &pch, char * line, FILE * /*config_file*/)
-{
-  char s2 [LINESIZE];
-
-  VRPN_CONFIG_NEXT();
-  if (sscanf (pch, "%511s", s2) != 1) {
-    fprintf (stderr, "Bad RazerHydra line: %s\n", line);
-    return -1;
-  }
-
-#if defined(VRPN_USE_HID)
-
-  // Open the RazerHydra
-  if (verbose) {
-    printf ("Opening vrpn_Tracker_RazerHydra as device %s\n", s2);
-  }
-  _devices->add(new vrpn_Tracker_RazerHydra (s2, connection));
-
-  return 0;  // successful completion
-
-#else
-  fprintf (stderr, "vrpn_Tracker_RazerHydra requires HID support.\n");
-  return -1;
-#endif
 }
 
 int vrpn_Generic_Server_Object::setup_Tracker_FilterOneEuro (char * &pch, char * line, FILE * /*config_file*/)
@@ -4478,17 +4326,17 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object (vrpn_Connection *connect
       } else if (VRPN_ISIT ("vrpn_Xkeys_XK3")) {
         VRPN_CHECK (setup_Xkeys_XK3);
       } else if (VRPN_ISIT ("vrpn_3DConnexion_Navigator")) {
-        VRPN_CHECK (setup_3DConnexion_Navigator);
+        VRPN_CHECK (templated_setup_device_name_only<vrpn_3DConnexion_Navigator>);
       } else if (VRPN_ISIT ("vrpn_3DConnexion_Navigator_for_Notebooks")) {
-        VRPN_CHECK (setup_3DConnexion_Navigator_for_Notebooks);
+        VRPN_CHECK (templated_setup_device_name_only<vrpn_3DConnexion_Navigator_for_Notebooks>);
       } else if (VRPN_ISIT ("vrpn_3DConnexion_Traveler")) {
-        VRPN_CHECK (setup_3DConnexion_Traveler);
+        VRPN_CHECK (templated_setup_device_name_only<vrpn_3DConnexion_Traveler>);
       } else if (VRPN_ISIT ("vrpn_3DConnexion_SpaceExplorer")) {
-        VRPN_CHECK (setup_3DConnexion_SpaceExplorer);
+        VRPN_CHECK (templated_setup_device_name_only<vrpn_3DConnexion_SpaceExplorer>);
       } else if (VRPN_ISIT ("vrpn_3DConnexion_SpaceMouse")) {
-        VRPN_CHECK (setup_3DConnexion_SpaceMouse);
+        VRPN_CHECK (templated_setup_device_name_only<vrpn_3DConnexion_SpaceMouse>);
       } else if (VRPN_ISIT ("vrpn_3DConnexion_SpaceBall5000")) {
-        VRPN_CHECK (setup_3DConnexion_SpaceBall5000);
+        VRPN_CHECK (templated_setup_device_name_only<vrpn_3DConnexion_SpaceBall5000>);
       } else if (VRPN_ISIT ("vrpn_Tracker_MotionNode")) {
         VRPN_CHECK (setup_Tracker_MotionNode);
       } else if (VRPN_ISIT ("vrpn_Tracker_GPS")) {
@@ -4530,7 +4378,7 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object (vrpn_Connection *connect
       } else if (VRPN_ISIT ("vrpn_Tracker_FilterOneEuro")) {
         VRPN_CHECK (setup_Tracker_FilterOneEuro);
       } else if (VRPN_ISIT ("vrpn_Tracker_RazerHydra")) {
-        VRPN_CHECK (setup_Tracker_RazerHydra);
+        VRPN_CHECK (templated_setup_HID_device_name_only<vrpn_Tracker_RazerHydra>);
       } else if (VRPN_ISIT ("vrpn_Tracker_zSight")) {
         VRPN_CHECK (setup_Tracker_zSight);
       } else if (VRPN_ISIT ("vrpn_Tracker_ViewPoint")) {

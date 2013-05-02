@@ -109,12 +109,6 @@ class vrpn_Generic_Server_Object
     int setup_Xkeys_Joystick (char * & pch, char * line, FILE * /*config_file*/) ;
     int setup_Xkeys_Jog_And_Shuttle (char * & pch, char * line, FILE * /*config_file*/) ;
     int setup_Xkeys_XK3 (char * & pch, char * line, FILE * config_file) ;
-    int setup_3DConnexion_Navigator (char * & pch, char * line, FILE * /*config_file*/) ;
-    int setup_3DConnexion_Navigator_for_Notebooks (char * & pch, char * line, FILE * /*config_file*/) ;
-    int setup_3DConnexion_Traveler (char * & pch, char * line, FILE * /*config_file*/) ;
-    int setup_3DConnexion_SpaceMouse (char * & pch, char * line, FILE * /*config_file*/) ;
-    int setup_3DConnexion_SpaceExplorer (char * & pch, char * line, FILE * /*config_file*/) ;
-    int setup_3DConnexion_SpaceBall5000 (char * & pch, char * line, FILE * /*config_file*/) ;
     int setup_Tracker_MotionNode (char * & pch, char * line, FILE * /*config_file*/);
     int setup_Tracker_GPS (char * & pch, char * line, FILE * /*config_file*/);
     int setup_WiiMote (char * & pch, char * line, FILE * /*config_file*/);
@@ -131,7 +125,6 @@ class vrpn_Generic_Server_Object
     int setup_Analog_5dtUSB_Glove5Right (char * &pch, char * line, FILE * /*config_file*/);
     int setup_Analog_5dtUSB_Glove14Left (char * &pch, char * line, FILE * /*config_file*/);
     int setup_Analog_5dtUSB_Glove14Right (char * &pch, char * line, FILE * /*config_file*/);
-    int setup_Tracker_RazerHydra (char * &pch, char * line, FILE * /*config_file*/);
     int setup_Tracker_FilterOneEuro (char * &pch, char * line, FILE * /*config_file*/);
     int setup_Tracker_zSight (char * &pch, char * line, FILE * /*config_file*/);
     int setup_Tracker_ViewPoint (char * &pch, char * line, FILE * /*config_file*/);
