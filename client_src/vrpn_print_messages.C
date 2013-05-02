@@ -37,7 +37,7 @@ int	VRPN_CALLBACK msg_handler(void *, vrpn_HANDLERPARAM p)
 	// unknown.
 	if (sender_name == NULL) { sender_name = "UNKNOWN_SENDER"; }
 	if (type_name == NULL) { type_name = "UNKNOWN_TYPE"; }
-	printf("Time: %ld:%ld, Sender: %s, Type %s, Length %ld\n",
+	printf("Time: %ld:%ld, Sender: %s, Type %s, Length %d\n",
 		p.msg_time.tv_sec, p.msg_time.tv_usec,
 		sender_name,
 		type_name,
