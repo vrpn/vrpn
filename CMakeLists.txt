@@ -1,16 +1,9 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(VRPN)
 
-# Changes made by:
-# 2009-2010 Ryan Pavlik <rpavlik@iastate.edu>
-# http://academic.cleardefinition.com
-# Iowa State University HCI Graduate Program/VRAC
-
 #-----------------------------------------------------------------------------
 # XXX Things to make better.
 #
-# Make Quatlib and VRPN into packages as described by Cory (?)
-# Move DirectInput libraries out of vrpn_Configure.h and into the Cmake realm
 # Repeat for all other configurable headers/libraries - see below for a list
 # Move the shared-library code over to CMake's normal definition
 # Improve this CPack installer.
@@ -38,7 +31,7 @@ else()
 	set(TRUE_UNLESS_SUBPROJECT TRUE)
 endif()
 
-# Remove the following when it is fixed in the Android CMake.
+# TODO Remove the following when it is fixed in the Android CMake.
 if(BUILD_WITH_ANDROID_NDK)
 	set(CMAKE_CXX_FLAGS
 		"--sysroot=${ANDROID_NDK_SYSROOT} ${CMAKE_CXX_FLAGS}")
@@ -104,10 +97,15 @@ set(CPACK_SOURCE_PACKAGE_FILE_NAME
 # Compiler flags we got from Hans for Windows and from Sheldon Andrews
 # for other architectures.
 if(MSVC)	# MS-Windows Visual Studio, both 32 and 64 bits
-	if(MSVC_VERSION GREATER 1310) # Newer than VS.NET 2003 (7.1)
-		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}   /fp:fast")
+	if(MSVC_VERSION GREATER 1310) # This compiler flag needs newer than VS.NET 2003 (7.1)
+		# Choose fast, possibly less accurate floating point
+		# See http://msdn.microsoft.com/en-us/library/e7s85ffb(v=vs.80).aspx
+		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /fp:fast")
 		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /fp:fast")
 	endif()
+
+	# Do not assume fixed base address (probably for DLL integration?)
+	# http://msdn.microsoft.com/en-us/library/w368ysh2(v=vs.80).aspx
 	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /FIXED:NO")
 else()
 	# GCC compilers on 64-bit machines require -fPIC for shared libraries or libs
