@@ -752,9 +752,6 @@ option(VRPN_USE_TRIVISIOCOLIBRI
 	"Build with support for TrivisioColibri tracker"
 	OFF)
 if(WIN32)
-	option(VRPN_USE_DIRECTINPUT
-		"Build with Microsoft DirectInput support"
-		OFF)
 	option(VRPN_USE_SHARED_LIBRARY
 		"Enable to use DLLs on Windows (see vrpn_Configure.h for more info)"
 		OFF)
@@ -974,7 +971,7 @@ set(VRPN_SERVER_SOURCES
 	vrpn_Zaber.C
 	server_src/vrpn_Generic_server_object.C
 	${HIDAPI_SOURCES}
-        ${PDI_SOURCES})
+	${PDI_SOURCES})
 
 set(VRPN_SERVER_PUBLIC_HEADERS
 	${VRPN_CLIENT_PUBLIC_HEADERS}
