@@ -40,9 +40,13 @@ void VRPN_CALLBACK vrpn_Tracker_FilterOneEuro::handle_tracker_update(void *userd
   // time so we get the right one next time.
   double dt = duration_seconds(info.msg_time, me->d_last_report_times[info.sensor]);
   if (dt <= 0) { dt = 1; }  // Avoid divide-by-zero in case of fluke.
-  const vrpn_float64 *filtered = me->d_filters[info.sensor].filter(dt, info.pos);
+  vrpn_float64 pos[3];
+  vrpn_float64 quat[4];
+  memcpy(pos, info.pos, sizeof(pos));
+  memcpy(quat, info.quat, sizeof(quat));
+  const vrpn_float64 *filtered = me->d_filters[info.sensor].filter(dt, pos);
   q_vec_copy(me->pos, filtered);
-  const double *q_filtered = me->d_qfilters[info.sensor].filter(dt, info.quat);
+  const double *q_filtered = me->d_qfilters[info.sensor].filter(dt, quat);
   q_normalize(me->d_quat, q_filtered);
   me->timestamp = info.msg_time;
   me->d_sensor = info.sensor;
