@@ -10,8 +10,7 @@
 	Russ Taylor
 */
 
-#ifndef INCLUDED_vrpn_Tracker_Filter_h_GUID_94951AE2_CE90_47A6_9970_2B0788FDA28C
-#define INCLUDED_vrpn_Tracker_Filter_h_GUID_94951AE2_CE90_47A6_9970_2B0788FDA28C
+#pragma once
 
 // Internal Includes
 #include "quat.h"                       // for q_vec_type
@@ -59,5 +58,3 @@ class VRPN_API vrpn_Tracker_FilterOneEuro: public vrpn_Tracker {
     static void VRPN_CALLBACK handle_tracker_update(void *userdata, const vrpn_TRACKERCB info);
 };
 
-
-#endif // INCLUDED_vrpn_Tracker_Filter_h_GUID_94951AE2_CE90_47A6_9970_2B0788FDA28C
