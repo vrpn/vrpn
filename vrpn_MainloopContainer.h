@@ -21,9 +21,7 @@
 // library files in the VRPN headers because that will make VRPN incompatible
 // with libraries that use the other flavor of <vector.h>.
 
-
-#ifndef INCLUDED_vrpn_MainloopContainer_h_GUID_2146c66c_1925_4ac3_a192_354d10d7a39f
-#define INCLUDED_vrpn_MainloopContainer_h_GUID_2146c66c_1925_4ac3_a192_354d10d7a39f
+#pragma once
 
 // Internal Includes
 #include "vrpn_MainloopObject.h"
@@ -98,4 +96,3 @@ inline void vrpn_MainloopContainer::mainloop() {
 	}
 }
 
-#endif // INCLUDED_vrpn_MainloopContainer_h_GUID_2146c66c_1925_4ac3_a192_354d10d7a39f

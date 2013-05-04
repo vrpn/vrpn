@@ -16,10 +16,7 @@
 //     (See accompanying file LICENSE_1_0.txt or copy at
 //           http://www.boost.org/LICENSE_1_0.txt)
 
-
-#ifndef INCLUDED_vrpn_OneEuroFilter_h_GUID_C56A0525_3809_44B7_AA16_98711638E762
-#define INCLUDED_vrpn_OneEuroFilter_h_GUID_C56A0525_3809_44B7_AA16_98711638E762
-
+#pragma once
 
 // Internal Includes
 #include <quat.h>
@@ -243,5 +240,4 @@ class vrpn_QuatFilterable {
 
 typedef vrpn_OneEuroFilter<vrpn_QuatFilterable> vrpn_OneEuroFilterQuat;
 
-#endif // INCLUDED_vrpn_OneEuroFilter_h_GUID_C56A0525_3809_44B7_AA16_98711638E762
 
