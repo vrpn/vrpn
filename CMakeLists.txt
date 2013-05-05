@@ -860,7 +860,6 @@ set(VRPN_CLIENT_PUBLIC_HEADERS
 	vrpn_Analog_Output.h
 	vrpn_Auxiliary_Logger.h
 	vrpn_BaseClass.h
-	vrpn_BufferUtils.h
 	vrpn_Button.h
 	vrpn_Connection.h
 	vrpn_Dial.h

@@ -2311,10 +2311,6 @@
 				>
 			</File>
 			<File
-				RelativePath="vrpn_BufferUtils.h"
-				>
-			</File>
-			<File
 				RelativePath="vrpn_Button.h"
 				>
 			</File>
