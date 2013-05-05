@@ -146,6 +146,9 @@ class VRPN_API vrpn_BaseClassUnique {
 	vrpn_BaseClassUnique();
 	virtual ~vrpn_BaseClassUnique();
 
+	/// Returns a pointer to the connection this object is using
+        vrpn_Connection *connectionPtr() {return d_connection;};
+
 	bool shutup;	// if True, don't print the "No response from server" messages.
 
 	friend class SendTextMessageBoundCall;
@@ -260,9 +263,6 @@ class VRPN_API vrpn_BaseClass : virtual public vrpn_BaseClassUnique {
         /// call server_mainloop(), but should not normally call
         /// d_connection->mainloop().
 	virtual void mainloop () = 0;
-
-	/// Returns a pointer to the connection this object is using
-        virtual	vrpn_Connection *connectionPtr() {return d_connection;};
 
   protected:
 
