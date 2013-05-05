@@ -11,7 +11,6 @@
 
 #include "quat.h"                       // for Q_W, Q_X, Q_Y, Q_Z
 #include "vrpn_BaseClass.h"             // for ::vrpn_TEXT_WARNING, etc
-#include "vrpn_BufferUtils.h"
 #include "vrpn_Connection.h"            // for vrpn_Connection
 #include "vrpn_Shared.h"                // for vrpn_SleepMsecs, timeval, etc
 #include "vrpn_Tracker.h"               // for vrpn_TRACKER_FAIL, etc

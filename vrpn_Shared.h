@@ -1,5 +1,4 @@
-#ifndef VRPN_SHARED_H
-#define VRPN_SHARED_H
+#pragma once
 
 // Horrible hack for old HPUX compiler
 #ifdef	hpux
@@ -12,6 +11,10 @@
 
 #include "vrpn_Configure.h"             // for VRPN_API
 #include "vrpn_Types.h"                 // for vrpn_int32, vrpn_float64, etc
+
+#if defined (__ANDROID__)
+#include <bitset>
+#endif
 
 // IWYU pragma: no_include <bits/time.h>
 
@@ -162,26 +165,6 @@ extern VRPN_API	void vrpn_SleepMsecs( double dMsecs );
 extern VRPN_API	vrpn_float64 htond( vrpn_float64 d );
 extern VRPN_API	vrpn_float64 ntohd( vrpn_float64 d );
 
-extern VRPN_API	int vrpn_buffer (char ** insertPt, vrpn_int32 * buflen, const vrpn_int8 value);
-extern VRPN_API	int vrpn_buffer (char ** insertPt, vrpn_int32 * buflen, const vrpn_int16 value);
-extern VRPN_API	int vrpn_buffer (char ** insertPt, vrpn_int32 * buflen, const vrpn_uint16 value);
-extern VRPN_API	int vrpn_buffer (char ** insertPt, vrpn_int32 * buflen, const vrpn_int32 value);
-extern VRPN_API	int vrpn_buffer (char ** insertPt, vrpn_int32 * buflen, const vrpn_uint32 value);
-extern VRPN_API	int vrpn_buffer (char ** insertPt, vrpn_int32 * buflen, const vrpn_float32 value);
-extern VRPN_API	int vrpn_buffer (char ** insertPt, vrpn_int32 * buflen, const vrpn_float64 value);
-extern VRPN_API	int vrpn_buffer (char ** insertPt, vrpn_int32 * buflen, const timeval t);
-extern VRPN_API	int vrpn_buffer (char ** insertPt, vrpn_int32 * buflen, const char * string, vrpn_int32 length);
-
-extern VRPN_API	int vrpn_unbuffer (const char ** buffer, vrpn_int8 * cval);
-extern VRPN_API	int vrpn_unbuffer (const char ** buffer, vrpn_int16 * lval);
-extern VRPN_API	int vrpn_unbuffer (const char ** buffer, vrpn_uint16 * lval);
-extern VRPN_API	int vrpn_unbuffer (const char ** buffer, vrpn_int32 * lval);
-extern VRPN_API	int vrpn_unbuffer (const char ** buffer, vrpn_uint32 * lval);
-extern VRPN_API	int vrpn_unbuffer (const char ** buffer, vrpn_float32 * fval);
-extern VRPN_API	int vrpn_unbuffer (const char ** buffer, vrpn_float64 * dval);
-extern VRPN_API	int vrpn_unbuffer (const char ** buffer, timeval * t);
-extern VRPN_API	int vrpn_unbuffer (const char ** buffer, char * string, vrpn_int32 length);
-
 // From this we get the variable "vrpn_big_endian" set to true if the machine we are
 // on is big endian and to false if it is little endian.  This can be used by
 // custom packing and unpacking code to bypass the buffer and unbuffer routines
@@ -191,6 +174,252 @@ extern VRPN_API	int vrpn_unbuffer (const char ** buffer, char * string, vrpn_int
 static	const   int     vrpn_int_data_for_endian_test = 1;
 static	const   char    *vrpn_char_data_for_endian_test = (char *)(void *)(&vrpn_int_data_for_endian_test);
 static	const   bool    vrpn_big_endian = (vrpn_char_data_for_endian_test[0] != 1);
+
+// Read and write strings (not single items).
+extern VRPN_API	int vrpn_buffer (char ** insertPt, vrpn_int32 * buflen, const char * string, vrpn_int32 length);
+extern VRPN_API	int vrpn_unbuffer (const char ** buffer, char * string, vrpn_int32 length);
+
+// Read and write timeval.
+extern VRPN_API int vrpn_unbuffer (const char ** buffer, timeval * t);
+extern VRPN_API int vrpn_buffer (char ** insertPt, vrpn_int32 * buflen, const timeval t);
+
+// To read and write the atomic types defined in vrpn_Types, you use the templated
+// buffer and unbuffer routines below.  These have the same form as the ones for
+// timeval, but they use types vrpn_int, vrpn_uint, vrpn_int16, vrpn_uint16,
+// vrpn_int32, vrpn_uint32, vrpn_float32, and vrpn_float64.
+
+/**
+	@brief Internal header providing unbuffering facilities for a number of types.
+
+	@date 2011
+
+	@author
+	Ryan Pavlik
+	<rpavlik@iastate.edu> and <abiryan@ryand.net>
+	http://academic.cleardefinition.com/
+	Iowa State University Virtual Reality Applications Center
+	Human-Computer Interaction Graduate Program
+*/
+
+//          Copyright Iowa State University 2011.
+// Distributed under the Boost Software License, Version 1.0.
+//    (See accompanying file LICENSE_1_0.txt or copy at
+//          http://www.boost.org/LICENSE_1_0.txt)
+
+// Tested in the context of vrpn_server and vrpn_print_devices running between
+// an SGI running Irix 6.5 MIPS 32-bit (big endian) and Mac OSX intel 64-bit
+// (little endian) machine with a NULL tracker and it worked using the SGI
+// repaired commits from 3/17/2012.
+
+/// @brief Contains overloaded hton() and ntoh() functions that forward
+/// to their correctly-typed implementations.
+namespace vrpn_byte_order {
+	namespace vrpn_detail {
+		/// Traits class to get the uint type of a given size
+		template<int TypeSize>
+		struct uint_traits;
+
+		template<> struct uint_traits<1> {
+			typedef vrpn_uint8 type;
+		};
+		template<> struct uint_traits<2> {
+			typedef vrpn_uint16 type;
+		};
+		template<> struct uint_traits<4> {
+			typedef vrpn_uint32 type;
+		};
+	} // end of namespace vrpn_detail
+
+	/// host to network byte order for 8-bit uints is a no-op
+	inline vrpn_uint8 hton(vrpn_uint8 hostval) {
+		return hostval;
+	}
+
+	/// network to host byte order for 8-bit uints is a no-op
+	inline vrpn_uint8 ntoh(vrpn_uint8 netval) {
+		return netval;
+	}
+
+	/// host to network byte order for 16-bit uints
+	inline vrpn_uint16 hton(vrpn_uint16 hostval) {
+		return htons(hostval);
+	}
+
+	/// network to host byte order for 16-bit uints
+	inline vrpn_uint16 ntoh(vrpn_uint16 netval) {
+		return ntohs(netval);
+	}
+
+	/// host to network byte order for 32-bit uints
+	inline vrpn_uint32 hton(vrpn_uint32 hostval) {
+		return htonl(hostval);
+	}
+
+	/// network to host byte order for 32-bit uints
+	inline vrpn_uint32 ntoh(vrpn_uint32 netval) {
+		return ntohl(netval);
+	}
+
+	/// host to network byte order for 64-bit floats, using vrpn htond
+	inline vrpn_float64 hton(vrpn_float64 hostval) {
+		return htond(hostval);
+	}
+
+	/// network to host byte order for 64-bit floats, using vrpn ntohd
+	inline vrpn_float64 ntoh(vrpn_float64 netval) {
+		return ntohd(netval);
+	}
+
+	/// Templated hton that type-puns to the same-sized uint type
+	/// as a fallback for those types not explicitly defined above.
+	template<typename T>
+	inline T hton(T input) {
+		union {
+			T asInput;
+			typename vrpn_detail::uint_traits<sizeof(T)>::type asInt;
+		} inVal, outVal;
+		inVal.asInput = input;
+		outVal.asInt = hton(inVal.asInt);
+		return outVal.asInput;
+	}
+
+	/// Templated ntoh that type-puns to the same-sized uint type
+	/// as a fallback for those types not explicitly defined above.
+	template<typename T>
+	inline T ntoh(T input) {
+		union {
+			T asInput;
+			typename vrpn_detail::uint_traits<sizeof(T)>::type asInt;
+		} inVal, outVal;
+		inVal.asInput = input;
+		outVal.asInt = ntoh(inVal.asInt);
+		return outVal.asInput;
+	}
+} // end of namespace vrpn_byte_order
+
+namespace vrpn_detail {
+	template<typename T>
+	struct remove_const {
+		typedef T type;
+	};
+
+	template<typename T>
+	struct remove_const<const T> {
+		typedef T type;
+	};
+} // end of namespace vrpn_detail
+
+/// Function template to unbuffer values from a buffer stored in little-
+/// endian byte order. Specify the type to extract T as a template parameter.
+/// The templated buffer type ByteT will be deduced automatically.
+/// The input pointer will be advanced past the unbuffered value.
+template<typename T, typename ByteT>
+static inline T vrpn_unbuffer_from_little_endian(ByteT * & input) {
+	using namespace vrpn_byte_order;
+
+	/// @todo make this a static assertion
+	if (sizeof(ByteT) != 1) {
+		fprintf(stderr,"vrpn_unbuffer_from_little_endian:ByteT size != 1\n");
+		return 0;
+	}
+
+	/// Union to allow type-punning
+	union {
+		typename ::vrpn_detail::remove_const<ByteT>::type bytes[sizeof(T)];
+		T typed;
+	} value;
+
+	/// Swap known little-endian into big-endian (aka network byte order)
+	for (unsigned int i = 0, j = sizeof(T) - 1; i < sizeof(T); ++i, --j) {
+		value.bytes[i] = input[j];
+	}
+
+	/// Advance input pointer
+	input += sizeof(T);
+
+	/// return value in host byte order
+	return ntoh(value.typed);
+}
+
+/// Function template to unbuffer values from a buffer stored in network
+/// byte order. Specify the type to extract T as a template parameter.
+/// The templated buffer type ByteT will be deduced automatically.
+/// The input pointer will be advanced past the unbuffered value.
+template<typename T, typename ByteT>
+inline T vrpn_unbuffer(ByteT * & input) {
+	using namespace vrpn_byte_order;
+
+	/// @todo make this a static assertion
+	if (sizeof(ByteT) != 1) {
+		fprintf(stderr,"vrpn_unbuffer:ByteT size != 1\n");
+		return 0;
+	}
+
+	/// Union to allow type-punning and ensure alignment
+	union {
+		typename ::vrpn_detail::remove_const<ByteT>::type bytes[sizeof(T)];
+		T typed;
+	} value;
+
+	/// Copy bytes into union
+	memcpy(value.bytes, input, sizeof(T));
+
+	/// Advance input pointer
+	input += sizeof(T);
+
+	/// return value in host byte order
+	return ntoh(value.typed);
+}
+
+/// Function template to buffer values to a buffer stored in network
+/// byte order. Specify the type to buffer T as a template parameter.
+/// The templated buffer type ByteT will be deduced automatically.
+/// The input pointer will be advanced past the unbuffered value.
+template<typename T, typename ByteT>
+inline int vrpn_buffer(ByteT ** insertPt, vrpn_int32 * buflen, const T inVal) {
+	using namespace vrpn_byte_order;
+
+	/// @todo make this a static assertion
+	if (sizeof(ByteT) != 1) {
+		fprintf(stderr,"vrpn_buffer: ByteT size != 1\n");
+		return -1;
+	}
+
+	if ( (insertPt == NULL) || (buflen == NULL) ) {
+		fprintf(stderr, "vrpn_buffer: NULL pointer\n");
+		return -1;
+	}
+
+	if (sizeof(T) > static_cast<size_t>(*buflen)) {
+		fprintf(stderr, "vrpn_buffer: buffer not large enough\n");
+		return -1;
+	}
+
+	/// Union to allow type-punning and ensure alignment
+	union {
+		typename ::vrpn_detail::remove_const<ByteT>::type bytes[sizeof(T)];
+		T typed;
+	} value;
+
+	/// Populate union in network byte order
+	value.typed = hton(inVal);
+
+	/// Copy bytes into buffer
+	memcpy(*insertPt, value.bytes, sizeof(T));
+
+	/// Advance insert pointer
+	*insertPt += sizeof(T);
+	/// Decrement buffer length
+	*buflen -= sizeof(T);
+
+	return 0;
+}
+
+template<typename T, typename ByteT>
+inline int vrpn_unbuffer(ByteT ** input, T * lvalue) {
+	*lvalue = ::vrpn_unbuffer<T, ByteT>(*input);
+	return 0;
+}
 
 // Semaphore and Thread classes derived from Hans Weber's classes from UNC.
 // Don't let the existence of a Thread class fool you into thinking
@@ -352,5 +581,3 @@ protected:
 
 // Returns true if they work and false if they do not.
 extern bool vrpn_test_threads_and_semaphores(void);
-
-#endif  // VRPN_SHARED_H

@@ -21,7 +21,6 @@
 #include "vrpn_Tracker_RazerHydra.h"
 
 #ifdef VRPN_USE_HID
-#include "vrpn_BufferUtils.h"
 #include "vrpn_HumanInterface.h"        // for vrpn_HidInterface, etc
 #include "vrpn_SendTextMessageStreamProxy.h"  // for operator<<, etc
 

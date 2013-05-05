@@ -11,7 +11,6 @@
 
 #include "quat.h"
 #include "vrpn_Tracker_Wintracker.h"
-#include "vrpn_BufferUtils.h"
 
 //using namespace std;
 

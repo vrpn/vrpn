@@ -8,7 +8,6 @@
 #include <stdio.h>                      // for fprintf, stderr
 #include <string.h>                     // for memset
 
-#include "vrpn_BufferUtils.h"
 #include "vrpn_Connection.h"            // for vrpn_CONNECTION_LOW_LATENCY, etc
 #include "vrpn_Tracker_SpacePoint.h"
 

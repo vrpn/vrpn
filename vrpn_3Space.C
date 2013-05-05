@@ -5,7 +5,6 @@
 #include "quat.h"                       // for Q_W, Q_X, Q_Y, Q_Z
 #include "vrpn_3Space.h"
 #include "vrpn_BaseClass.h"             // for ::vrpn_TEXT_ERROR, etc
-#include "vrpn_BufferUtils.h"
 #include "vrpn_Serial.h"                // for vrpn_write_characters, etc
 #include "vrpn_Shared.h"                // for vrpn_SleepMsecs, etc
 #include "vrpn_Tracker.h"               // for vrpn_TRACKER_FAIL, etc

@@ -18,8 +18,6 @@
 #include <netinet/in.h>                 // for ntohl
 #endif
 
-#include "vrpn_BufferUtils.h"           // for vrpn_unbuffer
-
 // Global variable used to indicate whether File Connections should
 // pre-load all of their records into memory when opened.  This is the
 // default behavior, but fails on very large files that eat up all

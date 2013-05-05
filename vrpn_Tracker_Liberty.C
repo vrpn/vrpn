@@ -11,7 +11,6 @@
 
 #include "quat.h"                       // for Q_W, Q_X, Q_Y, Q_Z
 #include "vrpn_BaseClass.h"             // for ::vrpn_TEXT_ERROR, etc
-#include "vrpn_BufferUtils.h"
 #include "vrpn_Button.h"                // for vrpn_Button_Server
 #include "vrpn_Connection.h"            // for vrpn_Connection
 #include "vrpn_Serial.h"                // for vrpn_write_characters, etc

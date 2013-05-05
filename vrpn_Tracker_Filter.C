@@ -1,7 +1,6 @@
 // Internal Includes
 #include "vrpn_Tracker_Filter.h"
 
-#include "vrpn_BufferUtils.h"
 #include "vrpn_HumanInterface.h"        // for vrpn_HidInterface, etc
 #include "vrpn_OneEuroFilter.h"         // for OneEuroFilterQuat, etc
 #include "vrpn_SendTextMessageStreamProxy.h"  // for operator<<, etc

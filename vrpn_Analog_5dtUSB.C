@@ -18,10 +18,8 @@
 
 #include "vrpn_Analog_5dtUSB.h"
 #include "vrpn_BaseClass.h"             // for ::vrpn_TEXT_NORMAL, etc
-#include "vrpn_BufferUtils.h"           // for vrpn_unbuffer
 
 #if defined(VRPN_USE_HID)
-
 
 // USB vendor and product IDs for the models we support
 static const vrpn_uint16 vrpn_5DT_VENDOR = 0x5d70;

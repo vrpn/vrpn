@@ -1,7 +1,7 @@
 #include <math.h>                       // for floor, fmod
 #include <stddef.h>                     // for size_t
+#include <stdio.h>                      // for fprintf() and such
 
-#include "vrpn_BufferUtils.h"           // for vrpn_unbuffer, vrpn_buffer
 #include "vrpn_Shared.h"
 
 // Don't tell us about strcpy being dangerous.
@@ -222,134 +222,6 @@ vrpn_float64 ntohd (vrpn_float64 d)
     return htond(d);
 }
 
-/** Utility routine for placing a vrpn_int16 into a buffer that
-    is to be sent as a message. Handles packing into an unaligned
-    buffer (though this should not be done). Advances the insertPt
-    pointer to just after newly-inserted value. Decreases the buflen
-    (space remaining) by the length of the value. Returns zero on
-    success and -1 on failure.
-
-    Part of a family of routines that buffer different VRPN types
-    based on their type (vrpn_buffer is overloaded based on the third
-    parameter type). These routines handle byte-swapping to the
-    VRPN standard wire protocol.
-*/
-
-int vrpn_buffer (char ** insertPt, vrpn_int32 * buflen, const vrpn_int16 value)
-{
-    return templated_buffer::vrpn_buffer(insertPt, buflen, value);
-}
-
-/** Utility routine for placing a vrpn_uint16 into a buffer that
-    is to be sent as a message. Handles packing into an unaligned
-    buffer (though this should not be done). Advances the insertPt
-    pointer to just after newly-inserted value. Decreases the buflen
-    (space remaining) by the length of the value. Returns zero on
-    success and -1 on failure.
-
-    Part of a family of routines that buffer different VRPN types
-    based on their type (vrpn_buffer is overloaded based on the third
-    parameter type). These routines handle byte-swapping to the
-    VRPN standard wire protocol.
-*/
-
-int vrpn_buffer (char ** insertPt, vrpn_int32 * buflen, const vrpn_uint16 value)
-{
-    return templated_buffer::vrpn_buffer(insertPt, buflen, value);
-}
-
-/** Utility routine for placing a vrpn_int32 into a buffer that
-    is to be sent as a message. Handles packing into an unaligned
-    buffer (though this should not be done). Advances the insertPt
-    pointer to just after newly-inserted value. Decreases the buflen
-    (space remaining) by the length of the value. Returns zero on
-    success and -1 on failure.
-
-    Part of a family of routines that buffer different VRPN types
-    based on their type (vrpn_buffer is overloaded based on the third
-    parameter type). These routines handle byte-swapping to the
-    VRPN standard wire protocol.
-*/
-
-int vrpn_buffer (char ** insertPt, vrpn_int32 * buflen, const vrpn_int32 value)
-{
-    return templated_buffer::vrpn_buffer(insertPt, buflen, value);
-}
-
-/** Utility routine for placing a vrpn_uint32 into a buffer that
-    is to be sent as a message. Handles packing into an unaligned
-    buffer (though this should not be done). Advances the insertPt
-    pointer to just after newly-inserted value. Decreases the buflen
-    (space remaining) by the length of the value. Returns zero on
-    success and -1 on failure.
-
-    Part of a family of routines that buffer different VRPN types
-    based on their type (vrpn_buffer is overloaded based on the third
-    parameter type). These routines handle byte-swapping to the
-    VRPN standard wire protocol.
-*/
-
-int vrpn_buffer(char ** insertPt, vrpn_int32 * buflen, const vrpn_uint32 value)
-{
-    return templated_buffer::vrpn_buffer(insertPt, buflen, value);
-}
-
-/** Utility routine for placing a character into a buffer that
-    is to be sent as a message. Handles packing into an unaligned
-    buffer (though this should not be done). Advances the insertPt
-    pointer to just after newly-inserted value. Decreases the buflen
-    (space remaining) by the length of the value. Returns zero on
-    success and -1 on failure.
-
-    Part of a family of routines that buffer different VRPN types
-    based on their type (vrpn_buffer is overloaded based on the third
-    parameter type). These routines handle byte-swapping to the
-    VRPN standard wire protocol.
-*/
-
-int vrpn_buffer (char ** insertPt, vrpn_int32 * buflen, const char value)
-{
-    return templated_buffer::vrpn_buffer(insertPt, buflen, value);
-}
-
-/** Utility routine for placing a vrpn_float32 into a buffer that
-    is to be sent as a message. Handles packing into an unaligned
-    buffer (though this should not be done). Advances the insertPt
-    pointer to just after newly-inserted value. Decreases the buflen
-    (space remaining) by the length of the value. Returns zero on
-    success and -1 on failure.
-
-    Part of a family of routines that buffer different VRPN types
-    based on their type (vrpn_buffer is overloaded based on the third
-    parameter type). These routines handle byte-swapping to the
-    VRPN standard wire protocol.
-*/
-
-int vrpn_buffer (char ** insertPt, vrpn_int32 * buflen,
-                  const vrpn_float32 value)
-{
-    return templated_buffer::vrpn_buffer(insertPt, buflen, value);
-}
-
-/** Utility routine for placing a vrpn_float64 into a buffer that
-    is to be sent as a message. Handles packing into an unaligned
-    buffer (though this should not be done). Advances the insertPt
-    pointer to just after newly-inserted value. Decreases the buflen
-    (space remaining) by the length of the value. Returns zero on
-    success and -1 on failure.
-
-    Part of a family of routines that buffer different VRPN types
-    based on their type (vrpn_buffer is overloaded based on the third
-    parameter type). These routines handle byte-swapping to the
-    VRPN standard wire protocol.
-*/
-
-int vrpn_buffer (char ** insertPt, vrpn_int32 * buflen,
-                  const vrpn_float64 value)
-{
-    return templated_buffer::vrpn_buffer(insertPt, buflen, value);
-}
-
 /** Utility routine for placing a timeval struct into a buffer that
     is to be sent as a message. Handles packing into an unaligned
     buffer (though this should not be done). Advances the insertPt
@@ -363,7 +235,7 @@ int vrpn_buffer (char ** insertPt, vrpn_int32 * buflen,
     VRPN standard wire protocol.
 */
 
-int vrpn_buffer (char ** insertPt, vrpn_int32 * buflen, const timeval t)
+VRPN_API int vrpn_buffer (char ** insertPt, vrpn_int32 * buflen, const timeval t)
 {
     vrpn_int32 sec, usec;
 
@@ -393,7 +265,7 @@ int vrpn_buffer (char ** insertPt, vrpn_int32 * buflen, const timeval t)
     be NULL-terminated and will be copied using the string-copy routines.
 */
 
-int vrpn_buffer (char ** insertPt, vrpn_int32 * buflen,
+VRPN_API int vrpn_buffer (char ** insertPt, vrpn_int32 * buflen,
                   const char * string, vrpn_int32 length)
 {
     if (length > *buflen) {
@@ -420,133 +292,6 @@ int vrpn_buffer (char ** insertPt, vrpn_int32 * buflen,
 }
 
 
-/** Utility routine for taking a character from a buffer that
-    was sent as a message. Handles unpacking from an
-    unaligned buffer, because people did this anyway. Advances the reading
-    pointer to just after newly-read value. Assumes that the
-    buffer holds a complete value. Returns zero on success and -1 on failure.
-
-    Part of a family of routines that unbuffer different VRPN types
-    based on their type (vrpn_buffer is overloaded based on the third
-    parameter type). These routines handle byte-swapping to and from
-    the VRPN defined wire protocol.
-*/
-
-int vrpn_unbuffer (const char ** buffer, char * cval) {
-  *cval = vrpn_unbuffer<char>(*buffer);
-  return 0;
-}
-
-/** Utility routine for taking a vrpn_int16 from a buffer that
-    was sent as a message. Handles unpacking from an
-    unaligned buffer, because people did this anyway. Advances the reading
-    pointer to just after newly-read value. Assumes that the
-    buffer holds a complete value. Returns zero on success and -1 on failure.
-
-    Part of a family of routines that unbuffer different VRPN types
-    based on their type (vrpn_buffer is overloaded based on the third
-    parameter type). These routines handle byte-swapping to and from
-    the VRPN defined wire protocol.
-*/
-
-int vrpn_unbuffer (const char ** buffer, vrpn_int16 * lval)
-{
-    *lval = vrpn_unbuffer<vrpn_int16>(*buffer);
-    return 0;
-}
-
-/** Utility routine for taking a vrpn_uint16 from a buffer that
-    was sent as a message. Handles unpacking from an
-    unaligned buffer, because people did this anyway. Advances the reading
-    pointer to just after newly-read value. Assumes that the
-    buffer holds a complete value. Returns zero on success and -1 on failure.
-
-    Part of a family of routines that unbuffer different VRPN types
-    based on their type (vrpn_buffer is overloaded based on the third
-    parameter type). These routines handle byte-swapping to and from
-    the VRPN defined wire protocol.
-*/
-
-int vrpn_unbuffer (const char ** buffer, vrpn_uint16 * lval)
-{
-    *lval = vrpn_unbuffer<vrpn_uint16>(*buffer);
-    return 0;
-}
-
-/** Utility routine for taking a vrpn_int32 from a buffer that
-    was sent as a message. Handles unpacking from an
-    unaligned buffer, because people did this anyway. Advances the reading
-    pointer to just after newly-read value. Assumes that the
-    buffer holds a complete value. Returns zero on success and -1 on failure.
-
-    Part of a family of routines that unbuffer different VRPN types
-    based on their type (vrpn_buffer is overloaded based on the third
-    parameter type). These routines handle byte-swapping to and from
-    the VRPN defined wire protocol.
-*/
-
-int vrpn_unbuffer (const char ** buffer, vrpn_int32 * lval)
-{
-    *lval = vrpn_unbuffer<vrpn_int32>(*buffer);
-    return 0;
-}
-
-/** Utility routine for taking a vrpn_uint32 from a buffer that
-    was sent as a message. Handles unpacking from an
-    unaligned buffer, because people did this anyway. Advances the reading
-    pointer to just after newly-read value. Assumes that the
-    buffer holds a complete value. Returns zero on success and -1 on failure.
-
-    Part of a family of routines that unbuffer different VRPN types
-    based on their type (vrpn_buffer is overloaded based on the third
-    parameter type). These routines handle byte-swapping to and from
-    the VRPN defined wire protocol.
-*/
-
-int vrpn_unbuffer (const char ** buffer, vrpn_uint32 * lval)
-{
-    *lval = vrpn_unbuffer<vrpn_uint32>(*buffer);
-    return 0;
-}
-
-/** Utility routine for taking a vrpn_float32 from a buffer that
-    was sent as a message. Handles unpacking from an
-    unaligned buffer, because people did this anyway. Advances the reading
-    pointer to just after newly-read value. Assumes that the
-    buffer holds a complete value. Returns zero on success and -1 on failure.
-
-    Part of a family of routines that unbuffer different VRPN types
-    based on their type (vrpn_buffer is overloaded based on the third
-    parameter type). These routines handle byte-swapping to and from
-    the VRPN defined wire protocol.
-*/
-
-int vrpn_unbuffer (const char ** buffer, vrpn_float32 * fval)
-{
-    *fval = vrpn_unbuffer<vrpn_float32>(*buffer);
-    return 0;
-}
-
-/** Utility routine for taking a vrpn_float64 from a buffer that
-    was sent as a message. Handles unpacking from an
-    unaligned buffer, because people did this anyway. Advances the reading
-    pointer to just after newly-read value. Assumes that the
-    buffer holds a complete value. Returns zero on success and -1 on failure.
-
-    Part of a family of routines that unbuffer different VRPN types
-    based on their type (vrpn_buffer is overloaded based on the third
-    parameter type). These routines handle byte-swapping to and from
-    the VRPN defined wire protocol.
-*/
-#if defined (__ANDROID__)
-#include <bitset>
-#endif
-int vrpn_unbuffer (const char ** buffer, vrpn_float64 * dval)
-{
-    *dval = vrpn_unbuffer<vrpn_float64>(*buffer);
-    return 0;
-}
-
 /** Utility routine for taking a struct timeval from a buffer that
     was sent as a message. Handles unpacking from an
     unaligned buffer, because people did this anyway. Advances the reading
@@ -559,7 +304,7 @@ int vrpn_unbuffer (const char ** buffer, vrpn_float64 * dval)
     the VRPN defined wire protocol.
 */
 
-int vrpn_unbuffer (const char ** buffer, timeval * t)
+VRPN_API int vrpn_unbuffer (const char ** buffer, timeval * t)
 {
     vrpn_int32 sec, usec;
 
@@ -592,8 +337,7 @@ int vrpn_unbuffer (const char ** buffer, timeval * t)
     for any later arguments in the message.
 */
 
-int vrpn_unbuffer (const char ** buffer, char * string,
-                    vrpn_int32 length)
+VRPN_API int vrpn_unbuffer (const char ** buffer, char * string, vrpn_int32 length)
 {
     if (!string) return -1;
 

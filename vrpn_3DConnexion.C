@@ -4,7 +4,6 @@
 
 #include "vrpn_3DConnexion.h"
 #include "vrpn_BaseClass.h"             // for ::vrpn_TEXT_WARNING
-#include "vrpn_BufferUtils.h"
 
 // There is a non-HID Linux-based driver for this device that has a capability
 // not implemented in the HID interface.  It uses the input.h interface.
