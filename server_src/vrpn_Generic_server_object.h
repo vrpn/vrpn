@@ -96,7 +96,6 @@ class vrpn_Generic_Server_Object
     int setup_3DMicroscribe (char * & pch, char * line, FILE * /*config_file*/);
     int setup_5dt16 (char * & pch, char * line, FILE * /*config_file*/);
     int setup_Button_5DT_Server (char * & pch, char * line, FILE * /*config_file*/);
-    int setup_Keyboard (char * & pch, char * line, FILE * /*config_file*/);
     int setup_Button_USB (char * & pch, char * line, FILE * /*config_file*/);
     int setup_Analog_USDigital_A2 (char * & pch, char * line, FILE * /*config_file*/) ;
     int setup_Button_NI_DIO24 (char * & pch, char * line, FILE * /*config_file*/) ;
@@ -104,11 +103,6 @@ class vrpn_Generic_Server_Object
     int setup_Tracker_NDI_Polaris (char * & pch, char * line, FILE * config_file) ;
     int setup_Logger (char * & pch, char * line, FILE * /*config_file*/) ;
     int setup_ImageStream (char * & pch, char * line, FILE * /*config_file*/) ;
-    int setup_Xkeys_Desktop (char * & pch, char * line, FILE * /*config_file*/) ;
-    int setup_Xkeys_Pro (char * & pch, char * line, FILE * /*config_file*/) ;
-    int setup_Xkeys_Joystick (char * & pch, char * line, FILE * /*config_file*/) ;
-    int setup_Xkeys_Jog_And_Shuttle (char * & pch, char * line, FILE * /*config_file*/) ;
-    int setup_Xkeys_XK3 (char * & pch, char * line, FILE * config_file) ;
     int setup_Tracker_MotionNode (char * & pch, char * line, FILE * /*config_file*/);
     int setup_Tracker_GPS (char * & pch, char * line, FILE * /*config_file*/);
     int setup_WiiMote (char * & pch, char * line, FILE * /*config_file*/);

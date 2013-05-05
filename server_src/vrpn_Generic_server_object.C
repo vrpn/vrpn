@@ -134,6 +134,7 @@ inline int vrpn_Generic_Server_Object::templated_setup_device_name_only(char * &
     fprintf (stderr, "Can't create new device from line %s\n", line);
     return -1;
   }
+  if (verbose) { printf("Opening %s\n", line); }
   _devices->add(device);
 
   return 0;  // successful completion
@@ -154,6 +155,7 @@ inline int vrpn_Generic_Server_Object::templated_setup_HID_device_name_only(char
     fprintf (stderr, "Can't create new device from line %s\n", line);
     return -1;
   }
+  if (verbose) { printf("Opening %s\n", line); }
   _devices->add(device);
 
   return 0;  // successful completion
@@ -1032,28 +1034,6 @@ int vrpn_Generic_Server_Object::setup_5dt16 (char * & pch, char * line, FILE * /
 
   return 0;
 }
-
-
-int vrpn_Generic_Server_Object::setup_Keyboard (char * & pch, char * line, FILE * /*config_file*/)
-{
-  char name [LINESIZE];
-
-  VRPN_CONFIG_NEXT();
-  // Get the arguments (class, name
-  if (sscanf (pch, "%511s", name) != 1) {
-    fprintf (stderr, "Bad vrpn_Keyboard line: %s\n", line);
-    return -1;
-  }
-
-  // Open the device
-  if (verbose) {
-    printf ("Opening Keyboard: %s\n", name);
-  }
-  _devices->add(new vrpn_Keyboard (name, connection));
-
-  return 0;
-}
-
 
 int vrpn_Generic_Server_Object::setup_Button_USB (char * & pch, char * line, FILE * /*config_file*/)
 {
@@ -3343,134 +3323,6 @@ int vrpn_Generic_Server_Object::setup_Freespace (char * & pch, char * line, FILE
 #endif
 }
 
-int vrpn_Generic_Server_Object::setup_Xkeys_Desktop (char * & pch, char * line, FILE * /*config_file*/)
-{
-
-  char s2 [LINESIZE];
-
-  VRPN_CONFIG_NEXT();
-  if (sscanf (pch, "%511s", s2) != 1) {
-    fprintf (stderr, "Bad Xkeys_Desktop line: %s\n", line);
-    return -1;
-  }
-
-  // Open the Xkeys
-
-#if defined(VRPN_USE_HID)
-  // Open the button
-  if (verbose) {
-    printf ("Opening vrpn_Xkeys_Desktop on host %s\n", s2);
-  }
-  _devices->add(new vrpn_Xkeys_Desktop (s2, connection));
-#else
-  fprintf (stderr, "vrpn_server: Can't open Xkeys: HID not compiled in.\n");
-#endif
-
-  return 0;  // successful completion
-}
-
-int vrpn_Generic_Server_Object::setup_Xkeys_Pro (char * & pch, char * line, FILE * /*config_file*/)
-{
-  char s2 [LINESIZE];
-
-  VRPN_CONFIG_NEXT();
-  if (sscanf (pch, "%511s", s2) != 1) {
-    fprintf (stderr, "Bad Xkeys_Pro line: %s\n", line);
-    return -1;
-  }
-
-#if defined(VRPN_USE_HID)
-
-  // Open the button
-  if (verbose) {
-    printf ("Opening vrpn_Xkeys_Pro on host %s\n", s2);
-  }
-  _devices->add(new vrpn_Xkeys_Pro (s2, connection));
-#else
-  fprintf (stderr, "vrpn_server: Can't open Xkeys: HID not compiled in.\n");
-#endif
-
-  return 0;  // successful completion
-}
-
-int vrpn_Generic_Server_Object::setup_Xkeys_Joystick (char * & pch, char * line, FILE * /*config_file*/)
-{
-
-  char s2 [LINESIZE];
-
-  VRPN_CONFIG_NEXT();
-  if (sscanf (pch, "%511s", s2) != 1) {
-    fprintf (stderr, "Bad Xkeys_Joystick line: %s\n", line);
-    return -1;
-  }
-
-  // Open the Xkeys
-
-#if defined(VRPN_USE_HID)
-  // Open the button
-  if (verbose) {
-    printf ("Opening vrpn_Xkeys_Joystick on host %s\n", s2);
-  }
-  _devices->add(new vrpn_Xkeys_Joystick (s2, connection));
-#else
-  fprintf (stderr, "vrpn_server: Can't open Xkeys: HID not compiled in.\n");
-#endif
-
-  return 0;  // successful completion
-}
-
-int vrpn_Generic_Server_Object::setup_Xkeys_Jog_And_Shuttle (char * & pch, char * line, FILE * /*config_file*/)
-{
-
-  char s2 [LINESIZE];
-
-  VRPN_CONFIG_NEXT();
-  if (sscanf (pch, "%511s", s2) != 1) {
-    fprintf (stderr, "Bad Xkeys_Jog_And_Shuttle line: %s\n", line);
-    return -1;
-  }
-
-  // Open the Xkeys
-
-#if defined(VRPN_USE_HID)
-  // Open the button
-  if (verbose) {
-    printf ("Opening vrpn_Xkeys_Jog_And_Shuttle on host %s\n", s2);
-  }
-  _devices->add(new vrpn_Xkeys_Jog_And_Shuttle (s2, connection));
-#else
-  fprintf (stderr, "vrpn_server: Can't open Xkeys: HID not compiled in.\n");
-#endif
-
-  return 0;  // successful completion
-}
-
-int vrpn_Generic_Server_Object::setup_Xkeys_XK3 (char * & pch, char * line, FILE * /*config_file*/)
-{
-
-  char s2 [LINESIZE];
-
-  VRPN_CONFIG_NEXT();
-  if (sscanf (pch, "%511s", s2) != 1) {
-    fprintf (stderr, "Bad Xkeys_XK3 line: %s\n", line);
-    return -1;
-  }
-
-  // Open the Xkeys
-#if defined(VRPN_USE_HID)
-
-  // Open the button
-  if (verbose) {
-    printf ("Opening vrpn_Xkeys_XK3 on host %s\n", s2);
-  }
-  _devices->add(new vrpn_Xkeys_XK3 (s2, connection));
-#else
-  fprintf (stderr, "vrpn_server: Can't open Xkeys: HID not compiled in.\n");
-#endif
-
-  return 0;  // successful completion
-}
-
 int vrpn_Generic_Server_Object::setup_SpacePoint (char * & pch, char * line, FILE * /*config_file*/)
 {
 
@@ -4276,7 +4128,7 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object (vrpn_Connection *connect
       } else if (VRPN_ISIT ("vrpn_3DMicroscribe")) {
         VRPN_CHECK (setup_3DMicroscribe);
       } else if (VRPN_ISIT ("vrpn_Keyboard")) {
-        VRPN_CHECK (setup_Keyboard);
+        VRPN_CHECK (templated_setup_device_name_only<vrpn_Keyboard>);
       } else if (VRPN_ISIT ("vrpn_Button_USB")) {
         VRPN_CHECK (setup_Button_USB);
       } else if (VRPN_ISIT ("vrpn_Analog_USDigital_A2")) {
@@ -4290,15 +4142,15 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object (vrpn_Connection *connect
       } else if (VRPN_ISIT ("vrpn_Imager_Stream_Buffer")) {
         VRPN_CHECK (setup_ImageStream);
       } else if (VRPN_ISIT ("vrpn_Xkeys_Desktop")) {
-        VRPN_CHECK (setup_Xkeys_Desktop);
+        VRPN_CHECK (templated_setup_HID_device_name_only<vrpn_Xkeys_Desktop>);
       } else if (VRPN_ISIT ("vrpn_Xkeys_Pro")) {
-        VRPN_CHECK (setup_Xkeys_Pro);
+        VRPN_CHECK (templated_setup_HID_device_name_only<vrpn_Xkeys_Pro>);
       } else if (VRPN_ISIT ("vrpn_Xkeys_Joystick")) {
-        VRPN_CHECK (setup_Xkeys_Joystick);
+        VRPN_CHECK (templated_setup_HID_device_name_only<vrpn_Xkeys_Joystick>);
       } else if (VRPN_ISIT ("vrpn_Xkeys_Jog_And_Shuttle")) {
-        VRPN_CHECK (setup_Xkeys_Jog_And_Shuttle);
+        VRPN_CHECK (templated_setup_HID_device_name_only<vrpn_Xkeys_Jog_And_Shuttle>);
       } else if (VRPN_ISIT ("vrpn_Xkeys_XK3")) {
-        VRPN_CHECK (setup_Xkeys_XK3);
+        VRPN_CHECK (templated_setup_HID_device_name_only<vrpn_Xkeys_XK3>);
       } else if (VRPN_ISIT ("vrpn_3DConnexion_Navigator")) {
         VRPN_CHECK (templated_setup_device_name_only<vrpn_3DConnexion_Navigator>);
       } else if (VRPN_ISIT ("vrpn_3DConnexion_Navigator_for_Notebooks")) {
