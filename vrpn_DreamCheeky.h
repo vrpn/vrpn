@@ -1,5 +1,4 @@
-#ifndef VRPN_DREAMCHEEKY_H
-#define VRPN_DREAMCHEEKY_H
+#pragma once
 
 #include <stddef.h>                     // for size_t
 
@@ -9,8 +8,6 @@
 #include "vrpn_HumanInterface.h"        // for vrpn_HidAcceptor (ptr only), etc
 #include "vrpn_Shared.h"                // for timeval
 #include "vrpn_Types.h"                 // for vrpn_uint8
-
-class VRPN_API vrpn_Connection;
 
 // Device drivers for the Dream Cheeky USB Roll-Up Drum Kit; done in such a
 // way that any other USB devices from this vendow should be easy to add.
@@ -26,7 +23,7 @@ class VRPN_API vrpn_Connection;
 
 #if defined(VRPN_USE_HID)
 
-class vrpn_DreamCheeky: public vrpn_BaseClass, protected vrpn_HidInterface {
+class VRPN_API vrpn_DreamCheeky: public vrpn_BaseClass, protected vrpn_HidInterface {
 public:
   vrpn_DreamCheeky(vrpn_HidAcceptor *filter, const char *name, vrpn_Connection *c = 0);
   virtual ~vrpn_DreamCheeky();
@@ -45,7 +42,7 @@ protected:
   int register_types(void) { return 0; }
 };
 
-class vrpn_DreamCheeky_Drum_Kit: protected vrpn_DreamCheeky, public vrpn_Button_Filter {
+class VRPN_API vrpn_DreamCheeky_Drum_Kit: protected vrpn_DreamCheeky, public vrpn_Button_Filter {
 public:
   // The sensors "bounce" a lot when the buttons are pressed and released,
   // causing spurious readings of press/release.  Debouncing looks at ensembles
@@ -68,9 +65,8 @@ protected:
   void decodePacket(size_t bytes, vrpn_uint8 *buffer);
 };
 
-// End of Windows/Cygwin/Apple
+#else
+class vrpn_DreamCheeky_Drum_Kit;
 #endif
 
-// end of VRPN_DREAMCHEEKY_H
-#endif
 
