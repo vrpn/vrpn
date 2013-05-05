@@ -12,7 +12,7 @@
 #ifndef NTSTATUS
 typedef long NTSTATUS;
 #endif
-#include "submodules/hidapi/windows/hid.cpp"
+#include "submodules/hidapi/windows/hid.c"
 
 #pragma comment( lib, "Setupapi.lib" )
 

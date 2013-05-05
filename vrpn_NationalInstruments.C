@@ -1,5 +1,5 @@
 #include <stdio.h>                      // for sprintf, fprintf, stderr, etc
-#include <vrpn_Shared.h>                // for vrpn_gettimeofday
+#include "vrpn_Shared.h"                // for vrpn_gettimeofday
 
 #include "vrpn_BaseClass.h"             // for ::vrpn_TEXT_WARNING, etc
 #include "vrpn_Connection.h"            // for vrpn_HANDLERPARAM, etc
