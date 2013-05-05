@@ -11,6 +11,13 @@
 
 #include "vrpn_Configure.h"             // for VRPN_API
 #include "vrpn_Types.h"                 // for vrpn_int32, vrpn_float64, etc
+#include <string.h>                     // for memcpy()
+#include <stdio.h>                      // for fprintf()
+
+#if !( defined(_WIN32) && defined(VRPN_USE_WINSOCK_SOCKETS) )
+#include <sys/select.h>                 // for select
+#include <netinet/in.h>                 // for htonl, htons
+#endif
 
 #if defined (__ANDROID__)
 #include <bitset>
