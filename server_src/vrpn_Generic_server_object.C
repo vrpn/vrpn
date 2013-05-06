@@ -1908,20 +1908,7 @@ int vrpn_Generic_Server_Object::setup_DevInput (char * & pch, char * line, FILE 
   }
 
 #ifdef VRPN_USE_DEV_INPUT
-
-  // Open the box
-  if (verbose)
-    printf("Opening vrpn_DevInput: %s\n",s2);
-
-  try {
-    _devices->add (new vrpn_DevInput (s2, connection, s3, s4, int_param));
-  } catch (char *&error) {
-    fprintf (stderr, "could not create vrpn_DevInput : %s\n", error);
-    return -1;
-  } catch (...) {
-    fprintf (stderr, "could not create vrpn_DevInput\n");
-    return -1;
-  }
+  _devices->add (new vrpn_DevInput (s2, connection, s3, s4, int_param));
   return 0;
 #else
   fprintf (stderr, "vrpn_DevInput support not compiled in\n");
