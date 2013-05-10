@@ -14,11 +14,6 @@
 #include <string.h>                     // for memcpy()
 #include <stdio.h>                      // for fprintf()
 
-#if !( defined(_WIN32) && defined(VRPN_USE_WINSOCK_SOCKETS) )
-#include <sys/select.h>                 // for select
-#include <netinet/in.h>                 // for htonl, htons
-#endif
-
 #if defined (__ANDROID__)
 #include <bitset>
 #endif
@@ -48,6 +43,11 @@
 // On Win32, this constant is defined as ~0 (sockets are unsigned ints)
 #  define	INVALID_SOCKET	-1
 #  define	SOCKET		int
+#endif
+
+#if !( defined(_WIN32) && defined(VRPN_USE_WINSOCK_SOCKETS) )
+#include <sys/select.h>                 // for select
+#include <netinet/in.h>                 // for htonl, htons
 #endif
 
 #ifdef	_WIN32_WCE
