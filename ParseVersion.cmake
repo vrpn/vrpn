@@ -65,6 +65,7 @@ else()
 			""
 			GIT_LAST_TAGGED_VER
 			"${GIT_REVISION_DESCRIPTION}")
+		set(GIT_REDUCED_REVISION_DESCRIPTION "${GIT_LAST_TAGGED_VER}")
 		string(REGEX
 			REPLACE
 			"-.*"
@@ -77,7 +78,7 @@ else()
 			message(STATUS
 				"Git's description of the current revision indicates this is a prerelease of ${CPACK_PACKAGE_VERSION}: ${GIT_REVISION_DESCRIPTION}\n")
 			set(CPACK_PACKAGE_VERSION_PATCH
-				"0~prerelease-git-${GIT_REVISION_DESCRIPTION}")
+				"0~prerelease-git-${GIT_REDUCED_REVISION_DESCRIPTION}")
 			set(CONFIG_VERSION "pre-${CONFIG_VERSION}")
 		else()
 			# OK, this is a followup version
@@ -85,7 +86,7 @@ else()
 			message(STATUS
 				"Git's description of the current revision indicates this is a patched version of ${CPACK_PACKAGE_VERSION}: ${GIT_REVISION_DESCRIPTION}\n")
 			set(CONFIG_VERSION "post-${CONFIG_VERSION}")
-			set(CPACK_PACKAGE_VERSION_PATCH "0-git-${GIT_REVISION_DESCRIPTION}")
+			set(CPACK_PACKAGE_VERSION_PATCH "0-git-${GIT_REDUCED_REVISION_DESCRIPTION}")
 		endif()
 		set(CPACK_PACKAGE_VERSION
 			"${CPACK_PACKAGE_VERSION}.${CPACK_PACKAGE_VERSION_PATCH}")
