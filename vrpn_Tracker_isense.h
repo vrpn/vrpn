@@ -21,7 +21,7 @@
 #include "vrpn_Button.h"
 #include "vrpn_Analog.h"
 
-#include "../isense/isense.h"
+#include "isense.h"
 
 class VRPN_API vrpn_Tracker_InterSense : public vrpn_Tracker {
   
