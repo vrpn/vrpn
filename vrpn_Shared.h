@@ -14,7 +14,7 @@
 #include <string.h>                     // for memcpy()
 #include <stdio.h>                      // for fprintf()
 
-#if !( defined(_WIN32) && defined(VRPN_USE_WINSOCK_SOCKETS) )
+#if !( defined(_WIN32) || defined(VRPN_USE_WINSOCK_SOCKETS) )
 #include <sys/select.h>                 // for select
 #include <netinet/in.h>                 // for htonl, htons
 #endif
