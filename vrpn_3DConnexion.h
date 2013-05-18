@@ -12,7 +12,7 @@
 #include "vrpn_Types.h"                 // for vrpn_uint32, vrpn_uint8
 
 // Device drivers for the 3DConnexion SpaceNavigator and SpaceTraveler
-// SpaceExplorer, SpaceMouse, Spaceball5000
+// SpaceExplorer, SpaceMouse, SpaceMousePro, Spaceball5000
 // devices, connecting to them as HID devices (USB).
 
 // Exposes two VRPN device classes: Button and Analog.
@@ -107,6 +107,33 @@ class VRPN_API vrpn_3DConnexion_SpaceMouse: public vrpn_3DConnexion {
 public:
   vrpn_3DConnexion_SpaceMouse(const char *name, vrpn_Connection *c = 0);
   virtual ~vrpn_3DConnexion_SpaceMouse() {};
+
+protected:
+};
+
+/*
+The button numbers are labeled as follows (the ones similar to <x> have a graphic on the button and are referred to the text enclosed text in the help):
+0=Menu
+1=Fit
+2=<T>
+4=<R>
+5=<F>
+8=<Roll+>
+12=1
+13=2
+14=3
+15=4
+22=Esc
+23=Alt
+24=Shift
+25=Ctrl
+26=<Rot>
+*/
+
+class VRPN_API vrpn_3DConnexion_SpaceMousePro: public vrpn_3DConnexion {
+public:
+	vrpn_3DConnexion_SpaceMousePro(const char *name, vrpn_Connection *c = 0);
+	virtual ~vrpn_3DConnexion_SpaceMousePro() {};
 
 protected:
 };
