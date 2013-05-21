@@ -29,6 +29,7 @@ static const vrpn_uint16 vrpn_3DCONNEXION_NAVIGATOR_FOR_NOTEBOOKS = 0xc628;	// 5
 static const vrpn_uint16 vrpn_3DCONNEXION_SPACEEXPLORER = 0xc627;   // 50727
 static const vrpn_uint16 vrpn_3DCONNEXION_SPACEMOUSE = 50691;
 static const vrpn_uint16 vrpn_3DCONNEXION_SPACEBALL5000 = 0xc621;   // 50721;
+static const vrpn_uint16 vrpn_3DCONNEXION_SPACEPILOT =  0xc625;
 
 vrpn_3DConnexion::vrpn_3DConnexion(vrpn_HidAcceptor *filter, unsigned num_buttons,
                                    const char *name, vrpn_Connection *c)
@@ -143,16 +144,16 @@ void vrpn_3DConnexion::mainloop()
                     vrpn_gettimeofday((timeval *)&this->vrpn_Button::timestamp, NULL);
                     buttons[ev.code & 0x0ff] = ev.value;
                     break;
- 
+
                 case EV_REL:    // axis movement
                 case EV_ABS:    // new kernels send more logical _ABS instead of _REL
                     vrpn_gettimeofday((timeval *)&this->vrpn_Analog::timestamp, NULL);
                     // Convert from short to int to avoid a short/double conversion
                     // bug in GCC 3.2.
                     i = ev.value;
-                    channel[ev.code] = static_cast<double>(i)/400.0;           
+                    channel[ev.code] = static_cast<double>(i)/400.0;
                     break;
- 
+
                 default:
                     break;
             }
@@ -209,7 +210,7 @@ void vrpn_3DConnexion::decodePacket(size_t bytes, vrpn_uint8 *buffer)
   // regardless of how many bytes were in the report.  This is going to get us into trouble for
   // multi-report packets.  Instead, we should go until we've parsed all characters and add the
   // number characters parsed each time rather than a constant 7 reports.
-  if(bytes<7) bytes=7; 
+  if(bytes<7) bytes=7;
   // Decode all full reports.
   // Full reports for all of the pro devices are 7 bytes long (the first
   // byte is the report type, because this device has multiple ones the
@@ -330,3 +331,7 @@ vrpn_3DConnexion_SpaceBall5000::vrpn_3DConnexion_SpaceBall5000(const char *name,
 {
 }
 
+vrpn_3DConnexion_SpacePilot::vrpn_3DConnexion_SpacePilot(const char *name, vrpn_Connection *c)
+  : vrpn_3DConnexion(_filter = new vrpn_HidProductAcceptor(vrpn_3DCONNEXION_VENDOR, vrpn_3DCONNEXION_SPACEPILOT), 21, name, c)
+{
+}
