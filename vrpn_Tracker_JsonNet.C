@@ -3,7 +3,7 @@
 #if defined(VRPN_USE_JSONNET)
 
 #ifdef _WIN32
-	#include <winsock2.h>
+	#include <winsock.h>
 #else
 	#include <sys/socket.h>
 	#include <sys/time.h>
