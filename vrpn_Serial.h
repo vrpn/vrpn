@@ -2,7 +2,7 @@
 #define VRPN_SERIAL_H
 
 #include "vrpn_Configure.h"             // for VRPN_API
-
+#include <stddef.h>	// For size_t
 
 /// @file
 ///
