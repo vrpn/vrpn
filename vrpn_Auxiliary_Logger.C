@@ -222,7 +222,7 @@ void vrpn_Auxiliary_Logger_Server::handle_dropped_last_connection(void)
 /* static */
 // This method just passes the call on to the virtual function.
 int vrpn_Auxiliary_Logger_Server::static_handle_dropped_last_connection(void *userdata,
-	vrpn_HANDLERPARAM p)
+	vrpn_HANDLERPARAM /*p*/)
 {
   vrpn_Auxiliary_Logger_Server *me = static_cast<vrpn_Auxiliary_Logger_Server *>(userdata);
   me->handle_dropped_last_connection();
@@ -232,7 +232,7 @@ int vrpn_Auxiliary_Logger_Server::static_handle_dropped_last_connection(void *us
 
 /* static */
 int vrpn_Auxiliary_Logger_Server::
-static_handle_request_logging_status( void* userdata, vrpn_HANDLERPARAM p )
+static_handle_request_logging_status( void* userdata, vrpn_HANDLERPARAM /*p*/)
 {
 	vrpn_Auxiliary_Logger_Server* me = static_cast<vrpn_Auxiliary_Logger_Server*> (userdata);
 	me->handle_request_logging_status( );

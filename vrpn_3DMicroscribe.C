@@ -266,7 +266,7 @@ void vrpn_3DMicroscribe::report_changes(vrpn_uint32 class_of_service)
 		int	len = vrpn_Tracker::encode_to(msgbuf);
 		if (d_connection->pack_message(len, timestamp,
 			position_m_id, d_sender_id, msgbuf,
-			vrpn_CONNECTION_LOW_LATENCY)) {
+			class_of_service)) {
 				MC_ERROR("Tracker: cannot write message: tossing\n");
 			}
 	} else {
@@ -274,7 +274,7 @@ void vrpn_3DMicroscribe::report_changes(vrpn_uint32 class_of_service)
 	}
 }
 
-void vrpn_3DMicroscribe::report(vrpn_uint32 class_of_service)
+void vrpn_3DMicroscribe::report(vrpn_uint32 /*class_of_service*/)
 {
 	vrpn_Button::timestamp = timestamp;
 	vrpn_Button::report_changes();
