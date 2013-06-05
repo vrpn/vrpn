@@ -55,14 +55,14 @@ int main (int argc, char ** argv) {
       port = atoi(ib + 8);
       qp = strchr(ib, '\"');  // start of service name
       qp++;
-      len = strcspn(qp, "\"");  fprintf(stderr, "Prefix len %d.\n", len);
+      len = static_cast<int>(strcspn(qp, "\""));  fprintf(stderr, "Prefix len %d.\n", len);
       strncpy(sb, qp, len);
       sb[len] = '\0';
       qp = strchr(qp, '\"');  // end of service name
       qp++;
       qp = strchr(qp, '\"');  // start of message type name
       qp++;
-      len = strcspn(qp, "\"");  fprintf(stderr, "Prefix len %d.\n", len);
+      len = static_cast<int>(strcspn(qp, "\""));  fprintf(stderr, "Prefix len %d.\n", len);
       strncpy(tb, qp, len);
       tb[len] = '\0';
       qp = strchr(qp, '\"');  // end of message type name
