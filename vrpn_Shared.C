@@ -281,7 +281,7 @@ VRPN_API int vrpn_buffer (char ** insertPt, vrpn_int32 * buflen,
 	}
 	strcpy(*insertPt, string);
 	*insertPt += len;
-	*buflen -= len;
+	*buflen -= static_cast<vrpn_int32>(len);
     } else {
 	memcpy(*insertPt, string, length);
 	*insertPt += length;
@@ -1223,8 +1223,10 @@ bool vrpn_Thread::running() {
   return threadID!=0;
 }
 
-#if defined(sgi) || defined(_WIN32)
+#if defined(sgi)
 unsigned long vrpn_Thread::pid() {
+#elif defined(_WIN32)
+uintptr_t vrpn_Thread::pid() {
 #else
 pthread_t vrpn_Thread::pid() {
 #endif

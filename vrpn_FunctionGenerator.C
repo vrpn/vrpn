@@ -120,7 +120,7 @@ generateValues( vrpn_float32* buf, vrpn_uint32 nValues, vrpn_float32 startTime,
 vrpn_int32 vrpn_FunctionGenerator_function_script::
 encode_to( char** buf, vrpn_int32& len ) const
 {
-	vrpn_uint32 length = strlen( this->script );
+	vrpn_uint32 length = static_cast<vrpn_uint32>(strlen( this->script ));
 	vrpn_int32 bytes = length + sizeof( vrpn_uint32 );
 	if( len < bytes )
 	{
@@ -1903,7 +1903,7 @@ encode_interpreterDescription_reply( char** buf, vrpn_int32& len, const char* de
 	fprintf( stdout, "FG::encode_interpreterDescription_reply\n" );
 	fflush( stdout );
 #endif
-	vrpn_int32 dlength = strlen( desc );
+	vrpn_int32 dlength = static_cast<vrpn_int32>(strlen( desc ));
 	if( len < dlength + (vrpn_int32) sizeof( vrpn_int32 ) )
 	{
 		fprintf( stderr, "vrpn_FunctionGenerator_Server::encode_interpreterDescription_reply:  "

@@ -546,8 +546,10 @@ public:
 
   // thread info: check if running, get proc id
   bool running();
-#if defined(sgi) || defined(_WIN32)
+#if defined(sgi)
   unsigned long pid();
+#elif defined(_WIN32)
+  uintptr_t pid();
 #else
   pthread_t pid();
 #endif
@@ -579,8 +581,10 @@ protected:
   static void *threadFuncShellPosix(void *pvThread);
 
   // the process id
-#if defined(sgi) || defined(_WIN32)
+#if defined(sgi)
   unsigned long threadID;
+#elif defined(_WIN32)
+  uintptr_t threadID;
 #else
   pthread_t threadID;
 #endif

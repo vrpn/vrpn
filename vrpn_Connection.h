@@ -823,8 +823,13 @@ class VRPN_API vrpn_Connection_IP : public vrpn_Connection {
 
     /// @name Only used for a vrpn_Connection that awaits incoming connections
     /// @{
+#ifdef VRPN_USE_WINSOCK_SOCKETS
+	SOCKET listen_udp_sock;	///< UDP Connect requests come here
+    SOCKET listen_tcp_sock;	///< TCP Connection requests come here
+#else
     int listen_udp_sock;	///< UDP Connect requests come here
     int listen_tcp_sock;	///< TCP Connection requests come here
+#endif
     /// @}
 
     /// Routines that handle system messages

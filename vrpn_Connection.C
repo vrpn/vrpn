@@ -3312,7 +3312,7 @@ int vrpn_Endpoint_IP::handle_tcp_messages
 
     // If there is anything to read, get the next message
     if (FD_ISSET(d_tcpSocket, &readfds)) {
-      retval = getOneTCPMessage(d_tcpSocket, d_tcpInbuf,
+      retval = getOneTCPMessage(static_cast<int>(d_tcpSocket), d_tcpInbuf,
                                 sizeof(d_tcpAlignedInbuf));
       if (retval) {
         return -1;
@@ -4333,7 +4333,7 @@ int vrpn_Endpoint::pack_type_description (vrpn_int32 which) {
    struct timeval now;
 
    // need to pack the null char as well
-   vrpn_uint32	len = strlen(d_dispatcher->typeName(which)) + 1;
+   vrpn_uint32	len = static_cast<vrpn_int32>(strlen(d_dispatcher->typeName(which)) + 1);
    vrpn_uint32 netlen;
    char buffer [sizeof(len) + sizeof(cName)];
 
@@ -4361,7 +4361,7 @@ int vrpn_Endpoint::pack_sender_description (vrpn_int32 which) {
    struct timeval now;
 
    // need to pack the null char as well
-   vrpn_uint32	len = strlen(d_dispatcher->senderName(which)) + 1;
+   vrpn_uint32	len = static_cast<vrpn_int32>(strlen(d_dispatcher->senderName(which)) + 1);
    vrpn_uint32 netlen;
    char buffer [sizeof(len) + sizeof(cName)];
 
@@ -4385,7 +4385,12 @@ int vrpn_Endpoint::pack_sender_description (vrpn_int32 which) {
        vrpn_CONNECTION_RELIABLE);
 }
 
-int flush_udp_socket (int fd) {
+#ifdef VRPN_USE_WINSOCK_SOCKETS
+static int flush_udp_socket (SOCKET fd)
+#else
+static int flush_udp_socket (int fd)
+#endif
+{
   timeval localTimeout;
   fd_set readfds, exceptfds;
   char buf [10000];
@@ -4405,7 +4410,7 @@ int flush_udp_socket (int fd) {
     FD_ZERO(&exceptfds);
     FD_SET(fd, &readfds);     /* Check for read */
     FD_SET(fd, &exceptfds);   /* Check for exceptions */
-    sel_ret = vrpn_noint_select(fd+1, &readfds, NULL, &exceptfds, &localTimeout);
+    sel_ret = vrpn_noint_select(static_cast<int>(fd)+1, &readfds, NULL, &exceptfds, &localTimeout);
     if (sel_ret == -1) {
         fprintf(stderr, "flush_udp_socket:  select failed().");
         return -1;
@@ -5487,7 +5492,7 @@ void vrpn_Connection_IP::server_check_for_incoming_connections
   fd_set f;
   FD_ZERO (&f);
   FD_SET(listen_udp_sock, &f);
-  request = vrpn_noint_select(listen_udp_sock+1, &f, NULL, NULL, &timeout);
+  request = vrpn_noint_select(static_cast<int>(listen_udp_sock)+1, &f, NULL, NULL, &timeout);
   if (request == -1 ) {        // Error in the select()
     fprintf(stderr, "vrpn_Connection_IP::server_check_for_incoming_connections():  "
                     "select failed.\n");
@@ -6108,7 +6113,7 @@ char * vrpn_copy_service_name (const char * fullname)
   if (fullname == NULL) {
     return NULL;
   } else {
-    int len = 1 + strcspn(fullname, "@");
+    size_t len = 1 + strcspn(fullname, "@");
     char * tbuf = new char [len];
     if (!tbuf)
       fprintf(stderr, "vrpn_copy_service_name:  Out of memory!\n");
@@ -6123,8 +6128,8 @@ char * vrpn_copy_service_name (const char * fullname)
 char * vrpn_copy_service_location (const char * fullname)
 {
   // If there is no "@" sign in the string, copy the whole string.
-  int offset = strcspn(fullname, "@");
-  int len = strlen(fullname) - offset;
+  size_t offset = strcspn(fullname, "@");
+  size_t len = strlen(fullname) - offset;
   if (len == 0) {
     offset = -1;  // We add one to it below.
     len = strlen(fullname) + 1; // We subtract one from it below.
@@ -6143,7 +6148,7 @@ char * vrpn_copy_file_name (const char * filespecifier)
 {
   char * filename;
   const char * fp;
-  int len;
+  size_t len;
 
   fp = filespecifier;
   if (!fp) return NULL;
@@ -6196,11 +6201,11 @@ static int header_len(const char *hostspecifier) {
 
 char * vrpn_copy_machine_name (const char * hostspecifier)
 {
-  int nearoffset = 0;
-  int faroffset;
+  size_t nearoffset = 0;
+  size_t faroffset;
     // if it contains a ':', copy only the prefix before the last ':'
     // otherwise copy all of it
-  int len;
+  size_t len;
   char * tbuf;
 
   // Skip past the header, if any; this includes any tcp:// or tcp:
@@ -6246,9 +6251,9 @@ int vrpn_get_port_number (const char * hostspecifier)
 
 char * vrpn_copy_rsh_program (const char * hostspecifier)
 {
-  int nearoffset = 0; // location of first char after machine name
-  int faroffset; // location of last character of program name
-  int len;
+  size_t nearoffset = 0; // location of first char after machine name
+  size_t faroffset; // location of last character of program name
+  size_t len;
   char * tbuf;
 
   nearoffset += header_len(hostspecifier);
@@ -6271,9 +6276,9 @@ char * vrpn_copy_rsh_program (const char * hostspecifier)
 
 char * vrpn_copy_rsh_arguments (const char * hostspecifier)
 {
-  int nearoffset = 0; // location of first char after server name
-  int faroffset; // location of last character
-  int len;
+  size_t nearoffset = 0; // location of first char after server name
+  size_t faroffset; // location of last character
+  size_t len;
   char * tbuf;
 
   nearoffset += header_len(hostspecifier);
