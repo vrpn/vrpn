@@ -40,16 +40,16 @@ bool vrpn_Auxiliary_Logger::pack_log_message_of_type (vrpn_int32 type,
 
   // Figure out the lengths, handling NULL pointers.
   vrpn_int32 lil = 0;
-  if (local_in_logfile_name) { lil = strlen(local_in_logfile_name); }
+  if (local_in_logfile_name) { lil = static_cast<vrpn_int32>(strlen(local_in_logfile_name)); }
   vrpn_int32 lol = 0;
-  if (local_out_logfile_name) { lol = strlen(local_out_logfile_name); }
+  if (local_out_logfile_name) { lol = static_cast<vrpn_int32>(strlen(local_out_logfile_name)); }
   vrpn_int32 ril = 0;
-  if (remote_in_logfile_name) { ril = strlen(remote_in_logfile_name); }
+  if (remote_in_logfile_name) { ril = static_cast<vrpn_int32>(strlen(remote_in_logfile_name)); }
   vrpn_int32 rol = 0;
-  if (remote_out_logfile_name) { rol = strlen(remote_out_logfile_name); }
+  if (remote_out_logfile_name) { rol = static_cast<vrpn_int32>(strlen(remote_out_logfile_name)); }
 
   struct timeval now;
-  vrpn_int32 bufsize = 4*sizeof(lil) + lil + lol + ril + rol;
+  vrpn_int32 bufsize = static_cast<vrpn_int32>(4*sizeof(lil) + lil + lol + ril + rol);
   char *buf = new char[bufsize];
   if (buf == NULL) {
     fprintf(stderr, "vrpn_Auxiliary_Logger::pack_log_message_of_type(): Out of memory.\n");

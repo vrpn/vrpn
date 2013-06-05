@@ -1009,7 +1009,7 @@ vrpn_File_Connection * vrpn_File_Connection::get_File_Connection (void) {
 int vrpn_File_Connection::read_cookie (void)
 {
     char readbuf [2048];  // HACK!
-    int retval;
+    size_t retval;
 
     retval = fread(readbuf, vrpn_cookie_size(), 1, d_file);
     if (retval <= 0) {
@@ -1039,7 +1039,7 @@ int vrpn_File_Connection::read_cookie (void)
 int vrpn_File_Connection::read_entry (void)
 {
     vrpn_LOGLIST * newEntry;
-    int retval;
+    size_t retval;
 
     newEntry = new vrpn_LOGLIST;
     if (!newEntry) {

@@ -58,7 +58,7 @@ class VRPN_API vrpn_Log {
       ///< in the name, merely appends -<n>.
 
     int setName (const char * name);
-    int setName (const char * name, int len);
+    int setName (const char * name, size_t len);
 
     long & logMode (void);
       ///< Returns a reference so we can |= it.

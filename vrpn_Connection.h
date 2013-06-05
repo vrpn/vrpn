@@ -460,8 +460,8 @@ class VRPN_API vrpn_Endpoint_IP : public vrpn_Endpoint {
 
   protected:
 
-    int getOneTCPMessage (int fd, char * buf, int buflen);
-    int getOneUDPMessage (char * buf, int buflen);
+    int getOneTCPMessage (int fd, char * buf, size_t buflen);
+    int getOneUDPMessage (char * buf, size_t buflen);
 
     SOCKET d_udpOutboundSocket;
     SOCKET d_udpInboundSocket;
