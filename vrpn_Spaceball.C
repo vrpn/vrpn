@@ -91,7 +91,7 @@
 
 // This routine writes out the characters slowly, so as not to
 // overburden the Spaceball (came from VRPN Magellan driver code)
-static	int	vrpn_write_slowly(int fd, unsigned char *buffer, int len, int MsecWait)
+static	int	vrpn_write_slowly(int fd, unsigned char *buffer, size_t len, int MsecWait)
 {	int	i;
 
 	for (i = 0; i < len; i++) {
@@ -100,7 +100,7 @@ static	int	vrpn_write_slowly(int fd, unsigned char *buffer, int len, int MsecWai
 			return -1;
 		}
 	}
-	return len;
+	return static_cast<int>(len);
 }
 
 

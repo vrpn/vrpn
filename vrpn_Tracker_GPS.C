@@ -208,7 +208,7 @@ int vrpn_Tracker_GPS::get_report(void)
         while (!done)
         {
             if (testfile != NULL) {
-                ret = fread(&buffer[bufcount],sizeof(char),1,testfile); 
+                ret = static_cast<int>(fread(&buffer[bufcount],sizeof(char),1,testfile)); 
             } else {
                 ret = vrpn_read_available_characters(serial_fd, &buffer[bufcount], 1);
             }

@@ -330,12 +330,12 @@ void vrpn_Tracker_DTrack::mainloop()
 	}
 
 	if(num_channel >= (int )joy_last.size()){  // adjust length of vector for current joystick value
-		int j0 = joy_last.size();
+		size_t j0 = joy_last.size();
 		
 		joy_simulate.resize(num_channel);
 		joy_last.resize(num_channel);
 
-		for(int j=j0; j<num_channel; j++){
+		for(size_t j=j0; j<num_channel; j++){
 			joy_simulate[j] = false;
 			joy_last[j] = 0;
 		}

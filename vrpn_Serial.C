@@ -460,7 +460,7 @@ int vrpn_drain_output_buffer(int comm)
 // the number of characters read or -1 on failure.  Note that it only
 // reads characters that are available at the time of the read, so less
 // than the requested number may be returned.
-int vrpn_read_available_characters(int comm, unsigned char *buffer, int bytes)
+int vrpn_read_available_characters(int comm, unsigned char *buffer, size_t bytes)
 {
 #ifdef VERBOSE
 	printf("vrpn_read_available_characters(): Entering\n");
@@ -484,7 +484,7 @@ int vrpn_read_available_characters(int comm, unsigned char *buffer, int bytes)
 
    if (cstat.cbInQue > 0)
    {
-	   if((fSuccess = ReadFile(commConnections[comm], buffer, bytes, &numRead, &Overlapped)) == 0)
+	   if((fSuccess = ReadFile(commConnections[comm], buffer, static_cast<DWORD>(bytes), &numRead, &Overlapped)) == 0)
 	   {
 		   perror("vrpn_read_available_characters: can't read from serial port");
 		   return(-1);
@@ -535,7 +535,7 @@ int vrpn_read_available_characters(int comm, unsigned char *buffer, int bytes)
 // If there is a NULL timeout pointer, block indefinitely. Return the number
 // of characters read.
 
-int vrpn_read_available_characters(int comm, unsigned char *buffer, int bytes,
+int vrpn_read_available_characters(int comm, unsigned char *buffer, size_t bytes,
 		struct timeval *timeout) 
 {
 #ifdef VERBOSE
@@ -581,7 +581,7 @@ int vrpn_read_available_characters(int comm, unsigned char *buffer, int bytes,
 
 /// Write the buffer to the serial port
 
-int vrpn_write_characters(int comm, const unsigned char *buffer, int bytes)
+int vrpn_write_characters(int comm, const unsigned char *buffer, size_t bytes)
 {
 #ifdef VERBOSE
 	printf("vrpn_write_characters(): Entering\n");
@@ -595,7 +595,7 @@ int vrpn_write_characters(int comm, const unsigned char *buffer, int bytes)
    Overlapped.OffsetHigh = 0;
    Overlapped.hEvent = NULL;
 
-    if((fSuccess = WriteFile(commConnections[comm], buffer, bytes, &numWritten, &Overlapped)) == 0)
+    if((fSuccess = WriteFile(commConnections[comm], buffer, static_cast<DWORD>(bytes), &numWritten, &Overlapped)) == 0)
     {
 	   perror("vrpn_write_characters: can't write to serial port");
 	   return(-1);

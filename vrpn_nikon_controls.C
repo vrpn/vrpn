@@ -98,7 +98,7 @@ static	int parse_focus_position_response(const char *inbuf, double &response_pos
 {
   // Make sure that the command ends with [CR][LF].  All valid reports should end
   // with this.
-  unsigned  len = strlen((const char *)inbuf);
+  size_t  len = strlen((const char *)inbuf);
   if (len < 2) {
     fprintf(stderr,"parse_focus_position_response(): String too short\n");
     response_pos = 0; return 0;
