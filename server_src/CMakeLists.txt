@@ -18,6 +18,10 @@ if(NOT WIN32)
 	set(VRPN_ATMEL_LIBRARY vrpn_atmel)
 endif()
 
+if(WIN32)
+    ADD_DEFINITIONS( -D_CRT_SECURE_NO_WARNINGS )
+endif()
+
 #-----------------------------------------------------------------------------
 # Phantom library (if configured)
 find_package(OpenGL)

@@ -1405,10 +1405,10 @@ int NMEAParser::countChars (const char* string, char charToCount, uint_ charCoun
   //  -1 if the number of specified characters in the sentence is greater than
   //  charCount.
 {
-  uint_ stringSize = strlen (string);
-  uint_ currentCharCount = 0;
+  size_t stringSize = strlen (string);
+  size_t currentCharCount = 0;
   const char* currentChar = string;
-  for (uint_ i = 0; i < stringSize; i++) {
+  for (size_t i = 0; i < stringSize; i++) {
     if (*currentChar++ == charToCount) ++currentCharCount;
   }
   if (currentCharCount > charCount) {
