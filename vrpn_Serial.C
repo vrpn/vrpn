@@ -515,7 +515,7 @@ int vrpn_read_available_characters(int comm, unsigned char *buffer, size_t bytes
 	 cReadThisTime = 0;
        } else {
 	 perror("vrpn_read_available_characters: cannot read from serial port");
-	 fprintf(stderr, "buffer = %p, %d\n", pch, bytes);  
+	 fprintf(stderr, "buffer = %p, %d\n", pch, static_cast<int>(bytes));  
 	 return -1;
        }
      }
