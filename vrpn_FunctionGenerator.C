@@ -107,7 +107,7 @@ vrpn_FunctionGenerator_function_script::
 
 vrpn_float32 vrpn_FunctionGenerator_function_script::
 generateValues( vrpn_float32* buf, vrpn_uint32 nValues, vrpn_float32 startTime, 
-			    vrpn_float32 sampleRate, vrpn_FunctionGenerator_channel* channel ) const
+			    vrpn_float32 sampleRate, vrpn_FunctionGenerator_channel* /*channel*/ ) const
 {
 	for( vrpn_uint32 i = 0; i <= nValues - 1; i++ )
 	{
@@ -642,7 +642,7 @@ handle_sample_rate_message( void* userdata, vrpn_HANDLERPARAM p )
 
 //static 
 int VRPN_CALLBACK vrpn_FunctionGenerator_Server::
-handle_interpreter_request_message( void* userdata, vrpn_HANDLERPARAM p )
+handle_interpreter_request_message( void* userdata, vrpn_HANDLERPARAM /*p*/)
 {
 #ifdef DEBUG_VRPN_FUNCTION_GENERATOR
 	fprintf( stdout, "FG::handle_interpreter_request_message\n" );
@@ -1970,7 +1970,7 @@ encode_error_report( char** buf, vrpn_int32& len, const FGError error, const vrp
 		return -1;
 	}
 	vrpn_int32 mylen = len;
-	if( 0 > vrpn_buffer( buf, &mylen, sampleRate ) || 0 > vrpn_buffer( buf, &mylen, channel ) )
+	if( 0 > vrpn_buffer( buf, &mylen, error ) || 0 > vrpn_buffer( buf, &mylen, channel ) )
 	{
 		fprintf( stderr, "vrpn_FunctionGenerator_Server::encode_error_report:  "
 				"unable to buffer error & channel" );

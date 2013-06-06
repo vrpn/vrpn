@@ -6128,7 +6128,7 @@ char * vrpn_copy_service_name (const char * fullname)
 char * vrpn_copy_service_location (const char * fullname)
 {
   // If there is no "@" sign in the string, copy the whole string.
-  size_t offset = strcspn(fullname, "@");
+  int offset = static_cast<int>(strcspn(fullname, "@"));
   size_t len = strlen(fullname) - offset;
   if (len == 0) {
     offset = -1;  // We add one to it below.
