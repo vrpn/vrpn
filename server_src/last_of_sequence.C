@@ -54,8 +54,8 @@ int VRPN_CALLBACK handle_anything_but_foo (void * userdata, vrpn_HANDLERPARAM p)
 
 int VRPN_CALLBACK handle_bar (void * userdata, vrpn_HANDLERPARAM p) {
 
-  printf("BAR!  At time %ld.%ld.\n", p.msg_time.tv_sec,
-         p.msg_time.tv_usec);
+  printf("BAR!  At time %ld.%ld.\n", static_cast<long>(p.msg_time.tv_sec),
+         static_cast<long>(p.msg_time.tv_usec));
 
   return 0;
 }
@@ -85,8 +85,8 @@ int VRPN_CALLBACK handle_potential_foo (void * userdata, vrpn_HANDLERPARAM p) {
 
 int VRPN_CALLBACK handle_real_foo (void * userdata, vrpn_HANDLERPARAM p) {
 
-  printf("FOO!  At time %ld.%ld.\n", p.msg_time.tv_sec,
-         p.msg_time.tv_usec);
+  printf("FOO!  At time %ld.%ld.\n", static_cast<long>(p.msg_time.tv_sec),
+         static_cast<long>(p.msg_time.tv_usec));
 
   return 0;
 }

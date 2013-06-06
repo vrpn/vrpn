@@ -44,7 +44,10 @@ int VRPN_CALLBACK handle_any_print (void * userdata, vrpn_HANDLERPARAM p)
 	
 	printf("Msg %lu \"%s\" from \"%s\" time %ld.%ld timestamp %ld.%ld\n",
 			msg_number++, c->message_type_name(p.type), c->sender_name(p.sender),
-			el.tv_sec, el.tv_usec, p.msg_time.tv_sec, p.msg_time.tv_usec);
+			static_cast<long>(el.tv_sec),
+			static_cast<long>(el.tv_usec),
+			static_cast<long>(p.msg_time.tv_sec),
+			static_cast<long>(p.msg_time.tv_usec));
 	fflush( stdout );
 	
 	if( doHead && ( msgs_to_print - msg_number - 1 <= 0 ) )
