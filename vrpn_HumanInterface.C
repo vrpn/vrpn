@@ -4,6 +4,12 @@
 
 #if defined(VRPN_USE_HID)
 
+#ifdef  VRPN_USE_LOCAL_HIDAPI
+#include "./submodules/hidapi/hidapi/hidapi.h"  // for hid_device
+#else
+#include "hidapi.h"
+#endif
+
 // Accessor for USB vendor ID of connected device
 vrpn_uint16 vrpn_HidInterface::vendor() const {
 	return _vendor;
