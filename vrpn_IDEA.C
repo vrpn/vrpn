@@ -107,6 +107,9 @@ vrpn_IDEA::vrpn_IDEA (const char * name, vrpn_Connection * c,const char * port
   } else {
 	  fprintf(stderr,"vrpn_IDEA: Can't get connection!\n");
   }
+
+  // Reset the drive.
+  reset();
 }
 
 // Add a newline-termination to the command and then send it.
