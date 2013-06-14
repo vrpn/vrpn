@@ -103,11 +103,9 @@ vrpn_LUDL_USBMAC6000::vrpn_LUDL_USBMAC6000(const char *name, vrpn_Connection *c,
   // to the amount of error in moving the stage.
   if (!send_usbmac_command(1, LUDL_SET_LONG_DATA, SERVO_CHECKING, 1)) {
     REPORT_ERROR("vrpn_LUDL_USBMAC6000::vrpn_LUDL_USBMAC6000(): Could not send command 1");
-    return false;
   }
   if (!send_usbmac_command(2, LUDL_SET_LONG_DATA, SERVO_CHECKING, 1)) {
     REPORT_ERROR("vrpn_LUDL_USBMAC6000::vrpn_LUDL_USBMAC6000(): Could not send command 2");
-    return false;
   }
 
   // Register to receive the message to request changes and to receive connection
