@@ -108,6 +108,11 @@ vrpn_LUDL_USBMAC6000::vrpn_LUDL_USBMAC6000(const char *name, vrpn_Connection *c,
     REPORT_ERROR("vrpn_LUDL_USBMAC6000::vrpn_LUDL_USBMAC6000(): Could not send command 2");
   }
 
+  // Wait for these commands to take effect and then clear any return
+  // values
+  vrpn_SleepMsecs(100);
+  flush_input_from_ludl();
+
   // Register to receive the message to request changes and to receive connection
   // messages.
   if (d_connection != NULL) {
