@@ -279,7 +279,7 @@ vrpn_int32 vrpn_Button::encode_to(char *buf,
 
 vrpn_int32 vrpn_Button::encode_states_to(char *buf)
 {
-  // Message includes: vrpn_int32 number_of_buttons, vrpn_int32 state
+  // Message includes: vrpn_int32 number_of_buttons, vrpn_int32 states
   // Byte order of each needs to be reversed to match network standard
   
   vrpn_int32    int_btn = num_buttons;
@@ -287,7 +287,8 @@ vrpn_int32 vrpn_Button::encode_states_to(char *buf)
   
   vrpn_buffer(&buf, &buflen, int_btn);
   for (int i=0; i < num_buttons; i++) {
-    vrpn_buffer(&buf, &buflen, buttons[i]);
+    vrpn_int32 state = buttons[i];
+    vrpn_buffer(&buf, &buflen, state);
   }
   
   return (num_buttons+1)*sizeof(vrpn_int32);
