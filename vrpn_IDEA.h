@@ -93,8 +93,9 @@ public:
     // so we don't get stuck.
     bool send_move_request(vrpn_float64 location_in_steps, double scale = 1.0);
 
-    /// Parses a position report.  Returns false on failure.
-    bool convert_report_to_value(unsigned char *buf, vrpn_float64 *value);
+    /// Parses a position report.  Returns -1 on failure, 0 on no value
+    // found, and 1 on value found.
+    int convert_report_to_value(unsigned char *buf, vrpn_float64 *value);
 
     /// send report iff changed
     virtual void report_changes

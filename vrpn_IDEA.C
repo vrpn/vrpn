@@ -215,15 +215,15 @@ bool  vrpn_IDEA::send_move_request(vrpn_float64 location_in_steps, double scale)
 //   Commands		  Responses	            Meanings
 //    l                     `l<value>[cr]`l#[cr]      Location of the drive
 
-bool  vrpn_IDEA::convert_report_to_value(unsigned char *buf, vrpn_float64 *value)
+int  vrpn_IDEA::convert_report_to_value(unsigned char *buf, vrpn_float64 *value)
 {
   // Make sure that the last character is [cr] and that we
   // have another [cr] in the record somewhere (there should be
   // two).  This makes sure that we have a complete report.
   char *firstindex = strchr((char*)(buf), '\r');
   char *lastindex = strrchr((char*)(buf), '\r');
-  if (buf[strlen((char*)(buf))-1] != '\r') { return false; }
-  if (firstindex == lastindex) { return false; }
+  if (buf[strlen((char*)(buf))-1] != '\r') { return 0; }
+  if (firstindex == lastindex) { return 0; }
 
   // See if we can convert the number.
   int  data;
@@ -231,13 +231,13 @@ bool  vrpn_IDEA::convert_report_to_value(unsigned char *buf, vrpn_float64 *value
     char msg[2048];
     sprintf(msg, "Could not convert value: %s", (char*)(buf));
     IDEA_ERROR(msg);
-    return false;
+    return -1;
   }
 
   // The location of the drive is in 64th-of-a-tick units, so need
   // to divide by 64 to find the actual location.
   (*value) = data/64.0;
-  return true;
+  return 1;
 }
 
 
@@ -401,7 +401,7 @@ int	vrpn_IDEA::reset(void)
         inbuf[ret] = '\0';
 
         vrpn_float64 position;
-        if (!convert_report_to_value(inbuf, &position)) {
+        if (convert_report_to_value(inbuf, &position) != 1) {
           fprintf(stderr,"vrpn_IDEA::reset(): Bad position report: %s\n", inbuf);
           IDEA_ERROR("Bad position report");
           return -1;
@@ -604,14 +604,33 @@ int vrpn_IDEA::get_report(void)
    // If we're SYNCing, then the next character we get should be the start
    // of a report.  If we recognize it, go into READing mode and tell how
    // many characters we expect total. If we don't recognize it, then we
-   // must have misinterpreted a command or something; reset
-   // and start over
+   // must have misinterpreted a command or something; clear the buffer
+   // and try another read after sending a warning in the hope that this
+   // is a one-shot glitch.  If it persists, we'll eventually timeout and
+   // reset.
    //--------------------------------------------------------------------
 
    if (status == STATUS_SYNCING) {
       // Try to get a character.  If none, just return.
       if (vrpn_read_available_characters(serial_fd, d_buffer, 1) != 1) {
       	return 0;
+      }
+
+      // Make sure that the first character is a single back-quote.  If
+      // not, we need to flush the buffer and then send another
+      // request for reading (probably dropped a character).
+      if (d_buffer[0] != '`') {
+	char msg[256];
+	sprintf(msg, "Bad character (got %c, expected `), re-syncing", d_buffer[0]);
+	IDEA_WARNING(msg);
+        vrpn_SleepMsecs(10);
+	vrpn_flush_input_buffer(serial_fd);
+	if (!send_command("l")) {
+		IDEA_ERROR("Could not send position request in re-sync, resetting");
+		status = STATUS_RESETTING;
+		return 0;
+	}
+	return 0;
       }
 
       // Got the first character of a report -- go into READING mode
@@ -652,8 +671,24 @@ int vrpn_IDEA::get_report(void)
 
    vrpn_float64 value;
    d_buffer[d_bufcount] = '\0';
-   if (!convert_report_to_value(d_buffer, &value)) {
+   ret = convert_report_to_value(d_buffer, &value);
+   if (ret == 0) {
      return 0;
+   } else if (ret == -1) {
+
+	// Error during parsing, maybe we got off by a half-report.
+	// Try clearing the input buffer and re-requesting a report.
+	IDEA_WARNING("Flushing input and requesting new position report");
+	status = STATUS_SYNCING;
+	d_bufcount = 0;
+        vrpn_SleepMsecs(10);
+	vrpn_flush_input_buffer(serial_fd);
+	if (!send_command("l")) {
+	    IDEA_ERROR("Could not send position request in convert failure, resetting");
+	    status = STATUS_RESETTING;
+	    return 0;
+	}
+	return 0;
    }
 
    //--------------------------------------------------------------------
@@ -812,7 +847,7 @@ void	vrpn_IDEA::mainloop()
 	    }
 
 	    if ( duration(current_time,d_timestamp) > TIMEOUT_TIME_INTERVAL) {
-		    sprintf(errmsg,"Timeout... current_time=%ld:%ld, timestamp=%ld:%ld",
+		    sprintf(errmsg,"Timeout, resetting... current_time=%ld:%ld, timestamp=%ld:%ld",
 					current_time.tv_sec, static_cast<long>(current_time.tv_usec),
 					d_timestamp.tv_sec, static_cast<long>(d_timestamp.tv_usec));
 		    IDEA_ERROR(errmsg);
