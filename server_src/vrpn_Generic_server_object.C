@@ -22,6 +22,7 @@
 #include "vrpn_Button_USB.h"
 #include "vrpn_CerealBox.h"             // for vrpn_CerealBox
 #include "vrpn_Connection.h"
+#include "vrpn_Contour.h"               // for vrpn_Contour_ShuttleXpress, etc.
 #include "vrpn_DevInput.h"              // for vrpn_DevInput
 #include "vrpn_Dial.h"                  // for vrpn_Dial, etc
 #include "vrpn_DirectXFFJoystick.h"
@@ -32,8 +33,10 @@
 #include "vrpn_Flock.h"                 // for vrpn_Tracker_Flock, etc
 #include "vrpn_Flock_Parallel.h"        // for vrpn_Tracker_Flock_Parallel
 #include "vrpn_Freespace.h"
+#include "vrpn_Futaba.h"                // for vrpn_Futaba_InterLink_Elite, etc.
 #include "vrpn_Generic_server_object.h"
 #include "vrpn_GlobalHapticsOrb.h"      // for vrpn_GlobalHapticsOrb
+#include "vrpn_Griffin.h"               // for vrpn_Griffin_PowerMate, etc.
 #include "vrpn_IDEA.h"                  // for vrpn_IDEA
 #include "vrpn_Imager_Stream_Buffer.h"  // for vrpn_Imager_Stream_Buffer
 #include "vrpn_ImmersionBox.h"          // for vrpn_ImmersionBox
@@ -43,7 +46,9 @@
 #include "vrpn_Joywin32.h"
 #include "vrpn_Keyboard.h"              // for vrpn_Keyboard
 #include "vrpn_LUDL.h"                  // for vrpn_LUDL_USBMAC6000
+#include "vrpn_Logitech_Controller_Raw.h"	// for vrpn_Logitech_Extreme_3D_Pro, etc.
 #include "vrpn_Magellan.h"              // for vrpn_Magellan
+#include "vrpn_Microsoft_Controller_Raw.h"	// for vrpn_Microsoft_Controller_Raw_Xbox_S, vrpn_Microsoft_Controller_Raw_Xbox_360, etc.
 #include "vrpn_Mouse.h"                 // for vrpn_Button_SerialMouse, etc
 #include "vrpn_NationalInstruments.h"
 #include "vrpn_nikon_controls.h"        // for vrpn_Nikon_Controls
@@ -52,6 +57,7 @@
 #include "vrpn_Poser.h"                 // for vrpn_Poser
 #include "vrpn_Poser_Tek4662.h"         // for vrpn_Poser_Tek4662
 #include "vrpn_raw_sgibox.h"            // for vrpn_raw_SGIBox, for access to the SGI button & dial box connected to the serial port of an linux PC
+#include "vrpn_Saitek_Controller_Raw.h"	// for vrpn_Saitek_ST290_Pro, etc.
 #include "vrpn_sgibox.h"                //for access to the B&D box connected to an SGI via the IRIX GL drivers
 #include "vrpn_Sound.h"                 // for vrpn_Sound
 #include "vrpn_Spaceball.h"             // for vrpn_Spaceball
@@ -4128,6 +4134,12 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object (vrpn_Connection *connect
         VRPN_CHECK (setup_Logger);
       } else if (VRPN_ISIT ("vrpn_Imager_Stream_Buffer")) {
         VRPN_CHECK (setup_ImageStream);
+      } else if (VRPN_ISIT ("vrpn_Contour_ShuttleXpress")) {
+        VRPN_CHECK (templated_setup_HID_device_name_only<vrpn_Contour_ShuttleXpress>);
+      } else if (VRPN_ISIT ("vrpn_Futaba_InterLink_Elite")) {
+          VRPN_CHECK (templated_setup_HID_device_name_only<vrpn_Futaba_InterLink_Elite>);
+      } else if (VRPN_ISIT ("vrpn_Griffin_PowerMate")) {
+          VRPN_CHECK (templated_setup_HID_device_name_only<vrpn_Griffin_PowerMate>);
       } else if (VRPN_ISIT ("vrpn_Xkeys_Desktop")) {
         VRPN_CHECK (templated_setup_HID_device_name_only<vrpn_Xkeys_Desktop>);
       } else if (VRPN_ISIT ("vrpn_Xkeys_Pro")) {
@@ -4138,6 +4150,10 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object (vrpn_Connection *connect
         VRPN_CHECK (templated_setup_HID_device_name_only<vrpn_Xkeys_Jog_And_Shuttle>);
       } else if (VRPN_ISIT ("vrpn_Xkeys_XK3")) {
         VRPN_CHECK (templated_setup_HID_device_name_only<vrpn_Xkeys_XK3>);
+      } else if (VRPN_ISIT ("vrpn_Logitech_Extreme_3D_Pro")) {
+        VRPN_CHECK (templated_setup_HID_device_name_only<vrpn_Logitech_Extreme_3D_Pro>);
+      } else if (VRPN_ISIT ("vrpn_Saitek_ST290_Pro")) {
+        VRPN_CHECK (templated_setup_HID_device_name_only<vrpn_Saitek_ST290_Pro>);
       } else if (VRPN_ISIT ("vrpn_3DConnexion_Navigator")) {
         VRPN_CHECK (templated_setup_device_name_only<vrpn_3DConnexion_Navigator>);
       } else if (VRPN_ISIT ("vrpn_3DConnexion_Navigator_for_Notebooks")) {
@@ -4152,6 +4168,16 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object (vrpn_Connection *connect
         VRPN_CHECK (templated_setup_device_name_only<vrpn_3DConnexion_SpaceMousePro>);
       } else if (VRPN_ISIT ("vrpn_3DConnexion_SpaceBall5000")) {
         VRPN_CHECK (templated_setup_device_name_only<vrpn_3DConnexion_SpaceBall5000>);
+      } else if (VRPN_ISIT ("vrpn_Microsoft_SideWinder_Precision_2")) {
+        VRPN_CHECK (templated_setup_HID_device_name_only<vrpn_Microsoft_SideWinder_Precision_2>);
+      } else if (VRPN_ISIT ("vrpn_Microsoft_SideWinder")) {
+        VRPN_CHECK (templated_setup_HID_device_name_only<vrpn_Microsoft_SideWinder>);
+      } else if (VRPN_ISIT ("vrpn_Microsoft_Controller_Raw_Xbox_S")) {
+        VRPN_CHECK (templated_setup_HID_device_name_only<vrpn_Microsoft_Controller_Raw_Xbox_S>);
+      } else if (VRPN_ISIT ("vrpn_Microsoft_Controller_Raw_Xbox_360")) {
+        VRPN_CHECK (templated_setup_HID_device_name_only<vrpn_Microsoft_Controller_Raw_Xbox_360>);
+      } else if (VRPN_ISIT ("vrpn_Afterglow_Ax1_For_Xbox_360")) {
+        VRPN_CHECK (templated_setup_HID_device_name_only<vrpn_Afterglow_Ax1_For_Xbox_360>);
       } else if (VRPN_ISIT ("vrpn_Tracker_MotionNode")) {
         VRPN_CHECK (setup_Tracker_MotionNode);
       } else if (VRPN_ISIT ("vrpn_Tracker_GPS")) {

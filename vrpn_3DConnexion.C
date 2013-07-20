@@ -22,7 +22,7 @@ typedef struct input_devinfo {
 } XXX_should_have_been_in_system_includes;
 
 // USB vendor and product IDs for the models we support
-static const vrpn_uint16 vrpn_3DCONNEXION_VENDOR = 0x046d; //1133;
+static const vrpn_uint16 vrpn_3DCONNEXION_VENDOR = 0x046d; //1133;	// 3Dconnexion is made by Logitech
 static const vrpn_uint16 vrpn_3DCONNEXION_TRAVELER = 50723;
 static const vrpn_uint16 vrpn_3DCONNEXION_NAVIGATOR = 50726;
 static const vrpn_uint16 vrpn_3DCONNEXION_NAVIGATOR_FOR_NOTEBOOKS = 0xc628;	// 50728;

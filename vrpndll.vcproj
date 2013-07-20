@@ -575,6 +575,26 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\vrpn_Contour.C"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath="vrpn_Dial.C"
 				>
 				<FileConfiguration
@@ -939,6 +959,26 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\vrpn_Futaba.C"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath="vrpn_GlobalHapticsOrb.C"
 				>
 				<FileConfiguration
@@ -959,7 +999,47 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\vrpn_Griffin.C"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath="vrpn_HumanInterface.C"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="vrpn_IDEA.C"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -1179,6 +1259,26 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\vrpn_Logitech_Controller_Raw.C"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath="vrpn_LUDL.C"
 				>
 				<FileConfiguration
@@ -1200,6 +1300,26 @@
 			</File>
 			<File
 				RelativePath="vrpn_Magellan.C"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\vrpn_Microsoft_Controller_Raw.C"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -1400,6 +1520,26 @@
 			</File>
 			<File
 				RelativePath="vrpn_RedundantTransmission.C"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\vrpn_Saitek_Controller_Raw.C"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -1720,26 +1860,6 @@
 			</File>
 			<File
 				RelativePath="vrpn_Tracker_Filter.C"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						CompileAs="2"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						CompileAs="2"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="vrpn_Tracker_Wintracker.C"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -2099,6 +2219,26 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="vrpn_Tracker_Wintracker.C"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath="vrpn_Tracker_zSight.C"
 				>
 				<FileConfiguration
@@ -2258,26 +2398,6 @@
 					/>
 				</FileConfiguration>
 			</File>
-			<File
-				RelativePath="vrpn_IDEA.C"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						CompileAs="2"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						CompileAs="2"
-					/>
-				</FileConfiguration>
-			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -2360,6 +2480,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\vrpn_Contour.h"
+				>
+			</File>
+			<File
 				RelativePath="vrpn_Dial.h"
 				>
 			</File>
@@ -2432,7 +2556,15 @@
 				>
 			</File>
 			<File
+				RelativePath=".\vrpn_Futaba.h"
+				>
+			</File>
+			<File
 				RelativePath="vrpn_GlobalHapticsOrb.h"
+				>
+			</File>
+			<File
+				RelativePath=".\vrpn_Griffin.h"
 				>
 			</File>
 			<File
@@ -2441,6 +2573,10 @@
 			</File>
 			<File
 				RelativePath="vrpn_HumanInterface.h"
+				>
+			</File>
+			<File
+				RelativePath="vrpn_IDEA.h"
 				>
 			</File>
 			<File
@@ -2484,6 +2620,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\vrpn_Logitech_Controller_Raw.h"
+				>
+			</File>
+			<File
 				RelativePath="vrpn_LUDL.h"
 				>
 			</File>
@@ -2497,6 +2637,10 @@
 			</File>
 			<File
 				RelativePath="vrpn_MainloopObject.h"
+				>
+			</File>
+			<File
+				RelativePath=".\vrpn_Microsoft_Controller_Raw.h"
 				>
 			</File>
 			<File
@@ -2537,6 +2681,10 @@
 			</File>
 			<File
 				RelativePath="vrpn_RedundantTransmission.h"
+				>
+			</File>
+			<File
+				RelativePath=".\vrpn_Saitek_Controller_Raw.h"
 				>
 			</File>
 			<File
@@ -2601,10 +2749,6 @@
 			</File>
 			<File
 				RelativePath="vrpn_Tracker_Filter.h"
-				>
-			</File>
-			<File
-				RelativePath="vrpn_Tracker_Wintracker.h"
 				>
 			</File>
 			<File
@@ -2676,6 +2820,10 @@
 				>
 			</File>
 			<File
+				RelativePath="vrpn_Tracker_Wintracker.h"
+				>
+			</File>
+			<File
 				RelativePath="vrpn_Tracker_zSight.h"
 				>
 			</File>
@@ -2709,10 +2857,6 @@
 			</File>
 			<File
 				RelativePath="vrpn_Zaber.h"
-				>
-			</File>
-			<File
-				RelativePath="vrpn_IDEA.h"
 				>
 			</File>
 		</Filter>
