@@ -13,7 +13,7 @@
 // way that any other USB devices from this vendow should be easy to add.
 // Based on the X-Keys driver.
 //
-// For the X-Keys Joystick Pro:
+// For the Dreamcheeky:
 // Button 0 is the upper-left triangle
 // Button 1 is hte upper-right triangle
 // Button 2 is the upper center round pad

@@ -901,6 +901,7 @@ set(VRPN_SERVER_SOURCES
 	vrpn_Button_NI_DIO24.C
 	vrpn_Button_USB.cpp
 	vrpn_CerealBox.C
+	vrpn_Contour.C
 	vrpn_DevInput.C
 	vrpn_DirectXFFJoystick.C
 	vrpn_DirectXRumblePad.C
@@ -914,7 +915,9 @@ set(VRPN_SERVER_SOURCES
 	vrpn_ForceDeviceServer.C
 	vrpn_Freespace.C
 	vrpn_FunctionGenerator.C
+	vrpn_Futaba.C
 	vrpn_GlobalHapticsOrb.C
+	vrpn_Griffin.C
 	vrpn_HumanInterface.C
 	vrpn_IDEA.C
 	vrpn_Imager_Stream_Buffer.C
@@ -925,7 +928,9 @@ set(VRPN_SERVER_SOURCES
 	vrpn_Joywin32.C
 	vrpn_Keyboard.C
 	vrpn_LUDL.C
+	vrpn_Logitech_Controller_Raw.C
 	vrpn_Magellan.C
+	vrpn_Microsoft_Controller_Raw.C
 	vrpn_Mouse.C
 	vrpn_NationalInstruments.C
 	vrpn_Nidaq.C
@@ -988,6 +993,7 @@ set(VRPN_SERVER_PUBLIC_HEADERS
 	vrpn_Button_NI_DIO24.h
 	vrpn_Button_USB.h
 	vrpn_CerealBox.h
+	vrpn_Contour.h
 	vrpn_DevInput.h
 	vrpn_DirectXFFJoystick.h
 	vrpn_DirectXRumblePad.h
@@ -1001,7 +1007,9 @@ set(VRPN_SERVER_PUBLIC_HEADERS
 	vrpn_ForceDeviceServer.h
 	vrpn_Freespace.h
 	vrpn_FunctionGenerator.h
+	vrpn_Futaba.h
 	vrpn_GlobalHapticsOrb.h
+	vrpn_Griffin.h
 	vrpn_HashST.h
 	vrpn_HumanInterface.h
 	vrpn_IDEA.h
@@ -1012,8 +1020,10 @@ set(VRPN_SERVER_PUBLIC_HEADERS
 	vrpn_Joylin.h
 	vrpn_Joywin32.h
 	vrpn_Keyboard.h
+	vrpn_Logitech_Controller_Raw.h
 	vrpn_LUDL.h
 	vrpn_Magellan.h
+	vrpn_Microsoft_Controller_Raw.h
 	vrpn_Mouse.h
 	vrpn_NationalInstruments.h
 	vrpn_Nidaq.h

@@ -654,6 +654,7 @@ SLIB_FILES =  $(LIB_FILES) \
 	vrpn_BiosciencesTools.C \
 	vrpn_Button_NI_DIO24.C \
 	vrpn_CerealBox.C \
+	vrpn_Contour.C \
 	vrpn_Dyna.C \
 	vrpn_DreamCheeky.C \
 	vrpn_Event_Analog.C \
@@ -664,7 +665,9 @@ SLIB_FILES =  $(LIB_FILES) \
 	vrpn_ForceDeviceServer.C \
 	vrpn_Freespace.C \
 	vrpn_FunctionGenerator.C \
+	vrpn_Futaba.C \
 	vrpn_GlobalHapticsOrb.C \
+	vrpn_Griffin.C \
 	vrpn_HumanInterface.C \
 	vrpn_IDEA.C \
 	vrpn_Imager_Stream_Buffer.C \
@@ -674,8 +677,10 @@ SLIB_FILES =  $(LIB_FILES) \
 	vrpn_Joylin.C \
 	vrpn_Keyboard.C \
 	vrpn_Local_HIDAPI.C \
+	vrpn_Logitech_Controller_Raw.C \
 	vrpn_LUDL.C \
 	vrpn_Magellan.C \
+	vrpn_Microsoft_Controller_Raw.C \
 	vrpn_Mouse.C \
 	vrpn_NationalInstruments.C \
 	vrpn_nikon_controls.C \
@@ -732,6 +737,7 @@ SLIB_INCLUDES = $(LIB_INCLUDES) \
 	vrpn_BiosciencesTools.h \
 	vrpn_Button_NI_DIO24.h \
 	vrpn_CerealBox.h \
+	vrpn_Contour.h \
 	vrpn_Dyna.h \
 	vrpn_DreamCheeky.h \
 	vrpn_Event_Analog.h \
@@ -741,7 +747,9 @@ SLIB_INCLUDES = $(LIB_INCLUDES) \
 	vrpn_Flock_Parallel.h \
 	vrpn_ForceDeviceServer.h \
 	vrpn_Freespace.h \
+	vrpn_Futaba.C \
 	vrpn_GlobalHapticsOrb.h \
+	vrpn_Griffin.h \
 	vrpn_HumanInterface.h \
 	vrpn_IDEA.h \
 	vrpn_Imager_Stream_Buffer.h \
@@ -750,8 +758,10 @@ SLIB_INCLUDES = $(LIB_INCLUDES) \
 	vrpn_JoyFly.h \
 	vrpn_Joylin.h \
 	vrpn_Keyboard.h \
+	vrpn_Logitech_Controller_Raw.h \
 	vrpn_LUDL.h \
 	vrpn_Magellan.h \
+	vrpn_Microsoft_Controller_Raw.h \
 	vrpn_Mouse.h \
 	vrpn_NationalInstruments.h \
 	vrpn_nikon_controls.h \

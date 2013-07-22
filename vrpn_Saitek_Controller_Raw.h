@@ -21,15 +21,6 @@
 // All models expose Buttons for the keys on the device.
 // Button 0 is the programming switch; it is set if the switch is in the "red" position.
 //
-// For the X-Keys Jog & Shuttle:
-// Analog channel 0 is the shuttle position (-1 to 1). There are 15 levels.
-// Analog channel 1 is the dial orientation (0 to 255).
-// Dial channel 0 sends deltas on the dial.
-//
-// For the X-Keys Joystick Pro:
-// Analog channel 0 is the joystick X axis (-1 to 1).
-// Analog channel 1 is the joystick Y axis (-1 to 1).
-// Analog channel 2 is the joystick RZ axis (-1 to 1).
 
 class vrpn_Saitek_Controller_Raw: public vrpn_BaseClass, protected vrpn_HidInterface {
 public:
