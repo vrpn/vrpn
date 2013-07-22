@@ -232,6 +232,27 @@ AddExecutablePrivilege() {
         RemoveExecutablePrivilege
     done
 
+    # Clean up all .htm and .txt files. Don't trim whitespace from these.
+    for fn in $(find . -name \*.htm) $(find . -name \*.txt); do
+        StartProcessingFile ${fn}
+        RemoveDosEndlines
+        RemoveExecutablePrivilege
+    done
+
+    # Clean up all .psf and .vmd files. Don't trim whitespace from these.
+    for fn in $(find . -name \*.psf) $(find . -name \*.vmd); do
+        StartProcessingFile ${fn}
+        RemoveDosEndlines
+        RemoveExecutablePrivilege
+    done
+
+    # Clean up all .inf and .ui files. Don't trim whitespace from these.
+    for fn in $(find . -name \*.inf) $(find . -name \*.ui); do
+        StartProcessingFile ${fn}
+        RemoveDosEndlines
+        RemoveExecutablePrivilege
+    done
+
     # Clean up all .cvsignore and package-list files. Don't trim whitespace from these.
     for fn in $(find . -name \*.cvsignore) $(find . -name package-list); do
         StartProcessingFile ${fn}
@@ -239,6 +260,7 @@ AddExecutablePrivilege() {
         RemoveExecutablePrivilege
     done
 
+    #########################################################################
     # Clean up all .dsp and .dsw files. These should be DOS format when done.
     for fn in $(find . -name \*.dsw) $(find . -name \*.dsp); do
         StartProcessingFile ${fn}
