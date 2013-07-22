@@ -17,6 +17,12 @@ if ! DOS2UNIX=$(which dos2unix || which fromdos); then
     exit 1
 fi
 
+# Pick the DOS endline adder
+if ! UNIX2DOS=$(which unix2dos || which todos); then
+    echo "Can't find unix2dos or todos! Must exit!" >&2
+    exit 1
+fi
+
 # Check for sed
 if ! which sed > /dev/null; then
     echo "Can't find 'sed'!" >&2
@@ -86,6 +92,11 @@ StartProcessingFile() {
 RemoveDosEndlines() {
     StatusMessage "Removing DOS endlines with ${DOS2UNIX}"
     ${DOS2UNIX} -q ${FILETOPROCESS}
+}
+
+AddDosEndlines() {
+    StatusMessage "Adding DOS endlines with ${UNIX2DOS}"
+    ${UNIX2DOS} -q ${FILETOPROCESS}
 }
 
 TrimTrailingWhitespace() {
@@ -221,10 +232,24 @@ AddExecutablePrivilege() {
         RemoveExecutablePrivilege
     done
 
-    # Clean up all .cvsignore and .package-list files. Don't trim whitespace from these.
+    # Clean up all .cvsignore and package-list files. Don't trim whitespace from these.
     for fn in $(find . -name \*.cvsignore) $(find . -name package-list); do
         StartProcessingFile ${fn}
         RemoveDosEndlines
+        RemoveExecutablePrivilege
+    done
+
+    # Clean up all .dsp and .dsw files. These should be DOS format when done.
+    for fn in $(find . -name \*.dsw) $(find . -name \*.dsp); do
+        StartProcessingFile ${fn}
+        AddDosEndlines
+        RemoveExecutablePrivilege
+    done
+
+    # Clean up all .sln and .vcproj files. These should be DOS format when done.
+    for fn in $(find . -name \*.sln) $(find . -name \*.vcproj); do
+        StartProcessingFile ${fn}
+        AddDosEndlines
         RemoveExecutablePrivilege
     done
 
