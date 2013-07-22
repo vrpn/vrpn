@@ -337,6 +337,13 @@ AddExecutablePrivilege() {
         RemoveExecutablePrivilege
     done
 
+    # Clean up all .cmake_in files. Don't trim whitespace from these.
+    for fn in $(find . -name \*.cmake_in); do
+        StartProcessingFile ${fn}
+        RemoveDosEndlines
+        RemoveExecutablePrivilege
+    done
+
     #########################################################################
     # Clean up all .patch and .sh files. Only change to DOS.
     for fn in $(find . -name \*.patch) $(find . -name \*.sh); do
@@ -359,8 +366,8 @@ AddExecutablePrivilege() {
         RemoveExecutablePrivilege
     done
 
-    # Clean up all .vcp files. These should be DOS format when done.
-    for fn in $(find . -name \*.vcp); do
+    # Clean up all .vcp and .vcw files. These should be DOS format when done.
+    for fn in $(find . -name \*.vcp) $(find . -name \*.vcw); do
         StartProcessingFile ${fn}
         AddDosEndlines
         RemoveExecutablePrivilege
