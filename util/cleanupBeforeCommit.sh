@@ -309,8 +309,29 @@ AddExecutablePrivilege() {
         RemoveExecutablePrivilege
     done
 
-    # Clean up all .py files. Don't trim whitespace from these.
-    for fn in $(find . -name \*.py); do
+    # Clean up all .tcl and .afm-plus_imd files. Don't trim whitespace from these.
+    for fn in $(find . -name \*.tcl) $(find . -name \*.afm-plus_imd); do
+        StartProcessingFile ${fn}
+        RemoveDosEndlines
+        RemoveExecutablePrivilege
+    done
+
+    # Clean up all .UNC and Doxyfile files. Don't trim whitespace from these.
+    for fn in $(find . -name \*.UNC) $(find . -name Doxyfile); do
+        StartProcessingFile ${fn}
+        RemoveDosEndlines
+        RemoveExecutablePrivilege
+    done
+
+    # Clean up all .mk and set_instruments_for_sound_server files. Don't trim whitespace from these.
+    for fn in $(find . -name \*.mk) $(find . -name set_instruments_for_sound_server); do
+        StartProcessingFile ${fn}
+        RemoveDosEndlines
+        RemoveExecutablePrivilege
+    done
+
+    # Clean up all .py and .vrpndef files. Don't trim whitespace from these.
+    for fn in $(find . -name \*.py) $(find . -name \*.vrpndef); do
         StartProcessingFile ${fn}
         RemoveDosEndlines
         RemoveExecutablePrivilege
