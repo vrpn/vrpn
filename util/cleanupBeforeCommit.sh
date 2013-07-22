@@ -183,6 +183,13 @@ AddExecutablePrivilege() {
         RemoveExecutablePrivilege
     done
 
+    # Clean up all makefile and Makefile.python files.  Don't trim whitespace from these.
+    for fn in $(find . -name "makefile") $(find . -name Makefile.python); do
+        StartProcessingFile ${fn}
+        RemoveDosEndlines
+        RemoveExecutablePrivilege
+    done
+
     # Clean up all .C and .cpp files.  Don't trim whitespace from these.
     for fn in $(find . -name \*.C) $(find . -name \*.cpp); do
         StartProcessingFile ${fn}
@@ -190,7 +197,7 @@ AddExecutablePrivilege() {
         RemoveExecutablePrivilege
     done
 
-    # Clean up all and .hpp files.  Don't trim whitespace from these.
+    # Clean up all .hpp files.  Don't trim whitespace from these.
     for fn in $(find . -name \*.hpp); do
         StartProcessingFile ${fn}
         RemoveDosEndlines
@@ -199,6 +206,13 @@ AddExecutablePrivilege() {
 
     # Clean up all .c and .h files.  Don't trim whitespace from these.
     for fn in $(find . -name \*.c) $(find . -name \*.h); do
+        StartProcessingFile ${fn}
+        RemoveDosEndlines
+        RemoveExecutablePrivilege
+    done
+
+    # Clean up all .Cdef and .hdef files.  Don't trim whitespace from these.
+    for fn in $(find . -name \*.Cdef) $(find . -name \*.hdef); do
         StartProcessingFile ${fn}
         RemoveDosEndlines
         RemoveExecutablePrivilege
@@ -260,6 +274,55 @@ AddExecutablePrivilege() {
         RemoveExecutablePrivilege
     done
 
+    # Clean up all .i and Readme files. Don't trim whitespace from these.
+    for fn in $(find . -name \*.i) $(find . -name Readme); do
+        StartProcessingFile ${fn}
+        RemoveDosEndlines
+        RemoveExecutablePrivilege
+    done
+
+    # Clean up all .pl and GNUmakefile files. Don't trim whitespace from these.
+    for fn in $(find . -name \*.pl) $(find . -name GNUmakefile); do
+        StartProcessingFile ${fn}
+        RemoveDosEndlines
+        RemoveExecutablePrivilege
+    done
+
+    # Clean up all .afm-plus and .qsp files. Don't trim whitespace from these.
+    for fn in $(find . -name \*.afm-plus) $(find . -name \*.qsp); do
+        StartProcessingFile ${fn}
+        RemoveDosEndlines
+        RemoveExecutablePrivilege
+    done
+
+    # Clean up all .prefs and .rc files. Don't trim whitespace from these.
+    for fn in $(find . -name \*.prefs) $(find . -name \*.rc); do
+        StartProcessingFile ${fn}
+        RemoveDosEndlines
+        RemoveExecutablePrivilege
+    done
+
+    # Clean up all .jconf and .imp files. Don't trim whitespace from these.
+    for fn in $(find . -name \*.jconf) $(find . -name \*.imp); do
+        StartProcessingFile ${fn}
+        RemoveDosEndlines
+        RemoveExecutablePrivilege
+    done
+
+    # Clean up all .py files. Don't trim whitespace from these.
+    for fn in $(find . -name \*.py); do
+        StartProcessingFile ${fn}
+        RemoveDosEndlines
+        RemoveExecutablePrivilege
+    done
+
+    #########################################################################
+    # Clean up all .patch and .sh files. Only change to DOS.
+    for fn in $(find . -name \*.patch) $(find . -name \*.sh); do
+        StartProcessingFile ${fn}
+        RemoveDosEndlines
+    done
+
     #########################################################################
     # Clean up all .dsp and .dsw files. These should be DOS format when done.
     for fn in $(find . -name \*.dsw) $(find . -name \*.dsp); do
@@ -270,6 +333,13 @@ AddExecutablePrivilege() {
 
     # Clean up all .sln and .vcproj files. These should be DOS format when done.
     for fn in $(find . -name \*.sln) $(find . -name \*.vcproj); do
+        StartProcessingFile ${fn}
+        AddDosEndlines
+        RemoveExecutablePrivilege
+    done
+
+    # Clean up all .vcp files. These should be DOS format when done.
+    for fn in $(find . -name \*.vcp); do
         StartProcessingFile ${fn}
         AddDosEndlines
         RemoveExecutablePrivilege
