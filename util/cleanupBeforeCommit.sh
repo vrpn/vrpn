@@ -1,4 +1,3 @@
-#!/bin/sh
 set -e
 
 ###
@@ -86,7 +85,7 @@ StartProcessingFile() {
 
 RemoveDosEndlines() {
     StatusMessage "Removing DOS endlines with ${DOS2UNIX}"
-    ${DOS2UNIX} ${FILETOPROCESS}
+    ${DOS2UNIX} -q ${FILETOPROCESS}
 }
 
 TrimTrailingWhitespace() {
@@ -131,6 +130,12 @@ AddExecutablePrivilege() {
     TrimTrailingWhitespace
     AddExecutablePrivilege
 
+    # Git config file
+    StartProcessingFile .gitmodules
+    RemoveDosEndlines
+    #TrimTrailingWhitespace  # Is this safe to do?
+    RemoveExecutablePrivilege
+
     # Server config file
     StartProcessingFile server_src/vrpn.cfg
     RemoveDosEndlines
@@ -145,5 +150,83 @@ AddExecutablePrivilege() {
         TrimTrailingWhitespace
         RemoveExecutablePrivilege
     done
+
+    # Clean up all ChangeLog files.  Don't trim whitespace from these.
+    for fn in $(find . -name "ChangeLog"); do
+        StartProcessingFile ${fn}
+        RemoveDosEndlines
+        RemoveExecutablePrivilege
+    done
+
+    # Clean up all .in and Format files.  Don't trim whitespace from these.
+    for fn in $(find . -name \*.in) $(find . -name "Format"); do
+        StartProcessingFile ${fn}
+        RemoveDosEndlines
+        RemoveExecutablePrivilege
+    done
+
+    # Clean up all Makefile and README files.  Don't trim whitespace from these.
+    for fn in $(find . -name "Makefile") $(find . -name README\*); do
+        StartProcessingFile ${fn}
+        RemoveDosEndlines
+        RemoveExecutablePrivilege
+    done
+
+    # Clean up all .C and .cpp files.  Don't trim whitespace from these.
+    for fn in $(find . -name \*.C) $(find . -name \*.cpp); do
+        StartProcessingFile ${fn}
+        RemoveDosEndlines
+        RemoveExecutablePrivilege
+    done
+
+    # Clean up all and .hpp files.  Don't trim whitespace from these.
+    for fn in $(find . -name \*.hpp); do
+        StartProcessingFile ${fn}
+        RemoveDosEndlines
+        RemoveExecutablePrivilege
+    done
+
+    # Clean up all .c and .h files.  Don't trim whitespace from these.
+    for fn in $(find . -name \*.c) $(find . -name \*.h); do
+        StartProcessingFile ${fn}
+        RemoveDosEndlines
+        RemoveExecutablePrivilege
+    done
+
+    # Clean up all .classpath and .xml files.  Don't trim whitespace from these.
+    for fn in $(find . -name \*.classpath) $(find . -name \*.xml); do
+        StartProcessingFile ${fn}
+        RemoveDosEndlines
+        RemoveExecutablePrivilege
+    done
+
+    # Clean up all .project and .css files.  Don't trim whitespace from these.
+    for fn in $(find . -name \*.project) $(find . -name \*.css); do
+        StartProcessingFile ${fn}
+        RemoveDosEndlines
+        RemoveExecutablePrivilege
+    done
+
+    # Clean up all .properties and .cfg files. Don't trim whitespace from these.
+    for fn in $(find . -name \*.properties) $(find . -name \*.cfg); do
+        StartProcessingFile ${fn}
+        RemoveDosEndlines
+        RemoveExecutablePrivilege
+    done
+
+    # Clean up all .java and .html files. Don't trim whitespace from these.
+    for fn in $(find . -name \*.java) $(find . -name \*.html); do
+        StartProcessingFile ${fn}
+        RemoveDosEndlines
+        RemoveExecutablePrivilege
+    done
+
+    # Clean up all .cvsignore and .package-list files. Don't trim whitespace from these.
+    for fn in $(find . -name \*.cvsignore) $(find . -name package-list); do
+        StartProcessingFile ${fn}
+        RemoveDosEndlines
+        RemoveExecutablePrivilege
+    done
+
 )
 
