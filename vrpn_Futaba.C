@@ -2,7 +2,7 @@
 
 #include <stdio.h>                      // for fprintf, stderr, NULL
 #include <string.h>                     // for memset
-#include <math.h>                       // for abs
+#include <math.h>                       // for fabs
 
 #include "vrpn_Futaba.h"
 
@@ -21,7 +21,7 @@ static unsigned long duration(struct timeval t1, struct timeval t2)
 
 static void normalize_axis(const unsigned int value, const short deadzone, const vrpn_float64 scale, vrpn_float64& channel) {
 	channel = (static_cast<float>(value) - 128.0f);
-	if (abs(channel) < deadzone)
+	if (fabs(channel) < deadzone)
 	{
 		channel = 0.0f;
 	}

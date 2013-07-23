@@ -2,7 +2,7 @@
 
 #include <stdio.h>                      // for fprintf, stderr, NULL
 #include <string.h>                     // for memset
-#include <math.h>                       // for sqrt
+#include <math.h>                       // for sqrt and fabs
 
 #include "vrpn_Microsoft_Controller_Raw.h"
 
@@ -50,7 +50,7 @@ static vrpn_float64 normalize_dpad(unsigned char up, unsigned char right, unsign
 static void normalize_axis(const unsigned int value, const short deadzone, const vrpn_float64 scale, vrpn_float64& channel, int wordSize = 16)
 {
 	channel = (static_cast<float>(value) - (float) (1 << (wordSize - 1)));
-	if (abs(channel) < (deadzone * 3 / 4))
+	if (fabs(channel) < (deadzone * 3 / 4))
 	{
 		channel = 0.0f;
 	}
@@ -107,7 +107,7 @@ static vrpn_float64 normalize_trigger(unsigned int trigger)
 {
 	// Filter out low-intensity signals
 	int value = trigger - 0x80;
-	return ((abs(value) < MS_GAMEPAD_TRIGGER_THRESHOLD) ? 0.0f : (value * 2.0f / 255.0f));
+	return ((fabs(static_cast<double>(value)) < MS_GAMEPAD_TRIGGER_THRESHOLD) ? 0.0f : (value * 2.0f / 255.0f));
 }
 
 //////////////////////////////////////////////////////////////////////////
