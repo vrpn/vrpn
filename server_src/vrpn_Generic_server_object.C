@@ -3047,7 +3047,7 @@ int vrpn_Generic_Server_Object::setup_Button_NI_DIO24 (char * & pch, char * line
 
 }    //  setup_Button_NI_DIO24
 
-int vrpn_Generic_Server_Object::setup_Tracker_PhaseSpace (char * & pch, char * line, FILE * /*config_file*/)
+int vrpn_Generic_Server_Object::setup_Tracker_PhaseSpace (char * & pch, char * line, FILE * config_file)
 {
 
   char trackerName[LINESIZE];
@@ -3109,16 +3109,19 @@ int vrpn_Generic_Server_Object::setup_Tracker_PhaseSpace (char * & pch, char * l
     }
     if (inTag) {
       if (sscanf (line, "%d : rb+ %d %f %f %f", &sensor, &id, &x, &y, &z) == 5) {
+        if(slaveflag) continue;
         if (!pstracker->addRigidMarker (sensor, id, x, y, z)) {
           fprintf (stderr, "Error, unable to add new rigid body marker: %d:%d %f %f %f\n", sensor, id, x, y, z);
           continue;
         }
       } else if (sscanf (line, "%d : pt %d", &sensor, &id) == 2) {
+        if(slaveflag) continue;
         if (!pstracker->addMarker (sensor, id)) {
           fprintf (stderr, "Error, unable to add marker %d:%d\n", sensor, id);
           continue;
         }
       } else if (sscanf (line, "%d : rbnew", &sensor) == 1) {
+        if(slaveflag) continue;
         if (!pstracker->startNewRigidBody (sensor)) {
           fprintf (stderr, "Error, unable to add new rigid body: %d\n", sensor);
           continue;

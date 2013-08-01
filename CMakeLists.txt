@@ -707,6 +707,20 @@ if(VRPN_USE_PDI)
 endif()
 
 ###
+# PhaseSpace API
+###
+option(VRPN_INCLUDE_PHASESPACE
+	"Build with PhaseSpace library support"
+	OFF)
+set(PHASESPACE_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/phasespace" CACHE PATH "location of PhaseSpace headers")
+set(PHASESPACE_LIBRARY_DIR "${CMAKE_SOURCE_DIR}/phasespace" CACHE PATH "location of PhaseSpace libraries (libowlsock.so, etc")
+if(VRPN_INCLUDE_PHASESPACE)
+  include_directories(${PHASESPACE_INCLUDE_DIR})
+  link_directories(${PHASESPACE_LIBRARY_DIR})
+  set(EXTRA_LIBS ${EXTRA_LIBS} owlsock)
+endif()
+
+###
 # XXX Other libraries needing detection and handling (TODO)
 ###
 # InterSense Interface Libraries SDK
@@ -738,9 +752,6 @@ option(VRPN_USE_USDIGITAL
 	OFF)
 option(VRPN_USE_MICROSCRIBE
 	"Build with MicroScribe3D library support"
-	OFF)
-option(VRPN_INCLUDE_PHASESPACE
-	"Build with PhaseSpace library support"
 	OFF)
 option(VRPN_USE_MOTIONNODE
 	"Build with GLI Interactive LLC MotionNode library support"
