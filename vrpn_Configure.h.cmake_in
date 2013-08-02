@@ -460,11 +460,6 @@
   #endif
 #endif
 
-// Load libowlsock.lib if we're using Phasespace.
-#ifdef	VRPN_INCLUDE_PHASESPACE
-#pragma comment (lib, VRPN_PHASESPACE_LIB_PATH "libowlsock.lib")
-#endif
-
 // Load National Instruments libraries if we are using them.
 // If this doesn't match where you have installed these libraries,
 // edit the following lines to point at the correct libraries.  Do

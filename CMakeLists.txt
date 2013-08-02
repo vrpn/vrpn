@@ -717,7 +717,11 @@ set(PHASESPACE_LIBRARY_DIR "${CMAKE_SOURCE_DIR}/phasespace" CACHE PATH "location
 if(VRPN_INCLUDE_PHASESPACE)
   include_directories(${PHASESPACE_INCLUDE_DIR})
   link_directories(${PHASESPACE_LIBRARY_DIR})
-  set(EXTRA_LIBS ${EXTRA_LIBS} owlsock)
+  if(WIN32)    
+    list(APPEND SERVER_EXTRA_LIBS libowlsock)
+  else()
+    list(APPEND SERVER_EXTRA_LIBS owlsock)
+  endif()
 endif()
 
 ###
