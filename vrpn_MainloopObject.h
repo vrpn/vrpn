@@ -53,6 +53,10 @@ class vrpn_MainloopObject {
 		/// The mainloop function: the primary thing we look for in a VRPN object
 		virtual void mainloop() = 0;
 
+		/// Checks the connectionPtr() for the VRPN object to make sure it is not
+		/// NULL.
+		virtual bool broken() = 0;
+
 		/// Templated wrapping function
 		template<class T>
 		static vrpn_MainloopObject * wrap(T o);
@@ -114,6 +118,10 @@ namespace detail {
 				_instance->mainloop();
 			}
 
+			virtual bool broken() {
+				return (_instance->connectionPtr() == NULL);
+			}
+
 		protected:
 			virtual void * _returnContained() const {
 				return _instance;
@@ -140,6 +148,10 @@ namespace detail {
 
 			virtual void mainloop() {
 				_instance->mainloop();
+			}
+
+			virtual bool broken() {
+				return (!_instance->doing_okay());
 			}
 
 		protected:
