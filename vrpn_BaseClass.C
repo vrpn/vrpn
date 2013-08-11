@@ -469,7 +469,10 @@ int vrpn_BaseClassUnique::decode_text_message_from_buffer (char *msg, vrpn_TEXT_
 	vrpn_unbuffer( &bufptr, &severity_as_uint );
 	*severity = (vrpn_TEXT_SEVERITY)(severity_as_uint);
 	vrpn_unbuffer( &bufptr, level );
-	vrpn_unbuffer( &bufptr, msg, -1 );  // -1 means "unpack until NULL"
+	// Negative length means "unpack until NULL"
+	if (vrpn_unbuffer( &bufptr, msg, -vrpn_MAX_TEXT_LEN) != 0) {
+		return -1;
+	}
 
 	return 0;	
 }

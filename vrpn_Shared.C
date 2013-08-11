@@ -330,8 +330,9 @@ VRPN_API int vrpn_unbuffer (const char ** buffer, timeval * t)
     parameter type). These routines handle byte-swapping to and from
     the VRPN defined wire protocol.
 
-    If the length is specified as -1, then the string will be assumed to
-    be NULL-terminated and will be read using the string-copy routines. NEVER
+    If the length is specified as less than zero, then the string will be assumed to
+    be NULL-terminated and will be read using the string-copy routines with a
+    length that is at most the magnitude of the number (-16 means at most 16). NEVER
     use this on a string that was packed with other than the NULL-terminating
     condition, since embedded NULL characters will ruin the argument parsing
     for any later arguments in the message.
@@ -341,8 +342,22 @@ VRPN_API int vrpn_unbuffer (const char ** buffer, char * string, vrpn_int32 leng
 {
     if (!string) return -1;
 
-    if (length == -1) {
-	strcpy(string, *buffer);
+    if (length < 0) {
+	// Read the string up to maximum length, then check to make sure we
+	// found the null-terminator in the length we read.
+	size_t max_len = static_cast<size_t>(-length);
+	strncpy(string, *buffer, max_len);
+	size_t i;
+	bool found = false;
+	for (i = 0; i < max_len; i++) {
+		if ( string[i] == '\0' ) {
+			found = true;
+			break;
+		}
+	}
+	if (!found) {
+		return -1;
+	}
 	*buffer += strlen(*buffer)+1;	// +1 for NULL terminating character
     } else {
 	memcpy(string, *buffer, length);
