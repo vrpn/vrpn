@@ -3151,46 +3151,21 @@ int vrpn_Generic_Server_Object::setup_Tracker_PhaseSpace (char * & pch, char * l
 int vrpn_Generic_Server_Object::setup_Tracker_RazerHydra(char * &pch, char * line, FILE *config_file)
 {
   char s2[LINESIZE];
-  int    calibration_button = -1;
+  int i3;
+  int calibration_button = -1;
  
   VRPN_CONFIG_NEXT();
-  if (sscanf (pch, "%511s", s2) != 1) {
+  int ret = sscanf (pch, "%511s %d", s2, &i3);
+  if (ret == 2) {
+    calibration_button = i3;
+  } else if (ret != 1) {
     fprintf (stderr, "Bad Razer Hydra line: %s\n", line);
     return -1;
   }
 
-  // read config lines if present  
-  while(1)
-  {  
-    if (fgets (line, LINESIZE, config_file) == NULL) {
-        perror ("Razer Hydra can't read line!");
-        return -1;
-    }
-
-    // if it is an empty line, finish parsing
-    if(line[0] == '\n')
-        break;
-
-    char buf[LINESIZE];
-    strncpy(buf, line, LINESIZE);
-
-    char *tok = strtok(buf, " \t");
-    if(strcmp(tok, "calibration_button") == 0)
-    {
-        tok = strtok(NULL, " \t");
-        calibration_button = atoi(tok);
-    }
-
-    else 
-    {
-        fprintf (stderr, "Incorrect Razer Hydra line %s (did you forget an empty line?)\n", line);
-        return -1;
-    }
-  }
-
   // Open the Razer Hydra
   if (verbose) {
-      printf ("Opening vrpn_Tracker_RazerHydra %s with calibration button set to %d\n", calibration_button);
+      printf ("Opening vrpn_Tracker_RazerHydra %s with calibration button set to %d\n", s2, calibration_button);
   }
 
   _devices->add(new vrpn_Tracker_RazerHydra(s2, connection, calibration_button));

@@ -88,7 +88,7 @@
 
 class VRPN_API vrpn_Tracker_RazerHydra: public vrpn_Analog, public vrpn_Button_Filter, public vrpn_Tracker {
 	public:
-		vrpn_Tracker_RazerHydra(const char * name, vrpn_Connection * trackercon, int calibration_button);
+		vrpn_Tracker_RazerHydra(const char * name, vrpn_Connection * trackercon, int calibration_button = -1);
 		~vrpn_Tracker_RazerHydra();
 
 		virtual void mainloop();
