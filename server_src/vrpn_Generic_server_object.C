@@ -3168,7 +3168,12 @@ int vrpn_Generic_Server_Object::setup_Tracker_RazerHydra(char * &pch, char * lin
       printf ("Opening vrpn_Tracker_RazerHydra %s with calibration button set to %d\n", s2, calibration_button);
   }
 
+#ifdef VRPN_USE_HID
+  // Open the tracker
   _devices->add(new vrpn_Tracker_RazerHydra(s2, connection, calibration_button));
+#else
+  fprintf (stderr, "RazerHydra driver works only with VRPN_USE_HID defined!\n");
+#endif
   return 0;  // successful completion
 }
 
