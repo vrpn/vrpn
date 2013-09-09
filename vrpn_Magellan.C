@@ -49,7 +49,7 @@
 // overburden the poor Magellan, which seems to choke when a
 // bunch of characters are all sent at once.
 static	int	vrpn_write_slowly(int fd, unsigned char *buffer, size_t len, int MsecWait)
-{	int	i;
+{	size_t	i;
 
 	for (i = 0; i < len; i++) {
 		vrpn_SleepMsecs(MsecWait);

@@ -335,13 +335,13 @@ void vrpn_Tracker_DTrack::mainloop()
 		joy_simulate.resize(num_channel);
 		joy_last.resize(num_channel);
 
-		for(size_t j=j0; j<num_channel; j++){
+		for(int j=j0; j<num_channel; j++){
 			joy_simulate[j] = false;
 			joy_last[j] = 0;
 		}
 	}
 
-	for(i=0; i<act_num_flystick; i++){   // DTrack Flysticks
+	for(i=0; i<(int)act_num_flystick; i++){   // DTrack Flysticks
 		if(act_flystick[i].id < nflystick){   // there might be more DTrack Flysticks than wanted
 			if(act_flystick[i].quality >= 0){     // report position only if Flystick is tracked
 				if(use_fix_numbering){

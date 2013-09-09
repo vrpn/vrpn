@@ -3926,7 +3926,7 @@ int vrpn_Endpoint_IP::getOneTCPMessage (int fd, char * buf, size_t buflen) {
   vrpn_int32 header [5];
   struct timeval time;
   vrpn_int32 sender, type;
-  vrpn_int32 len, payload_len, ceil_len;
+  size_t len, payload_len, ceil_len;
   int retval;
 
 #ifdef  VERBOSE2
