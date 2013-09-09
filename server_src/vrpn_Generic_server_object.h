@@ -128,6 +128,7 @@ class vrpn_Generic_Server_Object
     int setup_Tracker_LibertyPDI(char* &pch, char* line, FILE* config_file);
     int setup_Tracker_FastrakPDI(char* &pch, char* line, FILE* config_file);
     int setup_Tracker_JsonNet (char * &pch, char * line, FILE * /*config_file*/);
+    int setup_Tracker_RazerHydra(char * &pch, char * line, FILE *config_file);
 
     template<typename T>
     int templated_setup_device_name_only(char * &pch, char * line, FILE *);

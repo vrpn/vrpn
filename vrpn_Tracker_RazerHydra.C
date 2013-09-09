@@ -150,6 +150,7 @@ class vrpn_Tracker_RazerHydra::MyInterface : public vrpn_HidInterface {
 				double dt = duration_seconds(d_hydra->_timestamp, d_hydra->vrpn_Button::timestamp);
 				d_hydra->vrpn_Button::timestamp = d_hydra->_timestamp;
 				d_hydra->vrpn_Tracker::timestamp = d_hydra->_timestamp;
+                
 				d_hydra->_report_for_sensor(0, buffer + 8, dt);
 				d_hydra->_report_for_sensor(1, buffer + 30, dt);
 
@@ -205,13 +206,16 @@ class vrpn_Tracker_RazerHydra::MyInterface : public vrpn_HidInterface {
 		vrpn_Tracker_RazerHydra *d_hydra;
 };
 
-vrpn_Tracker_RazerHydra::vrpn_Tracker_RazerHydra(const char * name, vrpn_Connection * con)
+vrpn_Tracker_RazerHydra::vrpn_Tracker_RazerHydra(const char *name, vrpn_Connection *con, 
+                                                 int calibration_button)
 	: vrpn_Analog(name, con)
 	, vrpn_Button_Filter(name, con)
 	, vrpn_Tracker(name, con)
 	, status(HYDRA_WAITING_FOR_CONNECT)
 	, _wasInGamepadMode(false) /// assume not - if we have to send a command, then set to true
 	, _attempt(0)
+    , _calibration_btn(calibration_button)
+    , _calibration_btn_state(false)
 {
 	// Set up the control and data channels
 	_ctrl = new MyInterface(HYDRA_CONTROL_INTERFACE, this);
@@ -399,49 +403,56 @@ void vrpn_Tracker_RazerHydra::_report_for_sensor(int sensorNum, vrpn_uint8 * dat
 	const int buttonOffset = sensorNum * 8;
 
 	d_sensor = sensorNum;
-	/// @todo Why do we sometimes have to invert the y axis to get right-handed behavior?
-	pos[0] = vrpn_unbuffer_from_little_endian<vrpn_int16>(data) * MM_PER_METER * _mirror[sensorNum];
-	pos[1] = vrpn_unbuffer_from_little_endian<vrpn_int16>(data) * MM_PER_METER * _mirror[sensorNum];
-	pos[2] = vrpn_unbuffer_from_little_endian<vrpn_int16>(data) * MM_PER_METER * _mirror[sensorNum];
+	/// Hydra is left handed, so correct it
+	pos[0] = -vrpn_unbuffer_from_little_endian<vrpn_int16>(data) * MM_PER_METER * _mirror[sensorNum];
+	pos[1] =  vrpn_unbuffer_from_little_endian<vrpn_int16>(data) * MM_PER_METER * _mirror[sensorNum];
+	pos[2] =  vrpn_unbuffer_from_little_endian<vrpn_int16>(data) * MM_PER_METER * _mirror[sensorNum];
 
 	d_quat[Q_W] = vrpn_unbuffer_from_little_endian<vrpn_int16>(data) * SCALE_INT16_TO_FLOAT_PLUSMINUS_1;
 	d_quat[Q_X] = vrpn_unbuffer_from_little_endian<vrpn_int16>(data) * SCALE_INT16_TO_FLOAT_PLUSMINUS_1;
 	d_quat[Q_Y] = vrpn_unbuffer_from_little_endian<vrpn_int16>(data) * SCALE_INT16_TO_FLOAT_PLUSMINUS_1;
 	d_quat[Q_Z] = vrpn_unbuffer_from_little_endian<vrpn_int16>(data) * SCALE_INT16_TO_FLOAT_PLUSMINUS_1;
 	q_normalize(d_quat, d_quat);
-	/*
-	if(sensorNum == 0)
-	{
-		static int count = 0;
-		fprintf(stderr, "%d    %3.3f %3.3f %3.3f \n", count++, pos[0], pos[1], pos[2]);
-	}
-	*/
 
-	// fix hemisphere transitions
 	if (_calibration_done[sensorNum]) {
+        // apply orientation calibration
+        q_mult(d_quat, _calibration_pose_conj[sensorNum], d_quat);
+
+        // fix hemisphere transitions
 		double dist_direct = (pos[0] - _old_position[sensorNum][0]) * (pos[0] - _old_position[sensorNum][0]) +
-		                     (pos[1] - _old_position[sensorNum][1]) * (pos[1] - _old_position[sensorNum][1]) +
-		                     (pos[2] - _old_position[sensorNum][2]) * (pos[2] - _old_position[sensorNum][2]);
+		                        (pos[1] - _old_position[sensorNum][1]) * (pos[1] - _old_position[sensorNum][1]) +
+		                        (pos[2] - _old_position[sensorNum][2]) * (pos[2] - _old_position[sensorNum][2]);
 
 		double dist_mirror = (-pos[0] - _old_position[sensorNum][0]) * (-pos[0] - _old_position[sensorNum][0]) +
-		                     (-pos[1] - _old_position[sensorNum][1]) * (-pos[1] - _old_position[sensorNum][1]) +
-		                     (-pos[2] - _old_position[sensorNum][2]) * (-pos[2] - _old_position[sensorNum][2]);
-
+		                        (-pos[1] - _old_position[sensorNum][1]) * (-pos[1] - _old_position[sensorNum][1]) +
+		                        (-pos[2] - _old_position[sensorNum][2]) * (-pos[2] - _old_position[sensorNum][2]);
+        
 		// too big jump, likely hemisphere switch
 		// in that case the coordinates given are mirrored symmetrically across the base
-		if (dist_direct - dist_mirror > 10 * Q_EPSILON) {
+        //if (dist_direct - dist_mirror > _hemi_switch_thr || force_hemi_switch) {
+        if (dist_direct > dist_mirror) {
+            /*
+            fprintf(stdout, "Switched hemisphere!\n");
+            fprintf(stdout, "\tOld: %3.2f, %3.2f, %3.2f    Current: %3.2f, %3.2f, %3.2f\n",  
+                        _old_position[sensorNum][0], _old_position[sensorNum][1], _old_position[sensorNum][2], 
+                        pos[0], pos[1], pos[2]);
+            */
+
 			pos[0] *= -1;
 			pos[1] *= -1;
 			pos[2] *= -1;
 			_mirror[sensorNum] *= -1;
 		}
-	} else {
+
+    } else {
+  		// first start - assume that the controllers are on the base
 		_calibration_done[sensorNum] = true;
 
-		// first start - assume that the controllers are on the base
+        // store the base quaternion to fix up any bizarre rotations - ensures that we start x-right, y-front, z-up
+        q_conjugate(_calibration_pose_conj[sensorNum], d_quat);
+
 		// left one (sensor 0) should have negative x coordinate, right one (sensor 1) positive.
 		// if it isn't so, mirror them.
-
 		if ((sensorNum == 0 && pos[0] > 0) ||
 		        (sensorNum == 1 && pos[0] < 0)) {
 			pos[0] *= -1;
@@ -453,7 +464,7 @@ void vrpn_Tracker_RazerHydra::_report_for_sensor(int sensorNum, vrpn_uint8 * dat
 	q_vec_copy(_old_position[sensorNum], pos);
 
 	vrpn_uint8 buttonBits = vrpn_unbuffer_from_little_endian<vrpn_uint8>(data);
-
+   
 	/// "middle" button
 	buttons[0 + buttonOffset] = (buttonBits & 0x20) != 0;
 
@@ -476,6 +487,21 @@ void vrpn_Tracker_RazerHydra::_report_for_sensor(int sensorNum, vrpn_uint8 * dat
 	/// Trigger analog
 	channel[2 + channelOffset] = vrpn_unbuffer_from_little_endian<vrpn_uint8>(data) * SCALE_UINT8_TO_FLOAT_0_TO_1;
 
+    if(_calibration_btn >= 0)
+    {
+        if(buttons[_calibration_btn] && !_calibration_btn_state)
+        {
+      	    // Reset calibration when demanded
+            fputs("vrpn_Tracker_RazerHydra: Recalibrating ... \n", stderr);
+
+	        for (int i = 0; i < vrpn_Tracker::num_sensors; ++i) {
+		        _calibration_done[i] = false;
+		        _mirror[i] = 1;
+	        }
+        }
+        _calibration_btn_state = (buttons[_calibration_btn] != 0);
+    }
+    
 	char msgbuf[512];
 	int len = vrpn_Tracker::encode_to(msgbuf);
 	if (d_connection->pack_message(len, _timestamp, position_m_id, d_sender_id, msgbuf,

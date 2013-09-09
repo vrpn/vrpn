@@ -88,7 +88,7 @@
 
 class VRPN_API vrpn_Tracker_RazerHydra: public vrpn_Analog, public vrpn_Button_Filter, public vrpn_Tracker {
 	public:
-		vrpn_Tracker_RazerHydra(const char * name, vrpn_Connection * trackercon);
+		vrpn_Tracker_RazerHydra(const char * name, vrpn_Connection * trackercon, int calibration_button);
 		~vrpn_Tracker_RazerHydra();
 
 		virtual void mainloop();
@@ -124,9 +124,12 @@ class VRPN_API vrpn_Tracker_RazerHydra: public vrpn_Analog, public vrpn_Button_F
 		struct timeval _connected;
 		struct timeval _set_feature;
 
-		bool _calibration_done[POSE_CHANNELS];
-		int _mirror[POSE_CHANNELS];
-		q_vec_type _old_position[POSE_CHANNELS];
+		bool           _calibration_done[POSE_CHANNELS];
+		int            _mirror[POSE_CHANNELS];
+		q_vec_type     _old_position[POSE_CHANNELS];
+		int            _calibration_btn;
+		bool           _calibration_btn_state;
+		q_type         _calibration_pose_conj[POSE_CHANNELS];
 
 		// This device has both a control and a data interface.
 		// On the mac, we may need to swap these because we can't tell which
