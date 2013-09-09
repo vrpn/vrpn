@@ -97,6 +97,7 @@ set(CPACK_SOURCE_PACKAGE_FILE_NAME
 # Compiler flags we got from Hans for Windows and from Sheldon Andrews
 # for other architectures.
 if(MSVC)	# MS-Windows Visual Studio, both 32 and 64 bits
+    set(CMAKE_DEBUG_POSTFIX "d" CACHE STRING "add a postfix, usually d on windows")
 	if(MSVC_VERSION GREATER 1310) # This compiler flag needs newer than VS.NET 2003 (7.1)
 		# Choose fast, possibly less accurate floating point
 		# See http://msdn.microsoft.com/en-us/library/e7s85ffb(v=vs.80).aspx
@@ -565,7 +566,8 @@ if(WIN32)
 			SERVER_EXTRA_LIBS
 			${DIRECTX_DXGUID_LIBRARY}
 			${DIRECTX_DXERR_LIBRARY}
-			${DIRECTX_DINPUT_LIBRARY})
+			${DIRECTX_DINPUT_LIBRARY}
+			${DIRECTX_XINPUT_LIBRARY})                    
 		find_path(DIRECTX_XINPUT_INCLUDE_DIR
 			xinput.h
 			HINTS

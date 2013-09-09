@@ -5,7 +5,6 @@
 
 #if defined(_WIN32) && defined(VRPN_USE_DIRECTINPUT) && defined(VRPN_USE_WINDOWS_XINPUT)
 #include <xinput.h>
-#pragma comment(lib,"XInput.lib")
 
 vrpn_XInputGamepad::vrpn_XInputGamepad(const char *name, vrpn_Connection *c, unsigned int controllerIndex):
 	vrpn_Analog(name, c),
