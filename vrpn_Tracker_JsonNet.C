@@ -16,6 +16,8 @@
 
 #include "quat.h"
 
+#include <stdlib.h> // for exit
+
 // These must match definitions in eu.ensam.ii.vrpn.Vrpn
 static const char* const MSG_KEY_TYPE =				"type";
 static const char* const MSG_KEY_SEQUENCE_NUMBER =	"sn";
