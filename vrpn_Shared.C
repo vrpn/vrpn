@@ -1238,13 +1238,7 @@ bool vrpn_Thread::running() {
   return threadID!=0;
 }
 
-#if defined(sgi)
-unsigned long vrpn_Thread::pid() {
-#elif defined(_WIN32)
-uintptr_t vrpn_Thread::pid() {
-#else
-pthread_t vrpn_Thread::pid() {
-#endif
+vrpn_Thread::thread_t vrpn_Thread::pid() {
   return threadID;
 }
 

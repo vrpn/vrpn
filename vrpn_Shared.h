@@ -540,17 +540,21 @@ public:
   vrpn_Thread( vrpn_THREAD_FUNC pfThread, vrpn_ThreadData td );
   ~vrpn_Thread();
 
+#if defined(sgi)
+  typedef unsigned long thread_t;
+#elif defined(_WIN32)
+  typedef uintptr_t thread_t;
+#else
+  typedef pthread_t thread_t;
+#endif
+
   // start/kill the thread (true on success, false on failure)
   bool go();
   bool kill();
 
   // thread info: check if running, get proc id
   bool running();
-#if defined(sgi) || defined(_WIN32)
-  unsigned long pid();
-#else
-  pthread_t pid();
-#endif
+  thread_t pid();
 
   // run-time user function to test if threads are available
   // (same value as #ifdef THREADS_AVAILABLE)
@@ -579,11 +583,7 @@ protected:
   static void *threadFuncShellPosix(void *pvThread);
 
   // the process id
-#if defined(sgi) || defined(_WIN32)
-  unsigned long threadID;
-#else
-  pthread_t threadID;
-#endif
+  thread_t threadID;
 };
 
 // Returns true if they work and false if they do not.
