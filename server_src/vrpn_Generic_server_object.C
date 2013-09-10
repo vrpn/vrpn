@@ -2633,7 +2633,6 @@ int	vrpn_Generic_Server_Object::get_poser_axis_line (FILE * config_file, const c
 
   // Read in the line
   if (fgets (line, LINESIZE, config_file) == NULL) {
-    delete[] name;
     perror ("Poser Analog Axis: Can't read axis");
     delete[] name;
     return -1;
