@@ -4,8 +4,8 @@
 
 #include "vrpn_Shared.h"
 
+#ifdef	MSVC
 // Don't tell us about strcpy being dangerous.
-#ifdef	_WIN32
 #pragma	warning ( disable : 4996)
 #endif
 
