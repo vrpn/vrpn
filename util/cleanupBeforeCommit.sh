@@ -91,12 +91,12 @@ StartProcessingFile() {
 
 RemoveDosEndlines() {
     StatusMessage "Removing DOS endlines with ${DOS2UNIX}"
-    ${DOS2UNIX} -q ${FILETOPROCESS}
+    ${DOS2UNIX} ${FILETOPROCESS}
 }
 
 AddDosEndlines() {
     StatusMessage "Adding DOS endlines with ${UNIX2DOS}"
-    ${UNIX2DOS} -q ${FILETOPROCESS}
+    ${UNIX2DOS} ${FILETOPROCESS}
 }
 
 TrimTrailingWhitespace() {
