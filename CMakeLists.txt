@@ -421,7 +421,7 @@ if(VRPN_USE_HID)
 	list(APPEND SERVER_EXTRA_LIBS ${HIDAPI_LIBRARIES})
 	option(VRPN_BUILD_HID_GUI
 		"Should we build a GUI for analyzing live HID streams?"
-		${TRUE_UNLESS_SUBPROJECT})
+		OFF)
 	option(VRPN_HID_DEBUGGING
 		"Should verbose debugging messages be displayed during HID interactions?"
 		off)
