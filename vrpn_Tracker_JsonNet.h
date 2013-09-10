@@ -67,6 +67,7 @@ private:
 	bool _parse_tracker_data(const Json::Value& root);
 	bool _parse_analog(const Json::Value& root);
 	bool _parse_button(const Json::Value& root);
+	bool _do_tracker_report;
 	Json::Reader* _pJsonReader;
 };
 

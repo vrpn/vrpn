@@ -44,7 +44,8 @@ vrpn_Tracker_JsonNet::vrpn_Tracker_JsonNet(const char* name,vrpn_Connection* c,i
 	vrpn_Button_Filter(name, c),
 	vrpn_Analog(name, c),
 	_socket(INVALID_SOCKET),
-	_pJsonReader(0)
+	_pJsonReader(0),
+	_do_tracker_report(false)
 {
 	fprintf(stderr, "vrpn_Tracker_JsonNet : Device %s listen on port udp port %d\n", name, udp_port);
 	if (! _network_init(udp_port)) {
@@ -100,13 +101,14 @@ void vrpn_Tracker_JsonNet::mainloop() {
 	// TODO really use timestamps
 	struct timeval ts ;
 	// from vrpn_Tracker_DTrack::dtrack2vrpnbody
-	if (d_connection) {
+	if (d_connection && _do_tracker_report) {
 		char msgbuf[1000];
 		// Encode pos and d_quat
 		int len = vrpn_Tracker::encode_to(msgbuf);
 		if (d_connection->pack_message(len, ts, position_m_id, d_sender_id, msgbuf, vrpn_CONNECTION_LOW_LATENCY)) {
 			// error
 		}
+		_do_tracker_report = false;
 		//fprintf(stderr, "Packed and sent\n");
 	}
 
@@ -202,6 +204,7 @@ bool vrpn_Tracker_JsonNet::_parse_tracker_data(const Json::Value& root) {
 		this->pos[2]= posData[2].asDouble();
 	} 
 
+	_do_tracker_report = true;
 	return true;
 }
 
