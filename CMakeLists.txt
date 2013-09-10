@@ -502,19 +502,21 @@ endif()
 
 ###
 # JsonCpp
-###
-find_package(JsonCpp)
+##
+## Setting up the local JSONCPP was handled above, in the submodules directory
+if(NOT VRPN_USE_LOCAL_JSONCPP)
+	find_package(JsonCpp)
+endif()
 option_requires(VRPN_USE_JSONNET
-	"Build with JSONCPP (for Android widgets)"
+	"Build with JSONCPP (for Android widgets and other UDP JSON-based APIs)"
 	${DEFAULT_OFF_IF_SUBPROJECT}
 	JSONCPP_FOUND)
 
 if(VRPN_USE_JSONNET)
 	include_directories(${JSONCPP_INCLUDE_DIRS})
 	list(APPEND SERVER_EXTRA_LIBS ${JSONCPP_LIBRARIES})
-	if(MSVC)
-		message("\nSee README.jsoncpp for important instructions on how to build JSONCPP and avoid LNK2005 errors \n")
-	endif()
+else()
+	set(JSONCPP_SOURCES)
 endif()
 
 
@@ -996,6 +998,7 @@ set(VRPN_SERVER_SOURCES
 	vrpn_Zaber.C
 	server_src/vrpn_Generic_server_object.C
 	${HIDAPI_SOURCES}
+	${JSONCPP_SOURCES}
 	${PDI_SOURCES})
 
 set(VRPN_SERVER_PUBLIC_HEADERS
