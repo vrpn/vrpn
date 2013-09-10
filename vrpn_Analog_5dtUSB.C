@@ -11,15 +11,16 @@
 	Human-Computer Interaction Graduate Program
 */
 
+#include "vrpn_Analog_5dtUSB.h"
+#if defined(VRPN_USE_HID)
+
 #include <string.h>                     // for memset
-#include <iostream>                     // for operator<<, ostringstream, etc
 #include <sstream>
 #include <stdexcept>                    // for logic_error
 
-#include "vrpn_Analog_5dtUSB.h"
 #include "vrpn_BaseClass.h"             // for ::vrpn_TEXT_NORMAL, etc
+#include "vrpn_SendTextMessageStreamProxy.h"  // for operator<<, etc
 
-#if defined(VRPN_USE_HID)
 
 // USB vendor and product IDs for the models we support
 static const vrpn_uint16 vrpn_5DT_VENDOR = 0x5d70;
@@ -100,11 +101,7 @@ std::string vrpn_Analog_5dtUSB::get_description() const {
 
 void vrpn_Analog_5dtUSB::on_data_received(size_t bytes, vrpn_uint8 *buffer) {
 	if (bytes != 64) {
-		std::ostringstream ss;
-		ss << "Received a too-short report: " << bytes;
-		struct timeval ts;
-		vrpn_gettimeofday(&ts, NULL);
-		send_text_message(ss.str().c_str(), ts, vrpn_TEXT_WARNING);
+		send_text_message(vrpn_TEXT_WARNING) << "Received a too-short report: " << bytes;
 		return;
 	}
 
@@ -132,7 +129,7 @@ void vrpn_Analog_5dtUSB::on_data_received(size_t bytes, vrpn_uint8 *buffer) {
 			}
 			break;
 		default:
-			std::cerr << "Internal error - should not happen: Unrecognized number of channels!" << std::endl;
+			send_text_message(vrpn_TEXT_WARNING) << "Internal error - should not happen: Unrecognized number of channels!";
 	}
 }
 
@@ -142,9 +139,7 @@ void vrpn_Analog_5dtUSB::mainloop() {
 	update();
 
 	if (connected() && !_wasConnected) {
-		std::ostringstream ss;
-		ss << "Successfully connected to 5DT glove, " << get_description();
-        send_text_message(ss.str().c_str(), _timestamp, vrpn_TEXT_NORMAL);
+		send_text_message(vrpn_TEXT_WARNING) << "Successfully connected to 5DT glove, " << get_description();
 	}
 	_wasConnected = connected();
 
