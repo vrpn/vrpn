@@ -677,7 +677,7 @@ void vrpn_Shared_int32::decodeLamport (const char ** buffer, vrpn_int32 *,
     vrpn_unbuffer(buffer, &array[i]);
   }
   *t = new vrpn_LamportTimestamp(size, array);
-  delete array;
+  delete [] array;
 }
 
 void vrpn_Shared_int32::sendUpdate (void) {
