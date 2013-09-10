@@ -1259,7 +1259,7 @@ void *vrpn_Thread::userData() {
 }
 
 void vrpn_Thread::threadFuncShell( void *pvThread ) {
-  vrpn_Thread *pth = (vrpn_Thread *)pvThread;
+  vrpn_Thread *pth = static_cast<vrpn_Thread *>(pvThread);
   pth->pfThread( pth->td );
   // thread has stopped running
   pth->threadID = 0;
