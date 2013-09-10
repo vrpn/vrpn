@@ -14,11 +14,6 @@
 #include <string.h>                     // for memcpy()
 #include <stdio.h>                      // for fprintf()
 
-#if !( defined(_WIN32) || defined(VRPN_USE_WINSOCK_SOCKETS) )
-#include <sys/select.h>                 // for select
-#include <netinet/in.h>                 // for htonl, htons
-#endif
-
 #if defined (__ANDROID__)
 #include <bitset>
 #endif
@@ -48,6 +43,11 @@
 // On Win32, this constant is defined as ~0 (sockets are unsigned ints)
 #  define	INVALID_SOCKET	-1
 #  define	SOCKET		int
+#endif
+
+#if !( defined(_WIN32) && defined(VRPN_USE_WINSOCK_SOCKETS) )
+#include <sys/select.h>                 // for select
+#include <netinet/in.h>                 // for htonl, htons
 #endif
 
 #ifdef	_WIN32_WCE
@@ -105,7 +105,7 @@
 #  ifndef _WIN32_WCE
 #    include <sys/timeb.h>
 #  endif
-#  include <winsock.h>    // struct timeval is defined here
+#  include <winsock2.h>    // struct timeval is defined here
 
   // Whether or not we export gettimeofday, we declare the
   // vrpn_gettimeofday() function.
@@ -546,10 +546,8 @@ public:
 
   // thread info: check if running, get proc id
   bool running();
-#if defined(sgi)
+#if defined(sgi) || defined(_WIN32)
   unsigned long pid();
-#elif defined(_WIN32)
-  uintptr_t pid();
 #else
   pthread_t pid();
 #endif
@@ -581,10 +579,8 @@ protected:
   static void *threadFuncShellPosix(void *pvThread);
 
   // the process id
-#if defined(sgi)
+#if defined(sgi) || defined(_WIN32)
   unsigned long threadID;
-#elif defined(_WIN32)
-  uintptr_t threadID;
 #else
   pthread_t threadID;
 #endif

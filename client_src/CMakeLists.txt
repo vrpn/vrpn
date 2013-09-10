@@ -83,7 +83,7 @@ if(VRPN_BUILD_CLIENTS)
 			add_executable(testimager_client testimager_client.C)
 			target_link_libraries(testimager_client
 				${VRPN_CLIENT_LIBRARY}
-				${GLUT_LIBRARIES}
+				${GLUT_glut_LIBRARY}
 				${OPENGL_LIBRARIES})
 
 			set_target_properties(testimager_client PROPERTIES FOLDER Tests)
