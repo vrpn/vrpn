@@ -3736,7 +3736,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_G4(char * &pch, char * line, FILE 
   }
 
   filepath[0] = 0;
-  strncat (filepath, line, LINESIZE);
+  strncat (filepath, line, LINESIZE - 1);
 
   if (filepath[strlen (filepath) - 2] == '\\') {
     filepath[strlen (filepath) - 2] = '\0';
