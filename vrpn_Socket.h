@@ -20,7 +20,7 @@
 #define INCLUDED_vrpn_Socket_h_GUID_bc213b91_a1c1_4071_8118_62454e579e56
 
 // Internal Includes
-// - none
+#include "vrpn_Configure.h"
 
 // Library/third-party includes
 // - none
@@ -36,7 +36,7 @@
 ///
 /// It also serves to centralize socket-handling code to reduce duplication
 /// in the codebase, at least in theory.
-class vrpn_Socket {
+class VRPN_API vrpn_Socket {
 	public:
 		/// @brief Constructor - initializes to an invalid socket.
 		vrpn_Socket();
