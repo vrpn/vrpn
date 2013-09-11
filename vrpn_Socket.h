@@ -44,6 +44,11 @@ class vrpn_Socket {
 		/// @brief Destructor - closes the socket if applicable.
 		~vrpn_Socket();
 
+#ifdef _WIN32
+		typedef SOCKET socket_t
+#else
+		typedef int socket_t;
+#endif
 		/// @brief Returns if the socket is valid
 		bool valid() const;
 
@@ -101,6 +106,13 @@ class vrpn_Socket {
 		/// @brief Send a string.
 		void send(std::string const& message);
 
+		/// @brief Advanced: take over a socket from a raw file descriptor, managing its lifetime.
+		void acquire(socket_t s);
+
+		/// @brief Advanced: Return the raw file descriptor of this socket, emptying
+		/// this object and making _you_ responsible for lifetime management.
+		socket_t release();
+
 	private:
 		/// @name noncopyable
 		/// @{
@@ -119,14 +131,7 @@ class vrpn_Socket {
 
 		/// @brief Internal wrapper for send()
 		void send_(const char * msg, size_t len);
-#ifdef _WIN32
-		typedef SOCKET socket_t
-#else
-		typedef int socket_t;
-#endif
 
-		/// @brief Take over a socket from a raw file descriptor, managing lifetime.
-		void acquire_(socket_t s);
 		socket_t sock_;
 };
 

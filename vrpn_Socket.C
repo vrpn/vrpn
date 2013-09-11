@@ -209,7 +209,7 @@ bool vrpn_Socket::pollForAccept(vrpn_Socket & acceptSock, double timeoutSeconds)
 			throw std::runtime_error("accept() failed even though select() indicated it should succeed!");
 		}
 
-		acceptSock.acquire_(accepted);
+		acceptSock.acquire(accepted);
 
 #if	!defined(_WIN32_WCE) && !defined(__ANDROID__)
 		{
@@ -307,8 +307,14 @@ void vrpn_Socket::send_(const char * msg, size_t len) {
 	}
 }
 
-void vrpn_Socket::acquire_(socket_t s) {
+void vrpn_Socket::acquire(socket_t s) {
 	close();
 	sock_ = s;
+}
+
+vrpn_Socket::socket_t vrpn_Socket::release() {
+	socket_t ret = sock_;
+	sock_ = INVALID_SOCKET;
+	return ret;
 }
 
