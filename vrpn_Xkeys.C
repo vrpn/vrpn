@@ -116,7 +116,6 @@ void vrpn_Xkeys_Desktop::decodePacket(size_t bytes, vrpn_uint8 *buffer) {
 	// Decode all full reports, each of which is 11 bytes long.
         // Because there is only one type of report, the initial "0" report-type
         // byte is removed by the HIDAPI driver.
-	// XXX Check to see that this works with HIDAPI, there may be two smaller reports.
 	for (size_t i = 0; i < bytes / 11; i++) {
 		vrpn_uint8 *report = buffer + (i * 11);
 
@@ -536,7 +535,6 @@ void vrpn_Xkeys_Pro::decodePacket(size_t bytes, vrpn_uint8 *buffer)
           size_t i;
 	  // Decode all full reports.
           // Full reports for all of the pro devices are 15 bytes long.
-	  // XXX Fix to work with HIDAPI
 	  for (i = 0; i < bytes / 14; i++) {
 		  vrpn_uint8 *report = buffer + (i * 14);
 
@@ -603,7 +601,6 @@ void vrpn_Xkeys_XK3::decodePacket(size_t bytes, vrpn_uint8 *buffer) {
 	// Decode all full reports, each of which is 32 bytes long.
         // Because there is only one type of report, the initial "0" report-type
         // byte is removed by the HIDAPI driver.
-	// XXX Check to see that this works with HIDAPI, there may be two smaller reports.
 	for (size_t i = 0; i < bytes / 32; i++) {
 		vrpn_uint8 *report = buffer + (i * 32);
 
