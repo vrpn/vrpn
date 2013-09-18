@@ -18,21 +18,12 @@ profile
 *.pyo
 
 # Build/Output Files Directories
-# Xcode/some of my SCons builds
-build/
-# Other SCons builds
-output/
-
-# SCons files
-.sconf_temp/
-.sconsign.dblite
-config.log
 
 # Anjuta files
 .anjuta/
 .anjuta_sym_db.db
 
-docs/
+/docs/
 *.vcproj.*.user
 *.ncb
 *.suo
