@@ -25,6 +25,11 @@
 // ability to do what was needed.
 
 #ifdef	VRPN_USE_HDAPI
+  #if defined(_WIN32) && !defined(WIN32)
+  // Through version 3.1, the test macro in Sensable's code is wrong.
+  #define WIN32
+  #endif
+
   #ifndef M_PI
   #define M_PI (3.14159265358979323846)
   #endif
