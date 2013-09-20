@@ -49,7 +49,7 @@ if(HDAPI_HDU_LIBRARY STREQUAL "openhaptics_hdu_nested_target")
 		"${HDAPI_HDU_SOURCE_DIR}/hduPlane.cpp"
 		"${HDAPI_HDU_SOURCE_DIR}/hduQuaternion.cpp"
 		"${HDAPI_HDU_SOURCE_DIR}/hduRecord.cpp")
-	target_link_libraries(openhaptics_hdu_nested_target ${HDAPI_LIBRARIES})
+	target_link_libraries(openhaptics_hdu_nested_target ${HDAPI_LIBRARY})
 	set_property(TARGET
 		openhaptics_hdu_nested_target
 		PROPERTY
@@ -75,7 +75,7 @@ if(HLAPI_HLU_LIBRARY STREQUAL "openhaptics_hlu_nested_target")
 		"${HLAPI_HLU_SOURCE_DIR}/hlu.cpp"
 		"${HLAPI_HLU_SOURCE_DIR}/hluAfx.cpp"
 		"${HLAPI_HLU_SOURCE_DIR}/hluAfx.h")
-	target_link_libraries(openhaptics_hlu_nested_target ${HLAPI_LIBRARIES})
+	target_link_libraries(openhaptics_hlu_nested_target ${HLAPI_LIBRARY} ${HDAPI_LIBRARY})
 
 	set_property(TARGET
 		openhaptics_hlu_nested_target
