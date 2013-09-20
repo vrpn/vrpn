@@ -10,6 +10,10 @@
 # (See accompanying file ../../LICENSE_1_0.txt or copy at
 # http://www.boost.org/LICENSE_1_0.txt)
 
+if(WIN32)
+	# Work around bug in library at least <= 3.10
+	add_definitions(-DWIN32)
+endif()
 include_directories("${HDAPI_HDU_INCLUDE_DIR}"
 	"${HDAPI_INCLUDE_DIR}"
 	"${HLAPI_HLU_INCLUDE_DIR}"
