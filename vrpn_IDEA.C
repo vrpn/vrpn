@@ -58,6 +58,7 @@ vrpn_IDEA::vrpn_IDEA (const char * name, vrpn_Connection * c,const char * port
                       , double fractional_c_a):
 	vrpn_Serial_Analog(name, c, port, 57600)
         , vrpn_Analog_Output(name, c)
+	, vrpn_Button_Filter(name, c)
         , d_run_speed_tics_sec(run_speed_tics_sec)
         , d_start_speed_tics_sec(start_speed_tics_sec)
         , d_end_speed_tics_sec(end_speed_tics_sec)
@@ -78,10 +79,14 @@ vrpn_IDEA::vrpn_IDEA (const char * name, vrpn_Connection * c,const char * port
         , d_initial_move(initial_move)
         , d_fractional_c_a(fractional_c_a)
 {
-  num_channel = 1;
+  vrpn_Analog::num_channel = 1;
+  vrpn_Analog_Output::o_num_channel = 1;
+  vrpn_Button::num_buttons = 4;
   channel[0] = 0;
-
-  o_num_channel = 1;
+  last[0] = 0;
+  memset(buttons, 0, sizeof(buttons));
+  memset(lastbuttons, 0, sizeof(buttons));
+  vrpn_gettimeofday(&d_timestamp, NULL);
 
   // Set the mode to reset
   status = STATUS_RESETTING;
@@ -154,31 +159,32 @@ bool  vrpn_IDEA::send_move_request(vrpn_float64 location_in_steps, double scale)
   char  cmd[512];
 
   //-----------------------------------------------------------------------
-  // Configure input interrupts.  We want a falling-edge trigger for the
+  // Configure input interrupts.  We want a rising-edge trigger for the
   // inputs, calling the appropriate subroutine.  We only enable the
   // high limit switch when moving forward and only the low one when moving
-  // backwards.  If neither limit switch is set, we don't ever need to
-  // send anything.
-  if ( (d_high_limit_index > 0) || (d_low_limit_index > 0) ) {
+  // backwards.  If neither limit switch is set, we still send a command so
+  // that they will be disabled (in case the motor was programmed differently
+  // before).
+  {
     int edge_masks[4] = { 0, 0, 0, 0 };
     int address_masks[4] = { 0, 0, 0, 0 };
-    int priority_masks[4] = { 0, 0, 0, 0 };
+    int priority_masks[4] = { 1, 1, 1, 1 };
 
     // If we're moving forward and there is a high limit switch, set
     // up to use it.
     if ( (location_in_steps > channel[0]) && (d_high_limit_index > 0) ) {
-      edge_masks[d_high_limit_index - 1] = 2;       // Falling edge
-      address_masks[d_high_limit_index - 1] = 40;   // Address of program
+      edge_masks[d_high_limit_index - 1] = 2;       // Rising edge
+      address_masks[d_high_limit_index - 1] = 1024;   // Address of program
     }
 
     // If we're moving backwards and there is a low limit switch, set
     // up to use it.
-    if ( (location_in_steps > channel[0]) && (d_low_limit_index > 0) ) {
-      edge_masks[d_low_limit_index - 1] = 2;        // Falling edge
-      address_masks[d_low_limit_index - 1] = 80;    // Address of program
+    if ( (location_in_steps < channel[0]) && (d_low_limit_index > 0) ) {
+      edge_masks[d_low_limit_index - 1] = 2;        // Rising edge
+      address_masks[d_low_limit_index - 1] = 2048;    // Address of program
     }
 
-    if (sprintf(cmd, "i,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d",
+    if (sprintf(cmd, "i%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d",
       edge_masks[0], edge_masks[1], edge_masks[2], edge_masks[3],
       address_masks[0], address_masks[1], address_masks[2], address_masks[3],
       priority_masks[0], priority_masks[1], priority_masks[2], priority_masks[3]
@@ -191,9 +197,28 @@ bool  vrpn_IDEA::send_move_request(vrpn_float64 location_in_steps, double scale)
       IDEA_ERROR("vrpn_IDEA::send_move_request(): Could not configure interrupts");
       status = STATUS_RESETTING;
       return false;
-    }        
+    }
   }
 
+  // If we have a high limit and are moving forward, or a low limit and are
+  // moving backwards, then we need to check the appropriate limit switch
+  // before starting the move so that we won't drive once we've passed the
+  // limit.
+  if ( (location_in_steps > channel[0]) && (d_high_limit_index > 0) ) {
+	if (buttons[d_high_limit_index - 1] != 0) {
+	  IDEA_WARNING("vrpn_IDEA::send_move_request(): Asked to move into limit");
+	  return true;	// Nothing failed, but we're not moving.
+	}
+  }
+  if ( (location_in_steps < channel[0]) && (d_low_limit_index > 0) ) {
+	if (buttons[d_low_limit_index - 1] != 0) {
+	  IDEA_WARNING("vrpn_IDEA::send_move_request(): Asked to move into limit");
+	  return true;	// Nothing failed, but we're not moving.
+	}
+  }
+
+  // Send the command to move the motor.  It may cause an interrupt which
+  // will stop the motion along the way.
   long steps_64th = static_cast<long>(location_in_steps*64);
   sprintf(cmd, "M%ld,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d",
     steps_64th,
@@ -215,7 +240,7 @@ bool  vrpn_IDEA::send_move_request(vrpn_float64 location_in_steps, double scale)
 //   Commands		  Responses	            Meanings
 //    l                     `l<value>[cr]`l#[cr]      Location of the drive
 
-int  vrpn_IDEA::convert_report_to_value(unsigned char *buf, vrpn_float64 *value)
+int  vrpn_IDEA::convert_report_to_position(unsigned char *buf)
 {
   // Make sure that the last character is [cr] and that we
   // have another [cr] in the record somewhere (there should be
@@ -228,18 +253,57 @@ int  vrpn_IDEA::convert_report_to_value(unsigned char *buf, vrpn_float64 *value)
   // See if we can convert the number.
   int  data;
   if (sscanf((char *)(buf), "`l%d\r`l#\r", &data) != 1) {
-    char msg[2048];
-    sprintf(msg, "Could not convert value: %s", (char*)(buf));
-    IDEA_ERROR(msg);
     return -1;
   }
 
   // The location of the drive is in 64th-of-a-tick units, so need
-  // to divide by 64 to find the actual location.
-  (*value) = data/64.0;
+  // to divide by 64 to find the actual location.  Store this in our
+  // analog channel.
+  channel[0] = data/64.0;
   return 1;
 }
 
+// This routine will parse an I/O response from the drive.
+//   Commands		  Responses	            Meanings
+//    l                     `:<value>[cr]`:#[cr]      Bitmask of the in/outputs
+
+int  vrpn_IDEA::convert_report_to_buttons(unsigned char *buf)
+{
+  // Make sure that the last character is [cr] and that we
+  // have another [cr] in the record somewhere (there should be
+  // two).  This makes sure that we have a complete report.
+  char *firstindex = strchr((char*)(buf), '\r');
+  char *lastindex = strrchr((char*)(buf), '\r');
+  if (buf[strlen((char*)(buf))-1] != '\r') { return 0; }
+  if (firstindex == lastindex) { return 0; }
+
+  // See if we can read the status into an integer.
+  int io_status;
+  if (sscanf((char *)(buf), "`:%d\r`:#\r", &io_status) != 1) {
+    return -1;
+  }
+
+  // Store the results from the first four inputs (low-order bits,
+  // input 1 is lowest) into our buttons.
+  vrpn_Button::buttons[0] = (0 != (io_status & (1 << 0)) );
+  vrpn_Button::buttons[1] = (0 != (io_status & (1 << 1)) );
+  vrpn_Button::buttons[2] = (0 != (io_status & (1 << 2)) );
+  vrpn_Button::buttons[3] = (0 != (io_status & (1 << 3)) );
+
+  // If one of our limit-switch buttons has just toggled on, report this
+  // as a warning.
+  if (d_high_limit_index && buttons[d_high_limit_index-1] &&
+	!lastbuttons[d_high_limit_index-1]) {
+    IDEA_WARNING("Encountered high limit");
+  }
+  if (d_low_limit_index && buttons[d_low_limit_index-1] &&
+	!lastbuttons[d_low_limit_index-1]) {
+    IDEA_WARNING("Encountered low limit");
+  }
+
+  // We got a report.
+  return 1;
+}
 
 // This routine will reset the IDEA drive.
 //   Commands		  Responses	           Meanings
@@ -312,6 +376,14 @@ int	vrpn_IDEA::reset(void)
         }
 
 	//-----------------------------------------------------------------------
+        // Reset the drive count at the present location to 0, so that we can
+	// know how far we got on our initial move later.
+        if (!send_command("Z0")) {
+          fprintf(stderr,"vrpn_IDEA::reset(): Could not set position to 0\n");
+          return -1;
+        }
+
+	//-----------------------------------------------------------------------
         // Set the outputs to the desired state.  If a setting is -1, then we
         // don't change the value.  If it is 0 or 1 then we set the value to
         // what was requested.
@@ -333,12 +405,12 @@ int	vrpn_IDEA::reset(void)
           value |= (d_output_4_setting != 0) << (3);
         }
         if (sprintf(cmd, "O%d", value) <= 0) {
-          IDEA_ERROR("vrpn_IDEA::send_move_request(): Could not configure output command");
+          IDEA_ERROR("vrpn_IDEA::send_output(): Could not configure output command");
           status = STATUS_RESETTING;
           return -1;
         }
         if (!send_command(cmd)) {
-          IDEA_ERROR("vrpn_IDEA::send_move_request(): Could not configure outputs");
+          IDEA_ERROR("vrpn_IDEA::send_output(): Could not configure outputs");
           status = STATUS_RESETTING;
           return -1;
         }
@@ -369,13 +441,11 @@ int	vrpn_IDEA::reset(void)
         }
         inbuf[ret] = '\0';
 
-        int io_status;
-        if (sscanf((char *)(inbuf), "`:%d\r`:#\r", &io_status) != 1) {
+	if (convert_report_to_buttons(inbuf) != 1) {
           fprintf(stderr,"vrpn_IDEA::reset(): Bad I/O status report: %s\n", inbuf);
           IDEA_ERROR("Bad I/O status report");
           return -1;
-        }
-	//printf("XXX I/O status: %02x\n", io_status);
+	}
 
 	//-----------------------------------------------------------------------
         // Ask for the position of the drive and make sure we can read it.
@@ -400,17 +470,15 @@ int	vrpn_IDEA::reset(void)
         }
         inbuf[ret] = '\0';
 
-        vrpn_float64 position;
-        if (convert_report_to_value(inbuf, &position) != 1) {
+        if (convert_report_to_position(inbuf) != 1) {
           fprintf(stderr,"vrpn_IDEA::reset(): Bad position report: %s\n", inbuf);
           IDEA_ERROR("Bad position report");
           return -1;
         }
-        channel[0] = position;
 
 	//-----------------------------------------------------------------------
         // If we are using the high-limit index, we should abort a move when
-        // the drive is moving in a positive direction and we get a falling
+        // the drive is moving in a positive direction and we get a rising
         // edge trigger on the associated input.  If the index of the input
         // to use is -1, we aren't using this.  The motion command will set
         // the interrupt handlers appropriately, given the direction of travel.
@@ -423,8 +491,15 @@ int	vrpn_IDEA::reset(void)
           // switch goes low.  The program will abort the move.
 
           // The program name must be exactly ten characters.
-          // We put this program at memory location 40 (must be multiple of 4?).
-          if (!send_command("Phighlimit_,40,1")) {
+          // We put this program at memory location 1024 (must be multiple of 1024).
+	  // XXX Problem -- the programming manual for this instrument is incorrect
+	  // when it says that you can start a program at location 0 (the example).
+	  // The only valid values for the first numeric parameter are 1-85, which
+	  // sounds like a memory-page number.  It is not clear how to specify the
+	  // address of the program in pages in the "i" command.  Several things I
+	  // tried didn't work (see Redmine issue).  I've contactad Haydon-Kirk to
+	  // ask for help.  Russ Taylor.
+          if (!send_command("Phighlimit_,1,1")) {
             fprintf(stderr,"vrpn_IDEA::reset(): Could not start high limit program\n");
             return -1;
           }
@@ -434,6 +509,8 @@ int	vrpn_IDEA::reset(void)
             fprintf(stderr,"vrpn_IDEA::reset(): Could not send abort to high limit program\n");
             return -1;
           }
+
+	  // XXX Should probably include a "Return" instruction.
 
           // The program description is done
           if (!send_command("P")) {
@@ -473,8 +550,8 @@ int	vrpn_IDEA::reset(void)
           // switch goes low.  The program will abort the move.
 
           // The program name must be exactly ten characters.
-          // We put this program at memory location 80 (must be multiple of 4?).
-          if (!send_command("Plow_limit_,80,1")) {
+          // We put this program at memory location 2048 (must be multiple of 1024).
+          if (!send_command("Plow_limit_,2,1")) {
             fprintf(stderr,"vrpn_IDEA::reset(): Could not start low limit program\n");
             return -1;
           }
@@ -569,9 +646,42 @@ int	vrpn_IDEA::reset(void)
         }
 
 	//-----------------------------------------------------------------------
-        // Reset the drive count at the present location to zero.
-        if (!send_command("Z0")) {
-          fprintf(stderr,"vrpn_IDEA::reset(): Could not set position to 0\n");
+        // Ask for the position of the drive and see if we moved to where we
+	// wanted to.  If not, report where we ended up.
+	double last_position = channel[0];
+        if (!send_command("l")) {
+          fprintf(stderr,"vrpn_IDEA::reset(): Could not request position\n");
+          return -1;
+        }
+
+        timeout.tv_sec = 0;
+	timeout.tv_usec = 30000;
+
+        ret = vrpn_read_available_characters(serial_fd, inbuf, sizeof(inbuf), &timeout);
+        if (ret < 0) {
+          perror("vrpn_IDEA::reset(): Error reading position from device");
+	  return -1;
+        }
+        if ( (ret < 8) || (inbuf[ret-1] != '\r') ) {
+          inbuf[ret] = '\0';
+          fprintf(stderr,"vrpn_IDEA::reset(): Bad position report: %s\n", inbuf);
+          IDEA_ERROR("Bad position report");
+          return -1;
+        }
+        inbuf[ret] = '\0';
+
+        if (convert_report_to_position(inbuf) != 1) {
+          fprintf(stderr,"vrpn_IDEA::reset(): Bad position report: %s\n", inbuf);
+          IDEA_ERROR("Bad position report");
+          return -1;
+        }
+	printf("XXX Wanted move to %lg, got to %lg\n", d_initial_move, channel[0]);
+
+	//-----------------------------------------------------------------------
+        // Reset the drive count at the present location to 1280, so that we can
+	// reliably drive to 0.
+        if (!send_command("Z1280")) {
+          fprintf(stderr,"vrpn_IDEA::reset(): Could not set position to 1280\n");
           return -1;
         }
 
@@ -665,57 +775,94 @@ int vrpn_IDEA::get_report(void)
 #endif
 
    //--------------------------------------------------------------------
-   // See if we can parse this report.  If not, we assume that we do not
-   // have a complete report yet and so return.
+   // See if we can parse this report as position.  If so, it is stored into
+   // our analog channel and we request an I/O report next (we toggle back
+   // and forth between requesting position and requesting I/O values).
    //--------------------------------------------------------------------
 
-   vrpn_float64 value;
    d_buffer[d_bufcount] = '\0';
-   ret = convert_report_to_value(d_buffer, &value);
-   if (ret == 0) {
-     return 0;
-   } else if (ret == -1) {
+   int pos_ret;
+   pos_ret = convert_report_to_position(d_buffer);
+   if (pos_ret == 1) {
 
-	// Error during parsing, maybe we got off by a half-report.
-	// Try clearing the input buffer and re-requesting a report.
-	IDEA_WARNING("Flushing input and requesting new position report");
-	status = STATUS_SYNCING;
-	d_bufcount = 0;
-        vrpn_SleepMsecs(10);
-	vrpn_flush_input_buffer(serial_fd);
-	if (!send_command("l")) {
-	    IDEA_ERROR("Could not send position request in convert failure, resetting");
-	    status = STATUS_RESETTING;
-	    return 0;
-	}
-	return 0;
-   }
-
-   //--------------------------------------------------------------------
-   // Store the value in it into the analog value.  Request another report
-   // so we can keep them coming.
-   //--------------------------------------------------------------------
-
-   channel[0] = value;
+     //--------------------------------------------------------------------
+     // Request an I/O report so we can keep them coming.
+     //--------------------------------------------------------------------
 
 #ifdef	VERBOSE
-   printf("got a complete report (%d)!\n", d_bufcount);
+     printf("got a complete report (%d)!\n", d_bufcount);
 #endif
-    if (!send_command("l")) {
+      if (!send_command(":")) {
+	IDEA_ERROR("Could not send I/O request, resetting");
+	status = STATUS_RESETTING;
+	return 0;
+      }
+
+     //--------------------------------------------------------------------
+     // Done with the decoding, send the reports and go back to syncing
+     //--------------------------------------------------------------------
+
+     report_changes();
+     status = STATUS_SYNCING;
+     d_bufcount = 0;
+
+     return 1;
+  }
+
+   //--------------------------------------------------------------------
+   // See if we can parse this report as I/O.  If so, it is stored into
+   // our button channels and we request a position report next (we toggle back
+   // and forth between requesting position and requesting I/O values).
+   //--------------------------------------------------------------------
+
+   d_buffer[d_bufcount] = '\0';
+   int but_ret;
+   but_ret = convert_report_to_buttons(d_buffer);
+   if (but_ret == 1) {
+
+     //--------------------------------------------------------------------
+     // Request a position report so we can keep them coming.
+     //--------------------------------------------------------------------
+
+#ifdef	VERBOSE
+     printf("got a complete report (%d)!\n", d_bufcount);
+#endif
+      if (!send_command("l")) {
 	IDEA_ERROR("Could not send position request, resetting");
 	status = STATUS_RESETTING;
 	return 0;
-    }
+      }
 
-   //--------------------------------------------------------------------
-   // Done with the decoding, send the reports and go back to syncing
-   //--------------------------------------------------------------------
+     //--------------------------------------------------------------------
+     // Done with the decoding, send the reports and go back to syncing
+     //--------------------------------------------------------------------
 
-   report_changes();
-   status = STATUS_SYNCING;
-   d_bufcount = 0;
+     report_changes();
+     status = STATUS_SYNCING;
+     d_bufcount = 0;
 
-   return 1;
+     return 1;
+  }
+
+  // If we got an error for both types of reports, trouble!
+  // Flush things and ask for a new position report.
+  if ( (pos_ret == -1) && (but_ret == -1) ) {
+       // Error during parsing, maybe we got off by a half-report.
+       // Try clearing the input buffer and re-requesting a report.
+       IDEA_WARNING("Flushing input and requesting new position report");
+       status = STATUS_SYNCING;
+       d_bufcount = 0;
+        vrpn_SleepMsecs(10);
+       vrpn_flush_input_buffer(serial_fd);
+       if (!send_command("l")) {
+           IDEA_ERROR("Could not send position request in convert failure, resetting");
+           status = STATUS_RESETTING;
+           return 0;
+       }
+  }
+
+  // We've not gotten a report, nor an error.
+  return 0;
 }
 
 int vrpn_IDEA::handle_request_message(void *userdata, vrpn_HANDLERPARAM p)
@@ -785,15 +932,19 @@ int vrpn_IDEA::handle_connect_message(void *userdata, vrpn_HANDLERPARAM)
 void	vrpn_IDEA::report_changes(vrpn_uint32 class_of_service)
 {
 	vrpn_Analog::timestamp = d_timestamp;
+	vrpn_Button::timestamp = d_timestamp;
 
 	vrpn_Analog::report_changes(class_of_service);
+	vrpn_Button::report_changes();
 }
 
 void	vrpn_IDEA::report(vrpn_uint32 class_of_service)
 {
 	vrpn_Analog::timestamp = d_timestamp;
+	vrpn_Button::timestamp = d_timestamp;
 
 	vrpn_Analog::report(class_of_service);
+	vrpn_Button::report_changes();
 }
 
 /** This routine is called each time through the server's main loop. It will
@@ -826,7 +977,7 @@ void	vrpn_IDEA::mainloop()
 	    // resets and causes the other to timeout, and then it returns the
 	    // favor.  By checking for the report here, we reset the timestamp
 	    // if there is a report ready (ie, if THIS device is still operating).
-	    while (get_report()) {};	// Keep getting reports so long as there are more
+	    while (get_report()) {}; // Keep getting reports so long as there are more
 
 	    struct timeval current_time;
 	    vrpn_gettimeofday(&current_time, NULL);
@@ -861,3 +1012,4 @@ void	vrpn_IDEA::mainloop()
 	break;
   }
 }
+

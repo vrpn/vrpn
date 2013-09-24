@@ -15,6 +15,7 @@
 // for the software manual for this device.
 
 #include "vrpn_Analog.h"                // for vrpn_Serial_Analog
+#include "vrpn_Button.h"                // for vrpn_Button_Filter
 #include "vrpn_Analog_Output.h"         // for vrpn_Analog_Output
 #include "vrpn_Configure.h"             // for VRPN_CALLBACK, VRPN_API
 #include "vrpn_Connection.h"            // for vrpn_CONNECTION_RELIABLE, etc
@@ -23,7 +24,8 @@
 
 // XXX Add two buttons to the device, to report limit-switch state.
 
-class VRPN_API vrpn_IDEA: public vrpn_Serial_Analog, public vrpn_Analog_Output
+class VRPN_API vrpn_IDEA: public vrpn_Serial_Analog, public vrpn_Analog_Output,
+		public vrpn_Button_Filter
 {
 public:
 	vrpn_IDEA (const char * name, vrpn_Connection * c, const char * port
@@ -94,8 +96,13 @@ public:
     bool send_move_request(vrpn_float64 location_in_steps, double scale = 1.0);
 
     /// Parses a position report.  Returns -1 on failure, 0 on no value
-    // found, and 1 on value found.
-    int convert_report_to_value(unsigned char *buf, vrpn_float64 *value);
+    // found, and 1 on value found.  Store the result into our analog channel 0.
+    int convert_report_to_position(unsigned char *buf);
+
+    /// Parses an input/output  report.  Returns -1 on failure, 0 on no value
+    // found, and 1 on value found.  Store the results of our input reads into
+    // buttons 0-3.
+    int convert_report_to_buttons(unsigned char *buf);
 
     /// send report iff changed
     virtual void report_changes
