@@ -254,10 +254,9 @@ vrpn_Tracker_RazerHydra::~vrpn_Tracker_RazerHydra() {
 }
 
 void vrpn_Tracker_RazerHydra::mainloop() {
-	// server update
-	vrpn_Analog::server_mainloop();
-	vrpn_Button::server_mainloop();
-	vrpn_Tracker::server_mainloop();
+	// server update.  We only need to call this once for all three
+	// base devices because it is in the unique base class.
+	server_mainloop();
 
 	if (_data->connected()) {
 		// Update state
