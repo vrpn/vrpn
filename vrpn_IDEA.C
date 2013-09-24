@@ -236,6 +236,51 @@ bool  vrpn_IDEA::send_move_request(vrpn_float64 location_in_steps, double scale)
   return send_command(cmd);
 }
 
+bool  vrpn_IDEA::move_until_done_or_error(vrpn_float64 location_in_steps, double scale)
+{
+  // Send a move command, scaled by the fractional current and
+  // acceleration values.
+  if (!send_move_request(location_in_steps, d_fractional_c_a)) {
+    IDEA_ERROR("Could not do move");
+    return false;
+  }
+
+  // Keep asking whether the motor is moving until it says that it
+  // is not.
+  bool moving = true;
+  int ret;
+  unsigned char inbuf[1024];
+  do {
+    if (!send_command("o")) {
+      IDEA_ERROR("Could not request movement status");
+      return false;
+    }
+
+    struct timeval timeout;
+    timeout.tv_sec = 0;
+    timeout.tv_usec = 30000;
+    ret = vrpn_read_available_characters(serial_fd, inbuf, sizeof(inbuf), &timeout);
+    if (ret < 0) {
+      IDEA_ERROR("Error reading movement status");
+      return false;
+    }
+    if ( (ret < 8) || (inbuf[ret-1] != '\r') ) {
+      inbuf[ret] = '\0';
+      IDEA_ERROR("Bad movement status report");
+      return false;
+    }
+    inbuf[ret] = '\0';
+
+    if ( (inbuf[0] != '`') || (inbuf[1] != 'o') ) {
+      IDEA_ERROR("Bad movement status report");
+      return false;
+    }
+    moving = (inbuf[2] == 'Y');
+  } while (moving);
+
+  return true;
+}
+
 // This routine will parse a location response from the drive.
 //   Commands		  Responses	            Meanings
 //    l                     `l<value>[cr]`l#[cr]      Location of the drive
@@ -418,8 +463,7 @@ int	vrpn_IDEA::reset(void)
         vrpn_SleepMsecs(100);
 
 	//-----------------------------------------------------------------------
-	// Read the input/output values from the drive (debugging).  This is how
-	// we'd read them to fill in values for the buttons if we want to do that.
+	// Read the input/output values from the drive (debugging).
         if (!send_command(":")) {
           fprintf(stderr,"vrpn_IDEA::reset(): Could not request I/O status\n");
           return -1;
@@ -601,81 +645,96 @@ int	vrpn_IDEA::reset(void)
         // after this command before proceeding.
 
         if (d_initial_move != 0) {
-
-          // Send a move command, scaled by the fractional current and
-          // acceleration values.
-          if (!send_move_request(d_initial_move, d_fractional_c_a)) {
-            fprintf(stderr,"vrpn_IDEA::reset(): Could not do initial move\n");
+	  if (!move_until_done_or_error(d_initial_move, d_fractional_c_a)) {
             IDEA_ERROR("Could not do initial move");
             return -1;
           }
-
-          // Keep asking whether the motor is moving until it says that it
-          // is not.
-          bool moving = true;
-          do {
-            if (!send_command("o")) {
-              fprintf(stderr,"vrpn_IDEA::reset(): Could not request movement status\n");
-              IDEA_ERROR("Could not request movement status");
-              return -1;
-            }
-
-            timeout.tv_sec = 0;
-	    timeout.tv_usec = 30000;
-            ret = vrpn_read_available_characters(serial_fd, inbuf, sizeof(inbuf), &timeout);
-            if (ret < 0) {
-              perror("vrpn_IDEA::reset(): Error reading movement status from device");
-              IDEA_ERROR("Error reading movement status");
-	      return -1;
-            }
-            if ( (ret < 8) || (inbuf[ret-1] != '\r') ) {
-              inbuf[ret] = '\0';
-              fprintf(stderr,"vrpn_IDEA::reset(): Bad movement status report (length %d): %s\n", ret, inbuf);
-              IDEA_ERROR("Bad movement status report");
-              return -1;
-            }
-            inbuf[ret] = '\0';
-
-            if ( (inbuf[0] != '`') || (inbuf[1] != 'o') ) {
-              fprintf(stderr,"vrpn_IDEA::reset(): Bad movement status report: %s\n", inbuf);
-              IDEA_ERROR("Bad movement status report");
-              return -1;
-            }
-            moving = (inbuf[2] == 'Y');
-          } while (moving);
-        }
+	}
 
 	//-----------------------------------------------------------------------
-        // Ask for the position of the drive and see if we moved to where we
+        // XXX Once the interrupt abort is working...
+	// Ask for the position of the drive and see if we moved to where we
 	// wanted to.  If not, report where we ended up.
-	double last_position = channel[0];
-        if (!send_command("l")) {
-          fprintf(stderr,"vrpn_IDEA::reset(): Could not request position\n");
-          return -1;
-        }
 
-        timeout.tv_sec = 0;
-	timeout.tv_usec = 30000;
+	// XXX Until we can fix the limit-switch program to abort a move, we'll
+	// do the homing a different way.  If there is a limit switch enabled
+	// in the direction of the initial move, we will repeat that initial
+	// move until the limit switch is engaged.  This only works for the
+	// high limit switch; it is a hack until we get the interrupts working.
+	while ( (d_initial_move > 0) && (d_high_limit_index > 0) ) {
 
-        ret = vrpn_read_available_characters(serial_fd, inbuf, sizeof(inbuf), &timeout);
-        if (ret < 0) {
-          perror("vrpn_IDEA::reset(): Error reading position from device");
-	  return -1;
-        }
-        if ( (ret < 8) || (inbuf[ret-1] != '\r') ) {
+	  //-----------------------------------------------------------------------
+          // Ask for the position of the drive and parse it.
+          if (!send_command("l")) {
+            fprintf(stderr,"vrpn_IDEA::reset(): Could not request position\n");
+            return -1;
+          }
+
+          timeout.tv_sec = 0;
+	  timeout.tv_usec = 30000;
+
+          ret = vrpn_read_available_characters(serial_fd, inbuf, sizeof(inbuf), &timeout);
+          if (ret < 0) {
+            perror("vrpn_IDEA::reset(): Error reading position from device");
+	    return -1;
+          }
+          if ( (ret < 8) || (inbuf[ret-1] != '\r') ) {
+            inbuf[ret] = '\0';
+            fprintf(stderr,"vrpn_IDEA::reset(): Bad position report: %s\n", inbuf);
+            IDEA_ERROR("Bad position report");
+            return -1;
+          }
           inbuf[ret] = '\0';
-          fprintf(stderr,"vrpn_IDEA::reset(): Bad position report: %s\n", inbuf);
-          IDEA_ERROR("Bad position report");
-          return -1;
-        }
-        inbuf[ret] = '\0';
 
-        if (convert_report_to_position(inbuf) != 1) {
-          fprintf(stderr,"vrpn_IDEA::reset(): Bad position report: %s\n", inbuf);
-          IDEA_ERROR("Bad position report");
-          return -1;
-        }
-	printf("XXX Wanted move to %lg, got to %lg\n", d_initial_move, channel[0]);
+          if (convert_report_to_position(inbuf) != 1) {
+            fprintf(stderr,"vrpn_IDEA::reset(): Bad position report: %s\n", inbuf);
+            IDEA_ERROR("Bad position report");
+            return -1;
+          }
+
+	  // Check to see if the limit switch is on.  If so, we're done, so we
+	  // break out of the loop.
+          if (!send_command(":")) {
+            fprintf(stderr,"vrpn_IDEA::reset(): Could not request I/O status in limit hunt\n");
+            return -1;
+          }
+
+          timeout.tv_sec = 0;
+	  timeout.tv_usec = 30000;
+
+          ret = vrpn_read_available_characters(serial_fd, inbuf, sizeof(inbuf), &timeout);
+          if (ret < 0) {
+            perror("vrpn_IDEA::reset(): Error reading I/O status from device in limit hunt");
+	    return -1;
+          }
+          if ( (ret < 8) || (inbuf[ret-1] != '\r') ) {
+            inbuf[ret] = '\0';
+            fprintf(stderr,"vrpn_IDEA::reset(): Bad I/O status report (length %d) in limit hunt: %s\n", ret, inbuf);
+            IDEA_ERROR("Bad I/O status report");
+            return -1;
+          }
+          inbuf[ret] = '\0';
+
+	  if (convert_report_to_buttons(inbuf) != 1) {
+            fprintf(stderr,"vrpn_IDEA::reset(): Bad I/O status report in limit hunt: %s\n", inbuf);
+            IDEA_ERROR("Bad I/O status report");
+            return -1;
+	  }
+
+	  // Break out if we're done.
+	  if (buttons[d_high_limit_index-1]) {
+		break;
+	  }
+
+	  // Issue another move request in the same direction of the same
+	  // magnitude as the first one, until we get to the rails.
+	  printf("XXX vrpn_IDEA: moving to %lf to find limit\n",
+		channel[0] + d_initial_move);
+	  if (!move_until_done_or_error(channel[0] + d_initial_move, d_fractional_c_a)){
+            IDEA_ERROR("Could not do limit-hunting move");
+            return -1;
+          }
+	}
 
 	//-----------------------------------------------------------------------
         // Reset the drive count at the present location to 1280, so that we can

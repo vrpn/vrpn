@@ -95,6 +95,11 @@ public:
     // so we don't get stuck.
     bool send_move_request(vrpn_float64 location_in_steps, double scale = 1.0);
 
+    /// Send a move request and then wait for the move to complete.  Repeat
+    // the command asking the motor to move until it says that we are no
+    // longer moving.
+    bool move_until_done_or_error(vrpn_float64 location_in_steps, double scale = 1.0);
+
     /// Parses a position report.  Returns -1 on failure, 0 on no value
     // found, and 1 on value found.  Store the result into our analog channel 0.
     int convert_report_to_position(unsigned char *buf);
