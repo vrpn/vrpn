@@ -167,6 +167,14 @@ bool  vrpn_IDEA::send_move_request(vrpn_float64 location_in_steps, double scale)
   // backwards.  If neither limit switch is set, we still send a command so
   // that they will be disabled (in case the motor was programmed differently
   // before).
+  // XXX The "i" command is only available in program mode, so we need to
+  // write a program that will call the limit routine if needed and then will
+  // execute our particular move, then we call that program.  If we're lucky,
+  // we can do the limit subroutine as another program on another page and
+  // call it from here.  If not, we'll need to put the whole program including
+  // the subroutine each time -- then we need to figure out where to branch
+  // to.  We'll probably need to talk the GUI program into spitting out the
+  // text it is sending to the motor to figure out what that offset is.
   {
     int edge_masks[4] = { 0, 0, 0, 0 };
     int address_masks[4] = { 0, 0, 0, 0 };
@@ -523,7 +531,7 @@ int	vrpn_IDEA::reset(void)
         }
 
 	//-----------------------------------------------------------------------
-        // If we are using the high-limit index, we should abort a move when
+        // Write the limit-switch subroutine, which should abort a move when
         // the drive is moving in a positive direction and we get a rising
         // edge trigger on the associated input.  If the index of the input
         // to use is -1, we aren't using this.  The motion command will set
@@ -531,36 +539,33 @@ int	vrpn_IDEA::reset(void)
         // Here, we write the programs for the high limit switch and the low
         // limit switch that will be called when they are triggered.
 
-        if (d_high_limit_index > 0) {
-
-          // First, we write the program that will be run when the high limit
-          // switch goes low.  The program will abort the move.
-
+        {
           // The program name must be exactly ten characters.
+	  // The first integer (second parameter) is the page number that the
+	  // program starts on.  Pages are 1024 bytes long.  There are pages
+	  // 1-85 available.  We put this program on page 1 (which we hope is
+	  // address 0).
           // We put this program at memory location 1024 (must be multiple of 1024).
-	  // XXX Problem -- the programming manual for this instrument is incorrect
-	  // when it says that you can start a program at location 0 (the example).
-	  // The only valid values for the first numeric parameter are 1-85, which
-	  // sounds like a memory-page number.  It is not clear how to specify the
-	  // address of the program in pages in the "i" command.  Several things I
-	  // tried didn't work (see Redmine issue).  I've contactad Haydon-Kirk to
-	  // ask for help.  Russ Taylor.
-          if (!send_command("Phighlimit_,1,1")) {
-            fprintf(stderr,"vrpn_IDEA::reset(): Could not start high limit program\n");
+          if (!send_command("Pfoundlimit,1,1")) {
+            fprintf(stderr,"vrpn_IDEA::reset(): Could not start limit program\n");
             return -1;
           }
 
           // The program should cause an abort instruction when run
           if (!send_command("A")) {
-            fprintf(stderr,"vrpn_IDEA::reset(): Could not send abort to high limit program\n");
+            fprintf(stderr,"vrpn_IDEA::reset(): Could not send abort to limit program\n");
             return -1;
           }
 
-	  // XXX Should probably include a "Return" instruction.
+	  // "Return" instruction from the subroutine back to the main program.
+          if (!send_command("X")) {
+            fprintf(stderr,"vrpn_IDEA::reset(): Could not send return to limit program\n");
+            return -1;
+          }
 
           // The program description is done
           if (!send_command("P")) {
-            fprintf(stderr,"vrpn_IDEA::reset(): Could not finish high limit program\n");
+            fprintf(stderr,"vrpn_IDEA::reset(): Could not finish limit program\n");
             return -1;
           }
 
@@ -571,71 +576,21 @@ int	vrpn_IDEA::reset(void)
           // say what the size of the program is.
           ret = vrpn_read_available_characters(serial_fd, inbuf, sizeof(inbuf), &timeout);
           if (ret < 0) {
-            perror("vrpn_IDEA::reset(): Error reading high-limit program response from device");
+            perror("vrpn_IDEA::reset(): Error reading limit program response from device");
 	    return -1;
           }
           if ( (ret < 8) || (inbuf[ret-1] != '\r') ) {
             inbuf[ret] = '\0';
-            fprintf(stderr,"vrpn_IDEA::reset(): Bad high-limit program response report: %s\n", inbuf);
-            IDEA_ERROR("Bad position report");
+            fprintf(stderr,"vrpn_IDEA::reset(): Bad limit program response report: %s\n", inbuf);
+            IDEA_ERROR("Could not write limit program");
             return -1;
           }
           inbuf[ret] = '\0';
 
           int program_length;
           if (sscanf((char *)(inbuf), "`P%d\r`P#\r", &program_length) != 1) {
-            fprintf(stderr,"vrpn_IDEA::reset(): Bad high program report: %s\n", inbuf);
-            IDEA_ERROR("Bad high program report");
-            return -1;
-          }
-        }
-
-        if (d_low_limit_index > 0) {
-
-          // Next, we write the program that will be run when the low limit
-          // switch goes low.  The program will abort the move.
-
-          // The program name must be exactly ten characters.
-          // We put this program at memory location 2048 (must be multiple of 1024).
-          if (!send_command("Plow_limit_,2,1")) {
-            fprintf(stderr,"vrpn_IDEA::reset(): Could not start low limit program\n");
-            return -1;
-          }
-
-          // The program should cause an abort instruction when run
-          if (!send_command("A")) {
-            fprintf(stderr,"vrpn_IDEA::reset(): Could not send abort to low limit program\n");
-            return -1;
-          }
-
-          // The program description is done
-          if (!send_command("P")) {
-            fprintf(stderr,"vrpn_IDEA::reset(): Could not finish low limit program\n");
-            return -1;
-          }
-
-          timeout.tv_sec = 0;
-	  timeout.tv_usec = 300000;
-
-          // Get a response saying that the program has been received; it will
-          // say what the size of the program is.
-          ret = vrpn_read_available_characters(serial_fd, inbuf, sizeof(inbuf), &timeout);
-          if (ret < 0) {
-            perror("vrpn_IDEA::reset(): Error reading low-limit program response from device");
-	    return -1;
-          }
-          if ( (ret < 8) || (inbuf[ret-1] != '\r') ) {
-            inbuf[ret] = '\0';
-            fprintf(stderr,"vrpn_IDEA::reset(): Bad low-limit program response report: %s\n", inbuf);
-            IDEA_ERROR("Bad low-limit program response report");
-            return -1;
-          }
-          inbuf[ret] = '\0';
-
-          int program_length;
-          if (sscanf((char *)(inbuf), "`P%d\r`P#\r", &program_length) != 1) {
-            fprintf(stderr,"vrpn_IDEA::reset(): Bad low program report: %s\n", inbuf);
-            IDEA_ERROR("Bad low program report");
+            fprintf(stderr,"vrpn_IDEA::reset(): Bad limit program report: %s\n", inbuf);
+            IDEA_ERROR("Bad limit program report");
             return -1;
           }
         }
@@ -657,6 +612,9 @@ int	vrpn_IDEA::reset(void)
         // XXX Once the interrupt abort is working...
 	// Ask for the position of the drive and see if we moved to where we
 	// wanted to.  If not, report where we ended up.
+	// XXX To make this work, we'll need to write a program to do each
+	// move, which sets the interrupt handlers as needed for the limit
+	// switches (the "i" command is only available in program mode).
 
 	// XXX Until we can fix the limit-switch program to abort a move, we'll
 	// do the homing a different way.  If there is a limit switch enabled
