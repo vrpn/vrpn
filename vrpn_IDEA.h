@@ -48,6 +48,7 @@ public:
           , int output_4_setting = -1
           , double initial_move = 0     // Move to one end of travel when reset
           , double fractional_c_a = 1.0 // Use lower accel and current during this move
+          , double reset_location = 0.0 // Where to set the value to after reset
         );
 	~vrpn_IDEA () {};
 
@@ -79,6 +80,7 @@ public:
     int d_output_4_setting;
     double d_initial_move;
     double d_fractional_c_a;
+    double d_reset_location;
 
     virtual int reset(void);      //< Set device back to starting config
     virtual int get_report(void); //< Try to read a report from the device

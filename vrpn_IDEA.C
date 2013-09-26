@@ -55,7 +55,8 @@ vrpn_IDEA::vrpn_IDEA (const char * name, vrpn_Connection * c,const char * port
                       , int output_3_setting
                       , int output_4_setting
                       , double initial_move
-                      , double fractional_c_a):
+                      , double fractional_c_a
+		      , double reset_location):
 	vrpn_Serial_Analog(name, c, port, 57600)
         , vrpn_Analog_Output(name, c)
 	, vrpn_Button_Filter(name, c)
@@ -78,6 +79,7 @@ vrpn_IDEA::vrpn_IDEA (const char * name, vrpn_Connection * c,const char * port
         , d_output_4_setting(output_4_setting)
         , d_initial_move(initial_move)
         , d_fractional_c_a(fractional_c_a)
+        , d_reset_location(reset_location)
 {
   vrpn_Analog::num_channel = 1;
   vrpn_Analog_Output::o_num_channel = 1;
@@ -737,9 +739,11 @@ int	vrpn_IDEA::reset(void)
 	}
 
 	//-----------------------------------------------------------------------
-        // Reset the drive count at the present location to 1280, so that we can
-	// reliably drive to 0.
-        if (!send_command("Z1280")) {
+        // Reset the drive count at the present location to the value set in the
+	// constructor.  We need to multiply by 64 to get into microticks.
+	long reset_location = static_cast<long>(64 * d_reset_location);
+	sprintf(cmd, "Z%ld", reset_location);
+        if (!send_command(cmd)) {
           fprintf(stderr,"vrpn_IDEA::reset(): Could not set position to 1280\n");
           return -1;
         }

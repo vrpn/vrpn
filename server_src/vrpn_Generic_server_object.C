@@ -879,16 +879,17 @@ int vrpn_Generic_Server_Object::setup_IDEA (char * & pch, char * line, FILE * /*
   int delay, step, high_limit, low_limit;
   int output_1, output_2, output_3, output_4;
   double initial_move, fractional_c_a;
+  double reset_location;
 
   VRPN_CONFIG_NEXT();
 
   // Get the arguments (class, Radamec_name, port, baud
-  if (sscanf (pch, "%511s%511s%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d%lf%lf", s2, s3,
+  if (sscanf (pch, "%511s%511s%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d%lf%lf%lf", s2, s3,
               &run_speed, &start_speed, &end_speed, &accel_rate, &decel_rate,
               &run_current, &hold_current, &accel_current, &decel_current,
               &delay, &step, &high_limit, &low_limit,
               &output_1, &output_2, &output_3, &output_4,
-              &initial_move, &fractional_c_a) != 21) {
+              &initial_move, &fractional_c_a, &reset_location) != 22) {
     fprintf (stderr, "Bad vrpn_IDEA: %s\n", line);
     return -1;
   }
@@ -902,7 +903,7 @@ int vrpn_Generic_Server_Object::setup_IDEA (char * & pch, char * line, FILE * /*
                                run_current, hold_current, accel_current, decel_current,
                                delay, step, high_limit, low_limit,
                                output_1, output_2, output_3, output_4,
-                               initial_move, fractional_c_a));
+                               initial_move, fractional_c_a, reset_location));
 
   return 0;
 }
