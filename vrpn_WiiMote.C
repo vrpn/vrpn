@@ -14,6 +14,7 @@
 #include VRPN_WIIUSE_H
 
 #include <string>
+#include <algorithm>
 
 // Opaque class to hold WiiMote device information so we don't have
 // to include wiimote.h in the vrpn_WiiMote.h file.
@@ -250,13 +251,15 @@ void vrpn_WiiMote::connect_wiimote(int timeout) {
 	num_available = wiiuse_find(available_wiimotes, VRPN_WIIUSE_MAX_WIIMOTES, timeout);
 #ifdef __linux
 	if (!wiimote->bdaddr.empty()) {
+		std::transform(wiimote->bdaddr.begin(), wiimote->bdaddr.end(), wiimote->bdaddr.begin(), ::toupper);
 		for (int i = 0; i < VRPN_WIIUSE_MAX_WIIMOTES; ++i) {
 			std::string current(available_wiimotes[i]->bdaddr_str);
+			std::transform(current.begin(), current.end(), current.begin(), ::toupper);
 			if (current == wiimote->bdaddr) {
 				wiimote->device = available_wiimotes[i];
 				break;
 			} else if (!current.empty()) {
-				printf("Wiimote found, but it's not the one we want: '%s' isn't '%s'\n", available_wiimotes[i]->bdaddr_str, wiimote->bdaddr.c_str());
+				printf("Wiimote found, but it's not the one we want: '%s' isn't '%s'\n", current.c_str(), wiimote->bdaddr.c_str());
 			}
 		}
 	}
