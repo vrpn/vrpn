@@ -387,7 +387,7 @@ void vrpn_Phantom::getPosition(double *vec, double *orient)
     orient[3] = d_quat[3];
 }
 
-vrpn_Phantom::vrpn_Phantom(char *name, vrpn_Connection *c, float hz, char * newsconf)
+vrpn_Phantom::vrpn_Phantom(char *name, vrpn_Connection *c, float hz, const char * newsconf)
 		:vrpn_Tracker(name, c),vrpn_Button_Filter(name,c),
 		 vrpn_ForceDeviceServer(name,c), update_rate(hz),
 #ifndef	VRPN_USE_HDAPI
