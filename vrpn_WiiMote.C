@@ -15,6 +15,11 @@
 
 #include <string>
 
+/// If we don't have this macro, we don't have any newer feature.
+#ifndef WIIUSE_HAS_VERSION
+#define WIIUSE_HAS_VERSION(major, minor, patch) false
+#endif
+
 // Opaque class to hold WiiMote device information so we don't have
 // to include wiimote.h in the vrpn_WiiMote.h file.
 class vrpn_Wiimote_Device {
@@ -193,6 +198,10 @@ void vrpn_WiiMote::handle_event() {
 			channel[16 + 2] = wiimote->device->exp.nunchuk.gforce.z;
 			channel[16 + 3] = wiimote->device->exp.nunchuk.js.ang;
 			channel[16 + 4] = wiimote->device->exp.nunchuk.js.mag;
+#if WIIUSE_HAS_VERSION(0,14,2)
+			channel[16 + 5] = wiimote->device->exp.nunchuk.js.x;
+			channel[16 + 6] = wiimote->device->exp.nunchuk.js.y;
+#endif
 			break;
 
 		case EXP_CLASSIC:
@@ -202,12 +211,23 @@ void vrpn_WiiMote::handle_event() {
 			channel[32 + 3] = wiimote->device->exp.classic.ljs.mag;
 			channel[32 + 4] = wiimote->device->exp.classic.rjs.ang;
 			channel[32 + 5] = wiimote->device->exp.classic.rjs.mag;
+#if WIIUSE_HAS_VERSION(0,14,2)
+			channel[32 + 6] = wiimote->device->exp.classic.ljs.x;
+			channel[32 + 7] = wiimote->device->exp.classic.ljs.y;
+			channel[32 + 8] = wiimote->device->exp.classic.rjs.x;
+			channel[32 + 9] = wiimote->device->exp.classic.rjs.y;
+#endif
 			break;
+
 
 		case EXP_GUITAR_HERO_3:
 			channel[48 + 0] = wiimote->device->exp.gh3.whammy_bar;
 			channel[48 + 1] = wiimote->device->exp.gh3.js.ang;
 			channel[48 + 2] = wiimote->device->exp.gh3.js.mag;
+#if WIIUSE_HAS_VERSION(0,14,2)
+			channel[48 + 3] = wiimote->device->exp.gh3.js.x;
+			channel[48 + 4] = wiimote->device->exp.gh3.js.y;
+#endif
 			break;
 
 #ifdef EXP_WII_BOARD

@@ -68,11 +68,14 @@ struct vrpn_WiiMote_SharedData;
 //    channel[14] = Y of fourth sensor spot (0-767, -1 if not seen)
 //    channel[15] = size of fourth sensor spot (0-15, -1 if not seen)
 // and on the secondary controllers (skipping values to leave room for expansion)
+// (with the joystick x and y values only available with WiiUse 0.14.2 or newer)
 //    channel[16] = nunchuck gravity X vector
 //    channel[17] = nunchuck gravity Y vector
 //    channel[18] = nunchuck gravity Z vector
 //    channel[19] = nunchuck joystick angle
 //    channel[20] = nunchuck joystick magnitude
+//    channel[21] = nunchuck joystick X
+//    channel[22] = nunchuck joystick Y
 //
 //    channel[32] = classic L button
 //    channel[33] = classic R button
@@ -80,10 +83,16 @@ struct vrpn_WiiMote_SharedData;
 //    channel[35] = classic L joystick magnitude
 //    channel[36] = classic R joystick angle
 //    channel[37] = classic R joystick magnitude
+//    channel[38] = classic L joystick X
+//    channel[39] = classic L joystick Y
+//    channel[40] = classic R joystick X
+//    channel[41] = classic R joystick Y
 //
 //    channel[48] = guitar hero whammy bar
 //    channel[49] = guitar hero joystick angle
 //    channel[50] = guitar hero joystick magnitude
+//    channel[51] = guitar hero joystick X
+//    channel[52] = guitar hero joystick Y
 //
 // Balance board data: (requires WiiUse 0.13 or newer, preferably 0.14 or newer)
 //    channel[64] = Balance board: top-left sensor, kg
