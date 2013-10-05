@@ -16,6 +16,8 @@
 
 #include "quat.h"
 
+#include "vrpn_SendTextMessageStreamProxy.h"
+
 #include <stdlib.h> // for exit
 
 // These must match definitions in eu.ensam.ii.vrpn.Vrpn
@@ -33,16 +35,19 @@ static const char* const MSG_KEY_BUTTON_STATUS =	"state";
 static const char* const MSG_KEY_ANALOG_CHANNEL =	"num";
 static const char* const MSG_KEY_ANALOG_DATA =		"data";
 
+static const char* const MSG_KEY_TEXT_DATA =		"data";
+
 // Message types (values for MSG_KEY_TYPE)
 static const int MSG_TYPE_TRACKER = 1;
 static const int MSG_TYPE_BUTTON = 2;
 static const int MSG_TYPE_ANALOG = 3;
-
+static const int MSG_TYPE_TEXT = 4;
 
 vrpn_Tracker_JsonNet::vrpn_Tracker_JsonNet(const char* name,vrpn_Connection* c,int udp_port) :
 	vrpn_Tracker(name, c),
 	vrpn_Button_Filter(name, c),
 	vrpn_Analog(name, c),
+	vrpn_Text_Sender(name, c),
 	_socket(INVALID_SOCKET),
 	_pJsonReader(0),
 	_do_tracker_report(false)
@@ -151,6 +156,9 @@ bool vrpn_Tracker_JsonNet::_parse(const char* buffer, int length) {
 		case MSG_TYPE_ANALOG:
 			return _parse_analog(root);
 			break;
+		case MSG_TYPE_TEXT:
+			return _parse_text(root);
+			break;
 		default:
 			;
 	}
@@ -209,6 +217,24 @@ bool vrpn_Tracker_JsonNet::_parse_tracker_data(const Json::Value& root) {
 }
 
 /**
+ * Parse a text update mesage.
+ *
+ * If the message can be parsed the message data is sent.
+ *
+ * @param root the JSON message
+ * @returns false if any error, true otherwise.
+ */
+bool vrpn_Tracker_JsonNet::_parse_text(const Json::Value& root) {
+	const Json::Value& valueTextStatus = root[MSG_KEY_TEXT_DATA];
+	const char *msg = "";
+	if (!valueTextStatus.empty() && valueTextStatus.isConvertibleTo(Json::stringValue)) {
+		send_text_message(vrpn_TEXT_NORMAL) << valueTextStatus.asString();
+		return true;
+	}
+	fprintf(stderr, "vrpn_Tracker_JsonNet::_parse_text parse error : missing text");
+	return false;
+}
+/**
  * Parse a button update mesage.
  * 
  * If the message can be parses and the button Id is valid, the button data is updated.
@@ -242,7 +268,6 @@ bool vrpn_Tracker_JsonNet::_parse_button(const Json::Value& root) {
 
 	return true;
 }
-
 
 /**
  * Parse an analog update mesage.

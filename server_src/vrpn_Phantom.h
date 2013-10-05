@@ -185,7 +185,7 @@ public:
 	// Jean SIMARD <jean.simard@limsi.fr>
 	// Modification of the constructor
 	// The default value is the default value use by the tool of SensAble
-	vrpn_Phantom(char *name, vrpn_Connection *c, float hz=1.0, char * newsconf="Default PHANToM");
+	vrpn_Phantom(char *name, vrpn_Connection *c, float hz=1.0, const char * newsconf="Default PHANToM");
 	~vrpn_Phantom();
 
 	virtual void mainloop(void);

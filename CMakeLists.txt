@@ -609,12 +609,13 @@ endif()
 ###
 find_package(InterSense)
 option_requires(VRPN_INCLUDE_INTERSENSE
-        "Build with InterSense support"
-        ${DEFAULT_OFF_IF_SUBPROJECT}
-        INTERSENSE_FOUND)
+	"Build with InterSense support"
+	${DEFAULT_OFF_IF_SUBPROJECT}
+	INTERSENSE_FOUND)
 
 if(VRPN_INCLUDE_INTERSENSE)
-        list(APPEND SERVER_EXTRA_LIBS ${INTERSENSE_LIBRARIES})
+	include_directories(${INTERSENSE_INCLUDE_DIRS})
+	list(APPEND SERVER_EXTRA_LIBS ${INTERSENSE_LIBRARIES})
 endif()
 
 ###
@@ -1288,6 +1289,7 @@ set(ALL_GPL_SERVER_FLAGS
 
 # What flags cause us to link against GPL-incompatible libraries?
 set(ALL_GPLINCOMPAT_SERVER_FLAGS
+	VRPN_INCLUDE_INTERSENSE
 	VRPN_INCLUDE_TIMECODE_SERVER
 	VRPN_USE_PHANTOM_SERVER)
 
