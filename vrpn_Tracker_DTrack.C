@@ -113,8 +113,6 @@
 
 // Local prototypes:
 
-static double duration_sec(struct timeval t1, struct timeval t2);
-
 static char* string_nextline(char* str, char* start, int len);
 static char* string_get_i(char* str, int* i);
 static char* string_get_ui(char* str, unsigned int* ui);
@@ -280,11 +278,11 @@ void vrpn_Tracker_DTrack::mainloop()
 		tim_first = tim_last = timestamp;
 	}
 
-	dt = (float )duration_sec(timestamp, tim_last);
+	dt = (float )vrpn_TimevalDuration(timestamp, tim_last);
 	tim_last = timestamp;
 	
 	if(tracing && ((tracing_frames % 10) == 0)){
-		printf("framenr %u  time %.3f\n", act_framecounter, duration_sec(timestamp, tim_first));
+		printf("framenr %u  time %.3f\n", act_framecounter, vrpn_TimevalDuration(timestamp, tim_first));
 	}
 
 	// find number of targets visible for vrpn to choose the correct vrpn ID numbers:
@@ -385,15 +383,6 @@ void vrpn_Tracker_DTrack::mainloop()
 
 // -----------------------------------------------------------------------------------------
 // Helpers:
-
-// Get duration between two timestamps:
-// t1, t2 (i): timestamps
-// return value (o): duration in sec
-
-static double duration_sec(struct timeval t1, struct timeval t2)
-{
-	return (t1.tv_usec - t2.tv_usec)/ 1000000.+ (t1.tv_sec - t2.tv_sec);
-}
 
 
 // ---------------------------------------------------------------------------------------------------

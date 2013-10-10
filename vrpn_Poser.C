@@ -29,14 +29,6 @@
 //#define VERBOSE
 // #define READ_HISTOGRAM
 
-/*
-static	unsigned long	duration(struct timeval t1, struct timeval t2)
-{
-	return (t1.tv_usec - t2.tv_usec) +
-	       1000000L * (t1.tv_sec - t2.tv_sec);
-}
-*/
-
 vrpn_Poser::vrpn_Poser (const char* name, vrpn_Connection * c) : 
     vrpn_BaseClass(name, c)
 {

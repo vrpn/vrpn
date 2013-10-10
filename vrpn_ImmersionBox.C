@@ -59,13 +59,6 @@ char    S_END[4]        = "END";
 
 #define MAX_TIME_INTERVAL  (2000000) // max time between reports (usec)
 
-
-static	unsigned long	duration(struct timeval t1, struct timeval t2)
-{
-    return (t1.tv_usec - t2.tv_usec) +
-	1000000L * (t1.tv_sec - t2.tv_sec);
-}
-
 static void pause (double delay) {
     if (delay < 0)
 	delay = 0;
@@ -76,7 +69,7 @@ static void pause (double delay) {
 
     do {
 	vrpn_gettimeofday (&now, NULL);
-    } while (duration(now, start) < interval);
+    } while (vrpn_TimevalDuration(now, start) < interval);
 	
 }
 
@@ -392,7 +385,7 @@ void	vrpn_ImmersionBox::mainloop(void)
 	    while (get_report()) {};	// Get multiple reports if available
 	    struct timeval current_time;
 	    vrpn_gettimeofday(&current_time, NULL);
-	    if ( duration(current_time,timestamp) > MAX_TIME_INTERVAL) {
+	    if ( vrpn_TimevalDuration(current_time,timestamp) > MAX_TIME_INTERVAL) {
 		    fprintf(stderr,"Tracker failed to read... current_time=%ld:%ld, timestamp=%ld:%ld\n",
 					current_time.tv_sec, static_cast<long>(current_time.tv_usec),
 					timestamp.tv_sec, static_cast<long>(timestamp.tv_usec));
@@ -480,7 +473,7 @@ int vrpn_ImmersionBox::syncBaudrate (double seconds) {
     while (!loggedOn) {
 	struct timeval current_time;
 	vrpn_gettimeofday(&current_time, NULL);
-	if (duration(current_time, start_time) > maxDelay ) {
+	if (vrpn_TimevalDuration(current_time, start_time) > maxDelay ) {
 	    // if we've timed out, go back unhappy
 	    fprintf(stderr,"vrpn_ImmersionBox::syncBaudrate timeout expired: %lf secs \n", seconds);
 	    break;  // out of while loop

@@ -81,11 +81,6 @@ const double radPerPx = fovX / xResSensor;
 const double cvtDistToAngle = radPerPx / two;
 /// @}
 
-static double duration(struct timeval t1, struct timeval t2) {
-	return (t1.tv_usec - t2.tv_usec) / 1000000.0 +
-	       (t1.tv_sec - t2.tv_sec);
-}
-
 /** @brief Utility function to set a quat equal to the identity rotation
  */
 #define MAKE_IDENTITY_QUAT(dest) \
@@ -220,7 +215,7 @@ void vrpn_Tracker_WiimoteHead::mainloop() {
 	// See if we have new data, or if it has been too long since our last
 	// report.  Send a new report in either case.
 	vrpn_gettimeofday(&now, NULL);
-	double interval = duration(now, d_prevtime);
+	double interval = vrpn_TimevalDurationSeconds(now, d_prevtime);
 
 	if (_should_report(interval)) {
 		// Figure out the new matrix based on the current values and

@@ -8,12 +8,6 @@
 
 vrpn_Auxiliary_Logger_Remote *g_logger;
 
-double duration(struct timeval t1, struct timeval t2)
-{
-  return (t1.tv_usec - t2.tv_usec) / 1e6 + (t1.tv_sec - t2.tv_sec);
-}
-
-
 
 /*****************************************************************************
  *
@@ -71,7 +65,7 @@ bool test_logfile_names(const char *local_in, const char *local_out,
     g_logger->mainloop();
     vrpn_gettimeofday(&now, NULL);
     vrpn_SleepMsecs(1);
-  } while ( !g_got_report && (duration(now, start) < 5.0));
+  } while ( !g_got_report && (vrpn_TimevalDurationSeconds(now, start) < 5.0));
   if (!g_got_report) {
     fprintf(stderr, "test_logfile_names: Timeout waiting for report of logging from server\n");
     return false;
@@ -130,7 +124,7 @@ int main (int argc, char * argv [])
   do {
     g_logger->mainloop();
     vrpn_gettimeofday(&now, NULL);
-  } while (duration(now, start) < 0.5);
+  } while (vrpn_TimevalDurationSeconds(now, start) < 0.5);
 
   // Try to create the named log file as the remote outgoing log
   // on the server.  Wait for the specified duration to give it
@@ -143,7 +137,7 @@ int main (int argc, char * argv [])
   do {
     g_logger->mainloop();
     vrpn_gettimeofday(&now, NULL);
-  } while (duration(now, start) <= log_duration_seconds);
+  } while (vrpn_TimevalDurationSeconds(now, start) <= log_duration_seconds);
 
   // Try to create blank log files (no log should be made).  Wait for a while after
   // creation to give time to stop logging.
@@ -155,7 +149,7 @@ int main (int argc, char * argv [])
   do {
     g_logger->mainloop();
     vrpn_gettimeofday(&now, NULL);
-  } while (duration(now, start) < 5.0);
+  } while (vrpn_TimevalDurationSeconds(now, start) < 5.0);
 
   // Done.
   if (ret == 0) {

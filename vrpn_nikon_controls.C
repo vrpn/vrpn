@@ -29,12 +29,6 @@ const char *VALID_REPORT_CHARS = "anqo";
 #define TIMEOUT_TIME_INTERVAL   (10000000L)  // max time between reports (usec)
 #define POLL_INTERVAL		(1000000L)  // time to poll if no response in a while (usec)
 
-static	unsigned long	duration(struct timeval t1, struct timeval t2)
-{
-	return (t1.tv_usec - t2.tv_usec) +
-	       1000000L * (t1.tv_sec - t2.tv_sec);
-}
-
 vrpn_Nikon_Controls::vrpn_Nikon_Controls(const char *device_name, vrpn_Connection *con, const char *port_name)
 : vrpn_Serial_Analog(device_name, con, port_name), 
   vrpn_Analog_Output(device_name, con)
@@ -482,10 +476,10 @@ void	vrpn_Nikon_Controls::mainloop()
 
 	    struct timeval current_time;
 	    vrpn_gettimeofday(&current_time, NULL);
-	    if ( duration(current_time,timestamp) > POLL_INTERVAL) {
+	    if ( vrpn_TimevalDuration(current_time,timestamp) > POLL_INTERVAL) {
 	      static struct timeval last_poll = {0, 0};
 
-	      if (duration(current_time, last_poll) > TIMEOUT_TIME_INTERVAL) {
+	      if (vrpn_TimevalDuration(current_time, last_poll) > TIMEOUT_TIME_INTERVAL) {
 		// Ask the unit for its current focus location, which will cause it to respond.
 		char  msg[256];
 		sprintf(msg, "rSPR\r");
@@ -500,7 +494,7 @@ void	vrpn_Nikon_Controls::mainloop()
 	      }
 	    }
 
-	    if ( duration(current_time,timestamp) > TIMEOUT_TIME_INTERVAL) {
+	    if ( vrpn_TimevalDuration(current_time,timestamp) > TIMEOUT_TIME_INTERVAL) {
 		    sprintf(errmsg,"Timeout... current_time=%ld:%ld, timestamp=%ld:%ld",
 					current_time.tv_sec, static_cast<long>(current_time.tv_usec),
 					timestamp.tv_sec, static_cast<long>(timestamp.tv_usec));

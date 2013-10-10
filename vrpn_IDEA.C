@@ -26,13 +26,6 @@
 #define TIMEOUT_TIME_INTERVAL   (2000000L) // max time between reports (usec)
 #define POLL_INTERVAL		(1000000L) // time to poll if no response in a while (usec)
 
-static	unsigned long	duration(struct timeval t1, struct timeval t2)
-{
-	return (t1.tv_usec - t2.tv_usec) +
-	       1000000L * (t1.tv_sec - t2.tv_sec);
-}
-
-
 // This creates a vrpn_IDEA and sets it to reset mode. It opens
 // the serial device using the code in the vrpn_Serial_Analog constructor.
 
@@ -1002,10 +995,10 @@ void	vrpn_IDEA::mainloop()
 
 	    struct timeval current_time;
 	    vrpn_gettimeofday(&current_time, NULL);
-	    if ( duration(current_time,d_timestamp) > POLL_INTERVAL) {
+	    if ( vrpn_TimevalDuration(current_time,d_timestamp) > POLL_INTERVAL) {
 	      static struct timeval last_poll = {0, 0};
 
-              if (duration(current_time, last_poll) > TIMEOUT_TIME_INTERVAL) {
+              if (vrpn_TimevalDuration(current_time, last_poll) > TIMEOUT_TIME_INTERVAL) {
 		// Send another request to the unit, in case we've somehow
                 // dropped a request.
                 if (!send_command("l")) {
@@ -1018,7 +1011,7 @@ void	vrpn_IDEA::mainloop()
 	      }
 	    }
 
-	    if ( duration(current_time,d_timestamp) > TIMEOUT_TIME_INTERVAL) {
+	    if ( vrpn_TimevalDuration(current_time,d_timestamp) > TIMEOUT_TIME_INTERVAL) {
 		    sprintf(errmsg,"Timeout, resetting... current_time=%ld:%ld, timestamp=%ld:%ld",
 					current_time.tv_sec, static_cast<long>(current_time.tv_usec),
 					d_timestamp.tv_sec, static_cast<long>(d_timestamp.tv_usec));

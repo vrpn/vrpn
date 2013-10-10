@@ -70,10 +70,6 @@ class t_user_callback {
 struct timeval	t_analog_last_report;
 unsigned		t_analog_count;
 
-static	double	duration(struct timeval t1, struct timeval t2) {
-	return (t1.tv_usec - t2.tv_usec) / 1000000.0 +
-	       (t1.tv_sec - t2.tv_sec);
-}
 
 /*****************************************************************************
  *
@@ -98,7 +94,7 @@ void	VRPN_CALLBACK handle_tracker_pos_quat (void *userdata, const vrpn_TRACKERCB
 	}
 
 
-	interval = duration(now, t_data->t_last_report[t.sensor]);
+	interval = vrpn_TimevalDurationSeconds(now, t_data->t_last_report[t.sensor]);
 	t_data->t_counts[t.sensor]++;
 
 	// See if it's been long enough to display a frequency notification
@@ -131,7 +127,7 @@ void	VRPN_CALLBACK handle_tracker_vel (void *userdata, const vrpn_TRACKERVELCB t
 	}
 
 
-	interval = duration(now, t_data->t_last_report[t.sensor]);
+	interval = vrpn_TimevalDurationSeconds(now, t_data->t_last_report[t.sensor]);
 	t_data->t_counts[t.sensor]++;
 
 	// See if it's been long enough to display a frequency notification
@@ -164,7 +160,7 @@ void	VRPN_CALLBACK handle_tracker_acc (void *userdata, const vrpn_TRACKERACCCB t
 	}
 
 
-	interval = duration(now, t_data->t_last_report[t.sensor]);
+	interval = vrpn_TimevalDurationSeconds(now, t_data->t_last_report[t.sensor]);
 	t_data->t_counts[t.sensor]++;
 	// See if it's been long enough to display a frequency notification
 	if (interval >= report_interval ) {
@@ -195,7 +191,7 @@ void	VRPN_CALLBACK handle_analog (void *userdata, const vrpn_ANALOGCB a)
 	vrpn_gettimeofday(&now, NULL);
 
 
-	interval = duration(now, t_analog_last_report);
+	interval = vrpn_TimevalDurationSeconds(now, t_analog_last_report);
 	t_analog_count++;
 	// See if it's been long enough to display a frequency notification
 	if (interval >= report_interval ) {

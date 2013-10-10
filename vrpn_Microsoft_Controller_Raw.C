@@ -17,11 +17,6 @@ static double POLL_INTERVAL = 1e+6 / 30.0;		// If we have not heard, ask.
 //////////////////////////////////////////////////////////////////////////
 // helpers
 //////////////////////////////////////////////////////////////////////////
-static unsigned long duration(struct timeval t1, struct timeval t2)
-{
-	return ((t1.tv_usec - t2.tv_usec) + (1000000L * (t1.tv_sec - t2.tv_sec)));
-}
-
 static vrpn_float64 normalize_dpad(unsigned char up, unsigned char right, unsigned char down, unsigned char left)
 {
 	int x = 0;
@@ -173,7 +168,7 @@ void vrpn_Microsoft_SideWinder_Precision_2::mainloop(void)
 	server_mainloop();
 	struct timeval current_time;
 	vrpn_gettimeofday(&current_time, NULL);
-	if (duration(current_time, _timestamp) > POLL_INTERVAL)
+	if (vrpn_TimevalDuration(current_time, _timestamp) > POLL_INTERVAL)
 	{
 		_timestamp = current_time;
 		report_changes();
@@ -317,7 +312,7 @@ void vrpn_Microsoft_SideWinder::mainloop(void)
 	server_mainloop();
 	struct timeval current_time;
 	vrpn_gettimeofday(&current_time, NULL);
-	if (duration(current_time, _timestamp) > POLL_INTERVAL)
+	if (vrpn_TimevalDuration(current_time, _timestamp) > POLL_INTERVAL)
 	{
 		_timestamp = current_time;
 		report_changes();
@@ -426,7 +421,7 @@ void vrpn_Microsoft_Controller_Raw_Xbox_S::mainloop()
 	server_mainloop();
 	struct timeval current_time;
 	vrpn_gettimeofday(&current_time, NULL);
-	if (duration(current_time, _timestamp) > POLL_INTERVAL ) {
+	if (vrpn_TimevalDuration(current_time, _timestamp) > POLL_INTERVAL ) {
 		_timestamp = current_time;
 		report_changes();
 
@@ -690,7 +685,7 @@ void vrpn_Microsoft_Controller_Raw_Xbox_360::mainloop()
 	server_mainloop();
 	struct timeval current_time;
 	vrpn_gettimeofday(&current_time, NULL);
-	if (duration(current_time, _timestamp) > POLL_INTERVAL ) {
+	if (vrpn_TimevalDuration(current_time, _timestamp) > POLL_INTERVAL ) {
 		_timestamp = current_time;
 		report_changes();
 

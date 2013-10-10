@@ -443,12 +443,6 @@ int vrpn_Button_Server::set_button(int button, int new_value)
     return 0;
 }
 
-static	unsigned long	duration(struct timeval t1, struct timeval t2)
-{
-	return (t1.tv_usec - t2.tv_usec) +
-	       1000000L * (t1.tv_sec - t2.tv_sec);
-}
-
 vrpn_Button_Example_Server::vrpn_Button_Example_Server(const char *name,
 						       vrpn_Connection *c,
 						       int numbuttons,
@@ -479,7 +473,7 @@ void vrpn_Button_Example_Server::mainloop()
 	// time of the report would be updated to the current time so
 	// that the correct timestamp would be issued on the report.
 	vrpn_gettimeofday(&current_time, NULL);
-	if ( duration(current_time,timestamp) >= 1000000.0/_update_rate) {
+	if ( vrpn_TimevalDuration(current_time,timestamp) >= 1000000.0/_update_rate) {
 
 	  // Update the time
 	  timestamp.tv_sec = current_time.tv_sec;

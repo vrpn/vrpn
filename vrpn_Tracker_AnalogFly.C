@@ -10,12 +10,6 @@
 #define M_PI		3.14159265358979323846
 #endif
 
-static	double	duration(struct timeval t1, struct timeval t2)
-{
-	return (t1.tv_usec - t2.tv_usec) / 1000000.0 +
-	       (t1.tv_sec - t2.tv_sec);
-}
-
 vrpn_Tracker_AnalogFly::vrpn_Tracker_AnalogFly
          (const char * name, vrpn_Connection * trackercon,
           vrpn_Tracker_AnalogFlyParam * params, float update_rate,
@@ -361,7 +355,7 @@ void vrpn_Tracker_AnalogFly::mainloop()
   // See if it has been long enough since our last report.
   // If so, generate a new one.
   vrpn_gettimeofday(&now, NULL);
-  interval = duration(now, d_prevtime);
+  interval = vrpn_TimevalDurationSeconds(now, d_prevtime);
 
   if (shouldReport(interval)) {
 
