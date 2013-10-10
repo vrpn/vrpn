@@ -12,6 +12,8 @@
 #include "vrpn_Serial.h"
 #include "vrpn_Shared.h"                // for timeval, vrpn_gettimeofday
 #include "vrpn_Tng3.h"
+
+#define VRPN_TIMESTAMP_MEMBER _timestamp // Configuration required for vrpn_MessageMacros in this class.
 #include "vrpn_MessageMacros.h"         // for VRPN_MSG_INFO, VRPN_MSG_WARNING, VRPN_MSG_ERROR
 
 #undef VERBOSE

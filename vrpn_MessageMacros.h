@@ -23,10 +23,14 @@
 #ifndef INCLUDED_vrpn_MessageMacros_h_GUID_289adc6a_78da_4d50_8166_4611d0d911e8
 #define INCLUDED_vrpn_MessageMacros_h_GUID_289adc6a_78da_4d50_8166_4611d0d911e8
 
-#define	VRPN_MSG_INFO(msg)	{ send_text_message(msg, timestamp, vrpn_TEXT_NORMAL) ; if (d_connection && d_connection->connected()) d_connection->send_pending_reports(); }
+#ifndef VRPN_TIMESTAMP_MEMBER
+#define VRPN_TIMESTAMP_MEMBER timestamp
+#endif
 
-#define	VRPN_MSG_WARNING(msg)	{ send_text_message(msg, timestamp, vrpn_TEXT_WARNING) ; if (d_connection && d_connection->connected()) d_connection->send_pending_reports(); }
+#define	VRPN_MSG_INFO(msg)	{ send_text_message(msg, VRPN_TIMESTAMP_MEMBER, vrpn_TEXT_NORMAL) ; if (d_connection && d_connection->connected()) d_connection->send_pending_reports(); }
 
-#define	VRPN_MSG_ERROR(msg)	{ send_text_message(msg, timestamp, vrpn_TEXT_ERROR) ; if (d_connection && d_connection->connected()) d_connection->send_pending_reports(); }
+#define	VRPN_MSG_WARNING(msg)	{ send_text_message(msg, VRPN_TIMESTAMP_MEMBER, vrpn_TEXT_WARNING) ; if (d_connection && d_connection->connected()) d_connection->send_pending_reports(); }
+
+#define	VRPN_MSG_ERROR(msg)	{ send_text_message(msg, VRPN_TIMESTAMP_MEMBER, vrpn_TEXT_ERROR) ; if (d_connection && d_connection->connected()) d_connection->send_pending_reports(); }
 
 #endif // INCLUDED_vrpn_MessageMacros_h_GUID_289adc6a_78da_4d50_8166_4611d0d911e8

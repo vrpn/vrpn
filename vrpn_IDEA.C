@@ -11,6 +11,8 @@
 #include "vrpn_IDEA.h"
 #include "vrpn_Serial.h"
 #include "vrpn_Shared.h"                // for timeval, vrpn_unbuffer, etc
+
+#define VRPN_TIMESTAMP_MEMBER d_timestamp // Configuration required for vrpn_MessageMacros in this class.
 #include "vrpn_MessageMacros.h"         // for VRPN_MSG_INFO, VRPN_MSG_WARNING, VRPN_MSG_ERROR
 
 #undef VERBOSE
