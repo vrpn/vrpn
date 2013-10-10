@@ -25,13 +25,10 @@
 #include "vrpn_Serial.h"                // for vrpn_write_characters, etc
 #include "vrpn_Shared.h"                // for vrpn_SleepMsecs, timeval, etc
 #include "vrpn_Tracker.h"               // for vrpn_TRACKER_FAIL, etc
+#include "vrpn_MessageMacros.h"         // for VRPN_MSG_INFO, VRPN_MSG_WARNING, VRPN_MSG_ERROR
 #include "vrpn_Tracker_Fastrak.h"
 
 #define	INCHES_TO_METERS	(2.54/100.0)
-
-#define	FT_INFO(msg)	{ send_text_message(msg, timestamp, vrpn_TEXT_NORMAL) ; if (d_connection && d_connection->connected()) d_connection->send_pending_reports(); }
-#define	FT_WARNING(msg)	{ send_text_message(msg, timestamp, vrpn_TEXT_WARNING) ; if (d_connection && d_connection->connected()) d_connection->send_pending_reports(); }
-#define	FT_ERROR(msg)	{ send_text_message(msg, timestamp, vrpn_TEXT_ERROR) ; if (d_connection && d_connection->connected()) d_connection->send_pending_reports(); }
 
 vrpn_Tracker_Fastrak::vrpn_Tracker_Fastrak(const char *name, vrpn_Connection *c, 
 		      const char *port, long baud, int enable_filtering, int numstations,
@@ -117,7 +114,7 @@ int vrpn_Tracker_Fastrak::set_sensor_output_format(int sensor)
 	    strlen(outstring)) == (int)strlen(outstring)) {
 		vrpn_SleepMsecs(50);	// Sleep for a bit to let command run
     } else {
-		FT_ERROR("Write failed on format command");
+		VRPN_MSG_ERROR("Write failed on format command");
 		status = vrpn_TRACKER_FAIL;
 		return -1;
     }
@@ -215,7 +212,7 @@ void vrpn_Tracker_Fastrak::reset()
    reset[resetLen++] = 'c'; // Put it into polled (not continuous) mode
 
    sprintf(errmsg, "Resetting the tracker (attempt %d)", numResets);
-   FT_WARNING(errmsg);
+   VRPN_MSG_WARNING(errmsg);
    for (i = 0; i < resetLen; i++) {
 	if (vrpn_write_characters(serial_fd, &reset[i], 1) == 1) {
 		fprintf(stderr,".");
@@ -244,7 +241,7 @@ void vrpn_Tracker_Fastrak::reset()
    unsigned char scrap[80];
    if ( (ret = vrpn_read_available_characters(serial_fd, scrap, 80)) != 0) {
      sprintf(errmsg,"Got >=%d characters after reset",ret);
-     FT_WARNING(errmsg);
+     VRPN_MSG_WARNING(errmsg);
      for (i = 0; i < ret; i++) {
       	if (isprint(scrap[i])) {
          	fprintf(stderr,"%c",scrap[i]);
@@ -288,10 +285,10 @@ void vrpn_Tracker_Fastrak::reset()
          }
      }
      fprintf(stderr,"\n)\n");
-     FT_ERROR("Bad status report from Fastrak, retrying reset");
+     VRPN_MSG_ERROR("Bad status report from Fastrak, retrying reset");
      return;
    } else {
-     FT_WARNING("Fastrak/Isense gives status (this is good)");
+     VRPN_MSG_WARNING("Fastrak/Isense gives status (this is good)");
      numResets = 0; 	// Success, use simple reset next time
    }
 
@@ -317,7 +314,7 @@ void vrpn_Tracker_Fastrak::reset()
                                 strlen(outstring)) == (int)strlen(outstring)) {
         vrpn_SleepMsecs(50);   // Sleep for a bit to let command run
       } else {
-        FT_ERROR("Write failed on mouse format command");
+        VRPN_MSG_ERROR("Write failed on mouse format command");
         status = vrpn_TRACKER_FAIL;
       }
    }
@@ -415,7 +412,7 @@ void vrpn_Tracker_Fastrak::reset()
 
 	if (vrpn_write_characters(serial_fd, (const unsigned char *)clear_timestamp_cmd,
 	        strlen(clear_timestamp_cmd)) != (int)strlen(clear_timestamp_cmd)) {
-	    FT_ERROR("Cannot send command to clear timestamp");
+	    VRPN_MSG_ERROR("Cannot send command to clear timestamp");
 	    status = vrpn_TRACKER_FAIL;
 	    return;
 	}
@@ -428,7 +425,7 @@ void vrpn_Tracker_Fastrak::reset()
 
    // Done with reset.
    vrpn_gettimeofday(&timestamp, NULL);	// Set watchdog now
-   FT_WARNING("Reset Completed (this is good)");
+   VRPN_MSG_WARNING("Reset Completed (this is good)");
    status = vrpn_TRACKER_SYNCING;	// We're trying for a new reading
 }
 
@@ -477,7 +474,7 @@ int vrpn_Tracker_Fastrak::get_report(void)
       if ( buffer[0] != '0') {
       	sprintf(errmsg,"While syncing (looking for '0', "
 		"got '%c')", buffer[0]);
-	FT_INFO(errmsg);
+	VRPN_MSG_INFO(errmsg);
 	vrpn_flush_input_buffer(serial_fd);
       	return 0;
       }
@@ -511,7 +508,7 @@ int vrpn_Tracker_Fastrak::get_report(void)
       if ( (d_sensor < 0) || (d_sensor >= num_stations) ) {
 	   status = vrpn_TRACKER_SYNCING;
       	   sprintf(errmsg,"Bad sensor # (%d) in record, re-syncing", d_sensor);
-	   FT_INFO(errmsg);
+	   VRPN_MSG_INFO(errmsg);
 	   vrpn_flush_input_buffer(serial_fd);
 	   return 0;
       }
@@ -539,7 +536,7 @@ int vrpn_Tracker_Fastrak::get_report(void)
    ret = vrpn_read_available_characters(serial_fd, &buffer[bufcount],
 		REPORT_LEN-bufcount);
    if (ret == -1) {
-	FT_ERROR("Error reading report");
+	VRPN_MSG_ERROR("Error reading report");
 	status = vrpn_TRACKER_FAIL;
 	return 0;
    }
@@ -559,20 +556,20 @@ int vrpn_Tracker_Fastrak::get_report(void)
 
    if (buffer[0] != '0') {
 	   status = vrpn_TRACKER_SYNCING;
-	   FT_INFO("Not '0' in record, re-syncing");
+	   VRPN_MSG_INFO("Not '0' in record, re-syncing");
 	   vrpn_flush_input_buffer(serial_fd);
 	   return 0;
    }
    // Sensor checking was handled when we received the character for it
    if ( (buffer[2] != ' ') && !isalpha(buffer[2]) ) {
 	   status = vrpn_TRACKER_SYNCING;
-	   FT_INFO("Bad 3rd char in record, re-syncing");
+	   VRPN_MSG_INFO("Bad 3rd char in record, re-syncing");
 	   vrpn_flush_input_buffer(serial_fd);
 	   return 0;
    }
    if (buffer[bufcount-1] != ' ') {
 	   status = vrpn_TRACKER_SYNCING;
-	   FT_INFO("No space character at end of report, re-syncing");
+	   VRPN_MSG_INFO("No space character at end of report, re-syncing");
 	   vrpn_flush_input_buffer(serial_fd);
 	   return 0;
    }
@@ -711,7 +708,7 @@ int vrpn_Tracker_Fastrak::add_is900_button(const char *button_device_name, int s
     // Add a new button device and set the pointer to point at it.
     is900_buttons[sensor] = new vrpn_Button_Server(button_device_name, d_connection, numbuttons);
     if (is900_buttons[sensor] == NULL) {
-	FT_ERROR("Cannot open button device");
+	VRPN_MSG_ERROR("Cannot open button device");
 	return -1;
     }
 
@@ -732,7 +729,7 @@ int vrpn_Tracker_Fastrak::add_fastrak_stylus_button(const char *button_device_na
     // Add a new button device and set the pointer to point at it.
     is900_buttons[sensor] = new vrpn_Button_Server(button_device_name, d_connection, numbuttons);
     if (is900_buttons[sensor] == NULL) {
-	FT_ERROR("Cannot open button device");
+	VRPN_MSG_ERROR("Cannot open button device");
 	return -1;
     }
 
@@ -771,7 +768,7 @@ int vrpn_Tracker_Fastrak::add_is900_analog(const char *analog_device_name, int s
     // Add a new analog device and set the pointer to point at it.
     is900_analogs[sensor] = new vrpn_Clipping_Analog_Server(analog_device_name, d_connection);
     if (is900_analogs[sensor] == NULL) {
-	FT_ERROR("Cannot open analog device");
+	VRPN_MSG_ERROR("Cannot open analog device");
 	return -1;
     }
 

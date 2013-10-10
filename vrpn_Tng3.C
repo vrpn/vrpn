@@ -12,6 +12,7 @@
 #include "vrpn_Serial.h"
 #include "vrpn_Shared.h"                // for timeval, vrpn_gettimeofday
 #include "vrpn_Tng3.h"
+#include "vrpn_MessageMacros.h"         // for VRPN_MSG_INFO, VRPN_MSG_WARNING, VRPN_MSG_ERROR
 
 #undef VERBOSE
 
@@ -31,11 +32,6 @@
 #define	STATUS_SYNCING		(0)	// Looking for the first character of report
 #define	STATUS_READING		(1)	// Looking for the rest of the report
 #define MAX_TIME_INTERVAL  (2000000) // max time between reports (usec)
-
-#define	VRPN_INFO(msg)	  { send_text_message(msg, _timestamp, vrpn_TEXT_NORMAL) ; if (d_connection) d_connection->send_pending_reports(); }
-#define	VRPN_WARNING(msg) { send_text_message(msg, _timestamp, vrpn_TEXT_WARNING) ; if (d_connection) d_connection->send_pending_reports(); }
-#define	VRPN_ERROR(msg)	  { send_text_message(msg, _timestamp, vrpn_TEXT_ERROR) ; if (d_connection) d_connection->send_pending_reports(); }
-
 
 static	unsigned long	duration(struct timeval t1, struct timeval t2)
 {
@@ -173,7 +169,7 @@ int vrpn_Tng3::get_report(void)
       if (1 == vrpn_read_available_characters(serial_fd, _buffer, 1, &timeout)) {
 	// if not a record start, we need to resync
         if (_buffer[0] != bDataPacketStart) {
-            VRPN_WARNING("Resyncing");
+            VRPN_MSG_WARNING("Resyncing");
 	    return 0;;
         }
 
@@ -200,7 +196,7 @@ int vrpn_Tng3::get_report(void)
 		  &_buffer[num_read], DATA_RECORD_LENGTH-num_read, &timeout);    
 
     if (result < 0) {
-      VRPN_WARNING("Bad read");
+      VRPN_MSG_WARNING("Bad read");
       status = STATUS_SYNCING;
       return 0;
     }

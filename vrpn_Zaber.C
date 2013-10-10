@@ -19,6 +19,7 @@
 #include "vrpn_Serial.h"                // for vrpn_flush_input_buffer, etc
 #include "vrpn_Shared.h"                // for timeval, vrpn_unbuffer, etc
 #include "vrpn_Zaber.h"
+#include "vrpn_MessageMacros.h"         // for VRPN_MSG_INFO, VRPN_MSG_WARNING, VRPN_MSG_ERROR
 
 #undef VERBOSE
 
@@ -26,10 +27,6 @@
 #define	STATUS_RESETTING	(-1)	// Resetting the device
 #define	STATUS_SYNCING		(0)	// Looking for the first character of report
 #define	STATUS_READING		(1)	// Looking for the rest of the report
-
-#define	ZAB_INFO(msg)	    { send_text_message(msg, timestamp, vrpn_TEXT_NORMAL) ; if (d_connection) d_connection->send_pending_reports(); }
-#define	ZAB_WARNING(msg)    { send_text_message(msg, timestamp, vrpn_TEXT_WARNING) ; if (d_connection) d_connection->send_pending_reports(); }
-#define	ZAB_ERROR(msg)	    { send_text_message(msg, timestamp, vrpn_TEXT_ERROR) ; if (d_connection) d_connection->send_pending_reports(); }
 
 #define TIMEOUT_TIME_INTERVAL   (2000000L) // max time between reports (usec)
 #define POLL_INTERVAL		(1000000L)	  // time to poll if no response in a while (usec)
@@ -189,14 +186,14 @@ int	vrpn_Zaber::reset(void)
 	  }
 	  if (ret != expected_chars) {
 		  sprintf(errmsg,"reset: Got %d of %d expected characters for position\n",ret, expected_chars);
-		  ZAB_ERROR(errmsg);
+		  VRPN_MSG_ERROR(errmsg);
 		  return -1;
 	  }
 
 	  // Make sure the string we got back is what we expected and set the value
 	  // for this channel to what we got from the device.
 	  if ( (inbuf[0] != num_channel+1) || (inbuf[1] != 23) ) {
-	      ZAB_ERROR("reset: Bad response to device # request");
+	      VRPN_MSG_ERROR("reset: Bad response to device # request");
 	      return -1;
 	  }
 	  channel[num_channel] = convert_bytes_to_reading(&inbuf[2]);
@@ -213,12 +210,12 @@ int	vrpn_Zaber::reset(void)
 #pragma warning ( default : 4127 )
 #endif
 	sprintf(errmsg,"found %d devices",num_channel);
-	ZAB_WARNING(errmsg);
+	VRPN_MSG_WARNING(errmsg);
 
 	// We're now waiting for any responses from devices
 	status = STATUS_SYNCING;
 
-	ZAB_WARNING("reset complete (this is good)");
+	VRPN_MSG_WARNING("reset complete (this is good)");
 
 	vrpn_gettimeofday(&timestamp, NULL);	// Set watchdog now
 	return 0;
@@ -273,7 +270,7 @@ int vrpn_Zaber::get_report(void)
    ret = vrpn_read_available_characters(serial_fd, &d_buffer[d_bufcount],
 		d_expected_chars-d_bufcount);
    if (ret == -1) {
-	ZAB_ERROR("Error reading");
+	VRPN_MSG_ERROR("Error reading");
 	status = STATUS_RESETTING;
 	return 0;
    }
@@ -301,12 +298,12 @@ int vrpn_Zaber::get_report(void)
 	   status = STATUS_SYNCING;
 	   char msg[1024];
 	   sprintf(msg,"Bad command type (%d) in report (ignoring this report)", d_buffer[1]);
-      	   ZAB_WARNING(msg);
+      	   VRPN_MSG_WARNING(msg);
 	   vrpn_flush_input_buffer(serial_fd);
 	   return 0;
    }
    if (d_buffer[1] == 255) {
-     ZAB_WARNING("Requested value out of range");
+     VRPN_MSG_WARNING("Requested value out of range");
    }
 
 #ifdef	VERBOSE
@@ -322,7 +319,7 @@ int vrpn_Zaber::get_report(void)
    if (chan >= num_channel) {	// Unsigned, so can't be < 0
      char msg[1024];
      sprintf(msg,"Invalid channel (%d of %d), resetting", chan, num_channel);
-     ZAB_ERROR(msg);
+     VRPN_MSG_ERROR(msg);
      status = STATUS_RESETTING;
    }
    channel[chan] = value;
@@ -466,14 +463,14 @@ void	vrpn_Zaber::mainloop()
 		    sprintf(errmsg,"Timeout... current_time=%ld:%ld, timestamp=%ld:%ld",
 					current_time.tv_sec, static_cast<long>(current_time.tv_usec),
 					timestamp.tv_sec, static_cast<long>(timestamp.tv_usec));
-		    ZAB_ERROR(errmsg);
+		    VRPN_MSG_ERROR(errmsg);
 		    status = STATUS_RESETTING;
 	    }
       }
         break;
 
     default:
-	ZAB_ERROR("Unknown mode (internal error)");
+	VRPN_MSG_ERROR("Unknown mode (internal error)");
 	break;
   }
 }

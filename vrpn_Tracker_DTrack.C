@@ -86,6 +86,7 @@
 #include "vrpn_Shared.h"                // for timeval, INVALID_SOCKET, etc
 #include "vrpn_Tracker_DTrack.h"
 #include "vrpn_Types.h"                 // for vrpn_float64
+#include "vrpn_MessageMacros.h"         // for VRPN_MSG_INFO, VRPN_MSG_WARNING, VRPN_MSG_ERROR
 
 // There is a problem with linking on SGIs related to standard libraries.
 #ifndef sgi
@@ -99,10 +100,6 @@
 #define UDPRECEIVE_BUFSIZE       20000  // size of udp buffer for DTrack data (one frame; in bytes)
 
 // --------------------------------------------------------------------------
-
-#define	DT_INFO(msg)	{ send_text_message(msg, timestamp, vrpn_TEXT_NORMAL) ; if (d_connection) d_connection->send_pending_reports(); }
-#define	DT_WARNING(msg)	{ send_text_message(msg, timestamp, vrpn_TEXT_WARNING) ; if (d_connection) d_connection->send_pending_reports(); }
-#define	DT_ERROR(msg)	{ send_text_message(msg, timestamp, vrpn_TEXT_ERROR) ; if (d_connection) d_connection->send_pending_reports(); }
 
 // Local error codes:
 
