@@ -132,6 +132,12 @@ unsigned long vrpn_TimevalDuration(struct timeval endT, struct timeval startT)
 		1000000L * (endT.tv_sec - startT.tv_sec);
 }
 
+double vrpn_TimevalDurationSeconds(struct timeval endT, struct timeval startT)
+{
+	return (endT.tv_usec - startT.tv_usec) / 1000000.0 +
+	       (endT.tv_sec - startT.tv_sec);
+}
+
 double vrpn_TimevalMsecs( const timeval& tv )
 {
     return tv.tv_sec*1000.0 + tv.tv_usec/1000.0;
