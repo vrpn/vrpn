@@ -21,9 +21,9 @@
 #include <libusb.h>                     // for libusb_bulk_transfer, etc
 
 #define	INCHES_TO_METERS	(2.54f/100.0f)
-static bool METRIC_UNITS = true;
-static bool DEBUG = false;  // General Debug Messages
-static bool DEBUGA = false; // Only errors
+const bool METRIC_UNITS = true;
+const bool DEBUG = false;  // General Debug Messages
+const bool DEBUGA = false; // Only errors
 
 #define	FT_INFO(msg)	{ send_text_message(msg, timestamp, vrpn_TEXT_NORMAL) ; if (d_connection && d_connection->connected()) d_connection->send_pending_reports(); }
 #define	FT_WARNING(msg)	{ send_text_message(msg, timestamp, vrpn_TEXT_WARNING) ; if (d_connection && d_connection->connected()) d_connection->send_pending_reports(); }
