@@ -15,15 +15,6 @@
 #include <stdio.h>                      // for fprintf, NULL, stderr
 #include <string.h>                     // for memset
 
-static inline unsigned long duration(struct timeval t1, struct timeval t2) {
-	return (t1.tv_usec - t2.tv_usec) +
-	       1000000L * (t1.tv_sec - t2.tv_sec);
-}
-
-static inline double duration_seconds(struct timeval t1, struct timeval t2) {
-	return duration(t1, t2) / double(1000000L);
-}
-
 void VRPN_CALLBACK vrpn_Tracker_FilterOneEuro::handle_tracker_update(void *userdata, const vrpn_TRACKERCB info)
 {
   // Get pointer to the object we're dealing with.
@@ -37,7 +28,7 @@ void VRPN_CALLBACK vrpn_Tracker_FilterOneEuro::handle_tracker_update(void *userd
   // Filter the position and orientation and then report the filtered value
   // for this channel.  Keep track of the delta-time, and update our current
   // time so we get the right one next time.
-  double dt = duration_seconds(info.msg_time, me->d_last_report_times[info.sensor]);
+  double dt = vrpn_TimevalDurationSeconds(info.msg_time, me->d_last_report_times[info.sensor]);
   if (dt <= 0) { dt = 1; }  // Avoid divide-by-zero in case of fluke.
   vrpn_float64 pos[3];
   vrpn_float64 quat[4];

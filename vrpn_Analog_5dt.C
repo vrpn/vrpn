@@ -27,18 +27,6 @@
 
 #define MAX_TIME_INTERVAL       (2000000) // max time between reports (usec)
 
-/******************************************************************************
- * NAME      : duration
- * ROLE      : 
- * ARGUMENTS : 
- * RETURN    : 
- ******************************************************************************/
-static unsigned long duration (struct timeval p_t1, struct timeval p_t2)
-{
-  return (p_t1.tv_usec - p_t2.tv_usec) +
-         1000000L * (p_t1.tv_sec - p_t2.tv_sec);
-}
-
 
 /******************************************************************************
  * NAME      : vrpn_5DT::vrpn_5DT
@@ -476,7 +464,7 @@ void vrpn_5dt::mainloop ()
         get_report();
         struct timeval current_time;
         vrpn_gettimeofday (&current_time, NULL);
-        if (duration (current_time, timestamp) > MAX_TIME_INTERVAL) {
+        if (vrpn_TimevalDuration (current_time, timestamp) > MAX_TIME_INTERVAL) {
           sprintf (l_errmsg, "vrpn_5dt::mainloop: Timeout... current_time=%ld:%ld, timestamp=%ld:%ld",
                    current_time.tv_sec,
                    static_cast<long> (current_time.tv_usec),

@@ -76,17 +76,6 @@ static const unsigned long MAXIMUM_INITIAL_WAIT_USEC = 1000000L;
 /// after we tell it to.
 static const unsigned long MAXIMUM_WAIT_USEC = 5000000L;
 
-
-static inline unsigned long duration(struct timeval t1, struct timeval t2) {
-	return (t1.tv_usec - t2.tv_usec) +
-	       1000000L * (t1.tv_sec - t2.tv_sec);
-}
-
-static inline double duration_seconds(struct timeval t1, struct timeval t2) {
-	return duration(t1, t2) / double(1000000L);
-}
-
-
 class vrpn_Tracker_RazerHydra::MyInterface : public vrpn_HidInterface {
 	public:
 		MyInterface(unsigned which_interface, vrpn_Tracker_RazerHydra *hydra)
@@ -147,7 +136,7 @@ class vrpn_Tracker_RazerHydra::MyInterface : public vrpn_HidInterface {
 				}
 
 				vrpn_gettimeofday(&d_hydra->_timestamp, NULL);
-				double dt = duration_seconds(d_hydra->_timestamp, d_hydra->vrpn_Button::timestamp);
+				double dt = vrpn_TimevalDurationSeconds(d_hydra->_timestamp, d_hydra->vrpn_Button::timestamp);
 				d_hydra->vrpn_Button::timestamp = d_hydra->_timestamp;
 				d_hydra->vrpn_Tracker::timestamp = d_hydra->_timestamp;
                 
@@ -320,7 +309,7 @@ void vrpn_Tracker_RazerHydra::_listening_after_connect() {
 	}
 	struct timeval now;
 	vrpn_gettimeofday(&now, NULL);
-	if (duration(now, _connected) > MAXIMUM_INITIAL_WAIT_USEC) {
+	if (vrpn_TimevalDuration(now, _connected) > MAXIMUM_INITIAL_WAIT_USEC) {
 		_enter_motion_controller_mode();
 	}
 }
@@ -336,7 +325,7 @@ void vrpn_Tracker_RazerHydra::_listening_after_set_feature() {
 	}
 	struct timeval now;
 	vrpn_gettimeofday(&now, NULL);
-	if (duration(now, _set_feature) > MAXIMUM_WAIT_USEC) {
+	if (vrpn_TimevalDuration(now, _set_feature) > MAXIMUM_WAIT_USEC) {
 		send_text_message(vrpn_TEXT_WARNING)
 		        << "Really sleepy device - won't start motion controller reports despite our earlier "
 		        << _attempt << " attempt" << (_attempt > 1 ? ". " : "s. ")

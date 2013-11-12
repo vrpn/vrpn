@@ -23,16 +23,15 @@
 // perform normalization of a timeval
 // XXX this still needs to be checked for errors if the timeval
 // or the rate is negative
-#define TIMEVAL_NORMALIZE(tiva) { \
-    const long div_77777 = (tiva.tv_usec / 1000000); \
-    tiva.tv_sec += div_77777; \
-    tiva.tv_usec -= (div_77777 * 1000000); \
-    }
-
+static inline void timevalNormalizeInPlace(timeval & in_tv) {
+    const long div_77777 = (in_tv.tv_usec / 1000000);
+    in_tv.tv_sec += div_77777;
+    in_tv.tv_usec -= (div_77777 * 1000000);
+}
 timeval vrpn_TimevalNormalize( const timeval & in_tv )
 {
     timeval out_tv = in_tv;
-    TIMEVAL_NORMALIZE(out_tv);
+    timevalNormalizeInPlace(out_tv);
     return out_tv;
 }
 
@@ -102,7 +101,7 @@ timeval vrpn_TimevalScale (const timeval & tv, double scale)
     result.tv_sec = (long)( tv.tv_sec * scale );
     result.tv_usec = (long)( tv.tv_usec * scale
                              + fmod(tv.tv_sec * scale, 1.0) * 1000000.0 );
-    TIMEVAL_NORMALIZE(result);
+    timevalNormalizeInPlace(result);
     return result;
 }
 
@@ -130,6 +129,12 @@ unsigned long vrpn_TimevalDuration(struct timeval endT, struct timeval startT)
 {
 	return (endT.tv_usec - startT.tv_usec) +
 		1000000L * (endT.tv_sec - startT.tv_sec);
+}
+
+double vrpn_TimevalDurationSeconds(struct timeval endT, struct timeval startT)
+{
+	return (endT.tv_usec - startT.tv_usec) / 1000000.0 +
+	       (endT.tv_sec - startT.tv_sec);
 }
 
 double vrpn_TimevalMsecs( const timeval& tv )

@@ -8,12 +8,6 @@
 
 vrpn_Auxiliary_Logger_Remote *g_logger;
 
-double duration(struct timeval t1, struct timeval t2)
-{
-  return (t1.tv_usec - t2.tv_usec) / 1e6 + (t1.tv_sec - t2.tv_sec);
-}
-
-
 
 /*****************************************************************************
  *
@@ -71,7 +65,7 @@ bool test_logfile_names(const char *local_in, const char *local_out,
     g_logger->mainloop();
     vrpn_gettimeofday(&now, NULL);
     vrpn_SleepMsecs(1);
-  } while ( !g_got_report && (duration(now, start) < 5.0));
+  } while ( !g_got_report && (vrpn_TimevalDurationSeconds(now, start) < 5.0));
   if (!g_got_report) {
     fprintf(stderr, "test_logfile_names: Timeout waiting for report of logging from server\n");
     return false;
@@ -126,7 +120,7 @@ int main (int argc, char * argv [])
   do {
     g_logger->mainloop();
     vrpn_gettimeofday(&now, NULL);
-  } while (duration(now, start) < 0.5);
+  } while (vrpn_TimevalDurationSeconds(now, start) < 0.5);
 
   // Try to create four named log files.  Wait for a second after
   // creation to give it something to log.
@@ -139,7 +133,7 @@ int main (int argc, char * argv [])
   do {
     g_logger->mainloop();
     vrpn_gettimeofday(&now, NULL);
-  } while (duration(now, start) < 5.0);
+  } while (vrpn_TimevalDurationSeconds(now, start) < 5.0);
 
   // send a log-file-name request
   g_logger->send_logging_status_request( );
@@ -147,7 +141,7 @@ int main (int argc, char * argv [])
   do {
     g_logger->mainloop();
     vrpn_gettimeofday(&now, NULL);
-  } while (duration(now, start) < 5.0);
+  } while (vrpn_TimevalDurationSeconds(now, start) < 5.0);
 
   // Try to create blank log files (no log should be made).  Wait for a second after
   // creation to give it something to log.
@@ -159,7 +153,7 @@ int main (int argc, char * argv [])
   do {
     g_logger->mainloop();
     vrpn_gettimeofday(&now, NULL);
-  } while (duration(now, start) < 5.0);
+  } while (vrpn_TimevalDurationSeconds(now, start) < 5.0);
 
   // Try to create just one named log file.  Wait for a second after
   // creation to give it something to log.
@@ -171,7 +165,7 @@ int main (int argc, char * argv [])
   do {
     g_logger->mainloop();
     vrpn_gettimeofday(&now, NULL);
-  } while (duration(now, start) < 5.0);
+  } while (vrpn_TimevalDurationSeconds(now, start) < 5.0);
 
   // Try to create blank log files (no log should be made).  Wait for a second after
   // creation to give it something to log.
@@ -183,7 +177,7 @@ int main (int argc, char * argv [])
   do {
     g_logger->mainloop();
     vrpn_gettimeofday(&now, NULL);
-  } while (duration(now, start) < 5.0);
+  } while (vrpn_TimevalDurationSeconds(now, start) < 5.0);
 
   // Done.
   if (ret == 0) {

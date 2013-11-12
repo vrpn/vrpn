@@ -17,12 +17,6 @@ int done = 0;
 bool analog_0_set = false;
 vrpn_float64  analog_0;
 
-unsigned long	duration(struct timeval t1, struct timeval t2)
-{
-	return (t1.tv_usec - t2.tv_usec) +
-	       1000000L * (t1.tv_sec - t2.tv_sec);
-}
-
 
 
 /*****************************************************************************
@@ -123,7 +117,7 @@ int main (int argc, char * argv [])
     // 10000 steps shorter (if it is more than 10000)
     struct timeval current_time;
     vrpn_gettimeofday(&current_time, NULL);
-    if ( duration(current_time,timestamp) > POLL_INTERVAL) {
+    if ( vrpn_TimevalDuration(current_time,timestamp) > POLL_INTERVAL) {
       if (analog_0_set) {
 	double newval;
 	if (analog_0 > 10000) {

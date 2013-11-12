@@ -319,12 +319,6 @@ void vrpn_Tracker_Flock_Parallel_Slave::reset()
 // Allow enough time for startup of many sensors -- 1 second per sensor
 #define MAX_TIME_INTERVAL       (VRPN_FLOCK_MAX_SENSORS*1000000)
 
-static	unsigned long	duration(struct timeval t1, struct timeval t2)
-{
-	return (t1.tv_usec - t2.tv_usec) +
-	       1000000L * (t1.tv_sec - t2.tv_sec);
-}
-
 void vrpn_Tracker_Flock_Parallel_Slave::mainloop()
 {
   // We don't call the generic server mainloop code, because the master unit
@@ -348,7 +342,7 @@ void vrpn_Tracker_Flock_Parallel_Slave::mainloop()
 	}
 	struct timeval current_time;
 	vrpn_gettimeofday(&current_time, NULL);
-	if ( duration(current_time,timestamp) > MAX_TIME_INTERVAL) {
+	if ( vrpn_TimevalDuration(current_time,timestamp) > MAX_TIME_INTERVAL) {
 		fprintf(stderr,"Tracker failed to read... current_time=%ld:%ld, timestamp=%ld:%ld\n",
 				current_time.tv_sec, static_cast<long>(current_time.tv_usec),
 				timestamp.tv_sec, static_cast<long>(timestamp.tv_usec));

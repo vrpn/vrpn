@@ -37,12 +37,6 @@
 #define	VRPN_ERROR(msg)	  { send_text_message(msg, _timestamp, vrpn_TEXT_ERROR) ; if (d_connection) d_connection->send_pending_reports(); }
 
 
-static	unsigned long	duration(struct timeval t1, struct timeval t2)
-{
-    return (t1.tv_usec - t2.tv_usec) +
-	1000000L * (t1.tv_sec - t2.tv_sec);
-}
-
 static void pause (double delay) {
     if (delay < 0)
 	delay = 0;
@@ -53,7 +47,7 @@ static void pause (double delay) {
 
     do {
 	vrpn_gettimeofday (&now, NULL);
-    } while (duration(now, start) < interval);
+    } while (vrpn_TimevalDuration(now, start) < interval);
 	
 }
 
@@ -279,7 +273,7 @@ void vrpn_Tng3::mainloop(void)
 	    while (get_report()) {};	// Keep getting reports as long as they come
 	    struct timeval current_time;
 	    vrpn_gettimeofday(&current_time, NULL);
-	    if ( duration(current_time,_timestamp) > MAX_TIME_INTERVAL) {
+	    if ( vrpn_TimevalDuration(current_time,_timestamp) > MAX_TIME_INTERVAL) {
 		    fprintf(stderr,"TNG3 failed to read... current_time=%ld:%ld, timestamp=%ld:%ld\n",
 					current_time.tv_sec, static_cast<long>(current_time.tv_usec),
 					_timestamp.tv_sec, static_cast<long>(_timestamp.tv_usec));
@@ -329,7 +323,7 @@ int vrpn_Tng3::syncDatastream (double seconds) {
     while (!loggedOn) {
 	struct timeval current_time;
 	vrpn_gettimeofday(&current_time, NULL);
-	if (duration(current_time, start_time) > maxDelay ) {
+	if (vrpn_TimevalDuration(current_time, start_time) > maxDelay ) {
 	    // if we've timed out, go back unhappy
 	    fprintf(stderr,"vrpn_Tng3::syncDatastream timeout expired: %d secs\n", (int)seconds);
 	    return 0;  // go back unhappy

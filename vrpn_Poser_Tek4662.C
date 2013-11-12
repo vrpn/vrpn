@@ -49,12 +49,6 @@ const unsigned BITFIVE = 1 << 5;
 const unsigned LOWFIVEBITS = 0x001f;
 const unsigned LOWTWOBITS = 0x0003;
 
-static	unsigned long	duration(struct timeval t1, struct timeval t2)
-{
-	return (t1.tv_usec - t2.tv_usec) +
-	       1000000L * (t1.tv_sec - t2.tv_sec);
-}
-
 //////////////////////////////////////////////////////////////////////////////////////
 // Server Code
 
@@ -341,7 +335,7 @@ void vrpn_Poser_Tek4662::run()
 
   if ((d_outstanding_requests == 0) && !d_new_location_requested) {
     vrpn_gettimeofday(&now, NULL);
-    if (duration(now, timestamp) > 250000L) {
+    if (vrpn_TimevalDuration(now, timestamp) > 250000L) {
       // Record the fact that we're asking so that we won't send a new
       // command until the response completes.
       vrpn_write_characters(d_serial_fd, GIN, strlen((char*)GIN) );
@@ -353,7 +347,7 @@ void vrpn_Poser_Tek4662::run()
   // die on us in the middle of a move.  If we don't hear from it for 5 seconds,
   // reset it.
   vrpn_gettimeofday(&now, NULL);
-  if (duration(now, timestamp) > 5000000L) {
+  if (vrpn_TimevalDuration(now, timestamp) > 5000000L) {
     send_text_message("vrpn_Poser_Tek4662: Device timeout (resetting)", now, vrpn_TEXT_ERROR);
     status = vrpn_Poser_Tek4662_RESETTING;
     return;

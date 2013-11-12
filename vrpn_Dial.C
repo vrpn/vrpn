@@ -95,12 +95,6 @@ void vrpn_Dial::report (void) {
 
 // ************* EXAMPLE SERVER ROUTINES ****************************
 
-static	unsigned long	duration(struct timeval t1, struct timeval t2)
-{
-	return (t1.tv_usec - t2.tv_usec) +
-	       1000000L * (t1.tv_sec - t2.tv_sec);
-}
-
 vrpn_Dial_Example_Server::vrpn_Dial_Example_Server(const char * name, vrpn_Connection * c,
 		vrpn_int32 numdials, vrpn_float64 spin_rate, vrpn_float64 update_rate) :
 	vrpn_Dial(name, c),	// Construct the base class, which registers message/sender
@@ -132,7 +126,7 @@ void vrpn_Dial_Example_Server::mainloop()
 	// time of the report would be updated to the current time so
 	// that the correct timestamp would be issued on the report.
 	vrpn_gettimeofday(&current_time, NULL);
-	if ( duration(current_time,timestamp) >= 1000000.0/_update_rate) {
+	if ( vrpn_TimevalDuration(current_time,timestamp) >= 1000000.0/_update_rate) {
 
 	  // Update the time
 	  timestamp.tv_sec = current_time.tv_sec;

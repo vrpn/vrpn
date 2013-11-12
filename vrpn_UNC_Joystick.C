@@ -14,12 +14,6 @@
 
 static const vrpn_float64 JoyScale[] = {1019, 200, 200, 350, 200, 200, 350};
 
-static long  duration(struct timeval t1, struct timeval t2)
-{
-  if (t2.tv_sec == -1) return 0;
-  return (t1.tv_usec - t2.tv_usec) +
-    1000000L * (t1.tv_sec - t2.tv_sec);
-}
 
 vrpn_Joystick::vrpn_Joystick(char * name, 
 		    vrpn_Connection * c, char * portname,int baud, 
@@ -84,7 +78,7 @@ void vrpn_Joystick::mainloop(void) {
 	// If it has been longer than the requested report interval
 	// since we sent a report, send a complete report
 	// anyway (a repeat of the previous one).
-	if ( (duration(current_time, vrpn_Analog::timestamp) 
+	if ( (vrpn_TimevalDuration(current_time, vrpn_Analog::timestamp) 
 	     > MAX_TIME_INTERVAL) && (MAX_TIME_INTERVAL != -1) ) {
 
 	  // send out the last report again;

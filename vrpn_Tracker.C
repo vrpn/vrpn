@@ -41,13 +41,6 @@ static const char *default_tracker_cfg_file_name = "vrpn_Tracker.cfg";
 //#define VERBOSE
 // #define READ_HISTOGRAM
 
-static	unsigned long	duration(struct timeval t1, struct timeval t2)
-{
-	return (t1.tv_usec - t2.tv_usec) +
-	       1000000L * (t1.tv_sec - t2.tv_sec);
-}
-
-
 vrpn_Tracker::vrpn_Tracker (const char * name, vrpn_Connection * c,
 			    const char * tracker_cfg_file_name) :
 vrpn_BaseClass(name, c)
@@ -599,7 +592,7 @@ void	vrpn_Tracker_NULL::mainloop()
 
 	// See if its time to generate a new report
 	vrpn_gettimeofday(&current_time, NULL);
-	if ( duration(current_time,timestamp) >= 1000000.0/update_rate) {
+	if ( vrpn_TimevalDuration(current_time,timestamp) >= 1000000.0/update_rate) {
 
 	  // Update the time
 	  timestamp.tv_sec = current_time.tv_sec;
@@ -884,9 +877,9 @@ void vrpn_Tracker_Serial::mainloop()
             // XXX All trackers should be modified to use this, or it to not.
 	    // If the watchdog timestamp is zero, use the last timestamp to check.
 	    if (watchdog_timestamp.tv_sec == 0) {
-		time_lapsed=duration(current_time,timestamp);
+		time_lapsed=vrpn_TimevalDuration(current_time,timestamp);
 	    } else { // The watchdog_timestamp is being used
-		time_lapsed=duration(current_time,watchdog_timestamp);
+		time_lapsed=vrpn_TimevalDuration(current_time,watchdog_timestamp);
 	    }
 
 	    if (time_lapsed > vrpn_ser_tkr_MAX_TIME_INTERVAL) {
@@ -1029,9 +1022,9 @@ void vrpn_Tracker_USB::mainloop()
             // XXX All trackers should be modified to use this, or it to not.
 	    // If the watchdog timestamp is zero, use the last timestamp to check.
 	    if (watchdog_timestamp.tv_sec == 0) {
-		time_lapsed=duration(current_time,timestamp);
+		time_lapsed=vrpn_TimevalDuration(current_time,timestamp);
 	    } else { // The watchdog_timestamp is being used
-		time_lapsed=duration(current_time,watchdog_timestamp);
+		time_lapsed=vrpn_TimevalDuration(current_time,watchdog_timestamp);
 	    }
 
 	    if (time_lapsed > vrpn_ser_tkr_MAX_TIME_INTERVAL) {

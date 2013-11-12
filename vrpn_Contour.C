@@ -14,11 +14,6 @@ static double POLL_INTERVAL = 1e+6 / 30.0;		// If we have not heard, ask.
 static const vrpn_uint16 CONTOUR_VENDOR = 0x0b33;
 static const vrpn_uint16 CONTOUR_SHUTTLEXPRESS = 0x0020;
 
-static unsigned long duration(struct timeval t1, struct timeval t2)
-{
-	return ((t1.tv_usec - t2.tv_usec) + (1000000L * (t1.tv_sec - t2.tv_sec)));
-}
-
 static void normalize_axis(const unsigned int value, const short deadzone, const vrpn_float64 scale, vrpn_float64& channel) {
 	channel = (static_cast<float>(value) - 128.0f);
 	if (fabs(channel) < deadzone)
@@ -99,7 +94,7 @@ void vrpn_Contour_ShuttleXpress::mainloop(void)
 	server_mainloop();
 	struct timeval current_time;
 	vrpn_gettimeofday(&current_time, NULL);
-	if (duration(current_time, _timestamp) > POLL_INTERVAL ) {
+	if (vrpn_TimevalDuration(current_time, _timestamp) > POLL_INTERVAL ) {
 		_timestamp = current_time;
 		report_changes();
 

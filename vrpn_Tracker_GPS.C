@@ -27,12 +27,6 @@
 #define	FT_ERROR(msg)	{ send_text_message(msg, timestamp, vrpn_TEXT_ERROR) ; if (d_connection) d_connection->send_pending_reports(); }
 
 
-
-static	unsigned long	duration(struct timeval t1, struct timeval t2)
-{
-	return (t1.tv_usec - t2.tv_usec) +
-    1000000L * (t1.tv_sec - t2.tv_sec);
-}
 //--------------------------------------------------
 
 
@@ -419,16 +413,6 @@ int vrpn_Tracker_GPS::get_report(void)
                 
                 
                 get_report();
-                // 
-                // struct timeval current_time;
-                // vrpn_gettimeofday(&current_time, NULL);
-                // if ( duration(current_time,timestamp) > MAX_TIME_INTERVAL) {
-                //	  sprintf(errmsg,"Timeout... current_time=%ld:%ld, timestamp=%ld:%ld",current_time.tv_sec, current_time.tv_usec, timestamp.tv_sec, timestamp.tv_usec);
-                //	  FT_ERROR(errmsg);
-                //	  MessageBox(NULL,"Timeout","GPS Testing",0);
-                //	  status = vrpn_TRACKER_FAIL;
-                //  }
-                // 
                 
             }
                 break;
