@@ -6,6 +6,7 @@
 #include "vrpn_3DMicroscribe.h"
 #include "vrpn_BaseClass.h"             // for ::vrpn_TEXT_ERROR
 #include "vrpn_Shared.h"                // for timeval, vrpn_gettimeofday
+#include "vrpn_MessageMacros.h"
 
 #ifdef VRPN_USE_MICROSCRIBE
 #include "armdll32.h"
@@ -26,10 +27,6 @@
 #define	STATUS_SYNCING		(0) // Looking for the first char of report
 #define	STATUS_READING		(1) // Looking for the rest of the report
 #define MAX_TIME_INTERVAL (2000000) // max time between reports (usec)
-
-#define	MC_INFO(msg)	{ send_text_message(msg, timestamp, vrpn_TEXT_NORMAL) ; if (d_connection) d_connection->send_pending_reports(); }
-#define	MC_WARNING(msg)	{ send_text_message(msg, timestamp, vrpn_TEXT_WARNING) ; if (d_connection) d_connection->send_pending_reports(); }
-#define	MC_ERROR(msg)	{ send_text_message(msg, timestamp, vrpn_TEXT_ERROR) ; if (d_connection) d_connection->send_pending_reports(); }
 
 #define MM_TO_METERS 0.001
 
@@ -72,7 +69,7 @@ vrpn_3DMicroscribe::vrpn_3DMicroscribe (const char * name, vrpn_Connection * c,
 	if(ARM_SUCCESS != iResult)
 	{
 		//error starting the MicroScribe drivers
-		MC_ERROR( "Unable to start MicroScribe ArmDll32." );
+		VRPN_MSG_ERROR( "Unable to start MicroScribe ArmDll32." );
 		return;
 	}
 
@@ -106,7 +103,7 @@ vrpn_3DMicroscribe::vrpn_3DMicroscribe (const char * name, vrpn_Connection * c,
 	{ 
 		//error connecting, end the thread
 		ArmEnd();
-		MC_ERROR( "Unable to connect to the MicroScribe." );
+		VRPN_MSG_ERROR( "Unable to connect to the MicroScribe." );
 		return;
 	}
 
@@ -131,7 +128,7 @@ int	vrpn_3DMicroscribe::reset(void)
 	if(iResult != ARM_SUCCESS) 
 	{ 
 		//error setting the update type, disconnect and end the thread
-		MC_ERROR( "Unable to set the update type for the MicroScribe." );
+		VRPN_MSG_ERROR( "Unable to set the update type for the MicroScribe." );
 		return -1;
 	}
 
@@ -150,7 +147,7 @@ int	vrpn_3DMicroscribe::reset(void)
 	if(iResult == ARM_NOT_CONNECTED)
 	{ 
 		//error connecting
-		MC_ERROR( "MicroScribe connection lost!" );
+		VRPN_MSG_ERROR( "MicroScribe connection lost!" );
 		return -1;
 	}
 	
@@ -188,7 +185,7 @@ int vrpn_3DMicroscribe::get_report(void)
 	if(iResult == ARM_NOT_CONNECTED)
 	{ 
 		//error connecting
-		MC_ERROR( "MicroScribe connection lost!" );
+		VRPN_MSG_ERROR( "MicroScribe connection lost!" );
 		return 0;
 	}
 
@@ -267,10 +264,10 @@ void vrpn_3DMicroscribe::report_changes(vrpn_uint32 class_of_service)
 		if (d_connection->pack_message(len, timestamp,
 			position_m_id, d_sender_id, msgbuf,
 			class_of_service)) {
-				MC_ERROR("Tracker: cannot write message: tossing\n");
+				VRPN_MSG_ERROR("Tracker: cannot write message: tossing\n");
 			}
 	} else {
-		MC_ERROR("Tracker: No valid connection\n");
+		VRPN_MSG_ERROR("Tracker: No valid connection\n");
 	}
 }
 

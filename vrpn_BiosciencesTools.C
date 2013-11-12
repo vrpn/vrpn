@@ -39,6 +39,7 @@ S2 037 0<CR> sets reference temperature for channel II
 #include "vrpn_BiosciencesTools.h"
 #include "vrpn_Serial.h"                // for vrpn_write_characters, etc
 #include "vrpn_Shared.h"                // for vrpn_unbuffer, timeval, etc
+#include "vrpn_MessageMacros.h"         // for VRPN_MSG_INFO, VRPN_MSG_WARNING, VRPN_MSG_ERROR
 
 #undef VERBOSE
 
@@ -46,10 +47,6 @@ S2 037 0<CR> sets reference temperature for channel II
 #define	STATUS_RESETTING	(-1)	// Resetting the device
 #define	STATUS_SYNCING		(0)	// Looking for the first character of report
 #define	STATUS_READING		(1)	// Looking for the rest of the report
-
-#define	DO_INFO(msg)	    { send_text_message(msg, timestamp, vrpn_TEXT_NORMAL) ; if (d_connection) d_connection->send_pending_reports(); }
-#define	DO_WARNING(msg)    { send_text_message(msg, timestamp, vrpn_TEXT_WARNING) ; if (d_connection) d_connection->send_pending_reports(); }
-#define	DO_ERROR(msg)	    { send_text_message(msg, timestamp, vrpn_TEXT_ERROR) ; if (d_connection) d_connection->send_pending_reports(); }
 
 #define TIMEOUT_TIME_INTERVAL   (2000000L) // max time between reports (usec)
 
@@ -227,7 +224,7 @@ int	vrpn_BiosciencesTools::reset(void)
 
 	// We're now waiting for any responses from devices
 	status = STATUS_SYNCING;
-	DO_WARNING("reset complete (this is normal)");
+	VRPN_MSG_WARNING("reset complete (this is normal)");
 	vrpn_gettimeofday(&timestamp, NULL);	// Set watchdog now
 	return 0;
 }
@@ -282,7 +279,7 @@ int vrpn_BiosciencesTools::get_report(void)
      d_bufcount++;
    }
    if (ret == -1) {
-	DO_ERROR("Error reading");
+	VRPN_MSG_ERROR("Error reading");
 	status = STATUS_RESETTING;
 	return 0;
    }
@@ -307,7 +304,7 @@ int vrpn_BiosciencesTools::get_report(void)
    if (value == -1000) {
      char msg[256];
      sprintf(msg,"Invalid report, channel %d, resetting", d_next_channel_to_read);
-     DO_ERROR(msg);
+     VRPN_MSG_ERROR(msg);
      status = STATUS_RESETTING;
    }
    channel[d_next_channel_to_read] = value;
@@ -324,7 +321,7 @@ int vrpn_BiosciencesTools::get_report(void)
    if (!request_temperature(d_next_channel_to_read)) {
      char msg[256];
      sprintf(msg,"Can't request reading, channel %d, resetting", d_next_channel_to_read);
-     DO_ERROR(msg);
+     VRPN_MSG_ERROR(msg);
      status = STATUS_RESETTING;
    }
 
@@ -474,14 +471,14 @@ void	vrpn_BiosciencesTools::mainloop()
 		    sprintf(errmsg,"Timeout... current_time=%ld:%ld, timestamp=%ld:%ld",
 					current_time.tv_sec, static_cast<long>(current_time.tv_usec),
 					timestamp.tv_sec, static_cast<long>(timestamp.tv_usec));
-		    DO_ERROR(errmsg);
+		    VRPN_MSG_ERROR(errmsg);
 		    status = STATUS_RESETTING;
 	    }
       }
         break;
 
     default:
-	DO_ERROR("Unknown mode (internal error)");
+	VRPN_MSG_ERROR("Unknown mode (internal error)");
 	break;
   }
 }

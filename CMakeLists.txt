@@ -1057,6 +1057,7 @@ set(VRPN_SERVER_PUBLIC_HEADERS
 	vrpn_Logitech_Controller_Raw.h
 	vrpn_LUDL.h
 	vrpn_Magellan.h
+	vrpn_MessageMacros.h
 	vrpn_Microsoft_Controller_Raw.h
 	vrpn_Mouse.h
 	vrpn_NationalInstruments.h

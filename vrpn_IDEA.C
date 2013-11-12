@@ -12,16 +12,15 @@
 #include "vrpn_Serial.h"
 #include "vrpn_Shared.h"                // for timeval, vrpn_unbuffer, etc
 
+#define VRPN_TIMESTAMP_MEMBER d_timestamp // Configuration required for vrpn_MessageMacros in this class.
+#include "vrpn_MessageMacros.h"         // for VRPN_MSG_INFO, VRPN_MSG_WARNING, VRPN_MSG_ERROR
+
 #undef VERBOSE
 
 // Defines the modes in which the device can find itself.
 #define	STATUS_RESETTING	(-1)	// Resetting the device
 #define	STATUS_SYNCING		(0)	// Looking for the first character of report
 #define	STATUS_READING		(1)	// Looking for the rest of the report
-
-#define	IDEA_INFO(msg)	    { send_text_message(msg, d_timestamp, vrpn_TEXT_NORMAL) ; if (d_connection) d_connection->send_pending_reports(); }
-#define	IDEA_WARNING(msg)    { send_text_message(msg, d_timestamp, vrpn_TEXT_WARNING) ; if (d_connection) d_connection->send_pending_reports(); }
-#define	IDEA_ERROR(msg)	    { send_text_message(msg, d_timestamp, vrpn_TEXT_ERROR) ; if (d_connection) d_connection->send_pending_reports(); }
 
 #define TIMEOUT_TIME_INTERVAL   (2000000L) // max time between reports (usec)
 #define POLL_INTERVAL		(1000000L) // time to poll if no response in a while (usec)
@@ -192,12 +191,12 @@ bool  vrpn_IDEA::send_move_request(vrpn_float64 location_in_steps, double scale)
       address_masks[0], address_masks[1], address_masks[2], address_masks[3],
       priority_masks[0], priority_masks[1], priority_masks[2], priority_masks[3]
     ) <= 0) {
-      IDEA_ERROR("vrpn_IDEA::send_move_request(): Could not configure interrupt command");
+      VRPN_MSG_ERROR("vrpn_IDEA::send_move_request(): Could not configure interrupt command");
       status = STATUS_RESETTING;
       return false;
     }
     if (!send_command(cmd)) {
-      IDEA_ERROR("vrpn_IDEA::send_move_request(): Could not configure interrupts");
+      VRPN_MSG_ERROR("vrpn_IDEA::send_move_request(): Could not configure interrupts");
       status = STATUS_RESETTING;
       return false;
     }
@@ -209,13 +208,13 @@ bool  vrpn_IDEA::send_move_request(vrpn_float64 location_in_steps, double scale)
   // limit.
   if ( (location_in_steps > channel[0]) && (d_high_limit_index > 0) ) {
 	if (buttons[d_high_limit_index - 1] != 0) {
-	  IDEA_WARNING("vrpn_IDEA::send_move_request(): Asked to move into limit");
+	  VRPN_MSG_WARNING("vrpn_IDEA::send_move_request(): Asked to move into limit");
 	  return true;	// Nothing failed, but we're not moving.
 	}
   }
   if ( (location_in_steps < channel[0]) && (d_low_limit_index > 0) ) {
 	if (buttons[d_low_limit_index - 1] != 0) {
-	  IDEA_WARNING("vrpn_IDEA::send_move_request(): Asked to move into limit");
+	  VRPN_MSG_WARNING("vrpn_IDEA::send_move_request(): Asked to move into limit");
 	  return true;	// Nothing failed, but we're not moving.
 	}
   }
@@ -244,7 +243,7 @@ bool  vrpn_IDEA::move_until_done_or_error(vrpn_float64 location_in_steps, double
   // Send a move command, scaled by the fractional current and
   // acceleration values.
   if (!send_move_request(location_in_steps, d_fractional_c_a)) {
-    IDEA_ERROR("Could not do move");
+    VRPN_MSG_ERROR("Could not do move");
     return false;
   }
 
@@ -255,7 +254,7 @@ bool  vrpn_IDEA::move_until_done_or_error(vrpn_float64 location_in_steps, double
   unsigned char inbuf[1024];
   do {
     if (!send_command("o")) {
-      IDEA_ERROR("Could not request movement status");
+      VRPN_MSG_ERROR("Could not request movement status");
       return false;
     }
 
@@ -264,18 +263,18 @@ bool  vrpn_IDEA::move_until_done_or_error(vrpn_float64 location_in_steps, double
     timeout.tv_usec = 30000;
     ret = vrpn_read_available_characters(serial_fd, inbuf, sizeof(inbuf), &timeout);
     if (ret < 0) {
-      IDEA_ERROR("Error reading movement status");
+      VRPN_MSG_ERROR("Error reading movement status");
       return false;
     }
     if ( (ret < 8) || (inbuf[ret-1] != '\r') ) {
       inbuf[ret] = '\0';
-      IDEA_ERROR("Bad movement status report");
+      VRPN_MSG_ERROR("Bad movement status report");
       return false;
     }
     inbuf[ret] = '\0';
 
     if ( (inbuf[0] != '`') || (inbuf[1] != 'o') ) {
-      IDEA_ERROR("Bad movement status report");
+      VRPN_MSG_ERROR("Bad movement status report");
       return false;
     }
     moving = (inbuf[2] == 'Y');
@@ -342,11 +341,11 @@ int  vrpn_IDEA::convert_report_to_buttons(unsigned char *buf)
   // as a warning.
   if (d_high_limit_index && buttons[d_high_limit_index-1] &&
 	!lastbuttons[d_high_limit_index-1]) {
-    IDEA_WARNING("Encountered high limit");
+    VRPN_MSG_WARNING("Encountered high limit");
   }
   if (d_low_limit_index && buttons[d_low_limit_index-1] &&
 	!lastbuttons[d_low_limit_index-1]) {
-    IDEA_WARNING("Encountered low limit");
+    VRPN_MSG_WARNING("Encountered low limit");
   }
 
   // We got a report.
@@ -407,7 +406,7 @@ int	vrpn_IDEA::reset(void)
         if ( (ret < 8) || (inbuf[ret-1] != '\r') ) {
           inbuf[ret] = '\0';
           fprintf(stderr,"vrpn_IDEA::reset(): Bad fault status report (length %d): %s\n", ret, inbuf);
-          IDEA_ERROR("Bad fault status report");
+          VRPN_MSG_ERROR("Bad fault status report");
           return -1;
         }
         inbuf[ret] = '\0';
@@ -415,11 +414,11 @@ int	vrpn_IDEA::reset(void)
         int fault_status;
         if (sscanf((char *)(inbuf), "`f%d\r`f#\r", &fault_status) != 1) {
           fprintf(stderr,"vrpn_IDEA::reset(): Bad fault status report: %s\n", inbuf);
-          IDEA_ERROR("Bad fault status report");
+          VRPN_MSG_ERROR("Bad fault status report");
           return -1;
         }
         if (fault_status != 0) {
-          IDEA_ERROR("Drive reports a fault");
+          VRPN_MSG_ERROR("Drive reports a fault");
           return -1;
         }
 
@@ -453,12 +452,12 @@ int	vrpn_IDEA::reset(void)
           value |= (d_output_4_setting != 0) << (3);
         }
         if (sprintf(cmd, "O%d", value) <= 0) {
-          IDEA_ERROR("vrpn_IDEA::send_output(): Could not configure output command");
+          VRPN_MSG_ERROR("vrpn_IDEA::send_output(): Could not configure output command");
           status = STATUS_RESETTING;
           return -1;
         }
         if (!send_command(cmd)) {
-          IDEA_ERROR("vrpn_IDEA::send_output(): Could not configure outputs");
+          VRPN_MSG_ERROR("vrpn_IDEA::send_output(): Could not configure outputs");
           status = STATUS_RESETTING;
           return -1;
         }
@@ -483,14 +482,14 @@ int	vrpn_IDEA::reset(void)
         if ( (ret < 8) || (inbuf[ret-1] != '\r') ) {
           inbuf[ret] = '\0';
           fprintf(stderr,"vrpn_IDEA::reset(): Bad I/O status report (length %d): %s\n", ret, inbuf);
-          IDEA_ERROR("Bad I/O status report");
+          VRPN_MSG_ERROR("Bad I/O status report");
           return -1;
         }
         inbuf[ret] = '\0';
 
 	if (convert_report_to_buttons(inbuf) != 1) {
           fprintf(stderr,"vrpn_IDEA::reset(): Bad I/O status report: %s\n", inbuf);
-          IDEA_ERROR("Bad I/O status report");
+          VRPN_MSG_ERROR("Bad I/O status report");
           return -1;
 	}
 
@@ -512,14 +511,14 @@ int	vrpn_IDEA::reset(void)
         if ( (ret < 8) || (inbuf[ret-1] != '\r') ) {
           inbuf[ret] = '\0';
           fprintf(stderr,"vrpn_IDEA::reset(): Bad position report: %s\n", inbuf);
-          IDEA_ERROR("Bad position report");
+          VRPN_MSG_ERROR("Bad position report");
           return -1;
         }
         inbuf[ret] = '\0';
 
         if (convert_report_to_position(inbuf) != 1) {
           fprintf(stderr,"vrpn_IDEA::reset(): Bad position report: %s\n", inbuf);
-          IDEA_ERROR("Bad position report");
+          VRPN_MSG_ERROR("Bad position report");
           return -1;
         }
 
@@ -575,7 +574,7 @@ int	vrpn_IDEA::reset(void)
           if ( (ret < 8) || (inbuf[ret-1] != '\r') ) {
             inbuf[ret] = '\0';
             fprintf(stderr,"vrpn_IDEA::reset(): Bad limit program response report: %s\n", inbuf);
-            IDEA_ERROR("Could not write limit program");
+            VRPN_MSG_ERROR("Could not write limit program");
             return -1;
           }
           inbuf[ret] = '\0';
@@ -583,7 +582,7 @@ int	vrpn_IDEA::reset(void)
           int program_length;
           if (sscanf((char *)(inbuf), "`P%d\r`P#\r", &program_length) != 1) {
             fprintf(stderr,"vrpn_IDEA::reset(): Bad limit program report: %s\n", inbuf);
-            IDEA_ERROR("Bad limit program report");
+            VRPN_MSG_ERROR("Bad limit program report");
             return -1;
           }
         }
@@ -596,7 +595,7 @@ int	vrpn_IDEA::reset(void)
 
         if (d_initial_move != 0) {
 	  if (!move_until_done_or_error(d_initial_move, d_fractional_c_a)) {
-            IDEA_ERROR("Could not do initial move");
+            VRPN_MSG_ERROR("Could not do initial move");
             return -1;
           }
 	}
@@ -634,14 +633,14 @@ int	vrpn_IDEA::reset(void)
           if ( (ret < 8) || (inbuf[ret-1] != '\r') ) {
             inbuf[ret] = '\0';
             fprintf(stderr,"vrpn_IDEA::reset(): Bad position report: %s\n", inbuf);
-            IDEA_ERROR("Bad position report");
+            VRPN_MSG_ERROR("Bad position report");
             return -1;
           }
           inbuf[ret] = '\0';
 
           if (convert_report_to_position(inbuf) != 1) {
             fprintf(stderr,"vrpn_IDEA::reset(): Bad position report: %s\n", inbuf);
-            IDEA_ERROR("Bad position report");
+            VRPN_MSG_ERROR("Bad position report");
             return -1;
           }
 
@@ -663,14 +662,14 @@ int	vrpn_IDEA::reset(void)
           if ( (ret < 8) || (inbuf[ret-1] != '\r') ) {
             inbuf[ret] = '\0';
             fprintf(stderr,"vrpn_IDEA::reset(): Bad I/O status report (length %d) in limit hunt: %s\n", ret, inbuf);
-            IDEA_ERROR("Bad I/O status report");
+            VRPN_MSG_ERROR("Bad I/O status report");
             return -1;
           }
           inbuf[ret] = '\0';
 
 	  if (convert_report_to_buttons(inbuf) != 1) {
             fprintf(stderr,"vrpn_IDEA::reset(): Bad I/O status report in limit hunt: %s\n", inbuf);
-            IDEA_ERROR("Bad I/O status report");
+            VRPN_MSG_ERROR("Bad I/O status report");
             return -1;
 	  }
 
@@ -684,7 +683,7 @@ int	vrpn_IDEA::reset(void)
 	  printf("XXX vrpn_IDEA: moving to %lf to find limit\n",
 		channel[0] + d_initial_move);
 	  if (!move_until_done_or_error(channel[0] + d_initial_move, d_fractional_c_a)){
-            IDEA_ERROR("Could not do limit-hunting move");
+            VRPN_MSG_ERROR("Could not do limit-hunting move");
             return -1;
           }
 	}
@@ -709,7 +708,7 @@ int	vrpn_IDEA::reset(void)
         }
 
 	// We're now waiting for any responses from devices
-	IDEA_WARNING("reset complete (this is good)");
+	VRPN_MSG_WARNING("reset complete (this is good)");
 	vrpn_gettimeofday(&d_timestamp, NULL);	// Set watchdog now
 	status = STATUS_SYNCING;
 	return 0;
@@ -746,11 +745,11 @@ int vrpn_IDEA::get_report(void)
       if (d_buffer[0] != '`') {
 	char msg[256];
 	sprintf(msg, "Bad character (got %c, expected `), re-syncing", d_buffer[0]);
-	IDEA_WARNING(msg);
+	VRPN_MSG_WARNING(msg);
         vrpn_SleepMsecs(10);
 	vrpn_flush_input_buffer(serial_fd);
 	if (!send_command("l")) {
-		IDEA_ERROR("Could not send position request in re-sync, resetting");
+		VRPN_MSG_ERROR("Could not send position request in re-sync, resetting");
 		status = STATUS_RESETTING;
 		return 0;
 	}
@@ -779,7 +778,7 @@ int vrpn_IDEA::get_report(void)
    ret = vrpn_read_available_characters(serial_fd, &d_buffer[d_bufcount],
 		sizeof(d_buffer)-d_bufcount);
    if (ret == -1) {
-	IDEA_ERROR("Error reading");
+	VRPN_MSG_ERROR("Error reading");
 	status = STATUS_RESETTING;
 	return 0;
    }
@@ -807,7 +806,7 @@ int vrpn_IDEA::get_report(void)
      printf("got a complete report (%d)!\n", d_bufcount);
 #endif
       if (!send_command(":")) {
-	IDEA_ERROR("Could not send I/O request, resetting");
+	VRPN_MSG_ERROR("Could not send I/O request, resetting");
 	status = STATUS_RESETTING;
 	return 0;
       }
@@ -842,7 +841,7 @@ int vrpn_IDEA::get_report(void)
      printf("got a complete report (%d)!\n", d_bufcount);
 #endif
       if (!send_command("l")) {
-	IDEA_ERROR("Could not send position request, resetting");
+	VRPN_MSG_ERROR("Could not send position request, resetting");
 	status = STATUS_RESETTING;
 	return 0;
       }
@@ -863,13 +862,13 @@ int vrpn_IDEA::get_report(void)
   if ( (pos_ret == -1) && (but_ret == -1) ) {
        // Error during parsing, maybe we got off by a half-report.
        // Try clearing the input buffer and re-requesting a report.
-       IDEA_WARNING("Flushing input and requesting new position report");
+       VRPN_MSG_WARNING("Flushing input and requesting new position report");
        status = STATUS_SYNCING;
        d_bufcount = 0;
         vrpn_SleepMsecs(10);
        vrpn_flush_input_buffer(serial_fd);
        if (!send_command("l")) {
-           IDEA_ERROR("Could not send position request in convert failure, resetting");
+           VRPN_MSG_ERROR("Could not send position request in convert failure, resetting");
            status = STATUS_RESETTING;
            return 0;
        }
@@ -1002,7 +1001,7 @@ void	vrpn_IDEA::mainloop()
 		// Send another request to the unit, in case we've somehow
                 // dropped a request.
                 if (!send_command("l")) {
-                  IDEA_ERROR("Could not request position");
+                  VRPN_MSG_ERROR("Could not request position");
                   status = STATUS_RESETTING;
                 }
 	        vrpn_gettimeofday(&last_poll, NULL);
@@ -1015,14 +1014,14 @@ void	vrpn_IDEA::mainloop()
 		    sprintf(errmsg,"Timeout, resetting... current_time=%ld:%ld, timestamp=%ld:%ld",
 					current_time.tv_sec, static_cast<long>(current_time.tv_usec),
 					d_timestamp.tv_sec, static_cast<long>(d_timestamp.tv_usec));
-		    IDEA_ERROR(errmsg);
+		    VRPN_MSG_ERROR(errmsg);
 		    status = STATUS_RESETTING;
 	    }
       }
         break;
 
     default:
-	IDEA_ERROR("Unknown mode (internal error)");
+	VRPN_MSG_ERROR("Unknown mode (internal error)");
 	break;
   }
 }

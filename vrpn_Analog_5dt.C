@@ -13,6 +13,7 @@
 #include "vrpn_BaseClass.h"             // for ::vrpn_TEXT_ERROR, etc
 #include "vrpn_Serial.h"
 #include "vrpn_Shared.h"                // for timeval, vrpn_SleepMsecs, etc
+#include "vrpn_MessageMacros.h"         // for VRPN_MSG_INFO, VRPN_MSG_WARNING, VRPN_MSG_ERROR
 
 #undef VERBOSE
 
@@ -20,10 +21,6 @@
 #define	STATUS_RESETTING	(-1)	// Resetting the device
 #define	STATUS_SYNCING		(0)	// Looking for the first character of report
 #define	STATUS_READING		(1)	// Looking for the rest of the report
-
-#define	_5DT_INFO(msg)	    { send_text_message(msg, timestamp, vrpn_TEXT_NORMAL) ; if (d_connection) d_connection->send_pending_reports(); }
-#define	_5DT_WARNING(msg)    { send_text_message(msg, timestamp, vrpn_TEXT_WARNING) ; if (d_connection) d_connection->send_pending_reports(); }
-#define	_5DT_ERROR(msg)	    { send_text_message(msg, timestamp, vrpn_TEXT_ERROR) ; if (d_connection) d_connection->send_pending_reports(); }
 
 #define MAX_TIME_INTERVAL       (2000000) // max time between reports (usec)
 
@@ -144,7 +141,7 @@ vrpn_5dt::reset (void)
     l_timeout.tv_usec = 0;
     l_ret = vrpn_read_available_characters (serial_fd, l_inbuf, 1, &l_timeout);
     if (l_ret != 1) {
-      _5DT_ERROR ("vrpn_5dt: Unable to read from the glove\n");
+      VRPN_MSG_ERROR ("vrpn_5dt: Unable to read from the glove\n");
       return -1;
     }
     if (l_inbuf[0] == 0x80) {
@@ -152,7 +149,7 @@ vrpn_5dt::reset (void)
       _buffer[0] = l_inbuf[0];
       _bufcount = 1;
       vrpn_gettimeofday (&timestamp, NULL);	// Set watchdog now
-      _5DT_INFO ("vrpn_5dt: Got a possible header byte!");
+      VRPN_MSG_INFO ("vrpn_5dt: Got a possible header byte!");
       return 0;
     }
     return 0;
@@ -165,12 +162,12 @@ vrpn_5dt::reset (void)
   l_ret = vrpn_read_available_characters (serial_fd, l_inbuf, 1, &l_timeout);
 
   if (l_ret != 1) {
-    _5DT_ERROR ("vrpn_5dt: Unable to read from the glove\n");
+    VRPN_MSG_ERROR ("vrpn_5dt: Unable to read from the glove\n");
     return -1;
   }
 
   if (l_inbuf[0] != 85) {
-    _5DT_ERROR ("vrpn_5dt: Cannot get response on init command");
+    VRPN_MSG_ERROR ("vrpn_5dt: Cannot get response on init command");
     return -1;
   } else {
     vrpn_flush_input_buffer (serial_fd);
@@ -181,26 +178,26 @@ vrpn_5dt::reset (void)
     l_ret = vrpn_read_available_characters (serial_fd, l_inbuf, 32, &l_timeout);
 
     if (l_ret != 32) {
-      _5DT_ERROR ("vrpn_5dt: Cannot get info. from the glove");
+      VRPN_MSG_ERROR ("vrpn_5dt: Cannot get info. from the glove");
       return -1;
     }
     if ( (l_inbuf[0] != 66) || (l_inbuf[1] != 82)) {
-      _5DT_ERROR ("vrpn_5dt: Cannot get good header on info command");
+      VRPN_MSG_ERROR ("vrpn_5dt: Cannot get good header on info command");
       return -1;
     }
 
     sprintf (l_errmsg, "vrpn_5dt: glove \"%s\"version %d.%d\n", &l_inbuf [16], l_inbuf [2], l_inbuf [3]);
-    _5DT_INFO (l_errmsg);
+    VRPN_MSG_INFO (l_errmsg);
 
     if (l_inbuf[4] | 1) {
-      _5DT_INFO ("A right glove is ready");
+      VRPN_MSG_INFO ("A right glove is ready");
     } else {
-      _5DT_INFO ("A left glove is ready");
+      VRPN_MSG_INFO ("A left glove is ready");
     }
     if (l_inbuf[5] | 16) {
-      _5DT_INFO ("Pitch and Roll are available");
+      VRPN_MSG_INFO ("Pitch and Roll are available");
     } else {
-      _5DT_INFO ("Pitch and Roll are not available");
+      VRPN_MSG_INFO ("Pitch and Roll are not available");
     }
   }
 
@@ -234,7 +231,7 @@ void vrpn_5dt::syncing (void)
     l_ret = vrpn_read_available_characters (serial_fd, &_buffer [_bufcount],
                                             _expected_chars - _bufcount);
     if (l_ret == -1) {
-      _5DT_ERROR ("Error reading the glove");
+      VRPN_MSG_ERROR ("Error reading the glove");
       _status = STATUS_RESETTING;
       return;
     }
@@ -243,11 +240,11 @@ void vrpn_5dt::syncing (void)
       return;
     }
     if (_buffer[_bufcount - 1] == 0x40 || _buffer[_bufcount - 1] == 0x01) {
-      _5DT_INFO ("Got capability byte as expected - switching into read mode.");
+      VRPN_MSG_INFO ("Got capability byte as expected - switching into read mode.");
       _bufcount = 0;
       _status = STATUS_READING;
     } else {
-      _5DT_WARNING ("Got a header byte, but capability byte not found - resetting.");
+      VRPN_MSG_WARNING ("Got a header byte, but capability byte not found - resetting.");
       _status = STATUS_RESETTING;
     }
     return;
@@ -262,7 +259,7 @@ void vrpn_5dt::syncing (void)
       // Nothing to be done here -- continuous mode was requested in the reset.
       break;
     default :
-      _5DT_ERROR ("vrpn_5dt::syncing : internal error : unknown state");
+      VRPN_MSG_ERROR ("vrpn_5dt::syncing : internal error : unknown state");
       printf ("mode %d\n", _mode);
       break;
     }
@@ -294,7 +291,7 @@ void vrpn_5dt::get_report (void)
   l_ret = vrpn_read_available_characters (serial_fd, &_buffer [_bufcount],
                                           _expected_chars - _bufcount);
   if (l_ret == -1) {
-      _5DT_ERROR ("Error reading the glove");
+      VRPN_MSG_ERROR ("Error reading the glove");
       _status = STATUS_RESETTING;
       return;
   }
@@ -326,7 +323,7 @@ void vrpn_5dt::get_report (void)
   // make sure that the first one is what we expect.
 
   if (_buffer[0] != 128) {
-    _5DT_WARNING ("Unexpected first character in report, resetting");
+    VRPN_MSG_WARNING ("Unexpected first character in report, resetting");
     _status = STATUS_RESETTING;
     _bufcount = 0;
     return;
@@ -336,7 +333,7 @@ void vrpn_5dt::get_report (void)
     if (_buffer[_bufcount - 1] != 0x40 && _buffer[_bufcount - 1] != 0x01) {
       // The last byte wasn't a capability byte, so this report is invalid.
       // Reset!
-      _5DT_WARNING ("Unexpected last character in report, resetting");
+      VRPN_MSG_WARNING ("Unexpected last character in report, resetting");
       _status = STATUS_RESETTING;
       _bufcount = 0;
       return;
@@ -364,9 +361,9 @@ void vrpn_5dt::get_report (void)
     _gotInfo = true;
     // Bit 0 set in the capability byte implies a right-hand glove.
     if (_buffer[9] == 0x01) {
-      _5DT_INFO ("A 'wireless-type' right glove is ready and reporting");
+      VRPN_MSG_INFO ("A 'wireless-type' right glove is ready and reporting");
     } else {
-      _5DT_INFO ("A 'wireless-type' left glove is ready and reporting");
+      VRPN_MSG_INFO ("A 'wireless-type' left glove is ready and reporting");
     }
   }
 
@@ -383,7 +380,7 @@ void vrpn_5dt::get_report (void)
       _bufcount = 0;
       break;
     default :
-      _5DT_ERROR ("vrpn_5dt::get_report : internal error : unknown state");
+      VRPN_MSG_ERROR ("vrpn_5dt::get_report : internal error : unknown state");
       break;
   }
 }
@@ -433,7 +430,7 @@ void vrpn_5dt::mainloop ()
   if (_wireless) {
     static bool announced = false;
     if (!announced) {
-      _5DT_INFO ("Will connect to a receive-only 'wireless-type' glove - there may be a few warnings before we succeed.");
+      VRPN_MSG_INFO ("Will connect to a receive-only 'wireless-type' glove - there may be a few warnings before we succeed.");
       announced = true;
     }
   }
@@ -442,7 +439,7 @@ void vrpn_5dt::mainloop ()
     case STATUS_RESETTING:
       if (reset()== -1)
 	{
-	  _5DT_ERROR ("vrpn_Analog_5dt: Cannot reset the glove!");
+	  VRPN_MSG_ERROR ("vrpn_Analog_5dt: Cannot reset the glove!");
 	}
       break;
 
@@ -470,14 +467,14 @@ void vrpn_5dt::mainloop ()
                    static_cast<long> (current_time.tv_usec),
                    timestamp.tv_sec,
                    static_cast<long> (timestamp.tv_usec));
-          _5DT_ERROR (l_errmsg);
+          VRPN_MSG_ERROR (l_errmsg);
           _status = STATUS_RESETTING;
         }
       }
       break;
 
     default:
-      _5DT_ERROR ("vrpn_5dt::mainloop: Unknown mode (internal error)");
+      VRPN_MSG_ERROR ("vrpn_5dt::mainloop: Unknown mode (internal error)");
       break;
     }
 }

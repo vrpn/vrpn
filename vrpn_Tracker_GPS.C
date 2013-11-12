@@ -18,13 +18,11 @@
 #include "vrpn_Tracker.h"               // for vrpn_TRACKER_SYNCING, etc
 #include "vrpn_Tracker_GPS.h"
 #include "vrpn_Types.h"                 // for vrpn_float64
+#include "vrpn_MessageMacros.h"         // for VRPN_MSG_INFO, VRPN_MSG_WARNING, VRPN_MSG_ERROR
 
 #define MAX_TIME_INTERVAL       (5000000) // max time between reports (usec)
 #define	INCHES_TO_METERS	(2.54/100.0)
 #define PI (3.14159265358979323846)
-#define	FT_INFO(msg)	{ send_text_message(msg, timestamp, vrpn_TEXT_NORMAL) ; if (d_connection) d_connection->send_pending_reports(); }
-#define	FT_WARNING(msg)	{ send_text_message(msg, timestamp, vrpn_TEXT_WARNING) ; if (d_connection) d_connection->send_pending_reports(); }
-#define	FT_ERROR(msg)	{ send_text_message(msg, timestamp, vrpn_TEXT_ERROR) ; if (d_connection) d_connection->send_pending_reports(); }
 
 
 //--------------------------------------------------
@@ -62,7 +60,7 @@ vrpn_Tracker_Serial(name,c,port,baud)
   // the GPS unit requires it (some do).
   if (serial_fd >= 0) {
 	vrpn_set_rts(serial_fd);
-	FT_WARNING("Set RTS.\n");
+	VRPN_MSG_WARNING("Set RTS.\n");
   }
 	
     register_server_handlers(); //-eb
@@ -87,12 +85,12 @@ void vrpn_Tracker_GPS::reset()
 
  if (serial_fd >= 0) {
        vrpn_set_rts(serial_fd);
-       		FT_WARNING("Set RTS during reset.\n");
+       		VRPN_MSG_WARNING("Set RTS during reset.\n");
  }
 	//printf("serial fd: %d\n",serial_fd);
 	if (serial_fd >= 0)
 	{
-		FT_WARNING("Reset Completed (this is good).\n");
+		VRPN_MSG_WARNING("Reset Completed (this is good).\n");
         //we need to give the port a chance to read new bits
 #ifdef _WIN32
         Sleep(100);
@@ -185,7 +183,7 @@ int vrpn_Tracker_GPS::get_report(void)
                 sprintf(errmsg,"While syncing (looking for '$', got '%c')", buffer[0]);
                 
                 
-                FT_INFO(errmsg);
+                VRPN_MSG_INFO(errmsg);
                 vrpn_flush_input_buffer(serial_fd);
                 
                 return 0;
@@ -208,7 +206,7 @@ int vrpn_Tracker_GPS::get_report(void)
             }
             
             if (ret == -1) {
-                FT_ERROR("Error reading report");
+                VRPN_MSG_ERROR("Error reading report");
                 status = vrpn_TRACKER_FAIL;
                 return 0;
             } else if (ret == 0) {
@@ -422,7 +420,7 @@ int vrpn_Tracker_GPS::get_report(void)
                 break;
                 
             case vrpn_TRACKER_FAIL:
-                FT_WARNING("Tracking failed, trying to reset (try power cycle if more than 4 attempts made)");
+                VRPN_MSG_WARNING("Tracking failed, trying to reset (try power cycle if more than 4 attempts made)");
                 //vrpn_close_commport(serial_fd);
                 //serial_fd = vrpn_open_commport(portname, baudrate);
                 status = vrpn_TRACKER_RESETTING;
