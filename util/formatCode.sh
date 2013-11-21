@@ -1,6 +1,7 @@
 #!/bin/sh -e
 stylescript=$(cd $(dirname $0) && pwd)/formatFile.sh
 #stylescript="echo"
+
 (
 cd $(dirname $0) && cd ..
 
