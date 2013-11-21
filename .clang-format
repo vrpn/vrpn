@@ -19,8 +19,6 @@ BreakConstructorInitializersBeforeComma: true
 #DerivePointerBinding: false
 #ExperimentalAutoDetectBinPacking: false
 #IndentCaseLabels: false
-IndentCaseLabels: true
-
 #MaxEmptyLinesToKeep: 1
 #NamespaceIndentation: None
 NamespaceIndentation: All
@@ -32,6 +30,8 @@ NamespaceIndentation: All
 #PenaltyExcessCharacter: 1000000
 #PenaltyReturnTypeOnItsOwnLine: 60
 #PointerBindsToType: false
+PointerBindsToType: true
+
 #SpacesBeforeTrailingComments: 1
 #Cpp11BracedListStyle: false
 #Standard:        Cpp03
