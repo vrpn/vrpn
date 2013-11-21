@@ -42,7 +42,7 @@ namespace vrpn_python {
 
       static std::string defaultCall("invalid call : request_pose(datetime, double position[3], double quaternion[4])");
 
-      PyObject *py_time;
+      PyObject *py_time = NULL;
       double position[3];
       double quaternion[4];
 
