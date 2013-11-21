@@ -34,7 +34,7 @@ void Usage (const char * s)
   exit(0);
 }
 
-static	int	done = 0;	// Done and should exit?
+static	volatile int	done = 0;	// Done and should exit?
 
 vrpn_Connection * connection;
 vrpn_Generic_Server_Object  *generic_server = NULL;
