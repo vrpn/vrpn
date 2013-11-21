@@ -40,7 +40,7 @@ namespace vrpn_python {
       return (device_type*)obj;
     }
 
-    static int init(PyObject *obj, PyObject *args, PyObject *kwds) {
+    static int init(PyObject *obj, PyObject *args, PyObject */*kwds*/) {
       try {
 	get(obj);
 	device_type *self = new(obj) device_type(device_type::s_error, args);
