@@ -96,11 +96,7 @@ BOOL WINAPI handleConsoleSignalsWin( DWORD signaltype)
 #else
 #include <signal.h>                     // for signal, SIGINT, SIGKILL, etc
 
-//#ifdef sgi
-//void sighandler( ... )
-//#else
 void sighandler (int)
-//#endif
 {
 	done = 1;
 }
