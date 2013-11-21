@@ -423,7 +423,7 @@
 
 #define VRPN_PHASESPACE_LIB_PATH "../../phasespace/"
 
-#define VRPN_WIIUSE_H <wiiuse.h>
+#define VRPN_WIIUSE_H "wiiuse.h"
 #define VRPN_WIIUSE_LIB_PATH "F:/taylorr/STM/src/wiiuse_v0.12/src"
 
 #if defined(VRPNDLL_EXPORTS) && !defined(VRPN_USE_SHARED_LIBRARY)
