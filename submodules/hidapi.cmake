@@ -5,7 +5,6 @@
 set(HIDAPI_BACKEND_FOUND NO)
 # Local HIDAPI requirements
 if(WIN32)
-#	find_package(WinHID)
 	set(HIDAPI_BACKEND_FOUND YES)
 
 elseif(APPLE)
