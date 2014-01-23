@@ -275,11 +275,11 @@ void vrpn_Tracker_DTrack::mainloop()
 		tim_first = tim_last = timestamp;
 	}
 
-	dt = (float )vrpn_TimevalDuration(timestamp, tim_last);
+	dt = (float )vrpn_TimevalDurationSeconds(timestamp, tim_last);
 	tim_last = timestamp;
 	
 	if(tracing && ((tracing_frames % 10) == 0)){
-		printf("framenr %u  time %.3f\n", act_framecounter, vrpn_TimevalDuration(timestamp, tim_first));
+		printf("framenr %u  time %.3lf\n", act_framecounter, vrpn_TimevalDurationSeconds(timestamp, tim_first));
 	}
 
 	// find number of targets visible for vrpn to choose the correct vrpn ID numbers:
