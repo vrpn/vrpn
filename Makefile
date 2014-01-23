@@ -654,6 +654,7 @@ SLIB_FILES =  $(LIB_FILES) \
 	vrpn_BiosciencesTools.C \
 	vrpn_Button_NI_DIO24.C \
 	vrpn_CerealBox.C \
+	vrpn_CHProducts_Controller_Raw.C \
 	vrpn_Contour.C \
 	vrpn_Dyna.C \
 	vrpn_DreamCheeky.C \
@@ -738,6 +739,7 @@ SLIB_INCLUDES = $(LIB_INCLUDES) \
 	vrpn_BiosciencesTools.h \
 	vrpn_Button_NI_DIO24.h \
 	vrpn_CerealBox.h \
+	vrpn_CHProducts_Controller_Raw.h \
 	vrpn_Contour.h \
 	vrpn_Dyna.h \
 	vrpn_DreamCheeky.h \

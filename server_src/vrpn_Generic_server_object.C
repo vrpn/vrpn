@@ -21,6 +21,7 @@
 #include "vrpn_Button_NI_DIO24.h"
 #include "vrpn_Button_USB.h"
 #include "vrpn_CerealBox.h"             // for vrpn_CerealBox
+#include "vrpn_CHProducts_Controller_Raw.h"	// for vrpn_CHProducts_Fighterstick_USB
 #include "vrpn_Connection.h"
 #include "vrpn_Contour.h"               // for vrpn_Contour_ShuttleXpress, etc.
 #include "vrpn_DevInput.h"              // for vrpn_DevInput
@@ -4186,6 +4187,8 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object (vrpn_Connection *connect
         VRPN_CHECK (templated_setup_HID_device_name_only<vrpn_Logitech_Extreme_3D_Pro>);
       } else if (VRPN_ISIT ("vrpn_Saitek_ST290_Pro")) {
         VRPN_CHECK (templated_setup_HID_device_name_only<vrpn_Saitek_ST290_Pro>);
+      } else if (VRPN_ISIT ("vrpn_CHProducts_Fighterstick_USB")) {
+        VRPN_CHECK (templated_setup_HID_device_name_only<vrpn_CHProducts_Fighterstick_USB>);
       } else if (VRPN_ISIT ("vrpn_3DConnexion_Navigator")) {
         VRPN_CHECK (templated_setup_device_name_only<vrpn_3DConnexion_Navigator>);
       } else if (VRPN_ISIT ("vrpn_3DConnexion_Navigator_for_Notebooks")) {
