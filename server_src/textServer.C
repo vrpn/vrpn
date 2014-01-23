@@ -26,7 +26,10 @@ int main (int argc, char* argv[])
                 }
                 while (sc->connected()) {
 		  printf("Please enter the message:\n");
-		  scanf("%s", msg);
+		  if (scanf("%s", msg) != 1) {
+			fprintf(stderr, "No message entered\n");
+			return(-1);
+		  }
 	          s->send_message(msg, vrpn_TEXT_NORMAL);
 		  s->mainloop();
 		  sc->mainloop();
