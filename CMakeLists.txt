@@ -933,6 +933,7 @@ set(VRPN_SERVER_SOURCES
 	vrpn_Button_NI_DIO24.C
 	vrpn_Button_USB.cpp
 	vrpn_CerealBox.C
+	vrpn_CHProducts_Controller_Raw.C
 	vrpn_Contour.C
 	vrpn_DevInput.C
 	vrpn_DirectXFFJoystick.C
@@ -1027,6 +1028,7 @@ set(VRPN_SERVER_PUBLIC_HEADERS
 	vrpn_Button_NI_DIO24.h
 	vrpn_Button_USB.h
 	vrpn_CerealBox.h
+	vrpn_CHProducts_Controller_Raw.h
 	vrpn_Contour.h
 	vrpn_DevInput.h
 	vrpn_DirectXFFJoystick.h
