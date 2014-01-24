@@ -595,6 +595,26 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\vrpn_CHProducts_Controller_Raw.C"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath="vrpn_Dial.C"
 				>
 				<FileConfiguration
@@ -2481,6 +2501,10 @@
 			</File>
 			<File
 				RelativePath=".\vrpn_Contour.h"
+				>
+			</File>
+			<File
+				RelativePath=".\vrpn_CHProducts_Controller_Raw.h"
 				>
 			</File>
 			<File
