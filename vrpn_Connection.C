@@ -5257,6 +5257,7 @@ vrpn_Connection * vrpn_create_server_connection (
     XXX_implement_MPI_server_connection;
 #else
     fprintf(stderr,"vrpn_create_server_connection(): MPI support not compiled in.  Set vrpn_USE_MPI in vrpn_Configure.h and recompile.\n");
+    delete [] location;
     return NULL;
 #endif
   } else {
