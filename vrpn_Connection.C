@@ -2133,6 +2133,7 @@ static SOCKET vrpn_connect_udp_port
   if (getsockname(udp_socket, (struct sockaddr *) &udp_name,
                   GSN_CAST &udp_namelen)) {
     fprintf(stderr, "vrpn_connect_udp_port: cannot get socket name.\n");
+    vrpn_closeSocket(udp_socket);
     return (SOCKET) -1;
   }
 
@@ -6330,5 +6331,6 @@ char * vrpn_set_service_name(const char * specifier, const char * newServiceName
   strcpy(newSpecifier, newServiceName);
   strcat(newSpecifier, "@");
   strcat(newSpecifier, location);
+  delete [] location;
   return newSpecifier;
 }
