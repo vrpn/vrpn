@@ -3805,6 +3805,7 @@ int vrpn_Endpoint_IP::finish_new_connection_setup (void) {
 
   if (check_vrpn_cookie(recvbuf) < 0) {
     status = BROKEN;
+    delete [] recvbuf;
     return -1;
   }
 
@@ -3824,6 +3825,7 @@ int vrpn_Endpoint_IP::finish_new_connection_setup (void) {
     fprintf(stderr, "vrpn_Endpoint::finish_new_connection_setup:  "
                     "Got invalid log mode %d\n", static_cast<int>(received_logmode));
     status = BROKEN;
+    delete [] recvbuf;
     return -1;
   }
   if (received_logmode & vrpn_LOG_INCOMING) {
@@ -3841,6 +3843,7 @@ int vrpn_Endpoint_IP::finish_new_connection_setup (void) {
     fprintf(stderr, "vrpn_Endpoint::finish_new_connection_setup:  "
                       "Can't pack remote logging instructions.\n");
     status = BROKEN;
+    delete [] recvbuf;
     return -1;
   }
 
@@ -3857,6 +3860,7 @@ int vrpn_Endpoint_IP::finish_new_connection_setup (void) {
 		  fprintf(stderr, "vrpn_Endpoint::finish_new_connection_setup:  "
 						  "can't open UDP socket\n");
 		  status = BROKEN;
+          delete [] recvbuf;
 		  return -1;
 		}
 
@@ -3865,6 +3869,7 @@ int vrpn_Endpoint_IP::finish_new_connection_setup (void) {
 		    fprintf(stderr,
 		      "vrpn_Endpoint::finish_new_connection_setup: Can't pack UDP msg\n");
 		    status = BROKEN;
+            delete [] recvbuf;
 		    return -1;
 		}
 	  }
@@ -3889,6 +3894,7 @@ int vrpn_Endpoint_IP::finish_new_connection_setup (void) {
     fprintf(stderr,
       "vrpn_Endpoint::finish_new_connection_setup: Can't send UDP msg\n");
     status = BROKEN;
+    delete [] recvbuf;
     return -1;
   }
 
