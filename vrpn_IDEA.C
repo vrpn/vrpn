@@ -49,9 +49,10 @@ vrpn_IDEA::vrpn_IDEA (const char * name, vrpn_Connection * c,const char * port
                       , double initial_move
                       , double fractional_c_a
 		      , double reset_location):
-	vrpn_Serial_Analog(name, c, port, 57600)
+	    vrpn_Serial_Analog(name, c, port, 57600)
         , vrpn_Analog_Output(name, c)
-	, vrpn_Button_Filter(name, c)
+	    , vrpn_Button_Filter(name, c)
+        , d_bufcount(0)
         , d_run_speed_tics_sec(run_speed_tics_sec)
         , d_start_speed_tics_sec(start_speed_tics_sec)
         , d_end_speed_tics_sec(end_speed_tics_sec)
