@@ -73,7 +73,7 @@ vrpn_Tracker_FilterOneEuro::vrpn_Tracker_FilterOneEuro(const char * name, vrpn_C
   // Allocate space for the filters.
   d_filters = new vrpn_OneEuroFilterVec[channels];
   d_qfilters = new vrpn_OneEuroFilterQuat[channels];
-  if ( (d_filters == NULL) || (d_filters == NULL) ) {
+  if ( (d_filters == NULL) || (d_qfilters == NULL) ) {
     fprintf(stderr,"vrpn_Tracker_FilterOneEuro::vrpn_Tracker_FilterOneEuro(): Out of memory\n");
     d_channels = 0;
     return;
