@@ -80,6 +80,7 @@ vrpn_3DConnexion::vrpn_3DConnexion(vrpn_HidAcceptor *filter, unsigned num_button
             break;
           } else {
             fclose(f);
+            f = NULL;
           }
         }
     }
@@ -89,6 +90,7 @@ vrpn_3DConnexion::vrpn_3DConnexion(vrpn_HidAcceptor *filter, unsigned num_button
         exit(1);
     }
 
+    fclose(f);
     free(fname);
 
     // turn the LED on
