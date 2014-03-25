@@ -16,7 +16,6 @@ vrpn_ConnectionForwarder::vrpn_ConnectionForwarder
 	if (d_destination) {
 		d_destination->addReference();
 	}
-
 }
 
 vrpn_ConnectionForwarder::~vrpn_ConnectionForwarder (void) {
@@ -95,6 +94,7 @@ int vrpn_ConnectionForwarder::unforward
         (victim->classOfService == classOfService)) {
       (*snitch)->next = victim->next;
       delete victim;
+      victim = *snitch;
     }
 
   }
@@ -258,6 +258,7 @@ int vrpn_StreamForwarder::unforward
         (victim->classOfService == classOfService)) {
       (*snitch)->next = victim->next;
       delete victim;
+      victim = *snitch;
     }
   }
 
