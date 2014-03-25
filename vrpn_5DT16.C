@@ -100,7 +100,7 @@ int vrpn_5dt16::reset (void)
   }
   vrpn_SleepMsecs (100);  //Give it time to send data
   l_ret=vrpn_read_available_characters (serial_fd, l_inbuf, 5); // read the rest of the data
-  char text[20];
+  char text[50];
   sprintf(text,"Hardware Version %i.0%i",l_inbuf[0],l_inbuf[1]); // hardware version
   VRPN_MSG_WARNING(text);
   if (l_inbuf[2] | 1) //right or left glove
