@@ -478,6 +478,10 @@ int vrpn_RedundantReceiver::register_handler (vrpn_int32 type,
   if (type == vrpn_ANY_TYPE) {
     ce->next = d_generic.cb;
     d_generic.cb = ce;
+  } else if (type < 0) {
+    fprintf(stderr, "vrpn_RedundantReceiver::register_handler:  "
+                    "Negative type passed in.\n");
+    return -1;
   } else {
     ce->next = d_records[type].cb;
     d_records[type].cb = ce;
