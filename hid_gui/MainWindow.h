@@ -17,8 +17,6 @@
 //          http://www.boost.org/LICENSE_1_0.txt)
 
 #pragma once
-#ifndef INCLUDED_MainWindow_h_GUID_2f127696_8780_4ce5_86c9_46f4df7fe245
-#define INCLUDED_MainWindow_h_GUID_2f127696_8780_4ce5_86c9_46f4df7fe245
 
 // Internal Includes
 // - none
@@ -122,4 +120,4 @@ class MainWindow : public QMainWindow {
 		QLabel * _selectionLabel;
 
 };
-#endif // INCLUDED_MainWindow_h_GUID_2f127696_8780_4ce5_86c9_46f4df7fe245
+

@@ -163,7 +163,7 @@ public:
 
 	// returns the requested channel, or null if channelNum is 
 	// greater than the maximum number of channels.
-	const vrpn_FunctionGenerator_channel* const getChannel( vrpn_uint32 channelNum );
+	const vrpn_FunctionGenerator_channel* getChannel( vrpn_uint32 channelNum );
 
 	vrpn_uint32 getNumChannels( ) const { return numChannels; }
 

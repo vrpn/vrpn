@@ -93,6 +93,9 @@ class VRPN_API vrpn_TextPrinter {
     /// Adds an object to the list of watched objects (multiple registration
     /// of the same object will result in only one printing for each message
     /// from the object). Returns 0 on success and -1 on failure.
+    /// YOU MUST REMOVE any objects from a vrpn_TextPrinter that you create
+    /// before detroying the printer if any connection objects survive, otherwise
+    /// they may call a callback function on the destroyed object.
     int    add_object(vrpn_BaseClass *o);
 
     /// Remove an object from the list of watched objects (multiple deletions
@@ -142,6 +145,9 @@ class VRPN_API vrpn_BaseClassUnique {
   public:
 	vrpn_BaseClassUnique();
 	virtual ~vrpn_BaseClassUnique();
+
+	/// Returns a pointer to the connection this object is using
+        vrpn_Connection *connectionPtr() {return d_connection;};
 
 	bool shutup;	// if True, don't print the "No response from server" messages.
 
@@ -257,9 +263,6 @@ class VRPN_API vrpn_BaseClass : virtual public vrpn_BaseClassUnique {
         /// call server_mainloop(), but should not normally call
         /// d_connection->mainloop().
 	virtual void mainloop () = 0;
-
-	/// Returns a pointer to the connection this object is using
-        virtual	vrpn_Connection *connectionPtr() {return d_connection;};
 
   protected:
 

@@ -4,14 +4,25 @@
 #include "vrpn_Configure.h"   // IWYU pragma: keep
 
 #ifdef  VRPN_INCLUDE_PHASESPACE
+#include <map>
+#include <vector>
+
 #include "vrpn_Shared.h"
 #include "vrpn_Tracker.h"
 
-#include "../phasespace/owl.h"
+#include "owl.h"
+#include "owl_planes.h"
+#include "owl_peaks.h"
+#include "owl_images.h"
 
-const int vrpn_PhaseSpace_MAXMARKERS = 256;
-const int vrpn_PhaseSpace_MAXRIGIDS = 32;
-const int vrpn_PhaseSpace_MSGBUFSIZE = 1024;
+#define VRPN_PHASESPACE_MAXMARKERS 256
+#define VRPN_PHASESPACE_MAXRIGIDS 32
+#define VRPN_PHASESPACE_MAXCAMERAS 128
+#define VRPN_PHASESPACE_MAXDETECTORS 128
+#define VRPN_PHASESPACE_MAXPLANES 256
+#define VRPN_PHASESPACE_MAXPEAKS 512
+#define VRPN_PHASESPACE_MAXIMAGES 512
+#define VRPN_PHASESPACE_MSGBUFSIZE 1024
 
 class VRPN_API vrpn_Tracker_PhaseSpace : public vrpn_Tracker {
 
@@ -39,19 +50,27 @@ public:
 
 protected:
 
-  vrpn_int32 r2s_map[vrpn_PhaseSpace_MAXRIGIDS]; //rigid body to sensor map
   int numRigids;
   int numMarkers;
   bool owlRunning;
   float frequency;
   bool readMostRecent;
   bool slave;
+  int frame;
 
-  OWLMarker markers[vrpn_PhaseSpace_MAXMARKERS];
-  OWLRigid rigids[vrpn_PhaseSpace_MAXRIGIDS];
+  typedef std::map<int, vrpn_int32> RigidToSensorMap;
+  RigidToSensorMap r2s_map;
+  std::vector<OWLMarker> markers;
+  std::vector<OWLRigid> rigids;
+  std::vector<OWLCamera> cameras;
+  std::vector<OWLPlane> planes;
+  std::vector<OWLPeak> peaks;
+  std::vector<OWLImage> images;
+  std::vector<OWLDetectors> detectors;
 
 protected:
-  
+  int read_frame(void);
+    
   virtual int get_report(void);
   virtual void send_report(void);
 };

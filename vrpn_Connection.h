@@ -22,9 +22,6 @@ struct timeval;
 #include <bitset>
 #endif
 
-
-
-
 /// This is the list of states that a connection can be in
 /// (possible values for status).  doing_okay() returns VRPN_TRUE
 /// for connections > BROKEN.
@@ -463,8 +460,8 @@ class VRPN_API vrpn_Endpoint_IP : public vrpn_Endpoint {
 
   protected:
 
-    int getOneTCPMessage (int fd, char * buf, int buflen);
-    int getOneUDPMessage (char * buf, int buflen);
+    int getOneTCPMessage (int fd, char * buf, size_t buflen);
+    int getOneUDPMessage (char * buf, size_t buflen);
 
     SOCKET d_udpOutboundSocket;
     SOCKET d_udpInboundSocket;
@@ -826,8 +823,13 @@ class VRPN_API vrpn_Connection_IP : public vrpn_Connection {
 
     /// @name Only used for a vrpn_Connection that awaits incoming connections
     /// @{
+#ifdef VRPN_USE_WINSOCK_SOCKETS
+	SOCKET listen_udp_sock;	///< UDP Connect requests come here
+    SOCKET listen_tcp_sock;	///< TCP Connection requests come here
+#else
     int listen_udp_sock;	///< UDP Connect requests come here
     int listen_tcp_sock;	///< TCP Connection requests come here
+#endif
     /// @}
 
     /// Routines that handle system messages

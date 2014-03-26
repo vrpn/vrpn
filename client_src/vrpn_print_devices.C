@@ -371,7 +371,16 @@ int main (int argc, char * argv [])
       vrpn_SleepMsecs(1);
   }
 
- return 0;
+  // Delete all devices.
+  { unsigned i;
+    for (i = 0; i < num_devices; i++) {
+      delete device_list[i].tkr;
+      delete device_list[i].btn;
+      delete device_list[i].ana;
+      delete device_list[i].dial;
+      delete device_list[i].text;
+    }
+  }
+
+  return 0;
 }   /* main */
-
-

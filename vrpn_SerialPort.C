@@ -78,7 +78,7 @@ void vrpn_SerialPort::close() {
 int vrpn_SerialPort::write(std::string const& buffer) {
 	if (buffer.size() > 0) {
 		DynamicBufferType buf(buffer.c_str(), buffer.c_str() + buffer.size());
-		return write(&(buf[0]), buffer.size());
+		return write(&(buf[0]), static_cast<int>(buffer.size()));
 	}
 	return 0;
 }

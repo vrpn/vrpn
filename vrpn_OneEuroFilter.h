@@ -1,5 +1,7 @@
 /** @file
-	@brief Header
+	@brief Header file that completely implements a direction and
+        orientation filter on tracking reports; it does not implement
+        an actual server, it is intended to be built into a server.
 
 	@date 2012
 
@@ -15,9 +17,6 @@
 //           http://www.boost.org/LICENSE_1_0.txt)
 
 #pragma once
-#ifndef INCLUDED_vrpn_OneEuroFilter_h_GUID_C56A0525_3809_44B7_AA16_98711638E762
-#define INCLUDED_vrpn_OneEuroFilter_h_GUID_C56A0525_3809_44B7_AA16_98711638E762
-
 
 // Internal Includes
 #include <quat.h>
@@ -26,25 +25,20 @@
 // - none
 
 // Standard includes
-#ifdef SGI
-#  include <math.h>
-#else
-#  include <cmath>                       // for sqrt, acos
-using std::sqrt;
-using std::acos;
-#endif
+#include <math.h> // for sqrt() and acos()
+#include <string.h> // for memcpy
 
 // "One Euro" filter for reducing jitter
 // http://hal.inria.fr/hal-00670496/
 
 template<int DIMENSION = 3, typename Scalar = vrpn_float64>
-class LowPassFilter {
+class vrpn_LowPassFilter {
 	public:
 		typedef Scalar scalar_type;
 		typedef Scalar value_type[DIMENSION];
 		typedef const scalar_type * return_type;
 
-		LowPassFilter() : _firstTime(true) {
+		vrpn_LowPassFilter() : _firstTime(true) {
 		}
 
 		return_type filter(const value_type x, scalar_type alpha) {
@@ -71,17 +65,17 @@ class LowPassFilter {
 		value_type _hatxprev;
 };
 
-typedef LowPassFilter<> LowPassFilterVec;
+typedef vrpn_LowPassFilter<> vrpn_LowPassFilterVec;
 
 template<int DIMENSION = 3, typename Scalar = vrpn_float64>
-class VectorFilterable {
+class vrpn_VectorFilterable {
 	public:
 		typedef	Scalar scalar_type;
 		typedef Scalar value_type[DIMENSION];
 		typedef value_type derivative_value_type;
 		typedef Scalar * value_ptr_type;
-		typedef LowPassFilter<DIMENSION, Scalar> value_filter_type;
-		typedef LowPassFilter<DIMENSION, Scalar> derivative_filter_type;
+		typedef vrpn_LowPassFilter<DIMENSION, Scalar> value_filter_type;
+		typedef vrpn_LowPassFilter<DIMENSION, Scalar> derivative_filter_type;
 		typedef typename value_filter_type::return_type value_filter_return_type;
 
 		static void setDxIdentity(value_ptr_type dx) {
@@ -100,12 +94,12 @@ class VectorFilterable {
 			for (int i = 0; i < DIMENSION; ++i) {
 				sqnorm += dx[i] * dx[i];
 			}
-			return sqrt(sqnorm);
+			return sqrt(static_cast<vrpn_float64>(sqnorm));
 		}
 
 };
-template<typename Filterable = VectorFilterable<> >
-class OneEuroFilter {
+template<typename Filterable = vrpn_VectorFilterable<> >
+class vrpn_OneEuroFilter {
 	public:
 		typedef Filterable contents;
 		typedef typename Filterable::scalar_type scalar_type;
@@ -116,12 +110,12 @@ class OneEuroFilter {
 		typedef typename Filterable::value_filter_type value_filter_type;
 		typedef typename value_filter_type::return_type value_filter_return_type;
 
-		OneEuroFilter(scalar_type mincutoff, scalar_type beta, scalar_type dcutoff) :
+		vrpn_OneEuroFilter(scalar_type mincutoff, scalar_type beta, scalar_type dcutoff) :
 			_firstTime(true),
 			_mincutoff(mincutoff), _dcutoff(dcutoff),
 			_beta(beta) {};
 
-		OneEuroFilter() : _firstTime(true), _mincutoff(1), _dcutoff(1), _beta(0.5) {};
+		vrpn_OneEuroFilter() : _firstTime(true), _mincutoff(1), _dcutoff(1), _beta(0.5) {};
 
 		void setMinCutoff(scalar_type mincutoff) {
 			_mincutoff = mincutoff;
@@ -176,13 +170,13 @@ class OneEuroFilter {
 		derivative_filter_type _dxfilt;
 };
 
-typedef OneEuroFilter<> OneEuroFilterVec;
+typedef vrpn_OneEuroFilter<> vrpn_OneEuroFilterVec;
 
-class LowPassFilterQuat {
+class vrpn_LowPassFilterQuat {
 	public:
 		typedef const double * return_type;
 
-		LowPassFilterQuat() : _firstTime(true) {
+		vrpn_LowPassFilterQuat() : _firstTime(true) {
 		}
 
 		return_type filter(const q_type x, vrpn_float64 alpha) {
@@ -206,14 +200,14 @@ class LowPassFilterQuat {
 		q_type _hatxprev;
 };
 
-class QuatFilterable {
+class vrpn_QuatFilterable {
 	public:
 		typedef	double scalar_type;
 		typedef q_type value_type;
 		typedef q_type derivative_value_type;
 		typedef q_type value_ptr_type;
-		typedef LowPassFilterQuat value_filter_type;
-		typedef LowPassFilterQuat derivative_filter_type;
+		typedef vrpn_LowPassFilterQuat value_filter_type;
+		typedef vrpn_LowPassFilterQuat derivative_filter_type;
 		typedef value_filter_type::return_type value_filter_return_type;
 
 		static void setDxIdentity(value_ptr_type dx) {
@@ -239,12 +233,11 @@ class QuatFilterable {
 		}
 		static scalar_type computeDerivativeMagnitude(derivative_value_type const dx) {
 			/// Should be safe since the quaternion we're given has been normalized.
-			return 2.0 * acos(dx[Q_W]);
+			return 2.0 * acos(static_cast<vrpn_float64>(dx[Q_W]));
 		}
 
 };
 
-typedef OneEuroFilter<QuatFilterable> OneEuroFilterQuat;
+typedef vrpn_OneEuroFilter<vrpn_QuatFilterable> vrpn_OneEuroFilterQuat;
 
-#endif // INCLUDED_vrpn_OneEuroFilter_h_GUID_C56A0525_3809_44B7_AA16_98711638E762
 

@@ -11,21 +11,17 @@
 
 #include "quat.h"                       // for Q_W, Q_X, Q_Y, Q_Z
 #include "vrpn_BaseClass.h"             // for ::vrpn_TEXT_ERROR, etc
-#include "vrpn_BufferUtils.h"
 #include "vrpn_Button.h"                // for vrpn_Button_Server
 #include "vrpn_Connection.h"            // for vrpn_Connection
 #include "vrpn_Serial.h"                // for vrpn_write_characters, etc
 #include "vrpn_Shared.h"                // for vrpn_SleepMsecs, timeval, etc
 #include "vrpn_Tracker.h"               // for vrpn_TRACKER_FAIL, etc
 #include "vrpn_Tracker_Liberty.h"
+#include "vrpn_MessageMacros.h"         // for VRPN_MSG_INFO, VRPN_MSG_WARNING, VRPN_MSG_ERROR
 
 #define	INCHES_TO_METERS	(2.54/100.0)
-static bool DEBUG = false;  // General Debug Messages
-static bool DEBUGA = false; // Only errors
-
-#define	FT_INFO(msg)	{ send_text_message(msg, timestamp, vrpn_TEXT_NORMAL) ; if (d_connection && d_connection->connected()) d_connection->send_pending_reports(); }
-#define	FT_WARNING(msg)	{ send_text_message(msg, timestamp, vrpn_TEXT_WARNING) ; if (d_connection && d_connection->connected()) d_connection->send_pending_reports(); }
-#define	FT_ERROR(msg)	{ send_text_message(msg, timestamp, vrpn_TEXT_ERROR) ; if (d_connection && d_connection->connected()) d_connection->send_pending_reports(); }
+const bool DEBUG = false;  // General Debug Messages
+const bool DEBUGA = false; // Only errors
 
 vrpn_Tracker_Liberty::vrpn_Tracker_Liberty(const char *name, vrpn_Connection *c, 
 		      const char *port, long baud, int enable_filtering, int numstations,
@@ -94,7 +90,7 @@ int vrpn_Tracker_Liberty::set_sensor_output_format(int sensor)
 	    strlen(outstring)) == (int)strlen(outstring)) {
 		vrpn_SleepMsecs(50);	// Sleep for a bit to let command run
     } else {
-		FT_ERROR("Write failed on format command");
+		VRPN_MSG_ERROR("Write failed on format command");
 		status = vrpn_TRACKER_FAIL;
 		return -1;
     }
@@ -174,7 +170,7 @@ void vrpn_Tracker_Liberty::reset()
    reset[resetLen++] = 'P'; // Put it into polled (not continuous) mode
 
    sprintf(errmsg, "Resetting the tracker (attempt %d)", numResets);
-   FT_WARNING(errmsg);
+   VRPN_MSG_WARNING(errmsg);
    for (i = 0; i < resetLen; i++) {
 	if (vrpn_write_characters(serial_fd, (unsigned char*)&reset[i], 1) == 1) {
 		fprintf(stderr,".");
@@ -203,7 +199,7 @@ void vrpn_Tracker_Liberty::reset()
    unsigned char scrap[80];
    if ( (ret = vrpn_read_available_characters(serial_fd, scrap, 80)) != 0) {
      sprintf(errmsg,"Got >=%d characters after reset",ret);
-     FT_WARNING(errmsg);
+     VRPN_MSG_WARNING(errmsg);
      for (i = 0; i < ret; i++) {
       	if (isprint(scrap[i])) {
          	fprintf(stderr,"%c",scrap[i]);
@@ -257,10 +253,10 @@ void vrpn_Tracker_Liberty::reset()
          }
      }
      fprintf(stderr,"\n)\n");
-     FT_ERROR("Bad status report from Liberty, retrying reset");
+     VRPN_MSG_ERROR("Bad status report from Liberty, retrying reset");
      return;
    } else {
-     FT_WARNING("Liberty/Isense gives status (this is good)");
+     VRPN_MSG_WARNING("Liberty/Isense gives status (this is good)");
 printf("LIBERTY LATUS STATUS (whoami):\n%s\n\n",statusmsg);
      numResets = 0; 	// Success, use simple reset next time
    }
@@ -402,7 +398,7 @@ printf("LIBERTY LATUS STATUS (whoami):\n%s\n\n",statusmsg);
 
 	if (vrpn_write_characters(serial_fd, (const unsigned char *)clear_timestamp_cmd,
 	        strlen(clear_timestamp_cmd)) != (int)strlen(clear_timestamp_cmd)) {
-	    FT_ERROR("Cannot send command to clear timestamp");
+	    VRPN_MSG_ERROR("Cannot send command to clear timestamp");
 	    status = vrpn_TRACKER_FAIL;
 	    return;
 	}
@@ -414,7 +410,7 @@ printf("LIBERTY LATUS STATUS (whoami):\n%s\n\n",statusmsg);
 
    // Done with reset.
    vrpn_gettimeofday(&watchdog_timestamp, NULL);	// Set watchdog now
-   FT_WARNING("Reset Completed (this is good)");
+   VRPN_MSG_WARNING("Reset Completed (this is good)");
    status = vrpn_TRACKER_SYNCING;	// We're trying for a new reading
 }
 
@@ -490,7 +486,7 @@ int vrpn_Tracker_Liberty::get_report(void)
       {
       	sprintf(errmsg,"While syncing (looking for 'LY' or 'PA' or 'LU', "
 		"got '%c%c')", buffer[0], buffer[1]);
-	FT_INFO(errmsg);
+	VRPN_MSG_INFO(errmsg);
 	vrpn_flush_input_buffer(serial_fd);
 	if (DEBUG) fprintf(stderr,"[DEBUGA]: Getting Report - Not LY or PA or LU, Got Character %c %c \n",buffer[0],buffer[1]);
       	return 0;
@@ -529,7 +525,7 @@ int vrpn_Tracker_Liberty::get_report(void)
       if ( (d_sensor < 0) || (d_sensor >= num_stations) ) {
 	   status = vrpn_TRACKER_SYNCING;
       	   sprintf(errmsg,"Bad sensor # (%d) in record, re-syncing", d_sensor);
-	   FT_INFO(errmsg);
+	   VRPN_MSG_INFO(errmsg);
 	   vrpn_flush_input_buffer(serial_fd);
 	   return 0;
       }
@@ -558,7 +554,7 @@ int vrpn_Tracker_Liberty::get_report(void)
 		REPORT_LEN-bufcount);
    if (ret == -1) {
 	if (DEBUGA) fprintf(stderr,"[DEBUG]: Error Reading Report\n");
-	FT_ERROR("Error reading report");
+	VRPN_MSG_ERROR("Error reading report");
 	status = vrpn_TRACKER_FAIL;
 	return 0;
    }
@@ -587,14 +583,14 @@ int vrpn_Tracker_Liberty::get_report(void)
    ) {
      if (DEBUGA)	fprintf(stderr,"[DEBUG]: Don't have LY or PA or 'LU' at beginning");
 	   status = vrpn_TRACKER_SYNCING;
-	   FT_INFO("Not 'LY' or 'PA' or 'LU' in record, re-syncing");
+	   VRPN_MSG_INFO("Not 'LY' or 'PA' or 'LU' in record, re-syncing");
 	   vrpn_flush_input_buffer(serial_fd);
 	   return 0;
    }
 
    if (buffer[bufcount-1] != ' ') {
 	   status = vrpn_TRACKER_SYNCING;
-	   FT_INFO("No space character at end of report, re-syncing\n");
+	   VRPN_MSG_INFO("No space character at end of report, re-syncing\n");
 	   vrpn_flush_input_buffer(serial_fd);
 	   if (DEBUGA) fprintf(stderr,"[DEBUG]: Don't have space at end of report, got (%c) sensor %i\n",buffer[bufcount-1], d_sensor);
 
@@ -698,7 +694,7 @@ int vrpn_Tracker_Liberty::add_stylus_button(const char *button_device_name, int 
     // Add a new button device and set the pointer to point at it.
     stylus_buttons[sensor] = new vrpn_Button_Server(button_device_name, d_connection, numbuttons);
     if (stylus_buttons[sensor] == NULL) {
-	FT_ERROR("Cannot open button device");
+	VRPN_MSG_ERROR("Cannot open button device");
 	return -1;
     }
 

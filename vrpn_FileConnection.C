@@ -18,8 +18,6 @@
 #include <netinet/in.h>                 // for ntohl
 #endif
 
-#include "vrpn_BufferUtils.h"           // for vrpn_unbuffer
-
 // Global variable used to indicate whether File Connections should
 // pre-load all of their records into memory when opened.  This is the
 // default behavior, but fails on very large files that eat up all
@@ -73,6 +71,7 @@ vrpn_File_Connection::vrpn_File_Connection (const char * station_name,
     d_logHead (NULL),
     d_logTail (NULL),
     d_currentLogEntry (NULL),
+    d_startEntry(NULL), 
     d_preload(vrpn_FILE_CONNECTIONS_SHOULD_PRELOAD),
     d_accumulate(vrpn_FILE_CONNECTIONS_SHOULD_ACCUMULATE)
 {
@@ -1011,17 +1010,15 @@ vrpn_File_Connection * vrpn_File_Connection::get_File_Connection (void) {
 int vrpn_File_Connection::read_cookie (void)
 {
     char readbuf [2048];  // HACK!
-    int retval;
-
-    retval = fread(readbuf, vrpn_cookie_size(), 1, d_file);
-    if (retval <= 0) {
+    size_t bytes = fread(readbuf, vrpn_cookie_size(), 1, d_file);
+    if (bytes == 0) {
         fprintf(stderr, "vrpn_File_Connection::read_cookie:  "
                 "No cookie.  If you're sure this is a logfile, "
                 "run add_vrpn_cookie on it and try again.\n");
         return -1;
     }
 
-    retval = check_vrpn_file_cookie(readbuf);
+    int retval = check_vrpn_file_cookie(readbuf);
     if (retval < 0) {
         return -1;
     }
@@ -1041,7 +1038,7 @@ int vrpn_File_Connection::read_cookie (void)
 int vrpn_File_Connection::read_entry (void)
 {
     vrpn_LOGLIST * newEntry;
-    int retval;
+    size_t retval;
 
     newEntry = new vrpn_LOGLIST;
     if (!newEntry) {

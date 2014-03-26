@@ -58,14 +58,11 @@ public:
 	virtual void reset() { }
 };
 
-
 #if defined(VRPN_USE_HID)
 
-#ifdef  VRPN_USE_LOCAL_HIDAPI
-#include "./submodules/hidapi/hidapi/hidapi.h"  // for hid_device
-#else
-#include "hidapi.h"
-#endif
+// Forward declarations for hid_device
+struct hid_device_;
+typedef struct hid_device_ hid_device;
 
 // Main VRPN API for HID devices
 class VRPN_API vrpn_HidInterface {

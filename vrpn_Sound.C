@@ -52,7 +52,7 @@ vrpn_Sound::~vrpn_Sound()
 }
 
 vrpn_int32 vrpn_Sound::encodeSound_local(const char *filename, const vrpn_SoundID id, const vrpn_SoundDef sound, char **buf) {
-	vrpn_int32 len = sizeof(vrpn_SoundID) + strlen(filename) + sizeof(vrpn_SoundDef) +1;
+	vrpn_int32 len = static_cast<vrpn_int32>(sizeof(vrpn_SoundID) + strlen(filename) + sizeof(vrpn_SoundDef) + 1);
 	vrpn_int32 ret = len;
 	char *mptr;
   int i;
@@ -85,7 +85,7 @@ vrpn_int32 vrpn_Sound::encodeSound_local(const char *filename, const vrpn_SoundI
 	vrpn_buffer(&mptr, &len, sound.equalization_val);
 	vrpn_buffer(&mptr, &len, sound.pitch);
 
-	vrpn_buffer(&mptr, &len, filename, strlen(filename)+1);
+	vrpn_buffer(&mptr, &len, filename, static_cast<vrpn_int32>(strlen(filename))+1);
 
 	return ret;
 }
@@ -535,14 +535,14 @@ vrpn_int32 vrpn_Sound::decodeSoundVolume(const char   * buf,
 }
 
 vrpn_int32 vrpn_Sound::encodeLoadModel_local(const char *filename, char **buf) {
-	vrpn_int32 len = sizeof(vrpn_SoundID) + strlen(filename) + 1;
+	vrpn_int32 len = static_cast<vrpn_int32>(sizeof(vrpn_SoundID) + strlen(filename) + 1);
 	vrpn_int32 ret = len;
 	char *mptr;
 
 	*buf = new char[strlen(filename) + sizeof(vrpn_SoundID) + 1];
 
 	mptr = *buf;
-	vrpn_buffer(&mptr, &len, filename, strlen(filename)+1);
+	vrpn_buffer(&mptr, &len, filename, static_cast<vrpn_int32>(strlen(filename))+1);
 
 	return ret;
 }

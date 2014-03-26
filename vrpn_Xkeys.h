@@ -1,5 +1,4 @@
-#ifndef VRPN_XKEYS_H
-#define VRPN_XKEYS_H
+#pragma once
 
 #include <stddef.h>                     // for size_t
 
@@ -145,8 +144,12 @@ protected:
 };
 
 // end of VRPN_USE_HID
-#endif
-
-// end of VRPN_XKEYS_H
+#else
+class VRPN_API vrpn_Xkeys;
+class VRPN_API vrpn_Xkeys_Desktop;
+class VRPN_API vrpn_Xkeys_Pro;
+class VRPN_API vrpn_Xkeys_Joystick;
+class VRPN_API vrpn_Xkeys_Jog_And_Shuttle;
+class VRPN_API vrpn_Xkeys_XK3;
 #endif
 

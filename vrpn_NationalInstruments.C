@@ -1,5 +1,5 @@
 #include <stdio.h>                      // for sprintf, fprintf, stderr, etc
-#include <vrpn_Shared.h>                // for vrpn_gettimeofday
+#include "vrpn_Shared.h"                // for vrpn_gettimeofday
 
 #include "vrpn_BaseClass.h"             // for ::vrpn_TEXT_WARNING, etc
 #include "vrpn_Connection.h"            // for vrpn_HANDLERPARAM, etc
@@ -9,11 +9,6 @@
 #include "server_src/NIUtil.cpp"
 #endif
 
-static	double	duration(struct timeval t1, struct timeval t2)
-{
-	return (t1.tv_usec - t2.tv_usec) / 1000000.0 +
-	       (t1.tv_sec - t2.tv_sec);
-}
 
 vrpn_National_Instruments_Server::vrpn_National_Instruments_Server (const char* name, vrpn_Connection * c, 
                              const char *boardName,
@@ -272,7 +267,7 @@ void vrpn_National_Instruments_Server::mainloop(void)
   // If so, then read the channels and send a new report.
   struct timeval now;
   vrpn_gettimeofday(&now, NULL);
-  if (duration(now, d_last_report_time) >= d_in_min_delay) {
+  if (vrpn_TimevalDurationSeconds(now, d_last_report_time) >= d_in_min_delay) {
     d_last_report_time = now;
 
 #if defined(VRPN_USE_NATIONAL_INSTRUMENTS_MX)

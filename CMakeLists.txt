@@ -1,16 +1,9 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(VRPN)
 
-# Changes made by:
-# 2009-2010 Ryan Pavlik <rpavlik@iastate.edu>
-# http://academic.cleardefinition.com
-# Iowa State University HCI Graduate Program/VRAC
-
 #-----------------------------------------------------------------------------
 # XXX Things to make better.
 #
-# Make Quatlib and VRPN into packages as described by Cory (?)
-# Move DirectInput libraries out of vrpn_Configure.h and into the Cmake realm
 # Repeat for all other configurable headers/libraries - see below for a list
 # Move the shared-library code over to CMake's normal definition
 # Improve this CPack installer.
@@ -38,7 +31,7 @@ else()
 	set(TRUE_UNLESS_SUBPROJECT TRUE)
 endif()
 
-# Remove the following when it is fixed in the Android CMake.
+# TODO Remove the following when it is fixed in the Android CMake.
 if(BUILD_WITH_ANDROID_NDK)
 	set(CMAKE_CXX_FLAGS
 		"--sysroot=${ANDROID_NDK_SYSROOT} ${CMAKE_CXX_FLAGS}")
@@ -99,15 +92,22 @@ set(CPACK_PACKAGE_FILE_NAME
 	"${PROJECT_NAME}-${CPACK_PACKAGE_VERSION}-${CMAKE_SYSTEM_NAME}-${CMAKE_SYSTEM_PROCESSOR}")
 set(CPACK_SOURCE_PACKAGE_FILE_NAME
 	"${PROJECT_NAME}-${CPACK_PACKAGE_VERSION}-src")
+set(CPACK_PACKAGE_CONTACT "VRPN Community <vrpn@listserv.unc.edu>")
 
 #-----------------------------------------------------------------------------
 # Compiler flags we got from Hans for Windows and from Sheldon Andrews
 # for other architectures.
 if(MSVC)	# MS-Windows Visual Studio, both 32 and 64 bits
-	if(MSVC_VERSION GREATER 1310) # Newer than VS.NET 2003 (7.1)
-		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}   /fp:fast")
+    set(CMAKE_DEBUG_POSTFIX "d" CACHE STRING "add a postfix, usually d on windows")
+	if(MSVC_VERSION GREATER 1310) # This compiler flag needs newer than VS.NET 2003 (7.1)
+		# Choose fast, possibly less accurate floating point
+		# See http://msdn.microsoft.com/en-us/library/e7s85ffb(v=vs.80).aspx
+		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /fp:fast")
 		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /fp:fast")
 	endif()
+
+	# Do not assume fixed base address (probably for DLL integration?)
+	# http://msdn.microsoft.com/en-us/library/w368ysh2(v=vs.80).aspx
 	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /FIXED:NO")
 else()
 	# GCC compilers on 64-bit machines require -fPIC for shared libraries or libs
@@ -157,24 +157,25 @@ if(NOT SUBPROJECT)
 	# Build various applications if we want them.
 	option(VRPN_BUILD_CLIENTS "Build VRPN client apps and tests" ON)
 	option(VRPN_BUILD_SERVERS "Build VRPN servers" ON)
+
+	# Development tools
+	if(MSVC)
+		option(VRPN_BUILD_WITH_PROJECT_FOLDERS
+			"Use project folders in build system - not compatible with Visual C++ Express editions!"
+			OFF)
+	else()
+		set(VRPN_BUILD_WITH_PROJECT_FOLDERS ON)
+	endif()
+
+	set_property(GLOBAL
+		PROPERTY
+		USE_FOLDERS
+		${VRPN_BUILD_WITH_PROJECT_FOLDERS})
+
+	# Set a default build type
+	set_default_build_type("RelWithDebInfo")
+
 endif()
-
-# Development tools
-if(MSVC)
-	option(VRPN_BUILD_WITH_PROJECT_FOLDERS
-		"Use project folders in build system - not compatible with Visual C++ Express editions!"
-		OFF)
-else()
-	set(VRPN_BUILD_WITH_PROJECT_FOLDERS ON)
-endif()
-
-set_property(GLOBAL
-	PROPERTY
-	USE_FOLDERS
-	${VRPN_BUILD_WITH_PROJECT_FOLDERS})
-
-# Set a default build type
-set_default_build_type("RelWithDebInfo")
 
 # Force use of our CMake-processed configuration header before the stock one.
 include_directories("${PROJECT_BINARY_DIR}")
@@ -420,7 +421,7 @@ if(VRPN_USE_HID)
 	list(APPEND SERVER_EXTRA_LIBS ${HIDAPI_LIBRARIES})
 	option(VRPN_BUILD_HID_GUI
 		"Should we build a GUI for analyzing live HID streams?"
-		${TRUE_UNLESS_SUBPROJECT})
+		OFF)
 	option(VRPN_HID_DEBUGGING
 		"Should verbose debugging messages be displayed during HID interactions?"
 		off)
@@ -501,19 +502,21 @@ endif()
 
 ###
 # JsonCpp
-###
-find_package(JsonCpp)
+##
+## Setting up the local JSONCPP was handled above, in the submodules directory
+if(NOT VRPN_USE_LOCAL_JSONCPP)
+	find_package(JsonCpp)
+endif()
 option_requires(VRPN_USE_JSONNET
-	"Build with JSONCPP (for Android widgets)"
+	"Build with JSONCPP (for Android widgets and other UDP JSON-based APIs)"
 	${DEFAULT_OFF_IF_SUBPROJECT}
 	JSONCPP_FOUND)
 
 if(VRPN_USE_JSONNET)
 	include_directories(${JSONCPP_INCLUDE_DIRS})
 	list(APPEND SERVER_EXTRA_LIBS ${JSONCPP_LIBRARIES})
-	if(MSVC)
-		message("\nSee README.jsoncpp for important instructions on how to build JSONCPP and avoid LNK2005 errors \n")
-	endif()
+else()
+	set(JSONCPP_SOURCES)
 endif()
 
 
@@ -571,7 +574,10 @@ if(WIN32)
 			xinput.h
 			HINTS
 			${DIRECTX_INCLUDE_DIRS})
-		if(DIRECTX_XINPUT_INCLUDE_DIR)
+		if(DIRECTX_XINPUT_INCLUDE_DIR AND DIRECTX_XINPUT_LIBRARY)
+			list(APPEND
+				SERVER_EXTRA_LIBS
+				${DIRECTX_XINPUT_LIBRARY})
 			mark_as_advanced(DIRECTX_XINPUT_INCLUDE_DIR)
 			set(VRPN_USE_WINDOWS_XINPUT TRUE)
 		else()
@@ -596,6 +602,20 @@ endif()
 
 if(VRPN_USE_GPM_MOUSE)
 	list(APPEND SERVER_EXTRA_LIBS ${GPM_LIBRARIES})
+endif()
+
+###
+# INTERSENSE
+###
+find_package(InterSense)
+option_requires(VRPN_INCLUDE_INTERSENSE
+	"Build with InterSense support"
+	${DEFAULT_OFF_IF_SUBPROJECT}
+	INTERSENSE_FOUND)
+
+if(VRPN_INCLUDE_INTERSENSE)
+	include_directories(${INTERSENSE_INCLUDE_DIRS})
+	list(APPEND SERVER_EXTRA_LIBS ${INTERSENSE_LIBRARIES})
 endif()
 
 ###
@@ -700,16 +720,34 @@ option(VRPN_USE_PDI
 	"Build with flags to enable the use of Polhemus DVI library."
 	OFF)
 if(VRPN_USE_PDI)
-	include_directories("C:\Program Files (x86)\Polhemus\PDI\PDI_90\Inc")
+	include_directories("C:/Program Files (x86)/Polhemus/PDI/PDI_90/Inc")
 	list(APPEND
 		SERVER_EXTRA_LIBS
-		"C:\Program Files (x86)\Polhemus\PDI\PDI_90\Lib\Win32\PDI")
+		"C:/Program Files (x86)/Polhemus/PDI/PDI_90/Lib/Win32/PDI.lib")
+        set(PDI_SOURCES vrpn_Tracker_PDI.C)
+endif()
+
+###
+# PhaseSpace API
+###
+option(VRPN_INCLUDE_PHASESPACE
+	"Build with PhaseSpace library support"
+	OFF)
+set(PHASESPACE_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/phasespace" CACHE PATH "location of PhaseSpace headers")
+set(PHASESPACE_LIBRARY_DIR "${CMAKE_SOURCE_DIR}/phasespace" CACHE PATH "location of PhaseSpace libraries (libowlsock.so, etc")
+if(VRPN_INCLUDE_PHASESPACE)
+  include_directories(${PHASESPACE_INCLUDE_DIR})
+  link_directories(${PHASESPACE_LIBRARY_DIR})
+  if(WIN32)
+    list(APPEND SERVER_EXTRA_LIBS libowlsock)
+  else()
+    list(APPEND SERVER_EXTRA_LIBS owlsock)
+  endif()
 endif()
 
 ###
 # XXX Other libraries needing detection and handling (TODO)
 ###
-# InterSense Interface Libraries SDK
 # National Instruments Nidaq traditional
 # US Digital SEI/A2
 # microscribe3D library
@@ -726,9 +764,6 @@ endif()
 # These are the default options for libraries we can't yet detect -
 # if a library can be detected above it will be pre-set to an appropriate
 # value by default.
-option(VRPN_INCLUDE_INTERSENSE
-	"Build with InterSense native library support"
-	OFF)
 option(VRPN_USE_NATIONAL_INSTRUMENTS
 	"Build with National Instruments (old library) support"
 	OFF)
@@ -738,9 +773,6 @@ option(VRPN_USE_USDIGITAL
 	OFF)
 option(VRPN_USE_MICROSCRIBE
 	"Build with MicroScribe3D library support"
-	OFF)
-option(VRPN_INCLUDE_PHASESPACE
-	"Build with PhaseSpace library support"
 	OFF)
 option(VRPN_USE_MOTIONNODE
 	"Build with GLI Interactive LLC MotionNode library support"
@@ -752,9 +784,6 @@ option(VRPN_USE_TRIVISIOCOLIBRI
 	"Build with support for TrivisioColibri tracker"
 	OFF)
 if(WIN32)
-	option(VRPN_USE_DIRECTINPUT
-		"Build with Microsoft DirectInput support"
-		OFF)
 	option(VRPN_USE_SHARED_LIBRARY
 		"Enable to use DLLs on Windows (see vrpn_Configure.h for more info)"
 		OFF)
@@ -863,7 +892,6 @@ set(VRPN_CLIENT_PUBLIC_HEADERS
 	vrpn_Analog_Output.h
 	vrpn_Auxiliary_Logger.h
 	vrpn_BaseClass.h
-	vrpn_BufferUtils.h
 	vrpn_Button.h
 	vrpn_Connection.h
 	vrpn_Dial.h
@@ -905,6 +933,8 @@ set(VRPN_SERVER_SOURCES
 	vrpn_Button_NI_DIO24.C
 	vrpn_Button_USB.cpp
 	vrpn_CerealBox.C
+	vrpn_CHProducts_Controller_Raw.C
+	vrpn_Contour.C
 	vrpn_DevInput.C
 	vrpn_DirectXFFJoystick.C
 	vrpn_DirectXRumblePad.C
@@ -918,7 +948,9 @@ set(VRPN_SERVER_SOURCES
 	vrpn_ForceDeviceServer.C
 	vrpn_Freespace.C
 	vrpn_FunctionGenerator.C
+	vrpn_Futaba.C
 	vrpn_GlobalHapticsOrb.C
+	vrpn_Griffin.C
 	vrpn_HumanInterface.C
 	vrpn_IDEA.C
 	vrpn_Imager_Stream_Buffer.C
@@ -929,7 +961,9 @@ set(VRPN_SERVER_SOURCES
 	vrpn_Joywin32.C
 	vrpn_Keyboard.C
 	vrpn_LUDL.C
+	vrpn_Logitech_Controller_Raw.C
 	vrpn_Magellan.C
+	vrpn_Microsoft_Controller_Raw.C
 	vrpn_Mouse.C
 	vrpn_NationalInstruments.C
 	vrpn_Nidaq.C
@@ -937,6 +971,7 @@ set(VRPN_SERVER_SOURCES
 	vrpn_Poser_Analog.C
 	vrpn_Poser_Tek4662.C
 	vrpn_raw_sgibox.C
+	vrpn_Saitek_Controller_Raw.C
 	vrpn_sgibox.C
 	vrpn_Spaceball.C
 	vrpn_Tng3.C
@@ -946,6 +981,7 @@ set(VRPN_SERVER_SOURCES
 	vrpn_Tracker_Crossbow.C
 	vrpn_Tracker_DTrack.C
 	vrpn_Tracker_Fastrak.C
+	vrpn_Tracker_Filter.C
 	vrpn_Tracker_GameTrak.C
 	vrpn_Tracker_GPS.C
 	vrpn_Tracker_isense.C
@@ -972,7 +1008,9 @@ set(VRPN_SERVER_SOURCES
 	vrpn_Tracker_LibertyHS.C
 	vrpn_Zaber.C
 	server_src/vrpn_Generic_server_object.C
-	${HIDAPI_SOURCES})
+	${HIDAPI_SOURCES}
+	${JSONCPP_SOURCES}
+	${PDI_SOURCES})
 
 set(VRPN_SERVER_PUBLIC_HEADERS
 	${VRPN_CLIENT_PUBLIC_HEADERS}
@@ -990,6 +1028,8 @@ set(VRPN_SERVER_PUBLIC_HEADERS
 	vrpn_Button_NI_DIO24.h
 	vrpn_Button_USB.h
 	vrpn_CerealBox.h
+	vrpn_CHProducts_Controller_Raw.h
+	vrpn_Contour.h
 	vrpn_DevInput.h
 	vrpn_DirectXFFJoystick.h
 	vrpn_DirectXRumblePad.h
@@ -1003,7 +1043,9 @@ set(VRPN_SERVER_PUBLIC_HEADERS
 	vrpn_ForceDeviceServer.h
 	vrpn_Freespace.h
 	vrpn_FunctionGenerator.h
+	vrpn_Futaba.h
 	vrpn_GlobalHapticsOrb.h
+	vrpn_Griffin.h
 	vrpn_HashST.h
 	vrpn_HumanInterface.h
 	vrpn_IDEA.h
@@ -1014,8 +1056,11 @@ set(VRPN_SERVER_PUBLIC_HEADERS
 	vrpn_Joylin.h
 	vrpn_Joywin32.h
 	vrpn_Keyboard.h
+	vrpn_Logitech_Controller_Raw.h
 	vrpn_LUDL.h
 	vrpn_Magellan.h
+	vrpn_MessageMacros.h
+	vrpn_Microsoft_Controller_Raw.h
 	vrpn_Mouse.h
 	vrpn_NationalInstruments.h
 	vrpn_Nidaq.h
@@ -1026,6 +1071,7 @@ set(VRPN_SERVER_PUBLIC_HEADERS
 	vrpn_Poser_Tek4662.h
 	vrpn_raw_sgibox.h
 	vrpn_RedundantTransmission.h
+	vrpn_Saitek_Controller_Raw.h
 	vrpn_sgibox.h
 	vrpn_Spaceball.h
 	vrpn_Tng3.h
@@ -1035,6 +1081,7 @@ set(VRPN_SERVER_PUBLIC_HEADERS
 	vrpn_Tracker_Crossbow.h
 	vrpn_Tracker_DTrack.h
 	vrpn_Tracker_Fastrak.h
+	vrpn_Tracker_Filter.h
 	vrpn_Tracker_GameTrak.h
 	vrpn_Tracker_GPS.h
 	vrpn_Tracker_isense.h
@@ -1108,13 +1155,6 @@ if(VRPN_BUILD_SERVER_LIBRARY)
 		include
 		COMPONENT
 		serversdk)
-
-	if(VRPN_USE_LOCAL_HIDAPI)
-		install(FILES
-			${CMAKE_CURRENT_SOURCE_DIR}/submodules/hidapi/hidapi/hidapi.h
-			DESTINATION
-			include/submodules/hidapi/hidapi)
-	endif()
 
 	add_cppcheck(vrpnserver STYLE UNUSED_FUNCTIONS)
 endif()
@@ -1250,17 +1290,18 @@ set(ALL_GPL_SERVER_FLAGS
 	VRPN_USE_WIIUSE # GPL3
 )
 
+# What flags cause us to link against GPL-incompatible libraries?
+set(ALL_GPLINCOMPAT_SERVER_FLAGS
+	VRPN_INCLUDE_INTERSENSE
+	VRPN_INCLUDE_TIMECODE_SERVER
+	VRPN_USE_PHANTOM_SERVER)
+
 set(GPL_SERVER_FLAGS)
 foreach(POSSIBLE_GPL_FLAG ${ALL_GPL_SERVER_FLAGS})
 	if(${POSSIBLE_GPL_FLAG})
 		list(APPEND GPL_SERVER_FLAGS "${POSSIBLE_GPL_FLAG}")
 	endif()
 endforeach()
-
-# What flags cause us to link against GPL-incompatible libraries?
-set(ALL_GPLINCOMPAT_SERVER_FLAGS
-	VRPN_INCLUDE_TIMECODE_SERVER
-	VRPN_USE_PHANTOM_SERVER)
 
 set(GPLINCOMPAT_SERVER_FLAGS)
 foreach(POSSIBLE_GPLINCOMPAT_FLAG ${ALL_GPLINCOMPAT_SERVER_FLAGS})

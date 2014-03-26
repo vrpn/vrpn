@@ -15,6 +15,7 @@
 // for the software manual for this device.
 
 #include "vrpn_Analog.h"                // for vrpn_Serial_Analog
+#include "vrpn_Button.h"                // for vrpn_Button_Filter
 #include "vrpn_Analog_Output.h"         // for vrpn_Analog_Output
 #include "vrpn_Configure.h"             // for VRPN_CALLBACK, VRPN_API
 #include "vrpn_Connection.h"            // for vrpn_CONNECTION_RELIABLE, etc
@@ -23,7 +24,8 @@
 
 // XXX Add two buttons to the device, to report limit-switch state.
 
-class VRPN_API vrpn_IDEA: public vrpn_Serial_Analog, public vrpn_Analog_Output
+class VRPN_API vrpn_IDEA: public vrpn_Serial_Analog, public vrpn_Analog_Output,
+		public vrpn_Button_Filter
 {
 public:
 	vrpn_IDEA (const char * name, vrpn_Connection * c, const char * port
@@ -46,6 +48,7 @@ public:
           , int output_4_setting = -1
           , double initial_move = 0     // Move to one end of travel when reset
           , double fractional_c_a = 1.0 // Use lower accel and current during this move
+          , double reset_location = 0.0 // Where to set the value to after reset
         );
 	~vrpn_IDEA () {};
 
@@ -77,6 +80,7 @@ public:
     int d_output_4_setting;
     double d_initial_move;
     double d_fractional_c_a;
+    double d_reset_location;
 
     virtual int reset(void);      //< Set device back to starting config
     virtual int get_report(void); //< Try to read a report from the device
@@ -93,8 +97,19 @@ public:
     // so we don't get stuck.
     bool send_move_request(vrpn_float64 location_in_steps, double scale = 1.0);
 
-    /// Parses a position report.  Returns false on failure.
-    bool convert_report_to_value(unsigned char *buf, vrpn_float64 *value);
+    /// Send a move request and then wait for the move to complete.  Repeat
+    // the command asking the motor to move until it says that we are no
+    // longer moving.
+    bool move_until_done_or_error(vrpn_float64 location_in_steps, double scale = 1.0);
+
+    /// Parses a position report.  Returns -1 on failure, 0 on no value
+    // found, and 1 on value found.  Store the result into our analog channel 0.
+    int convert_report_to_position(unsigned char *buf);
+
+    /// Parses an input/output  report.  Returns -1 on failure, 0 on no value
+    // found, and 1 on value found.  Store the results of our input reads into
+    // buttons 0-3.
+    int convert_report_to_buttons(unsigned char *buf);
 
     /// send report iff changed
     virtual void report_changes

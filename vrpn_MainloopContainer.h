@@ -15,10 +15,13 @@
 // Distributed under the Boost Software License, Version 1.0.
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
+//
+// *** WARNING: This file must only be included in a .cpp or .C file, not
+// in a .h file, because it includes <vector>, and we can't have any standard
+// library files in the VRPN headers because that will make VRPN incompatible
+// with libraries that use the other flavor of <vector.h>.
 
 #pragma once
-#ifndef INCLUDED_vrpn_MainloopContainer_h_GUID_2146c66c_1925_4ac3_a192_354d10d7a39f
-#define INCLUDED_vrpn_MainloopContainer_h_GUID_2146c66c_1925_4ac3_a192_354d10d7a39f
 
 // Internal Includes
 #include "vrpn_MainloopObject.h"
@@ -42,13 +45,16 @@ class vrpn_MainloopContainer {
 		void clear();
 
 		/// Add an object wrapped by vrpn_MainloopObject.
+		/// Return NULL if the object has a problem (indicated by
+		/// broken()).
 		vrpn_MainloopObject * add(vrpn_MainloopObject * o);
 
 		/// Template method to automatically wrap objects
 		/// with vrpn_MainloopObject before adding them.
+		/// Return NULL if there is a problem with the object add.
 		template<class T>
 		T add(T o) {
-			add(vrpn_MainloopObject::wrap(o));
+			if (!add(vrpn_MainloopObject::wrap(o))) { return NULL; }
 			return o;
 		}
 
@@ -62,14 +68,24 @@ class vrpn_MainloopContainer {
 
 /* -- inline implementations -- */
 
-inline vrpn_MainloopContainer::~vrpn_MainloopContainer() {
+inline vrpn_MainloopContainer::~vrpn_MainloopContainer()
+{
 	clear();
 }
 
-inline vrpn_MainloopObject * vrpn_MainloopContainer::add(vrpn_MainloopObject* o) {
-	if (!o) {
-		return o;
+inline vrpn_MainloopObject * vrpn_MainloopContainer::add(vrpn_MainloopObject* o)
+{
+	// If the object is NULL, we have a problem and don't add it.
+	if (!o) { return o; }
+
+	// If the object is broken(), this indicates a problem
+	// with the device.  We also do not add it and we return NULL to show.
+	// that there is a problem.
+	if (o->broken()) { 
+	    fprintf(stderr, "vrpn_MainloopContainer::add() Device is broken, not adding.\n");
+	    return NULL;
 	}
+
 	_vrpn.push_back(o);
 	return o;
 }
@@ -93,4 +109,3 @@ inline void vrpn_MainloopContainer::mainloop() {
 	}
 }
 
-#endif // INCLUDED_vrpn_MainloopContainer_h_GUID_2146c66c_1925_4ac3_a192_354d10d7a39f

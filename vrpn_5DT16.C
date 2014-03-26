@@ -14,6 +14,7 @@
 #include "vrpn_BaseClass.h"             // for ::vrpn_TEXT_ERROR, etc
 #include "vrpn_Serial.h"
 #include "vrpn_Shared.h"                // for timeval, vrpn_SleepMsecs, etc
+#include "vrpn_MessageMacros.h"         // for VRPN_MSG_INFO, VRPN_MSG_WARNING, VRPN_MSG_ERROR
 
 #undef VERBOSE
 
@@ -22,23 +23,7 @@
 #define	STATUS_SYNCING		(0)	// Looking for the first character of report
 #define	STATUS_READING		(1)	// Looking for the rest of the report
 
-#define	_5DT_INFO(msg)	    { send_text_message(msg, timestamp, vrpn_TEXT_NORMAL) ; if (d_connection) d_connection->send_pending_reports(); }
-#define	_5DT_WARNING(msg)    { send_text_message(msg, timestamp, vrpn_TEXT_WARNING) ; if (d_connection) d_connection->send_pending_reports(); }
-#define	_5DT_ERROR(msg)	    { send_text_message(msg, timestamp, vrpn_TEXT_ERROR) ; if (d_connection) d_connection->send_pending_reports(); }
-
 #define MAX_TIME_INTERVAL       (2000000) // max time between reports (usec)
-
-/******************************************************************************
- * NAME      : duration
- * ROLE      : 
- * ARGUMENTS : 
- * RETURN    : 
- ******************************************************************************/
-static unsigned long duration (struct timeval p_t1, struct timeval p_t2)
-{
-  return (p_t1.tv_usec - p_t2.tv_usec) +
-    1000000L * (p_t1.tv_sec - p_t2.tv_sec);
-}
 
 
 /******************************************************************************
@@ -115,20 +100,20 @@ int vrpn_5dt16::reset (void)
   }
   vrpn_SleepMsecs (100);  //Give it time to send data
   l_ret=vrpn_read_available_characters (serial_fd, l_inbuf, 5); // read the rest of the data
-  char text[20];
+  char text[50];
   sprintf(text,"Hardware Version %i.0%i",l_inbuf[0],l_inbuf[1]); // hardware version
-  _5DT_WARNING(text);
+  VRPN_MSG_WARNING(text);
   if (l_inbuf[2] | 1) //right or left glove
   {
-  	  _5DT_WARNING ("A right glove is ready");
+  	  VRPN_MSG_WARNING ("A right glove is ready");
   } else {
-	  _5DT_WARNING ("A left glove is ready");
+	  VRPN_MSG_WARNING ("A left glove is ready");
   }
   if (l_inbuf[3] | 1) //wireless glove or wired
   {
-	  _5DT_WARNING ("no wireless glove");
+	  VRPN_MSG_WARNING ("no wireless glove");
   } else {
-	  _5DT_WARNING ("wireless glove");
+	  VRPN_MSG_WARNING ("wireless glove");
   }
 
   // We're now entering the syncing mode which send the read command to the glove
@@ -164,7 +149,7 @@ void vrpn_5dt16::get_report (void)
   l_ret = vrpn_read_available_characters (serial_fd, &_buffer [_bufcount],
 					  _expected_chars - _bufcount);
   if (l_ret == -1) {
-      _5DT_ERROR ("Error reading the glove");
+      VRPN_MSG_ERROR ("Error reading the glove");
       _status = STATUS_RESETTING;
       return;
   }
@@ -197,7 +182,7 @@ void vrpn_5dt16::get_report (void)
 
   if (!( (_buffer[0] == '<') && (_buffer[1] == 'D') ) ) //first characters need to be <D
   {
-      _5DT_INFO ("Unexpected first character in report, probably info packet (recovering)");
+      VRPN_MSG_INFO ("Unexpected first character in report, probably info packet (recovering)");
       for(int i=0;i<29;i++) {
 		  _buffer[i]=_buffer[i+7];
       }
@@ -223,7 +208,7 @@ void vrpn_5dt16::get_report (void)
 	   channel[5],channel[6],channel[7],channel[8],channel[9],
 	   channel[10],channel[11],channel[12],channel[13],channel[14],
 	   channel[15]);
-   _5DT_ERROR(text);
+   VRPN_MSG_ERROR(text);
 
    //--------------------------------------------------------------------
    // Done with the decoding, send the reports and go back to syncing
@@ -280,7 +265,7 @@ void vrpn_5dt16::mainloop ()
     case STATUS_RESETTING:
       if (reset()== -1)
 	{
-	  _5DT_ERROR ("vrpn_Analog_5dt: Cannot reset the glove!");
+	  VRPN_MSG_ERROR ("vrpn_Analog_5dt: Cannot reset the glove!");
 	}
       break;
 
@@ -298,21 +283,21 @@ void vrpn_5dt16::mainloop ()
 	  get_report();
 	  struct timeval current_time;
 	  vrpn_gettimeofday(&current_time, NULL);
-	  if ( duration(current_time,timestamp) > MAX_TIME_INTERVAL)
+	  if ( vrpn_TimevalDuration(current_time,timestamp) > MAX_TIME_INTERVAL)
 	  {
 	    sprintf (l_errmsg, "vrpn_5dt16::mainloop: Timeout... current_time=%ld:%ld, timestamp=%ld:%ld",
 		     current_time.tv_sec,
 		     static_cast<long>(current_time.tv_usec),
 		     timestamp.tv_sec,
 		     static_cast<long>(timestamp.tv_usec));
-	    _5DT_ERROR (l_errmsg);
+	    VRPN_MSG_ERROR (l_errmsg);
 	    _status = STATUS_RESETTING;
 	  }
       }
       break;
 
     default:
-      _5DT_ERROR ("vrpn_5dt16::mainloop: Unknown mode (internal error)");
+      VRPN_MSG_ERROR ("vrpn_5dt16::mainloop: Unknown mode (internal error)");
       break;
   }
 }

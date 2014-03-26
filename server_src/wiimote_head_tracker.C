@@ -85,11 +85,6 @@ long wiimote_timeout = 10;
 
 struct timeval last_display;
 
-static	double	duration(struct timeval t1, struct timeval t2) {
-	return (t1.tv_usec - t2.tv_usec) / 1000000.0 +
-	       (t1.tv_sec - t2.tv_sec);
-}
-
 /*****************************************************************************
  *
    Callback handler
@@ -107,7 +102,7 @@ void	VRPN_CALLBACK handle_pos(void*, const vrpn_TRACKERCB t) {
 			   t.pos[0], t.pos[1], t.pos[2], t.quat[0], t.quat[1], t.quat[2], t.quat[3]);
 		struct timeval now;
 		vrpn_gettimeofday(&now, NULL);
-		double interval = duration(now, last_display);
+		double interval = vrpn_TimevalDurationSeconds(now, last_display);
 		double frequency = count / interval;
 		count = 0;
 		printf("Update frequency:\t%5.2f Hz (%5.2f sec)\n",

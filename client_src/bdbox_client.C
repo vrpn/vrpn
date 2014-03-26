@@ -56,20 +56,28 @@ void VRPN_CALLBACK	handle_button_change(void *userdata, const vrpn_BUTTONCB b)
 
 void VRPN_CALLBACK	handle_dial_change(void *userdata, const vrpn_ANALOGCB info)
 {
-    double channel_values[vrpn_CHANNEL_MAX];
+    static double channel_values[vrpn_CHANNEL_MAX];
+    static bool initialized = false;
 
 	int i;
-    for (i = 0; i < info.num_channel; i++){
-	if (channel_values[i] != info.channel[i])
-	    printf("dial #%d has value %f\n", i, (float)(info.channel[i])); 
-	channel_values[i] = info.channel[i];
+    if (!initialized) {
+      for (i = 0; i < vrpn_CHANNEL_MAX; i++) {
+        channel_values[i] = 0.0;
+      }
+      initialized = true;
     }
 
+    for (i = 0; i < info.num_channel; i++){
+      if (channel_values[i] != info.channel[i]) {
+	    printf("dial #%d has value %f\n", i, (float)(info.channel[i])); 
+      }
+	  channel_values[i] = info.channel[i];
+    }
 }
 
 int main(int argc, char *argv[])
 {
-        int     done = 0;
+    int     done = 0;
 	vrpn_Analog_Remote *bd_dials;
 	vrpn_Button_Remote *bd_buttons;
 

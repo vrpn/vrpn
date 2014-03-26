@@ -10,6 +10,7 @@
 #include "vrpn_BaseClass.h"             // for ::vrpn_TEXT_ERROR, etc
 #include "vrpn_Serial.h"
 #include "vrpn_nikon_controls.h"
+#include "vrpn_MessageMacros.h"         // for VRPN_MSG_INFO, VRPN_MSG_WARNING, VRPN_MSG_ERROR
 
 //#define	VERBOSE
 //#define VERBOSE2
@@ -22,18 +23,8 @@ const char *VALID_REPORT_CHARS = "anqo";
 #define	STATUS_SYNCING		(0)	// Looking for the first character of report
 #define	STATUS_READING		(1)	// Looking for the rest of the report
 
-#define	NIK_INFO(msg)	    { send_text_message(msg, timestamp, vrpn_TEXT_NORMAL) ; if (d_connection) d_connection->send_pending_reports(); }
-#define	NIK_WARNING(msg)    { send_text_message(msg, timestamp, vrpn_TEXT_WARNING) ; if (d_connection) d_connection->send_pending_reports(); }
-#define	NIK_ERROR(msg)	    { send_text_message(msg, timestamp, vrpn_TEXT_ERROR) ; if (d_connection) d_connection->send_pending_reports(); }
-
 #define TIMEOUT_TIME_INTERVAL   (10000000L)  // max time between reports (usec)
 #define POLL_INTERVAL		(1000000L)  // time to poll if no response in a while (usec)
-
-static	unsigned long	duration(struct timeval t1, struct timeval t2)
-{
-	return (t1.tv_usec - t2.tv_usec) +
-	       1000000L * (t1.tv_sec - t2.tv_sec);
-}
 
 vrpn_Nikon_Controls::vrpn_Nikon_Controls(const char *device_name, vrpn_Connection *con, const char *port_name)
 : vrpn_Serial_Analog(device_name, con, port_name), 
@@ -98,7 +89,7 @@ static	int parse_focus_position_response(const char *inbuf, double &response_pos
 {
   // Make sure that the command ends with [CR][LF].  All valid reports should end
   // with this.
-  unsigned  len = strlen((const char *)inbuf);
+  size_t  len = strlen((const char *)inbuf);
   if (len < 2) {
     fprintf(stderr,"parse_focus_position_response(): String too short\n");
     response_pos = 0; return 0;
@@ -203,12 +194,12 @@ int	vrpn_Nikon_Controls::reset(void)
 	channel[0] = response_pos;
 
 	sprintf(errmsg,"Focus reported (this is good)");
-	NIK_WARNING(errmsg);
+	VRPN_MSG_WARNING(errmsg);
 
 	// We're now waiting for any responses from devices
 	status = STATUS_SYNCING;
 
-	NIK_WARNING("reset complete (this is good)");
+	VRPN_MSG_WARNING("reset complete (this is good)");
 
 	vrpn_gettimeofday(&timestamp, NULL);	// Set watchdog now
 	return 0;
@@ -241,7 +232,7 @@ int vrpn_Nikon_Controls::get_report(void)
       // See if we recognize the character as one of the ones making
       // up a report.  If not, then we need to continue syncing.
       if (strchr(VALID_REPORT_CHARS, _buffer[0]) == NULL) {
-	NIK_WARNING("Syncing");
+	VRPN_MSG_WARNING("Syncing");
 	return 0;
       }
 
@@ -268,7 +259,7 @@ int vrpn_Nikon_Controls::get_report(void)
    do {
      ret = vrpn_read_available_characters(serial_fd, &_buffer[_bufcount], 1);
      if (ret == -1) {
-	  NIK_ERROR("Error reading");
+	  VRPN_MSG_ERROR("Error reading");
 	  status = STATUS_RESETTING;
 	  return 0;
      }
@@ -288,7 +279,7 @@ int vrpn_Nikon_Controls::get_report(void)
 
      // If we have a full buffer, then we've gotten into a bad way.
      if (_bufcount >= sizeof(_buffer) - 1) {
-       NIK_ERROR("Buffer full when reading");
+       VRPN_MSG_ERROR("Buffer full when reading");
        status = STATUS_RESETTING;
        return 0;
      }
@@ -482,10 +473,10 @@ void	vrpn_Nikon_Controls::mainloop()
 
 	    struct timeval current_time;
 	    vrpn_gettimeofday(&current_time, NULL);
-	    if ( duration(current_time,timestamp) > POLL_INTERVAL) {
+	    if ( vrpn_TimevalDuration(current_time,timestamp) > POLL_INTERVAL) {
 	      static struct timeval last_poll = {0, 0};
 
-	      if (duration(current_time, last_poll) > TIMEOUT_TIME_INTERVAL) {
+	      if (vrpn_TimevalDuration(current_time, last_poll) > TIMEOUT_TIME_INTERVAL) {
 		// Ask the unit for its current focus location, which will cause it to respond.
 		char  msg[256];
 		sprintf(msg, "rSPR\r");
@@ -500,18 +491,18 @@ void	vrpn_Nikon_Controls::mainloop()
 	      }
 	    }
 
-	    if ( duration(current_time,timestamp) > TIMEOUT_TIME_INTERVAL) {
+	    if ( vrpn_TimevalDuration(current_time,timestamp) > TIMEOUT_TIME_INTERVAL) {
 		    sprintf(errmsg,"Timeout... current_time=%ld:%ld, timestamp=%ld:%ld",
 					current_time.tv_sec, static_cast<long>(current_time.tv_usec),
 					timestamp.tv_sec, static_cast<long>(timestamp.tv_usec));
-		    NIK_ERROR(errmsg);
+		    VRPN_MSG_ERROR(errmsg);
 		    status = STATUS_RESETTING;
 	    }
       }
         break;
 
     default:
-	NIK_ERROR("Unknown mode (internal error)");
+	VRPN_MSG_ERROR("Unknown mode (internal error)");
 	break;
   }
 }

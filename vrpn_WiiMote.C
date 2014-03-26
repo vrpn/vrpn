@@ -15,6 +15,11 @@
 
 #include <string>
 
+/// If we don't have this macro, we don't have any newer feature.
+#ifndef WIIUSE_HAS_VERSION
+#define WIIUSE_HAS_VERSION(major, minor, patch) false
+#endif
+
 // Opaque class to hold WiiMote device information so we don't have
 // to include wiimote.h in the vrpn_WiiMote.h file.
 class vrpn_Wiimote_Device {
@@ -193,6 +198,10 @@ void vrpn_WiiMote::handle_event() {
 			channel[16 + 2] = wiimote->device->exp.nunchuk.gforce.z;
 			channel[16 + 3] = wiimote->device->exp.nunchuk.js.ang;
 			channel[16 + 4] = wiimote->device->exp.nunchuk.js.mag;
+#if WIIUSE_HAS_VERSION(0,14,2)
+			channel[16 + 5] = wiimote->device->exp.nunchuk.js.x;
+			channel[16 + 6] = wiimote->device->exp.nunchuk.js.y;
+#endif
 			break;
 
 		case EXP_CLASSIC:
@@ -202,12 +211,23 @@ void vrpn_WiiMote::handle_event() {
 			channel[32 + 3] = wiimote->device->exp.classic.ljs.mag;
 			channel[32 + 4] = wiimote->device->exp.classic.rjs.ang;
 			channel[32 + 5] = wiimote->device->exp.classic.rjs.mag;
+#if WIIUSE_HAS_VERSION(0,14,2)
+			channel[32 + 6] = wiimote->device->exp.classic.ljs.x;
+			channel[32 + 7] = wiimote->device->exp.classic.ljs.y;
+			channel[32 + 8] = wiimote->device->exp.classic.rjs.x;
+			channel[32 + 9] = wiimote->device->exp.classic.rjs.y;
+#endif
 			break;
+
 
 		case EXP_GUITAR_HERO_3:
 			channel[48 + 0] = wiimote->device->exp.gh3.whammy_bar;
 			channel[48 + 1] = wiimote->device->exp.gh3.js.ang;
 			channel[48 + 2] = wiimote->device->exp.gh3.js.mag;
+#if WIIUSE_HAS_VERSION(0,14,2)
+			channel[48 + 3] = wiimote->device->exp.gh3.js.x;
+			channel[48 + 4] = wiimote->device->exp.gh3.js.y;
+#endif
 			break;
 
 #ifdef EXP_WII_BOARD
@@ -256,7 +276,11 @@ void vrpn_WiiMote::connect_wiimote(int timeout) {
 				wiimote->device = available_wiimotes[i];
 				break;
 			} else if (!current.empty()) {
-				printf("Wiimote found, but it's not the one we want: '%s' isn't '%s'\n", available_wiimotes[i]->bdaddr_str, wiimote->bdaddr.c_str());
+				acquireMessageLock();
+				vrpn_gettimeofday(&now, NULL);
+				sprintf(msg, "Wiimote found, but it's not the one we want: '%s' isn't '%s'\n", available_wiimotes[i]->bdaddr_str, wiimote->bdaddr.c_str());
+				send_text_message(msg, now);
+				releaseMessageLock();
 			}
 		}
 	}
@@ -276,9 +300,6 @@ void vrpn_WiiMote::connect_wiimote(int timeout) {
 		wiimote->found = true;
 	}
 
-	// Make a list containing just the one we want, and then connect to it.
-	wiimote_t *selected_one[1];
-	selected_one[0] = wiimote->device;
 	wiimote->connected = (wiiuse_connect(&(wiimote->device), 1) != 0);
 	if (wiimote->connected) {
 		acquireMessageLock();
@@ -291,13 +312,16 @@ void vrpn_WiiMote::connect_wiimote(int timeout) {
 		wiiuse_rumble(wiimote->device, 1);
 		vrpn_SleepMsecs(200);
 		initialize_wiimote_state();
-	} else {
+	}
+#ifdef DEBUG
+	else {
 		acquireMessageLock();
 		vrpn_gettimeofday(&now, NULL);
 		sprintf(msg, "No connection to remote %d", wiimote->which);
 		send_text_message(msg, now, vrpn_TEXT_ERROR);
 		releaseMessageLock();
 	}
+#endif
 }
 
 void vrpn_WiiMote::initialize_wiimote_state(void) {
@@ -408,6 +432,11 @@ vrpn_WiiMote::vrpn_WiiMote(const char *name, vrpn_Connection *c, unsigned which,
 #endif
 
 	available_wiimotes = wiiuse_init(VRPN_WIIUSE_MAX_WIIMOTES);
+#if !defined(DEBUG) && defined(WIIUSE_HAS_OUTPUT_REDIRECTION)
+	/* disable debug and info messages from wiiuse itself */
+	wiiuse_set_output(LOGLEVEL_DEBUG, 0);
+	wiiuse_set_output(LOGLEVEL_INFO, 0);
+#endif
 #if defined  (vrpn_THREADS_AVAILABLE)
 	// Pack the sharedData into another ThreadData
 	// (this is an API flaw in vrpn_Thread)
@@ -501,12 +530,8 @@ void vrpn_WiiMote::mainloop() {
 	server_mainloop();
 
 	// Poll to get the status of the device.  When an event happens, call
-	// the appropriate handler to fill in our data structures.  To do this,
-	// we need a list of pointers to WiiMotes, so we create one with a single
-	// entry.
-	wiimote_t *selected_one[1];
-	selected_one[0] = wiimote->device;
-	if (wiimote->connected && wiiuse_poll(selected_one, 1)) {
+	// the appropriate handler to fill in our data structures.
+	if (wiimote->connected && wiiuse_poll(&(wiimote->device), 1)) {
 		switch (wiimote->device->event) {
 			case WIIUSE_EVENT:  // A generic event
 				handle_event();

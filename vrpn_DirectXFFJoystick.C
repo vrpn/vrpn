@@ -18,12 +18,6 @@ const int STATUS_READING  =  1;	  // Looking for a report
 
 #define MAX_TIME_INTERVAL       (2000000) // max time to try and reacquire
 
-static	unsigned long	duration(struct timeval t1, struct timeval t2)
-{
-	return (t1.tv_usec - t2.tv_usec) +
-	       1000000L * (t1.tv_sec - t2.tv_sec);
-}
-
 // This creates a vrpn_CerealBox and sets it to reset mode. It opens
 // the serial device using the code in the vrpn_Serial_Analog constructor.
 // The box seems to autodetect the baud rate when the "T" command is sent
@@ -378,7 +372,7 @@ int vrpn_DirectXFFJoystick::get_report(void)
     static struct timeval forcetime = {0,0};
     struct timeval now;
     vrpn_gettimeofday(&now, NULL);
-    if (duration(now, forcetime) >= 1000000.0 / _force_rate) {
+    if (vrpn_TimevalDuration(now, forcetime) >= 1000000.0 / _force_rate) {
       send_normalized_force(_fX, _fY);
       forcetime = now;
     }
@@ -387,7 +381,7 @@ int vrpn_DirectXFFJoystick::get_report(void)
   // If it is not time for the next read, just return
   struct timeval reporttime;
   vrpn_gettimeofday(&reporttime, NULL);
-  if (duration(reporttime, _timestamp) < 1000000.0 / _read_rate) {
+  if (vrpn_TimevalDuration(reporttime, _timestamp) < 1000000.0 / _read_rate) {
     return 0;
   }
 #ifdef	VERBOSE
@@ -408,7 +402,7 @@ int vrpn_DirectXFFJoystick::get_report(void)
       if ( hr == DIERR_INPUTLOST ) {
 	  struct timeval resettime;
 	  vrpn_gettimeofday(&resettime, NULL);
-	  while ( ( hr == DIERR_INPUTLOST) && (duration(resettime, reporttime) <= MAX_TIME_INTERVAL) ) {
+	  while ( ( hr == DIERR_INPUTLOST) && (vrpn_TimevalDuration(resettime, reporttime) <= MAX_TIME_INTERVAL) ) {
 	    vrpn_gettimeofday(&resettime, NULL);
 	    hr = _Joystick->Acquire();
 	  }
@@ -574,7 +568,7 @@ void	vrpn_DirectXFFJoystick::mainloop()
 	  static  struct  timeval last_report = {0,0};
 	  struct  timeval now;
 	  vrpn_gettimeofday(&now, NULL);
-	  if (duration(now, last_report) > MAX_TIME_INTERVAL) {
+	  if (vrpn_TimevalDuration(now, last_report) > MAX_TIME_INTERVAL) {
 	    send_text_message("Cannot talk to joystick", now, vrpn_TEXT_ERROR);
 	    last_report = now;
 	  }

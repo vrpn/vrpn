@@ -13,7 +13,7 @@
 /***************************************************************************************************/
 
 
-#include <vrpn_Shared.h>                // for vrpn_gettimeofday
+#include "vrpn_Shared.h"                // for vrpn_gettimeofday
 #include <vector>                       // for vector
 
 #include "vrpn_Analog.h"                // for vrpn_Analog

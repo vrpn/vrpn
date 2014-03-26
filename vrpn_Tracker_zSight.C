@@ -42,7 +42,7 @@ vrpn_Tracker_zSight::vrpn_Tracker_zSight(const char* name, vrpn_Connection* c) :
 	// Create a window handle
 	hWnd = CreateWindow("STATIC", "zSightWindow", WS_ICONIC, 0, 0, 10, 10, NULL, NULL, NULL, NULL);
 
-    // Initialze DirectInput and acquire the device
+    // Initialize DirectInput and acquire the device
     if (FAILED(InitDevice())) {
         fprintf(stderr,"vrpn_Tracker_zSight::vrpn_Tracker_zSight(): Failed to open device\n");
         hWnd = NULL;

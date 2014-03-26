@@ -677,7 +677,7 @@ void vrpn_Shared_int32::decodeLamport (const char ** buffer, vrpn_int32 *,
     vrpn_unbuffer(buffer, &array[i]);
   }
   *t = new vrpn_LamportTimestamp(size, array);
-  delete array;
+  delete [] array;
 }
 
 void vrpn_Shared_int32::sendUpdate (void) {
@@ -1415,7 +1415,7 @@ void vrpn_Shared_String::encode (char ** buffer, vrpn_int32 * len,
   // We reverse ordering from the other vrpn_SharedObject classes
   // so that the time value is guaranteed to be aligned.
   vrpn_buffer(buffer, len, when);
-  vrpn_buffer(buffer, len, newValue, strlen(newValue));
+  vrpn_buffer(buffer, len, newValue, static_cast<vrpn_int32>(strlen(newValue)));
 }
 void vrpn_Shared_String::decode (const char ** buffer, vrpn_int32 * len,
                                  char * newValue, timeval * when) const {

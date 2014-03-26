@@ -332,6 +332,10 @@ SOURCE=.\vrpn_Tracker.C
 # End Source File
 # Begin Source File
 
+SOURCE=.\vrpn_CHProducts_Controller_Raw.C
+# End Source File
+# Begin Source File
+
 SOURCE=.\vrpn_Tracker_3DMouse.C
 # End Source File
 # Begin Source File
@@ -645,6 +649,10 @@ SOURCE=.\vrpn_Tng3.h
 # Begin Source File
 
 SOURCE=.\vrpn_Tracker.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\vrpn_CHProducts_Controller_Raw.h
 # End Source File
 # Begin Source File
 

@@ -38,6 +38,7 @@ static const vrpn_uint16 LUDL_MOTOR_POSITION = 5;
 static const vrpn_uint16 LUDL_MODULE_BUSY = 63;
 static const vrpn_uint16 LUDL_START_MOTOR_TARGET = 0;
 static const vrpn_uint16 LUDL_CENTER_HOME = 7;
+static const vrpn_uint16 SERVO_CHECKING = 241;
 
 // Device number for the interface we're connected to.
 static const vrpn_uint16 LUDL_INTERFACE_ADDRESS = 32;
@@ -93,6 +94,24 @@ vrpn_LUDL_USBMAC6000::vrpn_LUDL_USBMAC6000(const char *name, vrpn_Connection *c,
     //printf("dbg: Recentering\n");
     recenter();
   }
+
+  // Tell the X and Y channel to do servo checking, which means that it will
+  // cause the system to actively work to hold the system in place when it
+  // has reached its destination.  This turns out to greatly improve the
+  // precision of motion, and make the precision uniform across particular
+  // locations.  Before this was turned on, there was a positional dependence
+  // to the amount of error in moving the stage.
+  if (!send_usbmac_command(1, LUDL_SET_LONG_DATA, SERVO_CHECKING, 1)) {
+    REPORT_ERROR("vrpn_LUDL_USBMAC6000::vrpn_LUDL_USBMAC6000(): Could not send command 1");
+  }
+  if (!send_usbmac_command(2, LUDL_SET_LONG_DATA, SERVO_CHECKING, 1)) {
+    REPORT_ERROR("vrpn_LUDL_USBMAC6000::vrpn_LUDL_USBMAC6000(): Could not send command 2");
+  }
+
+  // Wait for these commands to take effect and then clear any return
+  // values
+  vrpn_SleepMsecs(100);
+  flush_input_from_ludl();
 
   // Register to receive the message to request changes and to receive connection
   // messages.

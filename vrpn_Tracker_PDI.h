@@ -17,10 +17,11 @@
 
 #include "PDI.h"
 
-#define BUFFER_SIZE 0x1FA400   // 30 seconds of xyzaer+fc 8 sensors at 240 hz
+#define VRPN_PDI_BUFFER_SIZE 0x1FA400   // 30 seconds of xyzaer+fc 8 sensors at 240 hz
 
-#define G4_HUB_NAME_SIZE 64
-#define G4_POWERTRAK_BUTTON_COUNT 4
+#define VRPN_G4_HUB_NAME_SIZE 64
+#define VRPN_G4_POWERTRAK_BUTTON_COUNT 4
+
 //vrpn_Tracker_G4_HubMap_El and vrpn_Tracker_G4_HubMap
 //classes are used in place of STL vector or list for listing
 //ordered non-contiguous hub identifiers for management of
@@ -48,7 +49,7 @@ public:
 		{}
 		else
 		{
-			strncpy(BtnName, NewName, G4_HUB_NAME_SIZE);
+			strncpy(BtnName, NewName, VRPN_G4_HUB_NAME_SIZE);
 		}
 	}
 
@@ -71,7 +72,7 @@ private:
 	int nHubID;
 	vrpn_Button_Server * pBtnSrv;
 	vrpn_Tracker_G4_HubMap_El * pNext;
-	char BtnName[G4_HUB_NAME_SIZE];
+	char BtnName[VRPN_G4_HUB_NAME_SIZE];
 	int  nBtnCount;
 };
 
@@ -171,7 +172,7 @@ class VRPN_API vrpn_Tracker_G4: public vrpn_Tracker {
 	HANDLE  hContEvent;
 	HWND	hwnd;
 	DWORD	dwOverflowCount;
-	BYTE	pMotionBuf[BUFFER_SIZE];
+	BYTE	pMotionBuf[VRPN_PDI_BUFFER_SIZE];
 };
 
 class VRPN_API vrpn_Tracker_FastrakPDI: public vrpn_Tracker {
@@ -212,12 +213,12 @@ class VRPN_API vrpn_Tracker_FastrakPDI: public vrpn_Tracker {
 	DWORD		m_nStylusMap; // Map of sensors with stylus
 	int			m_nHeaderSize;// Num byte in P&O frame header
 	int			m_nFrameSize; // Num bytes in entire P&O frame (inc header)
-	vrpn_Button_Server		* FTstylusBtns[FT_MAX_SENSORS];	//< Pointer to button on each sensor (NULL if none)
+	vrpn_Button_Server	* FTstylusBtns[FT_MAX_SENSORS];	//< Pointer to button on each sensor (NULL if none)
 
 	HANDLE  hContEvent;
 	HWND	hwnd;
 	DWORD	dwOverflowCount;
-	BYTE	pMotionBuf[BUFFER_SIZE];
+	BYTE	pMotionBuf[VRPN_PDI_BUFFER_SIZE];
 };
 
 class VRPN_API vrpn_Tracker_LibertyPDI: public vrpn_Tracker {
@@ -259,12 +260,12 @@ class VRPN_API vrpn_Tracker_LibertyPDI: public vrpn_Tracker {
 	int			m_nHeaderSize;// Num byte in P&O frame header
 	int			m_nFrameSize; // Num bytes in entire P&O frame (inc header)
 
-	vrpn_Button_Server		* StylusBtns[LIBERTY_MAX_SENSORS];	//< Pointer to button on each sensor (NULL if none)
+	vrpn_Button_Server	* StylusBtns[LIBERTY_MAX_SENSORS];	//< Pointer to button on each sensor (NULL if none)
 
 	HANDLE  hContEvent;
 	HWND	hwnd;
 	DWORD	dwOverflowCount;
-	BYTE	pMotionBuf[BUFFER_SIZE];
+	BYTE	pMotionBuf[VRPN_PDI_BUFFER_SIZE];
 };
 
 #endif

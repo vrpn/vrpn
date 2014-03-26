@@ -28,7 +28,6 @@ static void move_sample_values()
 
 void loopSound(vrpn_SoundID id)
 {
-  float sX,sZ,sA;
   vrpn_float64 position[3], orientation[4], velocity[4];
 
   while(1)
@@ -42,15 +41,10 @@ void loopSound(vrpn_SoundID id)
 	  move_sample_values();
 
 	  // calculate the delta vector
-	 velocity[0]=X-sX;
-     velocity[1]=0;
-     velocity[2]=Z-sZ;
+	 velocity[0]=X-position[0];
+     velocity[1]=0-position[1];
+     velocity[2]=Z-position[2];
 	 velocity[3]=((50.0F/300.0F)+1.0F)/1500.0F;
-
-	 // restore the values to original
-	 //X=sX;
-	 //Z=sZ;
-	 //adj=sA;
 
 	 (void)soundClient->setSoundVelocity(id,velocity);
 	 soundClient->mainloop();
@@ -124,13 +118,14 @@ int main(int argc, char** argv)
 
 		switch(command)
 		{
-		case 1:
-			printf("Enter path and file to load\n");
-			scanf("%s", dummy);
-			vrpn_SoundDef SoundDef;
-			ids[curID] = soundClient->loadSound(dummy, curID, SoundDef);
-			strcpy(files[curID++], dummy);
-			soundClient->mainloop();
+		case 1: {
+				printf("Enter path and file to load\n");
+				scanf("%s", dummy);
+				vrpn_SoundDef SoundDef;
+				ids[curID] = soundClient->loadSound(dummy, curID, SoundDef);
+				strcpy(files[curID++], dummy);
+				soundClient->mainloop();
+			}
 			break;
 		case 2:
 			printf("Enter ID of sound to unload ");

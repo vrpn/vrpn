@@ -29,14 +29,6 @@
 //#define VERBOSE
 // #define READ_HISTOGRAM
 
-/*
-static	unsigned long	duration(struct timeval t1, struct timeval t2)
-{
-	return (t1.tv_usec - t2.tv_usec) +
-	       1000000L * (t1.tv_sec - t2.tv_sec);
-}
-*/
-
 vrpn_Poser::vrpn_Poser (const char* name, vrpn_Connection * c) : 
     vrpn_BaseClass(name, c)
 {
@@ -507,7 +499,7 @@ int vrpn_Poser_Remote::request_pose_relative( const struct timeval t,
 											  const vrpn_float64 quaternion[4]) 
 {
     // Set the requested pose 
-    set_pose(t, position_delta, quaternion);
+    set_pose_relative(t, position_delta, quaternion);
 
     // Send position request
     if (client_send_pose_relative() != 0) {

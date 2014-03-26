@@ -32,13 +32,6 @@ static double	REV_PER_TICK = 1.0/4096;	// How many revolutions per encoder tick?
 
 #define MAX_TIME_INTERVAL       (2000000) // max time between reports (usec)
 
-static	unsigned long	duration(struct timeval t1, struct timeval t2)
-{
-	return (t1.tv_usec - t2.tv_usec) +
-	       1000000L * (t1.tv_sec - t2.tv_sec);
-}
-
-
 // This creates a vrpn_CerealBox and sets it to reset mode. It opens
 // the serial device using the code in the vrpn_Serial_Analog constructor.
 // The box seems to autodetect the baud rate when the "T" command is sent
@@ -489,7 +482,7 @@ void	vrpn_CerealBox::mainloop()
 		while (get_report()) {};    // Keep getting reports as long as they come
 		struct timeval current_time;
 		vrpn_gettimeofday(&current_time, NULL);
-		if ( duration(current_time,timestamp) > MAX_TIME_INTERVAL) {
+		if ( vrpn_TimevalDuration(current_time,timestamp) > MAX_TIME_INTERVAL) {
 			fprintf(stderr,"CerealBox failed to read... current_time=%ld:%ld, timestamp=%ld:%ld\n",
 					current_time.tv_sec, static_cast<long>(current_time.tv_usec),
 					timestamp.tv_sec, static_cast<long>(timestamp.tv_usec));

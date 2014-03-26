@@ -61,12 +61,6 @@ using namespace std;
 
 #define CHECK(a) if (a == -1) return -1
 
-static	unsigned long	duration(struct timeval t1, struct timeval t2)
-{
-	return (t1.tv_usec - t2.tv_usec) +
-	       1000000L * (t1.tv_sec - t2.tv_sec);
-}
-
 #ifdef	VRPN_USE_HDAPI
 //--------------------------------------------------------------------------------
 // BEGIN HDAPI large chunk
@@ -387,7 +381,7 @@ void vrpn_Phantom::getPosition(double *vec, double *orient)
     orient[3] = d_quat[3];
 }
 
-vrpn_Phantom::vrpn_Phantom(char *name, vrpn_Connection *c, float hz, char * newsconf)
+vrpn_Phantom::vrpn_Phantom(char *name, vrpn_Connection *c, float hz, const char * newsconf)
 		:vrpn_Tracker(name, c),vrpn_Button_Filter(name,c),
 		 vrpn_ForceDeviceServer(name,c), update_rate(hz),
 #ifndef	VRPN_USE_HDAPI
@@ -689,11 +683,10 @@ void vrpn_Phantom::mainloop(void) {
 
     //set if it is time to generate a new report 
     vrpn_gettimeofday(&current_time, NULL);
-    if(duration(current_time,timestamp) >= 1000000.0/update_rate) {
+    if(vrpn_TimevalDuration(current_time,timestamp) >= 1000000.0/update_rate) {
 		
         //update the time
-        timestamp.tv_sec = current_time.tv_sec;
-        timestamp.tv_usec = current_time.tv_usec;
+        timestamp = current_time;
 
 	//------------------------------------------------------------------------
 	// Read the device state and convert all values into the appropriate

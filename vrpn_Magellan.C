@@ -48,8 +48,8 @@
 // This routine writes out the characters slowly, so as not to
 // overburden the poor Magellan, which seems to choke when a
 // bunch of characters are all sent at once.
-static	int	vrpn_write_slowly(int fd, unsigned char *buffer, int len, int MsecWait)
-{	int	i;
+static	int	vrpn_write_slowly(int fd, unsigned char *buffer, size_t len, int MsecWait)
+{	size_t	i;
 
 	for (i = 0; i < len; i++) {
 		vrpn_SleepMsecs(MsecWait);
@@ -57,7 +57,7 @@ static	int	vrpn_write_slowly(int fd, unsigned char *buffer, int len, int MsecWai
 			return -1;
 		}
 	}
-	return len;
+	return static_cast<int>(len);
 }
 
 

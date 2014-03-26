@@ -74,7 +74,7 @@ namespace vrpn_python {
   }
 
   bool Device::init_device_common_objects(PyObject* vrpn_module) {
-    s_error = PyErr_NewException("vrpn.error", NULL, NULL);
+    s_error = PyErr_NewException(const_cast<char *>("vrpn.error"), NULL, NULL);
     if (!s_error) {
       return false;
     }

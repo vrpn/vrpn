@@ -20,7 +20,6 @@
 class VRPN_API vrpn_Connection;
 
 #ifdef VRPN_USE_HID
-#include <string>                       // for string
 
 class VRPN_API vrpn_Tracker_SpacePoint: public vrpn_Tracker, vrpn_Button, vrpn_HidInterface
 {
@@ -32,9 +31,6 @@ class VRPN_API vrpn_Tracker_SpacePoint: public vrpn_Tracker, vrpn_Button, vrpn_H
         virtual void on_data_received(size_t bytes, vrpn_uint8 *buffer);
 
     protected:
-        std::string _name;
-        vrpn_Connection *_con;
-
         bool _should_report;
         struct timeval _timestamp;
 };

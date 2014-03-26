@@ -7,6 +7,12 @@
 #include <stdlib.h>                     // for exit
 #include <string.h>                     // for strcmp
 
+#include "vrpn_Configure.h"             // for VRPN_CALLBACK
+#include "vrpn_Shared.h"                // for timeval, vrpn_SleepMsecs, etc
+#include <vrpn_Connection.h>            // for vrpn_Connection, etc
+#include <vrpn_FileConnection.h>
+#include <vrpn_Imager.h>                // for vrpn_Imager_Remote, etc
+
 #ifdef __APPLE__
 #include <GLUT/glut.h>
 #include <OpenGL/OpenGL.h>
@@ -14,12 +20,6 @@
 #include <GL/gl.h>                      // for glClear, glClearColor, etc
 #include <GL/glut.h>                    // for glutCreateWindow, etc   // IWYU pragma: keep
 #endif
-#include <vrpn_Connection.h>            // for vrpn_Connection, etc
-#include <vrpn_FileConnection.h>
-#include <vrpn_Imager.h>                // for vrpn_Imager_Remote, etc
-
-#include "vrpn_Configure.h"             // for VRPN_CALLBACK
-#include "vrpn_Shared.h"                // for timeval, vrpn_SleepMsecs, etc
 
 //----------------------------------------------------------------------------
 // Glut insists on taking over the whole application, leaving us to use

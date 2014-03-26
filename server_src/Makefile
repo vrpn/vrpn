@@ -267,8 +267,10 @@ ifdef INTERSENSE
   endif
 endif
 
-#uncomment the following line to include the PHASESPACE library
+#uncomment the following lines to include the PHASESPACE library
 #PHASESPACE := -L../../phasespace -lowlsock
+#CXXFLAGS += -I../../phasespace
+#CFLAGS += -I../../phasespace
 
 ifdef PHASESPACE
 #the rpath option may not work on all platforms, remove it if necessary.

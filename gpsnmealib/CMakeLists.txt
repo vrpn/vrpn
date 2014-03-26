@@ -1,3 +1,7 @@
+if(WIN32)
+    ADD_DEFINITIONS( -D_CRT_SECURE_NO_WARNINGS )
+endif()
+
 set(GPSNMEALIB_PUBLIC_HEADERS
 	nmeaParser.h
 	utmCoord.h

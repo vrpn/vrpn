@@ -76,14 +76,16 @@ namespace {
 // - device_guid: If provided, the specific DirectInput device GUID we want to use
 //   If not provided (or the null GUID), we'll bind to the first available joystick
 vrpn_DirectXRumblePad::vrpn_DirectXRumblePad(const char *name, vrpn_Connection *c,
-							   GUID device_guid):
-	vrpn_Analog(name, c),
-	vrpn_Button_Filter(name, c),
-        vrpn_Analog_Output(name, c),
-	_target_device(device_guid),
-	_gamepad(NULL),
-	_directInput(NULL),
-	_effect(NULL)
+							   GUID device_guid)
+  : vrpn_Analog(name, c)
+  , vrpn_Button_Filter(name, c)
+  , vrpn_Analog_Output(name, c)
+  , _target_device(device_guid)
+  , _wnd(NULL)
+  , _thread(INVALID_HANDLE_VALUE)
+  , _directInput(NULL)
+  , _effect(NULL)
+  , _gamepad(NULL)
 {
 	vrpn_Analog::num_channel = 12;
 	vrpn_Button::num_buttons = min(128, vrpn_BUTTON_MAX_BUTTONS);

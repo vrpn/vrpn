@@ -472,11 +472,6 @@
   #endif
 #endif
 
-// Load libowlsock.lib if we're using Phasespace.
-#ifdef	VRPN_INCLUDE_PHASESPACE
-#pragma comment (lib, VRPN_PHASESPACE_LIB_PATH "libowlsock.lib")
-#endif
-
 // Load VRPN Phantom library if we are using phantom server as unified server
 // Load SensAble Technologies GHOST library to run the Phantom
 // NOTE: The paths to these libraries are set in the Settings/Link tab of

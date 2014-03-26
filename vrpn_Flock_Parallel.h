@@ -64,7 +64,7 @@ class VRPN_API vrpn_Tracker_Flock_Parallel: public vrpn_Tracker_Flock {
   virtual void reset();
 
   // slave ptrs
-  vrpn_Tracker_Flock_Parallel_Slave *rgSlaves[MAX_SENSORS];
+  vrpn_Tracker_Flock_Parallel_Slave *rgSlaves[VRPN_FLOCK_MAX_SENSORS];
 };
 
 // the special args are the master's vrpn id and tracker pos msg id

@@ -60,17 +60,20 @@ if(NOT WIN32)
 		LIBNIFALCON_rt_LIBRARY)
 endif()
 
+find_package(Boost QUIET)
+
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(libnifalcon
 	DEFAULT_MSG
 	LIBNIFALCON_LIBRARY
 	LIBNIFALCON_INCLUDE_DIR
+	Boost_INCLUDE_DIR
 	${_deps_check})
 
 if(LIBNIFALCON_FOUND)
 	set(LIBNIFALCON_LIBRARIES "${LIBNIFALCON_LIBRARY}")
 	set(LIBNIFALCON_LIBRARY_DIRS "${_libdir}")
-	set(LIBNIFALCON_INCLUDE_DIRS "${LIBNIFALCON_INCLUDE_DIR}")
+	set(LIBNIFALCON_INCLUDE_DIRS "${LIBNIFALCON_INCLUDE_DIR}" "${Boost_INCLUDE_DIR}")
 
 	if(NOT WIN32)
 		list(APPEND

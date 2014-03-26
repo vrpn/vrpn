@@ -2,7 +2,7 @@
 #define VRPN_SERIAL_H
 
 #include "vrpn_Configure.h"             // for VRPN_API
-
+#include <stddef.h>	// For size_t
 
 /// @file
 ///
@@ -62,11 +62,11 @@ extern VRPN_API int vrpn_drain_output_buffer( int comm );
 /// (NULL pointer will cause it to block indefinitely).
 /// @{
 extern VRPN_API int vrpn_read_available_characters(int comm, unsigned char *buffer,
-		int count);
+		size_t count);
 extern VRPN_API int vrpn_read_available_characters(int comm, unsigned char *buffer,
-		int count, struct timeval *timeout);
+		size_t count, struct timeval *timeout);
 /// @}
 
-extern VRPN_API int vrpn_write_characters(int comm, const unsigned char *buffer, int bytes);
+extern VRPN_API int vrpn_write_characters(int comm, const unsigned char *buffer, size_t bytes);
 
 #endif

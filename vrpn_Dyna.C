@@ -32,9 +32,9 @@ vrpn_Tracker_Dyna::vrpn_Tracker_Dyna(
 		      const char *port, long baud ) :
 vrpn_Tracker_Serial(name,c,port,baud), cSensors(cSensors), cResets(0)
 {
-    if (cSensors>MAX_SENSORS) {
-      fprintf(stderr, "\nvrpn_Tracker_Dyna: too many sensors requested ... only %d allowed (%d specified)", MAX_SENSORS, cSensors );
-      cSensors = MAX_SENSORS;
+    if (cSensors>VRPN_DYNA_MAX_SENSORS) {
+      fprintf(stderr, "\nvrpn_Tracker_Dyna: too many sensors requested ... only %d allowed (%d specified)", VRPN_DYNA_MAX_SENSORS, cSensors );
+      cSensors = VRPN_DYNA_MAX_SENSORS;
     }
     fprintf(stderr, "\nvrpn_Tracker_Dyna: starting up ...");
     d_sensor = 0 ; // sensor id is always 0 (first sensor is 0);

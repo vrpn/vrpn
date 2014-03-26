@@ -23,10 +23,20 @@ class HidDebug: public vrpn_HidInterface {
 HidDebug::HidDebug(vrpn_HidAcceptor *a): vrpn_HidInterface(a) { }
 
 void HidDebug::on_data_received(size_t bytes, vrpn_uint8 *buffer) {
+#ifdef TEST
+	for (size_t i = 0; i < (bytes / 2); i++) {
+		if ((i != 0) && ((i % 20) == 0))
+		{
+			printf("\n");
+		}
+		printf("%02X ", buffer[i]);
+	}
+#else
 	printf("%d bytes: ", static_cast<int>(bytes));
 	for (size_t i = 0; i < bytes; i++) {
 		printf("%02X ", buffer[i]);
 	}
+#endif // TEST
 	puts("");
 }
 #endif

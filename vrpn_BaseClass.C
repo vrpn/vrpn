@@ -25,11 +25,12 @@ d_level_to_print(0)
 /** Deletes any callbacks that are still registered. */
 vrpn_TextPrinter::~vrpn_TextPrinter()
 {
-    /* XXX This code causes seg faults on exit,when it is trying to unregister
-       handlers, apparently from nonexistent connections.  For now, this has
-       been removed; this will cause user code to segfault if they dynamically
-       create a vrpn_TextPrinter and then delete it.  This is the more rare
-       case.
+  /* XXX No longer removes these.  We get into trouble with the
+     system-defined vrpn_System_TextPrinter destructor because it
+     may run after the vrpn_ConnectionManager destructor has run,
+     which (if we have some undeleted objects) will leave objects
+     that don't have a NULL connection pointer, but whose pointers
+     point to already-deleted connections.  This causes a crash.
 
     vrpn_TextPrinter_Watch_Entry    *victim, *next;
     vrpn_BaseClass  *obj;
@@ -38,7 +39,13 @@ vrpn_TextPrinter::~vrpn_TextPrinter()
     while (victim != NULL) {
 	next = victim->next;
 	obj = victim->obj;
-	obj->connectionPtr()->unregister_handler(obj->d_text_message_id, text_message_handler, victim, obj->d_sender_id);
+
+        // Guard against the case where the object has set its connection pointer
+        // to NULL, which is how some objects notify themselves that they are
+        // broken.
+        if (obj->connectionPtr()) {
+          obj->connectionPtr()->unregister_handler(obj->d_text_message_id, text_message_handler, victim, obj->d_sender_id);
+        }
 	delete victim;
 	victim = next;
     }
@@ -130,10 +137,14 @@ void	vrpn_TextPrinter::remove_object(vrpn_BaseClass *o)
             
     // If the object is on the list, unregister its callback and delete it.
     if (victim != NULL) {
-	// Unregister the callback for the object
-    	if (o->d_connection->unregister_handler(o->d_text_message_id, text_message_handler, victim, o->d_sender_id) != 0) {
-	    fprintf(stderr,"vrpn_TextPrinter::remove_object(): Can't unregister callback\n");
-	}
+	// Unregister the callback for the object, unless its d_connetion pointer
+        // is NULL (which is a convention used by devices to indicate that they
+        // are broken, so we need to guard against it here).
+        if (o->d_connection) {
+    	  if (o->d_connection->unregister_handler(o->d_text_message_id, text_message_handler, victim, o->d_sender_id) != 0) {
+	      fprintf(stderr,"vrpn_TextPrinter::remove_object(): Can't unregister callback\n");
+	  }
+        }
 
 	// Remove the entry from the list
 	*snitch = victim->next;
@@ -227,8 +238,9 @@ int vrpn_TextPrinter::text_message_handler(void *userdata, vrpn_HANDLERPARAM p)
 
 vrpn_BaseClass::vrpn_BaseClass (const char * name, vrpn_Connection * c)
 {
-    bool firstTimeCalled = (d_connection==NULL);  // has the constructor been called before?
-    // note that this might also be true if it was called once before but failed.
+    // Has a constructor on this BaseClassUnique been called before?
+    // Note that this might also be true if it was called once before but failed.
+    bool firstTimeCalled = (d_connection==NULL);
 
     if (firstTimeCalled)
     {
@@ -384,8 +396,11 @@ vrpn_BaseClassUnique::~vrpn_BaseClassUnique ()
     }
 
     // Delete the space allocated in the constructor for the servicename
+    // Because this destructor may be called multiple times, set the pointer
+    // to NULL after deleting it, so it won't get deleted again.
     if (d_servicename) {
         delete [] d_servicename;
+        d_servicename = NULL;
     }
 }
 
@@ -458,7 +473,10 @@ int vrpn_BaseClassUnique::decode_text_message_from_buffer (char *msg, vrpn_TEXT_
 	vrpn_unbuffer( &bufptr, &severity_as_uint );
 	*severity = (vrpn_TEXT_SEVERITY)(severity_as_uint);
 	vrpn_unbuffer( &bufptr, level );
-	vrpn_unbuffer( &bufptr, msg, -1 );  // -1 means "unpack until NULL"
+	// Negative length means "unpack until NULL"
+	if (vrpn_unbuffer( &bufptr, msg, -(int)(vrpn_MAX_TEXT_LEN)) != 0) {
+		return -1;
+	}
 
 	return 0;	
 }

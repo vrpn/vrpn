@@ -17,8 +17,6 @@
 //          http://www.boost.org/LICENSE_1_0.txt)
 
 #pragma once
-#ifndef INCLUDED_Inspector_h_GUID_02c5132a_e54b_4e32_a8ce_d9bf088b0d47
-#define INCLUDED_Inspector_h_GUID_02c5132a_e54b_4e32_a8ce_d9bf088b0d47
 
 // Internal Includes
 // - none
@@ -51,4 +49,3 @@ class Inspector : public QObject {
 		bool _bigEndian;
 };
 
-#endif // INCLUDED_Inspector_h_GUID_02c5132a_e54b_4e32_a8ce_d9bf088b0d47

@@ -16,10 +16,6 @@
 vrpn_Tracker_GameTrak::vrpn_Tracker_GameTrak(const char * name, vrpn_Connection * trackercon, const char *joystick_dev, int *mapping) :
     vrpn_Tracker(name, trackercon)
 {
-    _name = name;
-    _con = trackercon;
-    _joydev = joystick_dev;
-
     memset(_sensor0, 0, 3 * sizeof(float));
     memset(_sensor1, 0, 3 * sizeof(float));
 
@@ -27,15 +23,15 @@ vrpn_Tracker_GameTrak::vrpn_Tracker_GameTrak(const char * name, vrpn_Connection 
 
     // try to open a client connection to the joystick device
     // if the name starts with '*', use the server connection only
-    if (_joydev[0] == '*')
-        _analog = new vrpn_Analog_Remote(&(_joydev.c_str()[1]), d_connection);
+    if (joystick_dev[0] == '*')
+        _analog = new vrpn_Analog_Remote(&(joystick_dev[1]), d_connection);
     else
-        _analog = new vrpn_Analog_Remote(_joydev.c_str());
+        _analog = new vrpn_Analog_Remote(joystick_dev);
 
     if (_analog == NULL)
     {
         fprintf(stderr, "vrpn_Tracker_GameTrak: "
-            "Can't open joystick %s\n", _joydev.c_str());
+            "Can't open joystick %s\n", joystick_dev);
     }
     else
     {

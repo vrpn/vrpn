@@ -279,7 +279,7 @@ vrpn_int32 vrpn_Button::encode_to(char *buf,
 
 vrpn_int32 vrpn_Button::encode_states_to(char *buf)
 {
-  // Message includes: vrpn_int32 number_of_buttons, vrpn_int32 state
+  // Message includes: vrpn_int32 number_of_buttons, vrpn_int32 states
   // Byte order of each needs to be reversed to match network standard
   
   vrpn_int32    int_btn = num_buttons;
@@ -287,7 +287,8 @@ vrpn_int32 vrpn_Button::encode_states_to(char *buf)
   
   vrpn_buffer(&buf, &buflen, int_btn);
   for (int i=0; i < num_buttons; i++) {
-    vrpn_buffer(&buf, &buflen, buttons[i]);
+    vrpn_int32 state = buttons[i];
+    vrpn_buffer(&buf, &buflen, state);
   }
   
   return (num_buttons+1)*sizeof(vrpn_int32);
@@ -442,12 +443,6 @@ int vrpn_Button_Server::set_button(int button, int new_value)
     return 0;
 }
 
-static	unsigned long	duration(struct timeval t1, struct timeval t2)
-{
-	return (t1.tv_usec - t2.tv_usec) +
-	       1000000L * (t1.tv_sec - t2.tv_sec);
-}
-
 vrpn_Button_Example_Server::vrpn_Button_Example_Server(const char *name,
 						       vrpn_Connection *c,
 						       int numbuttons,
@@ -478,7 +473,7 @@ void vrpn_Button_Example_Server::mainloop()
 	// time of the report would be updated to the current time so
 	// that the correct timestamp would be issued on the report.
 	vrpn_gettimeofday(&current_time, NULL);
-	if ( duration(current_time,timestamp) >= 1000000.0/_update_rate) {
+	if ( vrpn_TimevalDuration(current_time,timestamp) >= 1000000.0/_update_rate) {
 
 	  // Update the time
 	  timestamp.tv_sec = current_time.tv_sec;
@@ -586,6 +581,13 @@ vrpn_Button_Parallel::vrpn_Button_Parallel(const char *name,
 
     status = BUTTON_READY;
     vrpn_gettimeofday(&timestamp, NULL);
+#endif
+}
+
+vrpn_Button_Parallel::~vrpn_Button_Parallel()
+{
+#ifdef linux
+  if (port >= 0) { close(port); }
 #endif
 }
 

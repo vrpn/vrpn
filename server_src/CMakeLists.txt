@@ -5,7 +5,6 @@ cmake_minimum_required(VERSION 2.6)
 #
 # Move applications into subprojects in visual studio
 # XXX tracker_to_poser
-# XXX daq_server
 # Fix the ones that are commented out so that they compile and run?
 
 if(NOT VRPN_SERVER_LIBRARY)
@@ -17,6 +16,10 @@ set(VRPN_GPSNMEA_LIBRARY gpsnmea)
 
 if(NOT WIN32)
 	set(VRPN_ATMEL_LIBRARY vrpn_atmel)
+endif()
+
+if(WIN32)
+    ADD_DEFINITIONS( -D_CRT_SECURE_NO_WARNINGS )
 endif()
 
 #-----------------------------------------------------------------------------
@@ -107,7 +110,7 @@ install(TARGETS vrpn_server
 	RUNTIME DESTINATION bin
 	COMPONENT mainserver)
 
-if(VRPN_USE_NATIONAL_INSTRUMENTS_MX)
+if(VRPN_USE_NATIONAL_INSTRUMENTS)
 	add_executable(daq_server
 		daq_server.C
 		NIUtil.cpp
