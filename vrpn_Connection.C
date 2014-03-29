@@ -78,10 +78,10 @@
   #endif
 #endif
 
-#if defined(_AIX) || defined(__APPLE__) || defined(ANDROID)
+#if defined(_AIX) || defined(__APPLE__) || defined(ANDROID) || defined(__linux)
  #define GSN_CAST (socklen_t *)
 #else
- #if defined(linux) || defined(FreeBSD)
+ #if defined(FreeBSD)
   #define GSN_CAST (unsigned int *)
  #else
   #define GSN_CAST

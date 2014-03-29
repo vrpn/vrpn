@@ -34,7 +34,7 @@ void Usage (const char * s)
   exit(0);
 }
 
-static	int	done = 0;	// Done and should exit?
+static	volatile int	done = 0;	// Done and should exit?
 
 vrpn_Connection * connection;
 vrpn_Generic_Server_Object  *generic_server = NULL;
@@ -96,11 +96,7 @@ BOOL WINAPI handleConsoleSignalsWin( DWORD signaltype)
 #else
 #include <signal.h>                     // for signal, SIGINT, SIGKILL, etc
 
-//#ifdef sgi
-//void sighandler( ... )
-//#else
 void sighandler (int)
-//#endif
 {
 	done = 1;
 }

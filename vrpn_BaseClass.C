@@ -30,7 +30,8 @@ vrpn_TextPrinter::~vrpn_TextPrinter()
      may run after the vrpn_ConnectionManager destructor has run,
      which (if we have some undeleted objects) will leave objects
      that don't have a NULL connection pointer, but whose pointers
-     point to already-deleted connections.  This causes a crash.
+     point to already-deleted connections.  This causes a crash. */
+#if 0
 
     vrpn_TextPrinter_Watch_Entry    *victim, *next;
     vrpn_BaseClass  *obj;
@@ -49,7 +50,7 @@ vrpn_TextPrinter::~vrpn_TextPrinter()
 	delete victim;
 	victim = next;
     }
-    XXX */
+#endif // XXX
 }
 
 /** Adds an object to the list of watched objects.  Returns 0 on success and
