@@ -968,6 +968,7 @@ set(VRPN_SERVER_SOURCES
 	vrpn_NationalInstruments.C
 	vrpn_Nidaq.C
 	vrpn_nikon_controls.C
+	vrpn_OmegaTemperature.C
 	vrpn_Poser_Analog.C
 	vrpn_Poser_Tek4662.C
 	vrpn_raw_sgibox.C
@@ -1065,6 +1066,7 @@ set(VRPN_SERVER_PUBLIC_HEADERS
 	vrpn_NationalInstruments.h
 	vrpn_Nidaq.h
 	vrpn_nikon_controls.h
+	vrpn_OmegaTemperature.h
 	vrpn_OneEuroFilter.h
 	vrpn_Poser_Analog.h
 	vrpn_Poser.h

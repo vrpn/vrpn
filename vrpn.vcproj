@@ -433,6 +433,26 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="vrpn_OmegaTemperature.C"
+				>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath="vrpn_BiosciencesTools.C"
 				>
 				<FileConfiguration
@@ -2447,6 +2467,10 @@
 			</File>
 			<File
 				RelativePath="vrpn_BaseClass.h"
+				>
+			</File>
+			<File
+				RelativePath="vrpn_OmegaTemperature.h"
 				>
 			</File>
 			<File
