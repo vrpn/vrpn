@@ -29,7 +29,9 @@
 // systems.  It has ominous statements in the release notes about Windows
 // support being broken even in the latest version (3.1.1 on 2013-10-06).
 // The latest stable version is 3.0.5; it does not say that it has broken
-// support on Windows.
+// support on Windows.  It seems to support the serial RTU protocol.
+// However, the configure script reports that VC++ support has not been
+// tested in a long time; it can be configured and built under Cygwin.
 
 
 /*
