@@ -105,6 +105,7 @@ void vrpn_Tracker_JsonNet::mainloop() {
 	// report trackerchanges
 	// TODO really use timestamps
 	struct timeval ts ;
+    vrpn_gettimeofday(&ts, NULL);
 	// from vrpn_Tracker_DTrack::dtrack2vrpnbody
 	if (d_connection && _do_tracker_report) {
 		char msgbuf[1000];
