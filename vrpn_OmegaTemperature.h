@@ -30,13 +30,14 @@
 */
 
 #if defined(VRPN_USE_MODBUS) && defined(VRPN_USE_WINSOCK2)
+#include <modbus.h>
 
 class VRPN_API vrpn_OmegaTemperature: public vrpn_Serial_Analog,
   public vrpn_Analog_Output, public vrpn_Button_Filter
 {
 public:
-        // Tell it the temperature to use to set channels 1 and 2 to
-        // in Celcius and also whether to turn the temperature control on.
+    // Tell it the temperature to use to set channels 1 and 2 to
+    // in Celcius and also whether to turn the temperature control on.
 	vrpn_OmegaTemperature (const char * name, vrpn_Connection * c,
 			const char * port, float temp1, float temp2,
                         bool control_on);
@@ -46,6 +47,7 @@ public:
 	virtual void mainloop ();
 
   protected:
+    modbus_t  *d_modbus;          //< Modbus object to use to communicate.
     char d_buffer[128];           //< Buffer of characters in report
     unsigned d_bufcount;	      //< How many characters we have so far
 

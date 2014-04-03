@@ -69,7 +69,6 @@ S2 037 0<CR> sets reference temperature for channel II
 #include "vrpn_MessageMacros.h"         // for VRPN_MSG_INFO, VRPN_MSG_WARNING, VRPN_MSG_ERROR
 
 #if defined(VRPN_USE_MODBUS) && defined(VRPN_USE_WINSOCK2)
-#include <modbus.h>
 
 #undef VERBOSE
 
