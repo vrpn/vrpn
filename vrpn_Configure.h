@@ -39,6 +39,10 @@
 #define	vrpn_DEFAULT_LISTEN_PORT_NO (3883)
 
 //-----------------------
+// Use Winsock2 library rather than Winsock.
+//#define	VRPN_USE_WINSOCK2
+
+//-----------------------
 // Instructs VRPN to expose the vrpn_gettimeofday() function also
 // as gettimeofday() so that external programs can use it.  This
 // has no effect on any system that already has gettimeofday()
@@ -593,7 +597,11 @@
 
 // For client code, make sure we add the proper library dependency to the linker
 #ifdef _WIN32
-#pragma comment (lib, "wsock32.lib")  // VRPN requires the Windows Sockets library.
+  #ifdef VRPN_USE_WINSOCK2
+    #pragma comment (lib, "ws2_32.lib")  // VRPN requires the Windows Sockets library.
+  #else
+    #pragma comment (lib, "wsock32.lib")  // VRPN requires the Windows Sockets library.
+  #endif
 #ifdef VRPN_USE_SHARED_LIBRARY
 #ifdef VRPNDLL_EXPORTS
 #define  VRPN_API		 __declspec(dllexport)

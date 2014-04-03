@@ -68,7 +68,8 @@ S2 037 0<CR> sets reference temperature for channel II
 #include "vrpn_Shared.h"                // for vrpn_unbuffer, timeval, etc
 #include "vrpn_MessageMacros.h"         // for VRPN_MSG_INFO, VRPN_MSG_WARNING, VRPN_MSG_ERROR
 
-#ifdef  VRPN_USE_MODBUS
+#if defined(VRPN_USE_MODBUS) && defined(VRPN_USE_WINSOCK2)
+#include <modbus.h>
 
 #undef VERBOSE
 
@@ -87,9 +88,11 @@ S2 037 0<CR> sets reference temperature for channel II
 vrpn_OmegaTemperature::vrpn_OmegaTemperature (const char * name, vrpn_Connection * c,
 			const char * port, float temp1, float temp2, bool control_on):
 	vrpn_Serial_Analog(name, c, port, 115200, 8, vrpn_SER_PARITY_NONE, true),
-        vrpn_Analog_Output(name, c),
-        vrpn_Button_Filter(name, c)
+    vrpn_Analog_Output(name, c),
+    vrpn_Button_Filter(name, c)
 {
+//XXX  port, 115200, 8, vrpn_SER_PARITY_NONE, true
+
   num_channel = 6;
   o_num_channel = 3;
   num_buttons = 1;

@@ -13,7 +13,7 @@
 #include "vrpn_Shared.h"                // for timeval
 #include "vrpn_Types.h"                 // for vrpn_uint32, vrpn_float64
 
-/*
+/* XXX
 # Analog channels: (read by client)
 #	0	Reading from stage 1 in degrees Celcius
 #	1	Reading from bath 1 in degrees Celcius
@@ -29,7 +29,7 @@
 #	2	Turn temperature control on/off (0 = off, otherwise on)
 */
 
-#ifdef  VRPN_USE_MODBUS
+#if defined(VRPN_USE_MODBUS) && defined(VRPN_USE_WINSOCK2)
 
 class VRPN_API vrpn_OmegaTemperature: public vrpn_Serial_Analog,
   public vrpn_Analog_Output, public vrpn_Button_Filter

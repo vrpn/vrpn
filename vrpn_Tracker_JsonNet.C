@@ -3,7 +3,11 @@
 #if defined(VRPN_USE_JSONNET)
 
 #ifdef _WIN32
-	#include <winsock.h>
+  #ifdef VRPN_USE_WINSOCK2
+    #include <winsock2.h>    // struct timeval is defined here
+  #else
+    #include <winsock.h>    // struct timeval is defined here
+  #endif
 #else
 	#include <sys/socket.h>
 	#include <sys/time.h>
