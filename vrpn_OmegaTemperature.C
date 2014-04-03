@@ -90,7 +90,11 @@ vrpn_OmegaTemperature::vrpn_OmegaTemperature (const char * name, vrpn_Connection
     vrpn_Analog_Output(name, c),
     vrpn_Button_Filter(name, c)
 {
-//XXX  port, 115200, 8, vrpn_SER_PARITY_NONE, true
+  // XXX Make this configurable?
+  int baud = 38400;
+  char parity = 'n';  // XXX What should this be?
+  int stop_bits = 1;
+  d_modbus = modbus_new_rtu(port, baud, parity, 8, stop_bits);
 
   num_channel = 6;
   o_num_channel = 3;
