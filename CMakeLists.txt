@@ -384,6 +384,21 @@ if(VRPN_USE_MPI)
 endif()
 
 ###
+# Modbus library
+###
+find_package(Modbus)
+option_requires(VRPN_USE_MODBUS
+	"Build with Modbus support"
+	OFF_BY_DEFAULT
+	MODBUS_FOUND)
+
+if(VRPN_USE_MODBUS)
+	# XXX what else needs to be done here?
+	include_directories(${MODBUS_INCLUDE_PATH})
+	list(APPEND EXTRA_LIBS ${MODBUS_LIBRARIES})
+endif()
+
+###
 # Libusb1
 ###
 find_package(Libusb1)

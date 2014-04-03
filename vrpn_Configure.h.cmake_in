@@ -71,8 +71,14 @@
 // C++ Directories include path.  The original implementation is
 // done with MPICH2, but an attempt has been made to use only
 // MPI version 1 basic functions.
-//#define	vrpn_USE_MPI
-#cmakedefine vrpn_USE_MPI
+//#define	VRPN_USE_MPI
+#cmakedefine VRPN_USE_MPI
+
+//-----------------------
+// Tells VRPN to compile with support for the Modbus
+// library.
+//#define	vrpn_USE_MODBUS
+#cmakedefine VRPN_USE_MODBUS
 
 //-----------------------
 // Instructs VRPN to use phantom library to construct a unified
