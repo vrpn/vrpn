@@ -68,6 +68,8 @@ S2 037 0<CR> sets reference temperature for channel II
 #include "vrpn_Shared.h"                // for vrpn_unbuffer, timeval, etc
 #include "vrpn_MessageMacros.h"         // for VRPN_MSG_INFO, VRPN_MSG_WARNING, VRPN_MSG_ERROR
 
+#ifdef  VRPN_USE_MODBUS
+
 #undef VERBOSE
 
 // Defines the modes in which the device can find itself.
@@ -509,3 +511,5 @@ void	vrpn_OmegaTemperature::mainloop()
 	break;
   }
 }
+
+#endif

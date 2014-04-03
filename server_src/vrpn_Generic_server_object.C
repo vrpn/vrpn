@@ -891,7 +891,12 @@ int vrpn_Generic_Server_Object::setup_OmegaTemperature (char * & pch, char * lin
     printf ("Opening vrpn_OmegaTemperature: %s on port %s\n", s2, s3);
     printf ("    Temperatures: %g %g, control %d\n", f1, f2, i1);
   }
+#ifdef VRPN_USE_MODBUS
   _devices->add(new vrpn_OmegaTemperature (s2, connection, s3, f1, f2, (i1 != 0)));
+#else
+  fprintf (stderr, "setup_OmegaTemperature: Modbus support not configured in VRPN, edit vrpn_Configure.h and rebuild\n");
+  return -1;
+#endif
 
   return 0;
 }

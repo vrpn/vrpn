@@ -29,6 +29,8 @@
 #	2	Turn temperature control on/off (0 = off, otherwise on)
 */
 
+#ifdef  VRPN_USE_MODBUS
+
 class VRPN_API vrpn_OmegaTemperature: public vrpn_Serial_Analog,
   public vrpn_Analog_Output, public vrpn_Button_Filter
 {
@@ -85,5 +87,6 @@ public:
     /// Responds to a connection request with a report of the values
     static int VRPN_CALLBACK handle_connect_message(void *userdata, vrpn_HANDLERPARAM p);
 };
+#endif 
 
 #endif
