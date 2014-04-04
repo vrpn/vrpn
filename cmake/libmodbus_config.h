@@ -1,3 +1,9 @@
+/* This is a configuration file for libmodbus that will let
+   the library compile under Microsoft Visual Studio 2008.
+   Copy it along with the CMakeLists.txt file into the src/
+   directory under libmodbus version 3.0.5 and then use CMake
+   to build. */
+
 /* config.h.  Generated from config.h.in by configure.  */
 /* config.h.in.  Generated from configure.ac by autoheader.  */
 

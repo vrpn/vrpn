@@ -1,3 +1,10 @@
+# This is a CMakeLists flie that will let libmodbus 3.0.5 compile
+# under Visual Studio 2008.  For other architectures, and Cygwin,
+# just use the configure command in the source directory.
+# Copy this file, along with stdin.g and config.h (rename them to
+# remove the libmodbus_ part of the name) into the src/ directory
+# in libmodbus, then use CMake to construct a build for the library.
+
 cmake_minimum_required(VERSION 2.8.3)
 project(LIBMODBUS)
 
