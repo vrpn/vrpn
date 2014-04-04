@@ -13,7 +13,9 @@
 #include "vrpn_Shared.h"                // for timeval
 #include "vrpn_Types.h"                 // for vrpn_uint32, vrpn_float64
 
-/* XXX
+/* XXX  The code has not been changed from the Biosciences code yet,
+        only the names have been changed. */
+/*
 # Analog channels: (read by client)
 #	0	Reading from stage 1 in degrees Celcius
 #	1	Reading from bath 1 in degrees Celcius

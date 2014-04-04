@@ -33,6 +33,8 @@
 // However, the configure script reports that VC++ support has not been
 // tested in a long time; it can be configured and built under Cygwin.
 
+/* XXX  The code has not been changed from the Biosciences code yet,
+        only the names have been changed. */
 
 /*
 Using a standard DB-9 cable (female-female connectors on both ends with
@@ -95,6 +97,7 @@ vrpn_OmegaTemperature::vrpn_OmegaTemperature (const char * name, vrpn_Connection
   char parity = 'n';  // XXX What should this be?
   int stop_bits = 1;
   d_modbus = modbus_new_rtu(port, baud, parity, 8, stop_bits);
+  // XXX No code below has been changed yet.
 
   num_channel = 6;
   o_num_channel = 3;
