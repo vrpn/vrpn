@@ -21,6 +21,7 @@
 #include "vrpn_Button_NI_DIO24.h"
 #include "vrpn_Button_USB.h"
 #include "vrpn_CerealBox.h"             // for vrpn_CerealBox
+#include "vrpn_CHProducts_Controller_Raw.h"	// for vrpn_CHProducts_Fighterstick_USB
 #include "vrpn_Connection.h"
 #include "vrpn_Contour.h"               // for vrpn_Contour_ShuttleXpress, etc.
 #include "vrpn_DevInput.h"              // for vrpn_DevInput
@@ -52,6 +53,7 @@
 #include "vrpn_Mouse.h"                 // for vrpn_Button_SerialMouse, etc
 #include "vrpn_NationalInstruments.h"
 #include "vrpn_nikon_controls.h"        // for vrpn_Nikon_Controls
+#include "vrpn_OmegaTemperature.h"      // for vrpn_OmegaTemperature
 #include "vrpn_Phantom.h"
 #include "vrpn_Poser_Analog.h"          // for vrpn_Poser_AnalogParam, etc
 #include "vrpn_Poser.h"                 // for vrpn_Poser
@@ -867,6 +869,34 @@ int vrpn_Generic_Server_Object::setup_BiosciencesTools (char * & pch, char * lin
     printf ("    Temperatures: %g %g, control %d\n", f1, f2, i1);
   }
   _devices->add(new vrpn_BiosciencesTools (s2, connection, s3, f1, f2, (i1 != 0)));
+
+  return 0;
+}
+
+int vrpn_Generic_Server_Object::setup_OmegaTemperature (char * & pch, char * line, FILE * /*config_file*/)
+{
+  char s2 [LINESIZE], s3 [LINESIZE];
+  int i1;
+  float f1, f2;
+
+  VRPN_CONFIG_NEXT();
+  // Get the arguments (class, Radamec_name, port, baud
+  if (sscanf (pch, "%511s%511s%g%g%i", s2, s3, &f1, &f2, &i1) != 5) {
+    fprintf (stderr, "Bad vrpn_OmegaTemperature: %s\n", line);
+    return -1;
+  }
+
+  // Open the device
+  if (verbose) {
+    printf ("Opening vrpn_OmegaTemperature: %s on port %s\n", s2, s3);
+    printf ("    Temperatures: %g %g, control %d\n", f1, f2, i1);
+  }
+#if defined(VRPN_USE_MODBUS) && defined(VRPN_USE_WINSOCK2)
+  _devices->add(new vrpn_OmegaTemperature (s2, connection, s3, f1, f2, (i1 != 0)));
+#else
+  fprintf (stderr, "setup_OmegaTemperature: Modbus or Winsock2 support not configured in VRPN, edit vrpn_Configure.h and rebuild\n");
+  return -1;
+#endif
 
   return 0;
 }
@@ -2628,14 +2658,13 @@ int	vrpn_Generic_Server_Object::get_poser_axis_line (FILE * config_file, const c
 {
   char	line[LINESIZE];
   char	_axis_name[LINESIZE];
-  char	*name = new char[LINESIZE];	// We need this to stay around for the param
+  char	name[LINESIZE];	// We need this to stay around for the param
   int	channel;
   float	offset, scale;
 
   // Read in the line
   if (fgets (line, LINESIZE, config_file) == NULL) {
     perror ("Poser Analog Axis: Can't read axis");
-    delete[] name;
     return -1;
   }
 
@@ -2643,7 +2672,6 @@ int	vrpn_Generic_Server_Object::get_poser_axis_line (FILE * config_file, const c
   if (sscanf (line, "%511s%511s%d%g%g%lg%lg", _axis_name, name,
               &channel, &offset, &scale, min, max) != 7) {
     fprintf (stderr, "Poser Analog Axis: Bad axis line\n");
-    delete[] name;
     return -1;
   }
 
@@ -2651,7 +2679,6 @@ int	vrpn_Generic_Server_Object::get_poser_axis_line (FILE * config_file, const c
   if (strcmp (_axis_name, axis_name) != 0) {
     fprintf (stderr, "Poser Analog Axis: wrong axis: wanted %s, got %s)\n",
              axis_name, name);
-    delete[] name;
     return -1;
   }
 
@@ -4070,6 +4097,8 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object (vrpn_Connection *connect
         VRPN_CHECK (setup_Zaber);
       } else if (VRPN_ISIT ("vrpn_BiosciencesTools")) {
         VRPN_CHECK (setup_BiosciencesTools);
+      } else if (VRPN_ISIT ("vrpn_OmegaTemperature")) {
+        VRPN_CHECK (setup_OmegaTemperature);
       } else if (VRPN_ISIT ("vrpn_IDEA")) {
         VRPN_CHECK (setup_IDEA);
       } else if (VRPN_ISIT ("vrpn_5dt")) {
@@ -4186,6 +4215,8 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object (vrpn_Connection *connect
         VRPN_CHECK (templated_setup_HID_device_name_only<vrpn_Logitech_Extreme_3D_Pro>);
       } else if (VRPN_ISIT ("vrpn_Saitek_ST290_Pro")) {
         VRPN_CHECK (templated_setup_HID_device_name_only<vrpn_Saitek_ST290_Pro>);
+      } else if (VRPN_ISIT ("vrpn_CHProducts_Fighterstick_USB")) {
+        VRPN_CHECK (templated_setup_HID_device_name_only<vrpn_CHProducts_Fighterstick_USB>);
       } else if (VRPN_ISIT ("vrpn_3DConnexion_Navigator")) {
         VRPN_CHECK (templated_setup_device_name_only<vrpn_3DConnexion_Navigator>);
       } else if (VRPN_ISIT ("vrpn_3DConnexion_Navigator_for_Notebooks")) {

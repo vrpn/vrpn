@@ -54,6 +54,7 @@ class vrpn_Generic_Server_Object
     int setup_Radamec_SPI (char * & pch, char * line, FILE * /*config_file*/);
     int setup_Zaber (char * & pch, char * line, FILE * /*config_file*/);
     int setup_BiosciencesTools (char * & pch, char * line, FILE * /*config_file*/);
+    int setup_OmegaTemperature (char * & pch, char * line, FILE * /*config_file*/);
     int setup_IDEA (char * & pch, char * line, FILE * /*config_file*/);
     int setup_NationalInstruments (char * & pch, char * line, FILE * /*config_file*/);
     int setup_NationalInstrumentsOutput (char * & pch, char * line, FILE * /*config_file*/);

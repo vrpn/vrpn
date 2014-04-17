@@ -239,8 +239,9 @@ int vrpn_TextPrinter::text_message_handler(void *userdata, vrpn_HANDLERPARAM p)
 
 vrpn_BaseClass::vrpn_BaseClass (const char * name, vrpn_Connection * c)
 {
-    bool firstTimeCalled = (d_connection==NULL);  // has the constructor been called before?
-    // note that this might also be true if it was called once before but failed.
+    // Has a constructor on this BaseClassUnique been called before?
+    // Note that this might also be true if it was called once before but failed.
+    bool firstTimeCalled = (d_connection==NULL);
 
     if (firstTimeCalled)
     {
@@ -396,8 +397,11 @@ vrpn_BaseClassUnique::~vrpn_BaseClassUnique ()
     }
 
     // Delete the space allocated in the constructor for the servicename
+    // Because this destructor may be called multiple times, set the pointer
+    // to NULL after deleting it, so it won't get deleted again.
     if (d_servicename) {
         delete [] d_servicename;
+        d_servicename = NULL;
     }
 }
 

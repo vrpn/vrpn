@@ -217,7 +217,7 @@ vrpn_Analog_Server(name, c, numChannels)
 int vrpn_Clipping_Analog_Server::setClipValues(int chan, double min, double lowzero, double
 	highzero, double max)
 {
-    if ( (chan < 0) || (chan > vrpn_CHANNEL_MAX) ) {
+    if ( (chan < 0) || (chan >= vrpn_CHANNEL_MAX) ) {
 	fprintf(stderr,"vrpn_Clipping_Analog_Server::setClipValues: Bad channel (%d)\n", chan);
 	return -1;
     }
@@ -239,7 +239,7 @@ int vrpn_Clipping_Analog_Server::setClipValues(int chan, double min, double lowz
 /// It returns 0 on success and -1 on failure.
 int vrpn_Clipping_Analog_Server::setChannelValue(int chan, double value)
 {
-    if ( (chan < 0) || (chan > vrpn_CHANNEL_MAX) ) {
+    if ( (chan < 0) || (chan >= vrpn_CHANNEL_MAX) ) {
 	fprintf(stderr, "vrpn_Clipping_Analog_Server::setChannelValue: Bad channel (%d)\n", chan);
 	return -1;
     }

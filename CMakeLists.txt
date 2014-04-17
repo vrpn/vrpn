@@ -384,6 +384,21 @@ if(VRPN_USE_MPI)
 endif()
 
 ###
+# Modbus library
+###
+find_package(Modbus)
+option_requires(VRPN_USE_MODBUS
+	"Build with Modbus support"
+	OFF_BY_DEFAULT
+	MODBUS_FOUND)
+
+if(VRPN_USE_MODBUS)
+	# XXX what else needs to be done here?
+	include_directories(${MODBUS_INCLUDE_DIR})
+	list(APPEND EXTRA_LIBS ${MODBUS_LIBRARY})
+endif()
+
+###
 # Libusb1
 ###
 find_package(Libusb1)
@@ -784,6 +799,9 @@ option(VRPN_USE_TRIVISIOCOLIBRI
 	"Build with support for TrivisioColibri tracker"
 	OFF)
 if(WIN32)
+	option(VRPN_USE_WINSOCK2
+		"Use Winsock2 library, rather than Winsock."
+		OFF)
 	option(VRPN_USE_SHARED_LIBRARY
 		"Enable to use DLLs on Windows (see vrpn_Configure.h for more info)"
 		OFF)
@@ -797,6 +815,7 @@ if(UNIX)
 		include(EnableProfiling)
 		globally_enable_profiling()
 	endif()
+
 endif()
 
 
@@ -933,6 +952,7 @@ set(VRPN_SERVER_SOURCES
 	vrpn_Button_NI_DIO24.C
 	vrpn_Button_USB.cpp
 	vrpn_CerealBox.C
+	vrpn_CHProducts_Controller_Raw.C
 	vrpn_Contour.C
 	vrpn_DevInput.C
 	vrpn_DirectXFFJoystick.C
@@ -967,6 +987,7 @@ set(VRPN_SERVER_SOURCES
 	vrpn_NationalInstruments.C
 	vrpn_Nidaq.C
 	vrpn_nikon_controls.C
+	vrpn_OmegaTemperature.C
 	vrpn_Poser_Analog.C
 	vrpn_Poser_Tek4662.C
 	vrpn_raw_sgibox.C
@@ -1027,6 +1048,7 @@ set(VRPN_SERVER_PUBLIC_HEADERS
 	vrpn_Button_NI_DIO24.h
 	vrpn_Button_USB.h
 	vrpn_CerealBox.h
+	vrpn_CHProducts_Controller_Raw.h
 	vrpn_Contour.h
 	vrpn_DevInput.h
 	vrpn_DirectXFFJoystick.h
@@ -1063,6 +1085,7 @@ set(VRPN_SERVER_PUBLIC_HEADERS
 	vrpn_NationalInstruments.h
 	vrpn_Nidaq.h
 	vrpn_nikon_controls.h
+	vrpn_OmegaTemperature.h
 	vrpn_OneEuroFilter.h
 	vrpn_Poser_Analog.h
 	vrpn_Poser.h

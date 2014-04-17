@@ -1,7 +1,7 @@
 // Must be done before stdio.h to avoid conflict for SEEK_SET, at least for MPICH2 on
 // the Windows platform..  Note that this means we cannot include it in vrpn_Connection.h,
 // because user code often includes stdio.h before and VRPN includes.
-#ifdef  vrpn_USE_MPI
+#ifdef  VRPN_USE_MPI
 #include <mpi.h>
 #endif
 
@@ -2133,6 +2133,7 @@ static SOCKET vrpn_connect_udp_port
   if (getsockname(udp_socket, (struct sockaddr *) &udp_name,
                   GSN_CAST &udp_namelen)) {
     fprintf(stderr, "vrpn_connect_udp_port: cannot get socket name.\n");
+    vrpn_closeSocket(udp_socket);
     return (SOCKET) -1;
   }
 
@@ -3804,6 +3805,7 @@ int vrpn_Endpoint_IP::finish_new_connection_setup (void) {
 
   if (check_vrpn_cookie(recvbuf) < 0) {
     status = BROKEN;
+    delete [] recvbuf;
     return -1;
   }
 
@@ -3823,6 +3825,7 @@ int vrpn_Endpoint_IP::finish_new_connection_setup (void) {
     fprintf(stderr, "vrpn_Endpoint::finish_new_connection_setup:  "
                     "Got invalid log mode %d\n", static_cast<int>(received_logmode));
     status = BROKEN;
+    delete [] recvbuf;
     return -1;
   }
   if (received_logmode & vrpn_LOG_INCOMING) {
@@ -3840,6 +3843,7 @@ int vrpn_Endpoint_IP::finish_new_connection_setup (void) {
     fprintf(stderr, "vrpn_Endpoint::finish_new_connection_setup:  "
                       "Can't pack remote logging instructions.\n");
     status = BROKEN;
+    delete [] recvbuf;
     return -1;
   }
 
@@ -3856,6 +3860,7 @@ int vrpn_Endpoint_IP::finish_new_connection_setup (void) {
 		  fprintf(stderr, "vrpn_Endpoint::finish_new_connection_setup:  "
 						  "can't open UDP socket\n");
 		  status = BROKEN;
+          delete [] recvbuf;
 		  return -1;
 		}
 
@@ -3864,6 +3869,7 @@ int vrpn_Endpoint_IP::finish_new_connection_setup (void) {
 		    fprintf(stderr,
 		      "vrpn_Endpoint::finish_new_connection_setup: Can't pack UDP msg\n");
 		    status = BROKEN;
+            delete [] recvbuf;
 		    return -1;
 		}
 	  }
@@ -3888,6 +3894,7 @@ int vrpn_Endpoint_IP::finish_new_connection_setup (void) {
     fprintf(stderr,
       "vrpn_Endpoint::finish_new_connection_setup: Can't send UDP msg\n");
     status = BROKEN;
+    delete [] recvbuf;
     return -1;
   }
 
@@ -5252,10 +5259,11 @@ vrpn_Connection * vrpn_create_server_connection (
   if (location == NULL) { return NULL; }
   int is_mpi = !strncmp(cname, "mpi:", 4);
   if (is_mpi) {
-#ifdef  vrpn_USE_MPI
+#ifdef  VRPN_USE_MPI
     XXX_implement_MPI_server_connection;
 #else
-    fprintf(stderr,"vrpn_create_server_connection(): MPI support not compiled in.  Set vrpn_USE_MPI in vrpn_Configure.h and recompile.\n");
+    fprintf(stderr,"vrpn_create_server_connection(): MPI support not compiled in.  Set VRPN_USE_MPI in vrpn_Configure.h and recompile.\n");
+    delete [] location;
     return NULL;
 #endif
   } else {
@@ -6330,5 +6338,6 @@ char * vrpn_set_service_name(const char * specifier, const char * newServiceName
   strcpy(newSpecifier, newServiceName);
   strcat(newSpecifier, "@");
   strcat(newSpecifier, location);
+  delete [] location;
   return newSpecifier;
 }

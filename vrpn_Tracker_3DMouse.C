@@ -213,6 +213,7 @@ int vrpn_Tracker_3DMouse::get_report(void)
    static int count = 0;
    timeval waittime;
    waittime.tv_sec = 2;
+   waittime.tv_usec = 0;
 
    if (status == vrpn_TRACKER_SYNCING) {
 	unsigned char tmpc;

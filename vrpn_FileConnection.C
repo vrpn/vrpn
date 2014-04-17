@@ -71,6 +71,7 @@ vrpn_File_Connection::vrpn_File_Connection (const char * station_name,
     d_logHead (NULL),
     d_logTail (NULL),
     d_currentLogEntry (NULL),
+    d_startEntry(NULL), 
     d_preload(vrpn_FILE_CONNECTIONS_SHOULD_PRELOAD),
     d_accumulate(vrpn_FILE_CONNECTIONS_SHOULD_ACCUMULATE)
 {

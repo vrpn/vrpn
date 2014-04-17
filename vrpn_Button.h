@@ -137,6 +137,7 @@ class VRPN_API vrpn_Button_Parallel: public vrpn_Button_Filter {
 	// outside world through the connection.
 	vrpn_Button_Parallel(const char *name, vrpn_Connection *connection,
 				int portno, unsigned porthex = 0);
+    ~vrpn_Button_Parallel();
 
   protected:
 	int	port;
