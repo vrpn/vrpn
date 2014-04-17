@@ -2664,7 +2664,6 @@ int	vrpn_Generic_Server_Object::get_poser_axis_line (FILE * config_file, const c
 
   // Read in the line
   if (fgets (line, LINESIZE, config_file) == NULL) {
-    delete[] name;
     perror ("Poser Analog Axis: Can't read axis");
     delete[] name;
     return -1;
@@ -3850,8 +3849,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_G4(char * &pch, char * line, FILE 
 #endif
 }
 
-int vrpn_Generic_Server_Object::setup_Tracker_FastrakPDI (char * &pch, char * line, FILE * config_file)
-{
+int vrpn_Generic_Server_Object::setup_Tracker_FastrakPDI(char * &pch, char * line, FILE * config_file) {
 #ifdef  VRPN_USE_PDI
   char name [LINESIZE];
   int Hz = 10;

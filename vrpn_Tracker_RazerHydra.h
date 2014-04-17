@@ -30,8 +30,6 @@
 // Standard includes
 // - none
 
-class VRPN_API vrpn_Connection;
-
 #ifdef VRPN_USE_HID
 
 /** @brief Device supporting the Razer Hydra game controller as a tracker,
