@@ -1,0 +1,178 @@
+# This is a CMakeLists flie that will let libmodbus 3.0.5 compile
+# under Visual Studio 2008.  For other architectures, and Cygwin,
+# just use the configure command in the source directory.
+# Copy this file, along with stdin.g and config.h (rename them to
+# remove the libmodbus_ part of the name) into the src/ directory
+# in libmodbus, then use CMake to construct a build for the library.
+
+cmake_minimum_required(VERSION 2.8.3)
+project(LIBMODBUS)
+
+#-----------------------------------------------------------------------------
+# XXX Things to make better.
+#
+# Repeat for all other configurable headers/libraries - see below for a list
+# Move the shared-library code over to CMake's normal definition
+# Improve this CPack installer.
+
+###
+# Local CMake Modules - keep this first
+###
+list(APPEND CMAKE_MODULE_PATH ${LIBMODBUS_SOURCE_DIR}/cmake)
+
+###
+# On Windows 7, it does not work to install in the default location,
+# which is the Program Files directory, because you have to not only have
+# file permission to write there but also "run as administrator."  This
+# means that "make install" from a Visual Studio project fails.  To get
+# around that, we need to set CMAKE_INSTALL_PREFIX to something other
+# than the default.  However, it is a cache variable that has already been
+# set.  If we make a local variable, it uses this rather than the cache
+# variable and never tells the poor user what happened (the GUI location
+# looks standard but the files end up somewhere else).  If we make it a
+# non-forced cache variable, it already has a value so does not change.
+# If we make it a forced cache variable, it gets overwritten every time
+# and the user cannot change it on the GUI.  So we have a workaround here.
+# We make a cache variable that records whether we have ever forced the
+# install prefix.  If not, we force it.  If so, we don't force it again.
+# This has the effect of setting it the first time cmake is run, showing
+# the change in the GUI, and also letting the user change the value in
+# the GUI if they don't like what we did.  If I knew how to do this only
+# happen on Windows 7, I'd make the if(WIN32) more specific.
+if(WIN32 AND NOT SUBPROJECT)
+	if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT
+		AND
+		(NOT
+		ONCE_SET_CMAKE_INSTALL_PREFIX))
+		set(ONCE_SET_CMAKE_INSTALL_PREFIX
+			true
+			CACHE
+			INTERNAL
+			"Have we set the install prefix yet?"
+			FORCE)
+		set(CMAKE_INSTALL_PREFIX
+			C:/usr/local
+			CACHE
+			PATH
+			"Install path prefix, prepended onto install directories"
+			FORCE)
+	endif()
+endif()
+
+
+#-----------------------------------------------------------------------------
+# Compiler flags we got from Hans for Windows and from Sheldon Andrews
+# for other architectures.
+if(MSVC)	# MS-Windows Visual Studio, both 32 and 64 bits
+    set(CMAKE_DEBUG_POSTFIX "d" CACHE STRING "add a postfix, usually d on windows")
+	if(MSVC_VERSION GREATER 1310) # This compiler flag needs newer than VS.NET 2003 (7.1)
+		# Choose fast, possibly less accurate floating point
+		# See http://msdn.microsoft.com/en-us/library/e7s85ffb(v=vs.80).aspx
+		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /fp:fast")
+		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /fp:fast")
+	endif()
+
+	# Do not assume fixed base address (probably for DLL integration?)
+	# http://msdn.microsoft.com/en-us/library/w368ysh2(v=vs.80).aspx
+	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /FIXED:NO")
+else()
+	# GCC compilers on 64-bit machines require -fPIC for shared libraries or libs
+	# linked into shared libraries.
+
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${CMAKE_SHARED_LIBRARY_C_FLAGS}")
+	set(CMAKE_CXX_FLAGS
+		"${CMAKE_CXX_FLAGS} ${CMAKE_SHARED_LIBRARY_CXX_FLAGS}")
+endif()
+
+# Set up correct defines for Windows header compilation:
+# This theoretically sets the lower-bound on operating system compatibility
+# http://msdn.microsoft.com/en-us/library/windows/desktop/aa383745(v=vs.85).aspx
+# NT4	0x0400
+# Win2k	0x0500
+# WinXP	0x0501
+# WS2003SP1/WinXPSP2 	0x0502
+# Vista 0x0600
+# Win7  0x0601
+# Win8  0x0601
+if(WIN32)
+	set(WIN_MIN_VER 0x0500) # Default to Windows 2000
+	if(MSVC AND MSVC_VERSION GREATER 1699)
+		# VS2012: defaults to vista+, update 1 added XP support in additional toolset.
+		if("${CMAKE_VS_PLATFORM_TOOLSET}" MATCHES "_xp")
+			set(WIN_MIN_VER 0x0501) # WinXP
+		else()
+			set(WIN_MIN_VER 0x0600) # Vista
+		endif()
+	endif()
+	add_definitions("-D_WIN32_WINNT=${WIN_MIN_VER}" "-DNTDDI_VERSION=${WIN_MIN_VER}0000")
+endif()
+
+#-----------------------------------------------------------------------------
+# Options that control what gets built and how.
+
+# Force use of our CMake-processed configuration header before the stock one.
+include_directories("${PROJECT_BINARY_DIR}")
+
+
+# Include directory needed by all of the files
+include_directories(${LIBMODBUS_SOURCE_DIR})
+
+
+###
+# Windows-specific (non-Cygwin) dependencies
+###
+if(WIN32 AND NOT UNIX)
+	# Winsock - needed for TCP support
+	list(APPEND EXTRA_LIBS ws2_32)
+endif()
+
+#-----------------------------------------------------------------------------
+# Build the library itself and declare what bits need to be installed
+
+set(LIBMODBUS_SOURCES
+	modbus.c
+	modbus-data.c
+	modbus-rtu.c
+	modbus-tcp.c
+)
+
+set(LIBMODBUS_PUBLIC_HEADERS
+	modbus.h
+	modbus-rtu.h
+	modbus-tcp.h
+	modbus-tcp-private.h
+	modbus-version.h
+)
+
+add_library(libmodbus ${LIBMODBUS_SOURCES} ${LIBMODBUS_PUBLIC_HEADERS})
+target_link_libraries(libmodbus ${EXTRA_LIBS})
+set(LIBMODBUS_LIBRARY libmodbus)
+
+set_property(TARGET
+	libmodbus
+	PROPERTY
+	PUBLIC_HEADER
+	${LIBMODBUS_PUBLIC_HEADERS})
+
+set_property(TARGET
+	libmodbus
+	PROPERTY
+	PROJECT_LABEL
+	"LIBMODBUS Library")
+
+set_property(TARGET
+	libmodbus
+	PROPERTY
+	FOLDER
+	"Library")
+
+install(TARGETS
+	libmodbus
+	ARCHIVE
+	DESTINATION
+	lib
+	PUBLIC_HEADER
+	DESTINATION
+	include
+)
+

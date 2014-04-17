@@ -3,7 +3,11 @@
 #if defined(VRPN_USE_JSONNET)
 
 #ifdef _WIN32
-	#include <winsock.h>
+  #ifdef VRPN_USE_WINSOCK2
+    #include <winsock2.h>    // struct timeval is defined here
+  #else
+    #include <winsock.h>    // struct timeval is defined here
+  #endif
 #else
 	#include <sys/socket.h>
 	#include <sys/time.h>
@@ -105,6 +109,7 @@ void vrpn_Tracker_JsonNet::mainloop() {
 	// report trackerchanges
 	// TODO really use timestamps
 	struct timeval ts ;
+    vrpn_gettimeofday(&ts, NULL);
 	// from vrpn_Tracker_DTrack::dtrack2vrpnbody
 	if (d_connection && _do_tracker_report) {
 		char msgbuf[1000];

@@ -53,6 +53,7 @@
 #include "vrpn_Mouse.h"                 // for vrpn_Button_SerialMouse, etc
 #include "vrpn_NationalInstruments.h"
 #include "vrpn_nikon_controls.h"        // for vrpn_Nikon_Controls
+#include "vrpn_OmegaTemperature.h"      // for vrpn_OmegaTemperature
 #include "vrpn_Phantom.h"
 #include "vrpn_Poser_Analog.h"          // for vrpn_Poser_AnalogParam, etc
 #include "vrpn_Poser.h"                 // for vrpn_Poser
@@ -868,6 +869,34 @@ int vrpn_Generic_Server_Object::setup_BiosciencesTools (char * & pch, char * lin
     printf ("    Temperatures: %g %g, control %d\n", f1, f2, i1);
   }
   _devices->add(new vrpn_BiosciencesTools (s2, connection, s3, f1, f2, (i1 != 0)));
+
+  return 0;
+}
+
+int vrpn_Generic_Server_Object::setup_OmegaTemperature (char * & pch, char * line, FILE * /*config_file*/)
+{
+  char s2 [LINESIZE], s3 [LINESIZE];
+  int i1;
+  float f1, f2;
+
+  VRPN_CONFIG_NEXT();
+  // Get the arguments (class, Radamec_name, port, baud
+  if (sscanf (pch, "%511s%511s%g%g%i", s2, s3, &f1, &f2, &i1) != 5) {
+    fprintf (stderr, "Bad vrpn_OmegaTemperature: %s\n", line);
+    return -1;
+  }
+
+  // Open the device
+  if (verbose) {
+    printf ("Opening vrpn_OmegaTemperature: %s on port %s\n", s2, s3);
+    printf ("    Temperatures: %g %g, control %d\n", f1, f2, i1);
+  }
+#if defined(VRPN_USE_MODBUS) && defined(VRPN_USE_WINSOCK2)
+  _devices->add(new vrpn_OmegaTemperature (s2, connection, s3, f1, f2, (i1 != 0)));
+#else
+  fprintf (stderr, "setup_OmegaTemperature: Modbus or Winsock2 support not configured in VRPN, edit vrpn_Configure.h and rebuild\n");
+  return -1;
+#endif
 
   return 0;
 }
@@ -4073,6 +4102,8 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object (vrpn_Connection *connect
         VRPN_CHECK (setup_Zaber);
       } else if (VRPN_ISIT ("vrpn_BiosciencesTools")) {
         VRPN_CHECK (setup_BiosciencesTools);
+      } else if (VRPN_ISIT ("vrpn_OmegaTemperature")) {
+        VRPN_CHECK (setup_OmegaTemperature);
       } else if (VRPN_ISIT ("vrpn_IDEA")) {
         VRPN_CHECK (setup_IDEA);
       } else if (VRPN_ISIT ("vrpn_5dt")) {

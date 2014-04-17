@@ -17,6 +17,9 @@
 // and unistd.h
 #include "vrpn_Shared.h"                // for timeval, vrpn_buffer, etc
 
+#ifdef linux
+#include <unistd.h>
+#endif
 #if defined(_WIN32) && !defined(__CYGWIN__) && !defined (_WIN32_WCE)
 #  include <conio.h>  // for _inp()
 #endif
@@ -26,7 +29,6 @@
 //need these for the gl based setdblight calls
 #  include <gl/gl.h>
 #endif
-
 
 #include "vrpn_Button.h"
 
