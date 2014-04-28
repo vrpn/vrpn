@@ -1,5 +1,8 @@
 JSONCPP is required to build a VRPN server for the Vrpn Android widgets (see  android_widgets directory).
 
+If you've done a recursive clone, JSONCPP is in the submodules directory,
+will be built automatically, and you can completely ignore the rest of this file.
+
 Get the latest JSONCPP (r156 has been used successfully) from 
 	http://jsoncpp.svn.sourceforge.net/svnroot/jsoncpp/trunk/jsoncpp
 

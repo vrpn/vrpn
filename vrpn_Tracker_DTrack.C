@@ -71,8 +71,19 @@
 #include <stdlib.h>                     // for strtod, exit, free, malloc, etc
 #include <string.h>                     // for strncmp, memset, strcat, etc
 
+#include "quat.h"                       // for Q_RAD_TO_DEG, etc
+#include "vrpn_Connection.h"            // for vrpn_CONNECTION_LOW_LATENCY, etc
+#include "vrpn_Shared.h"                // for timeval, INVALID_SOCKET, etc
+#include "vrpn_Tracker_DTrack.h"
+#include "vrpn_Types.h"                 // for vrpn_float64
+#include "vrpn_MessageMacros.h"         // for VRPN_MSG_INFO, VRPN_MSG_WARNING, VRPN_MSG_ERROR
+
 #ifdef OS_WIN
-	#include <winsock2.h>
+  #ifdef VRPN_USE_WINSOCK2
+    #include <winsock2.h>    // struct timeval is defined here
+  #else
+    #include <winsock.h>    // struct timeval is defined here
+  #endif
 #endif
 #ifdef OS_UNIX
 	#include <netinet/in.h>                 // for sockaddr_in, INADDR_ANY, etc
@@ -81,12 +92,6 @@
 	#include <sys/select.h>                 // for select, FD_SET, FD_SETSIZE, etc
 #endif
 
-#include "quat.h"                       // for Q_RAD_TO_DEG, etc
-#include "vrpn_Connection.h"            // for vrpn_CONNECTION_LOW_LATENCY, etc
-#include "vrpn_Shared.h"                // for timeval, INVALID_SOCKET, etc
-#include "vrpn_Tracker_DTrack.h"
-#include "vrpn_Types.h"                 // for vrpn_float64
-#include "vrpn_MessageMacros.h"         // for VRPN_MSG_INFO, VRPN_MSG_WARNING, VRPN_MSG_ERROR
 
 // There is a problem with linking on SGIs related to standard libraries.
 #ifndef sgi

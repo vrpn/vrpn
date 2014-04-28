@@ -6,7 +6,7 @@ more.
 
 Get CMake from your Linux distribution and/or from www.cmake.org
 
-Use the current directory (vrpn_XX_XX/vrpn) as the "source code" directory
+Use the current directory (vrpn_XX_XX) as the "source code" directory
 in the CMake GUI; the quat directory (vrpn_XX_XX/quat) will be automatically
 detected and built as well.  Choose any directory you want (the source
 directory followed by /build is suggested) as the "build binaries"
@@ -37,7 +37,7 @@ and any/all of these if desired:
           to your system, to the configured path.  Add DESTDIR=whatever/
           to place the installation tree somewhere other than root.
 
-Instructions for the original Makefile-based build follow.
+Instructions for the original Makefile-based or project-based build follow.
 
 For those not at UNC, you compile by doing the following:
 

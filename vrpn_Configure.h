@@ -39,6 +39,10 @@
 #define	vrpn_DEFAULT_LISTEN_PORT_NO (3883)
 
 //-----------------------
+// Use Winsock2 library rather than Winsock.
+//#define	VRPN_USE_WINSOCK2
+
+//-----------------------
 // Instructs VRPN to expose the vrpn_gettimeofday() function also
 // as gettimeofday() so that external programs can use it.  This
 // has no effect on any system that already has gettimeofday()
@@ -58,7 +62,16 @@
 // C++ Directories include path.  The original implementation is
 // done with MPICH2, but an attempt has been made to use only
 // MPI version 1 basic functions.
-//#define	vrpn_USE_MPI
+//#define	VRPN_USE_MPI
+
+//-----------------------
+// Tells VRPN to compile with support for the Modbus
+// library.  There is a configuration section below
+// that has a library path for the Modbus library to link against.
+// You will need to add the path to modbus.h and other needed files
+// into your Visual Studio Tools/Options/Projects and Solutions/
+// C++ Directories include path.
+//#define	VRPN_USE_MODBUS
 
 //-----------------------
 // Instructs VRPN to use phantom library to construct a unified
@@ -429,8 +442,16 @@
 #define VRPN_NIDAQ_MX_PATH      VRPN_SYSTEMDRIVE "/Program Files/National Instruments/NI-DAQ/DAQmx ANSI C Dev/lib/msvc/"
 #define VRPN_USDIGITAL_PATH     VRPN_SYSTEMDRIVE "/Program Files/SEI Explorer/"
 
-#ifdef  vrpn_USE_MPI
+#ifdef  VRPN_USE_MPI
 #pragma comment (lib, VRPN_SYSTEMDRIVE "/Program Files/MPICH2/lib/mpi.lib")
+#endif
+
+#ifdef  VRPN_USE_MODBUS
+  #ifdef	_DEBUG
+    #pragma comment (lib, VRPN_SYSTEMDRIVE "/Program Files/usr/local/lib/libmodbusd.lib")
+  #else
+    #pragma comment (lib, VRPN_SYSTEMDRIVE "/Program Files/usr/local/lib/libmodbus.lib")
+  #endif
 #endif
 
 // Load Adrienne libraries if we are using the timecode generator.
@@ -576,7 +597,11 @@
 
 // For client code, make sure we add the proper library dependency to the linker
 #ifdef _WIN32
-#pragma comment (lib, "wsock32.lib")  // VRPN requires the Windows Sockets library.
+  #ifdef VRPN_USE_WINSOCK2
+    #pragma comment (lib, "ws2_32.lib")  // VRPN requires the Windows Sockets library.
+  #else
+    #pragma comment (lib, "wsock32.lib")  // VRPN requires the Windows Sockets library.
+  #endif
 #ifdef VRPN_USE_SHARED_LIBRARY
 #ifdef VRPNDLL_EXPORTS
 #define  VRPN_API		 __declspec(dllexport)

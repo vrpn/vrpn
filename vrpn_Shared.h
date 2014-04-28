@@ -105,7 +105,11 @@
 #  ifndef _WIN32_WCE
 #    include <sys/timeb.h>
 #  endif
-#  include <winsock2.h>    // struct timeval is defined here
+#  ifdef VRPN_USE_WINSOCK2
+#    include <winsock2.h>    // struct timeval is defined here
+#  else
+#    include <winsock.h>    // struct timeval is defined here
+#  endif
 
   // Whether or not we export gettimeofday, we declare the
   // vrpn_gettimeofday() function.

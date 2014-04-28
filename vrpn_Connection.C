@@ -1,7 +1,7 @@
 // Must be done before stdio.h to avoid conflict for SEEK_SET, at least for MPICH2 on
 // the Windows platform..  Note that this means we cannot include it in vrpn_Connection.h,
 // because user code often includes stdio.h before and VRPN includes.
-#ifdef  vrpn_USE_MPI
+#ifdef  VRPN_USE_MPI
 #include <mpi.h>
 #endif
 
@@ -5259,10 +5259,10 @@ vrpn_Connection * vrpn_create_server_connection (
   if (location == NULL) { return NULL; }
   int is_mpi = !strncmp(cname, "mpi:", 4);
   if (is_mpi) {
-#ifdef  vrpn_USE_MPI
+#ifdef  VRPN_USE_MPI
     XXX_implement_MPI_server_connection;
 #else
-    fprintf(stderr,"vrpn_create_server_connection(): MPI support not compiled in.  Set vrpn_USE_MPI in vrpn_Configure.h and recompile.\n");
+    fprintf(stderr,"vrpn_create_server_connection(): MPI support not compiled in.  Set VRPN_USE_MPI in vrpn_Configure.h and recompile.\n");
     delete [] location;
     return NULL;
 #endif

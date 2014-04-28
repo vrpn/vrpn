@@ -26,7 +26,7 @@ protected:
 private:
   unsigned char serialbuf[32];
   double restval[vrpn_CHANNEL_MAX];		// Initial value of each channel
-  long MAX_TIME_INTERVAL;
+  unsigned long MAX_TIME_INTERVAL;
 };
 
 
