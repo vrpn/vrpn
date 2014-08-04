@@ -3178,26 +3178,22 @@ int vrpn_Generic_Server_Object::setup_Tracker_PhaseSpace (char * & pch, char * l
 int vrpn_Generic_Server_Object::setup_Tracker_RazerHydra(char * &pch, char * line, FILE *config_file)
 {
   char s2[LINESIZE];
-  int i3;
-  int calibration_button = -1;
- 
+
   VRPN_CONFIG_NEXT();
-  int ret = sscanf (pch, "%511s %d", s2, &i3);
-  if (ret == 2) {
-    calibration_button = i3;
-  } else if (ret != 1) {
+  int ret = sscanf (pch, "%511s", s2);
+  if (ret != 1) {
     fprintf (stderr, "Bad Razer Hydra line: %s\n", line);
     return -1;
   }
 
   // Open the Razer Hydra
   if (verbose) {
-      printf ("Opening vrpn_Tracker_RazerHydra %s with calibration button set to %d\n", s2, calibration_button);
+      printf ("Opening vrpn_Tracker_RazerHydra\n");
   }
 
 #ifdef VRPN_USE_HID
   // Open the tracker
-  _devices->add(new vrpn_Tracker_RazerHydra(s2, connection, calibration_button));
+  _devices->add(new vrpn_Tracker_RazerHydra(s2, connection));
 #else
   fprintf (stderr, "RazerHydra driver works only with VRPN_USE_HID defined!\n");
 #endif

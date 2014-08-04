@@ -73,71 +73,76 @@
 	* Z - Up, along the joystick
 
 	Buttons are as follows, with the right controller's button channels starting
-	at 8 instead of 0:
-	* 0 - "middle" button below joystick
-	* 1-4 - numbered buttons
-	* 5 - "bumper" button (above trigger)
-	* 6 - joystick button (if you push straight down on the joystick)
+	at 7 instead of 0:
+        * 0 - "middle" button below joystick
+        * 1-4 - numbered buttons
+        * 5 - "bumper" button (above trigger)
+        * 6 - joystick button (if you push straight down on the joystick)
 
-	Analog channels are as follows, with the right controller starting at 3
-	instead of 0:
-	* 0 - joystick left/right: centered at 0, right is positive, in [-1, 1]
-	* 1 - joystick up/down: centered at 0, up is positive, in [-1, 1]
-	* 2 - analog trigger, in range 0 (not pressed) to 1 (fully pressed).
+        Analog channels are as follows, with the right controller starting at 3
+        instead of 0:
+        * 0 - joystick left/right: centered at 0, right is positive, in [-1, 1]
+        * 1 - joystick up/down: centered at 0, up is positive, in [-1, 1]
+        * 2 - analog trigger, in range 0 (not pressed) to 1 (fully pressed).
 */
 
-class VRPN_API vrpn_Tracker_RazerHydra: public vrpn_Analog, public vrpn_Button_Filter, public vrpn_Tracker {
-	public:
-		vrpn_Tracker_RazerHydra(const char * name, vrpn_Connection * trackercon, int calibration_button = -1);
-		~vrpn_Tracker_RazerHydra();
+class VRPN_API vrpn_Tracker_RazerHydra: public vrpn_Analog, public vrpn_Button_Filter, public vrpn_Tracker
+{
+    public:
+        vrpn_Tracker_RazerHydra(const char * name, vrpn_Connection * trackercon);
+        ~vrpn_Tracker_RazerHydra();
 
-		virtual void mainloop();
+        virtual void mainloop();
 
-		virtual bool reconnect();
+        virtual bool reconnect();
 
-	private:
-		enum HydraStatus {
-			HYDRA_WAITING_FOR_CONNECT,
-			HYDRA_LISTENING_AFTER_CONNECT,
-			HYDRA_LISTENING_AFTER_SET_FEATURE,
-			HYDRA_REPORTING
-		};
-		enum {
-			ANALOG_CHANNELS = 6,
-			BUTTON_CHANNELS = 16,
-			POSE_CHANNELS = 2
-		};
+    private:
+        enum HydraStatus
+        {
+            HYDRA_WAITING_FOR_CONNECT,
+            HYDRA_LISTENING_AFTER_CONNECT,
+            HYDRA_LISTENING_AFTER_SET_FEATURE,
+            HYDRA_REPORTING
+        };
 
+        enum
+        {
+            ANALOG_CHANNELS = 6,
+            BUTTON_CHANNELS = 14,
+            POSE_CHANNELS = 2
+        };
 
-		void _waiting_for_connect();
-		void _listening_after_connect();
-		void _listening_after_set_feature();
+        void _waiting_for_connect();
+        void _listening_after_connect();
+        void _listening_after_set_feature();
 
-		void _enter_motion_controller_mode();
+        void _enter_motion_controller_mode();
 
-		void _report_for_sensor(int sensorNum, vrpn_uint8 * data, double dt);
+        void _report_for_sensor(int sensorNum, vrpn_uint8 * data, double dt);
 
-		HydraStatus status;
-		bool _wasInGamepadMode;
-		int _attempt;
-		struct timeval _timestamp;
-		struct timeval _connected;
-		struct timeval _set_feature;
+        HydraStatus status;
+        bool _wasInGamepadMode;
+        int _attempt;
+        struct timeval _timestamp;
+        struct timeval _connected;
+        struct timeval _set_feature;
 
-		bool           _calibration_done[POSE_CHANNELS];
-		int            _mirror[POSE_CHANNELS];
-		q_vec_type     _old_position[POSE_CHANNELS];
-		int            _calibration_btn;
-		bool           _calibration_btn_state;
-		q_type         _calibration_pose_conj[POSE_CHANNELS];
+        const float    _docking_distance;
+        bool           _docked[POSE_CHANNELS];
+        bool           _calibration_done[POSE_CHANNELS];
+        int            _mirror[POSE_CHANNELS];
+        int            _sign_x[POSE_CHANNELS];
+        q_vec_type     _old_position[POSE_CHANNELS];
 
-		// This device has both a control and a data interface.
-		// On the mac, we may need to swap these because we can't tell which
-		// is which when we open them.
-		class MyInterface;
+        q_type         _calibration_pose_conj[POSE_CHANNELS];
 
-		MyInterface * _ctrl;
-		MyInterface * _data;
+        // This device has both a control and a data interface.
+        // On the mac, we may need to swap these because we can't tell which
+        // is which when we open them.
+        class MyInterface;
+
+        MyInterface * _ctrl;
+        MyInterface * _data;
 };
 
 #else
