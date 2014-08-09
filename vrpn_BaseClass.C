@@ -25,6 +25,7 @@ d_level_to_print(0)
 /** Deletes any callbacks that are still registered. */
 vrpn_TextPrinter::~vrpn_TextPrinter()
 {
+    d_semaphore.p();
   /* XXX No longer removes these.  We get into trouble with the
      system-defined vrpn_System_TextPrinter destructor because it
      may run after the vrpn_ConnectionManager destructor has run,
@@ -51,6 +52,7 @@ vrpn_TextPrinter::~vrpn_TextPrinter()
 	victim = next;
     }
 #endif // XXX
+    d_semaphore.v();
 }
 
 /** Adds an object to the list of watched objects.  Returns 0 on success and
@@ -62,11 +64,13 @@ vrpn_TextPrinter::~vrpn_TextPrinter()
 */
 int vrpn_TextPrinter::add_object(vrpn_BaseClass *o)
 {
+    d_semaphore.p();
     vrpn_TextPrinter_Watch_Entry    *victim;
 
     // Make sure we have an actual object.
     if (o == NULL) {
 	fprintf(stderr, "vrpn_TextPrinter::add_object(): NULL pointer passed\n");
+        d_semaphore.v();
 	return -1;
     }
 
@@ -80,6 +84,7 @@ int vrpn_TextPrinter::add_object(vrpn_BaseClass *o)
     while (victim != NULL) {
 	if ( (o->d_connection == victim->obj->d_connection) &&
 	    (strcmp( o->d_servicename, victim->obj->d_servicename) == 0) ) {
+            d_semaphore.v();
 	    return 0;
 	}
 	victim = victim->next;
@@ -88,6 +93,7 @@ int vrpn_TextPrinter::add_object(vrpn_BaseClass *o)
     // Add the object to the beginning of the list.
     if ( (victim = new vrpn_TextPrinter_Watch_Entry) == NULL) {
 	fprintf(stderr,"vrpn_TextPrinter::add_object(): out of memory\n");
+        d_semaphore.v();
 	return -1;
     }
     victim->obj = o;
@@ -100,9 +106,11 @@ int vrpn_TextPrinter::add_object(vrpn_BaseClass *o)
 	fprintf(stderr,"vrpn_TextPrinter::add_object(): Can't register callback\n");
 	d_first_watched_object = victim->next;
 	delete victim;
+        d_semaphore.v();
 	return -1;
     }
 
+    d_semaphore.v();
     return 0;
 }
 
@@ -113,6 +121,7 @@ int vrpn_TextPrinter::add_object(vrpn_BaseClass *o)
 */
 void	vrpn_TextPrinter::remove_object(vrpn_BaseClass *o)
 {
+    d_semaphore.p();
     vrpn_TextPrinter_Watch_Entry    *victim, **snitch;
 
 #ifdef	VERBOSE
@@ -122,6 +131,7 @@ void	vrpn_TextPrinter::remove_object(vrpn_BaseClass *o)
     // Make sure we have an actual object.
     if (o == NULL) {
 	fprintf(stderr,"vrpn_TextPrinter::remove_object(): NULL pointer passed\n");
+        d_semaphore.v();
 	return;
     }
 
@@ -155,10 +165,12 @@ void	vrpn_TextPrinter::remove_object(vrpn_BaseClass *o)
 	delete victim;
 
 	// We're done.
+        d_semaphore.v();
 	return;
     }
 
     // Object not in the list, so we're done.
+    d_semaphore.v();
     return;
 }
 
@@ -176,6 +188,8 @@ int vrpn_TextPrinter::text_message_handler(void *userdata, vrpn_HANDLERPARAM p)
     vrpn_uint32		level;
     char		message[vrpn_MAX_TEXT_LEN];
 
+    me->d_semaphore.p();
+
 #ifdef	VERBOSE
     printf( "vrpn_TextPrinter: text handler called\n");
 #endif
@@ -186,6 +200,7 @@ int vrpn_TextPrinter::text_message_handler(void *userdata, vrpn_HANDLERPARAM p)
     // Decode the message
     if (vrpn_BaseClassUnique::decode_text_message_from_buffer(message, &severity, &level, p.buffer) != 0) {
 	fprintf(stderr,"vrpn_TextPrinter::text_message_handler(): Can't decode message\n");
+        me->d_semaphore.v();
 	return -1;
     }
 
@@ -216,7 +231,27 @@ int vrpn_TextPrinter::text_message_handler(void *userdata, vrpn_HANDLERPARAM p)
 		 obj->d_connection->sender_name(p.sender), message);
     }
 
+    me->d_semaphore.v();
     return 0;
+}
+
+/// Change the level of printing for the object (sets the minimum level to
+/// print). Default is Warnings and Errors of all levels.
+void vrpn_TextPrinter::set_min_level_to_print(
+      vrpn_TEXT_SEVERITY severity, vrpn_uint32 level)
+{
+  d_semaphore.p();
+  d_severity_to_print = severity; d_level_to_print = level;
+  d_semaphore.v();
+}
+
+/// Change the ostream that will be used to print messages.  Setting a
+/// NULL ostream results in no printing.
+void   vrpn_TextPrinter::set_ostream_to_use(FILE *o)
+{
+  d_semaphore.p();
+  d_ostream = o;
+  d_semaphore.v();
 }
 
 

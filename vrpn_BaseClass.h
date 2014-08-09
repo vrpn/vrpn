@@ -112,6 +112,11 @@ class	VRPN_API vrpn_BaseClass;
 // name of the object that sent the message.
 //  The user could create their own TextPrinter, and attach whatever objects
 // they want to it.
+//  NOTE: Because there is a vrpn_System_TextPrinter that all vrpn_BaseClass
+// objects talk to, and because those objects may be in multiple threads, the
+// vrpn_TextPrinter class has to be thread-safe.  This requires all user-
+// callable methods to be thread-safe because the destructor may be called
+// during a method call.
 
 class VRPN_API vrpn_TextPrinter {
   public:
@@ -133,14 +138,16 @@ class VRPN_API vrpn_TextPrinter {
 
     /// Change the level of printing for the object (sets the minimum level to
     /// print). Default is Warnings and Errors of all levels.
-    void    set_min_level_to_print(vrpn_TEXT_SEVERITY severity, vrpn_uint32 level = 0)
-		{ d_severity_to_print = severity; d_level_to_print = level; };
+    void    set_min_level_to_print(vrpn_TEXT_SEVERITY severity, vrpn_uint32 level = 0);
 
     /// Change the ostream that will be used to print messages.  Setting a
     /// NULL ostream results in no printing.
-    void   set_ostream_to_use(FILE *o) { d_ostream = o; };
+    void   set_ostream_to_use(FILE *o);
 
   protected:
+    /// Mutex to ensure thread safety;
+    vrpn_Semaphore  d_semaphore;
+
     /// Structure to hold the objects that are being watched.
     class VRPN_API vrpn_TextPrinter_Watch_Entry {
       public:
