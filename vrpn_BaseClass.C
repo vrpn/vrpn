@@ -126,6 +126,9 @@ void	vrpn_TextPrinter::remove_object(vrpn_BaseClass *o)
     }
 
     // Find the entry in the list (if it is there).
+    // Starts this pointing at the first watched object, so it will
+    // update that object if it is the one who pointed us at the one
+    // to be deleted.
     snitch = &d_first_watched_object;
     victim = *snitch;
     while ( (victim != NULL) &&

@@ -4887,7 +4887,10 @@ vrpn_Connection::vrpn_Connection
 vrpn_Connection::~vrpn_Connection (void) {
 
   // Clean up types, senders, and callbacks.
-  delete d_dispatcher;
+  if (d_dispatcher) {
+    delete d_dispatcher;
+    d_dispatcher = NULL;
+  }
 
   if (d_references > 0) {
     fprintf(stderr, "Connection was deleted while %d references still remain.\n",
