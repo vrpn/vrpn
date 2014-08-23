@@ -1195,7 +1195,6 @@ int vrpn_Imager_Remote::handle_connection_dropped_message(void *userdata,
 bool  vrpn_Imager_Remote::throttle_sender(vrpn_int32 N)
 {
   // msgbuf must be float64-aligned!
-  // Static to avoid new/delete each call.
   vrpn_float64 fbuf [vrpn_CONNECTION_TCP_BUFLEN/sizeof(vrpn_float64)];
   char	  *msgbuf = (char *) fbuf;
   int	  buflen = sizeof(fbuf);

@@ -12,7 +12,7 @@ class VRPN_API vrpn_Tracker_3Space: public vrpn_Tracker_Serial {
   
   vrpn_Tracker_3Space(char *name, vrpn_Connection *c,
 		      const char *port = "/dev/ttyS1", long baud = 19200) :
-  vrpn_Tracker_Serial(name,c,port,baud) {};
+  vrpn_Tracker_Serial(name,c,port,baud), d_numResets(0) {};
     
  protected:
   
@@ -20,6 +20,7 @@ class VRPN_API vrpn_Tracker_3Space: public vrpn_Tracker_Serial {
   virtual int get_report(void);
 
   virtual void reset();
+  int d_numResets;
 
 };
 

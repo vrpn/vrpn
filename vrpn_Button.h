@@ -166,6 +166,7 @@ class VRPN_API vrpn_Button_Python: public vrpn_Button_Parallel {
 	virtual void mainloop();
   protected:
   	virtual void read(void);
+        bool d_first_fail;
 };
 
 

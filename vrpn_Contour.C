@@ -175,8 +175,6 @@ void vrpn_Contour_ShuttleXpress::decodePacket(size_t bytes, vrpn_uint8 *buffer) 
         // byte is removed by the HIDAPI driver.
 	// XXX Check to see that this works with HIDAPI, there may be two smaller reports.
 	if (bytes == 5) {
-		static bool set = false;
-
 		// analog (1st byte): 0 center, 1..7 right, -1..-7 left
 		normalize_axis((unsigned int) ((static_cast<float>(static_cast<vrpn_int8>(buffer[0])) * 128.0f / 7.0f) + 128.0f), 0, 1.0f, channel[0]);
 

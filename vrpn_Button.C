@@ -594,13 +594,15 @@ vrpn_Button_Parallel::~vrpn_Button_Parallel()
 }
 
 vrpn_Button_Python::vrpn_Button_Python (const char * name, vrpn_Connection * c, int p) :
-    vrpn_Button_Parallel (name, c, p) {
-
+    vrpn_Button_Parallel (name, c, p)
+    , d_first_fail(true)
+{
 }
 
 
 vrpn_Button_Python::vrpn_Button_Python (const char * name, vrpn_Connection * c, int p, unsigned ph) :
-    vrpn_Button_Parallel (name, c, p, ph) {
+    vrpn_Button_Parallel (name, c, p, ph)
+{
 }
 
 void vrpn_Button_Python::mainloop()
@@ -614,13 +616,11 @@ void vrpn_Button_Python::mainloop()
 	report_changes();
       	break;
       case BUTTON_FAIL:
-      	{	static int first = 1;
-         	if (first) {
-         		first = 0;
-	      		fprintf(stderr, "vrpn_Button_Python failure!\n");
-			send_text_message("Failure", timestamp, vrpn_TEXT_ERROR);
-         	}
-        }
+        if (d_first_fail) {
+          d_first_fail = false;
+          fprintf(stderr, "vrpn_Button_Python failure!\n");
+          send_text_message("Failure", timestamp, vrpn_TEXT_ERROR);
+       	}
       	break;
    }
 }
