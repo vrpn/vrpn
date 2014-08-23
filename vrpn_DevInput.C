@@ -53,7 +53,6 @@ static const std::string &getDeviceNodes(const std::string &device_name) {
     errno = 0;
     id++;
   }
-  s_initialized = true;
   if (permission_missing) {
     std::cout << "vrpn_DevInput device scan warning : permission denied for some nodes !" << std::endl;
   }
