@@ -94,9 +94,12 @@ void vrpn_Joylin::mainloop(void)
   // Since we are a server, call the generic server mainloop()
   server_mainloop();
 
-  FD_ZERO(&fdset);                      /* clear fdset              */
-  FD_SET(fd, &fdset);                   /* include fd in fdset      */ 
-  select(fd+1, &fdset, NULL, NULL, &zerotime);
+  bool got_response;
+  do {
+    got_response = false;
+    FD_ZERO(&fdset);                      /* clear fdset              */
+    FD_SET(fd, &fdset);                   /* include fd in fdset      */ 
+    select(fd+1, &fdset, NULL, NULL, &zerotime);
 
     if (FD_ISSET(fd, &fdset)){            
       if (read(fd, &js, sizeof(struct js_event)) != sizeof(struct js_event)) {
@@ -110,6 +113,7 @@ void vrpn_Joylin::mainloop(void)
 	  init();
 	  return;
       }
+      got_response = true;
 
       switch(js.type & ~JS_EVENT_INIT) {
       case JS_EVENT_BUTTON:
@@ -142,6 +146,7 @@ void vrpn_Joylin::mainloop(void)
       vrpn_Analog::report_changes(); // report any analog event;
       vrpn_Button::report_changes(); // report any button event;
     }
+  } while (got_response);
 }
 
 #else 
