@@ -94,6 +94,8 @@ void vrpn_Joylin::mainloop(void)
   // Since we are a server, call the generic server mainloop()
   server_mainloop();
 
+  if (fd < 0) { return; }
+
   bool got_response;
   do {
     got_response = false;
