@@ -446,7 +446,10 @@ void vrpn_Tracker_RazerHydra::_report_for_sensor(int sensorNum, vrpn_uint8 * dat
     static const double SCALE_INT16_TO_FLOAT_PLUSMINUS_1 = 1.0 / 32768.0;
     static const double SCALE_UINT8_TO_FLOAT_0_TO_1 = 1.0 / 255.0;
     const int channelOffset = sensorNum * 3;
-    const int buttonOffset  = sensorNum * 7;
+    // There are only 7 buttons per hydra, but the original driver code here
+    // skipped 8 per hand-held unit.  We're leaving this the same to avoid
+    // clients having to remap their controls.
+    const int buttonOffset  = sensorNum * 8;
 
     d_sensor = sensorNum;
 
