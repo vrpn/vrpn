@@ -37,7 +37,7 @@ vrpn_3DConnexion::vrpn_3DConnexion(vrpn_HidAcceptor *filter, unsigned num_button
   : vrpn_Button_Filter(name, c)
   , vrpn_Analog(name, c)
 #if defined(VRPN_USE_HID)
-  , vrpn_HidInterface(_filter)
+  , vrpn_HidInterface(filter)
 #endif
   , _filter(filter)
 {
