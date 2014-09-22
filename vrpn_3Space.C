@@ -187,7 +187,7 @@ int vrpn_Tracker_3Space::get_report(void)
 	unsigned char decode[17];
 	int i;
 
-	static unsigned char mask[8] = {0x01, 0x02, 0x04, 0x08,
+	const unsigned char mask[8] = {0x01, 0x02, 0x04, 0x08,
 					0x10, 0x20, 0x40, 0x80 };
 	// Clear the MSB in the first byte
 	buffer[0] &= 0x7F;
