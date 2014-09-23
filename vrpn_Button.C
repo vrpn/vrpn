@@ -319,7 +319,8 @@ vrpn_int32 vrpn_Button_Filter::encode_states_to(char *buf)
 }
 
 
-static int VRPN_CALLBACK client_msg_handler(void *userdata, vrpn_HANDLERPARAM p) {
+static int VRPN_CALLBACK client_msg_handler(void *userdata, vrpn_HANDLERPARAM p)
+{
   vrpn_Button_Filter * instance = (vrpn_Button_Filter *) userdata;
   const char *bufptr = p.buffer;
   vrpn_int32 event;
@@ -569,7 +570,7 @@ vrpn_Button_Parallel::vrpn_Button_Parallel(const char *name,
       //  - BCE 08 July 03
 
 #ifdef _outp
-        static const unsigned short DATA_REGISTER_OFFSET = 0;
+        const unsigned short DATA_REGISTER_OFFSET = 0;
         _outp((unsigned short)(port + DATA_REGISTER_OFFSET), 3);
 #else
 	fprintf(stderr,"vrpn_Button_Parallel: Not setting bit 0 on Linux, may not work with all ports\n");
@@ -650,7 +651,7 @@ void vrpn_Button_Python::read(void)
 
 #elif _WIN32
   #ifndef __CYGWIN__
-	static const unsigned short STATUS_REGISTER_OFFSET = 1;
+	const unsigned short STATUS_REGISTER_OFFSET = 1;
     for (i = 0; i < debounce_count; i++) {
       #ifdef _inp
 	status_register[i] = _inp((unsigned short)(port + STATUS_REGISTER_OFFSET));
@@ -723,7 +724,9 @@ vrpn_Button_Serial::~vrpn_Button_Serial() {
 
 // init pinch glove to send hand data only
 vrpn_Button_PinchGlove::vrpn_Button_PinchGlove(const char* name, vrpn_Connection *c, 
-               const char *port, long baud) : vrpn_Button_Serial(name, c, port, baud)
+               const char *port, long baud)
+ : vrpn_Button_Serial(name, c, port, baud)
+ , reported_failure(false)
 { 
    num_buttons = 10;   // 0-4: right, 5-9: left starting from thumb
    status = BUTTON_READY;
@@ -757,9 +760,9 @@ void vrpn_Button_PinchGlove::mainloop()
 	      report_changes();
       	break;
       case BUTTON_FAIL: 
-         {  static int first = 1;
-            if (first) {
-         	   first = 0;
+         {
+            if (!reported_failure) {
+         	   reported_failure = true;
 	      	   fprintf(stderr, "vrpn_Button_PinchGlove failure!\n");
             }
          }

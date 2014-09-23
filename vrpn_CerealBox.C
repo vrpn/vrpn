@@ -22,8 +22,8 @@
 
 #undef VERBOSE
 
-static char	offset = 0x21;	// Offset added to some characters to avoid ctl chars
-static double	REV_PER_TICK = 1.0/4096;	// How many revolutions per encoder tick?
+static const char	offset = 0x21;	// Offset added to some characters to avoid ctl chars
+static const double	REV_PER_TICK = 1.0/4096;	// How many revolutions per encoder tick?
 
 // Defines the modes in which the box can find itself.
 #define	STATUS_RESETTING	(-1)	// Resetting the box

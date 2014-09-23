@@ -2219,8 +2219,7 @@ int vrpn_udp_request_lob_packet(
  * the default value is NULL, which uses the default NIC.
  */
 
-static
-int vrpn_get_a_TCP_socket (SOCKET * listen_sock, int * listen_portnum,
+static int vrpn_get_a_TCP_socket (SOCKET * listen_sock, int * listen_portnum,
                            const char * NIC_IP = NULL)
 {
   struct sockaddr_in listen_name;	/* The listen socket binding name */
@@ -2271,8 +2270,7 @@ int vrpn_get_a_TCP_socket (SOCKET * listen_sock, int * listen_portnum,
  * it returns 0. If there is an error along the way, it returns -1.
  */
 
-static
-int vrpn_poll_for_accept(SOCKET listen_sock, SOCKET *accept_sock, double timeout = 0.0)
+static int vrpn_poll_for_accept(SOCKET listen_sock, SOCKET *accept_sock, double timeout = 0.0)
 {
 	fd_set	rfds;
 	struct	timeval t;
@@ -2331,8 +2329,7 @@ int vrpn_poll_for_accept(SOCKET listen_sock, SOCKET *accept_sock, double timeout
  *      This routine returns a file descriptor that points to the socket
  * to the server on success and -1 on failure.
  */
-static
-int vrpn_start_server(const char * machine, char * server_name, char * args,
+static int vrpn_start_server(const char * machine, char * server_name, char * args,
                       const char * IPaddress = NULL)
 {
 #if defined(VRPN_USE_WINSOCK_SOCKETS) || defined(__CYGWIN__)

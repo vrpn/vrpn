@@ -17,7 +17,7 @@ static const vrpn_uint16 XKEYS_XK3 = 0x042C;
 
 vrpn_Xkeys::vrpn_Xkeys(vrpn_HidAcceptor *filter, const char *name, vrpn_Connection *c, bool toggle_light)
   : _filter(filter)
-  , vrpn_HidInterface(_filter)
+  , vrpn_HidInterface(filter)
   , vrpn_BaseClass(name, c)
   , _toggle_light(toggle_light)
 {

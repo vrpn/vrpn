@@ -34,6 +34,7 @@
  ******************************************************************************/
 vrpn_5dt::vrpn_5dt (const char * p_name, vrpn_Connection * p_c, const char * p_port, int p_baud, int p_mode, bool tenbytes):
   vrpn_Serial_Analog (p_name, p_c, p_port, p_baud, 8, vrpn_SER_PARITY_NONE),
+  _announced(false),	// Not yet announced our warning.
   _numchannels (8),	// This is an estimate; will change when reports come
   _tenbytes (tenbytes),	// Do we expect ten-byte messages?
   _wireless (p_baud == 9600), // 9600 baud implies a wireless glove.
@@ -428,10 +429,9 @@ void vrpn_5dt::mainloop ()
 
   server_mainloop();
   if (_wireless) {
-    static bool announced = false;
-    if (!announced) {
+    if (!_announced) {
       VRPN_MSG_INFO ("Will connect to a receive-only 'wireless-type' glove - there may be a few warnings before we succeed.");
-      announced = true;
+      _announced = true;
     }
   }
   switch (_status)

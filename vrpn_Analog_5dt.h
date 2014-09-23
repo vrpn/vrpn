@@ -36,6 +36,7 @@ public:
 	void syncing (void);
 
   protected:
+	bool _announced;		//< Did we make the note about potential warnings yet?
 	bool _wireless;			//< Whether this glove is using the wireless protocol
 	bool _gotInfo;			//< Whether we've sent a message about this wireless glove
 	int _status;		    //< Reset, Syncing, or Reading
