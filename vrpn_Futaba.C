@@ -8,7 +8,7 @@
 
 #if defined(VRPN_USE_HID)
 
-static double POLL_INTERVAL = 1e+6 / 30.0;		// If we have not heard, ask.
+static const double POLL_INTERVAL = 1e+6 / 30.0;		// If we have not heard, ask.
 
 // USB vendor and product IDs for the models we support
 static const vrpn_uint16 FUTABA_VENDOR = 0x1781;
@@ -146,17 +146,6 @@ void vrpn_Futaba_InterLink_Elite::decodePacket(size_t bytes, vrpn_uint8 *buffer)
 	// XXX Check to see that this works with HIDAPI, there may be two smaller reports.
 	if (bytes == 8) {
 		if (buffer[0] == 5) {
-			static bool set = false;
-			static vrpn_uint8 initials[8];
-
-			if (!set)
-			{
-				set = true;
-				for (size_t i = 0; i < bytes; i++)
-				{
-					initials[i] = buffer[i];
-				}
-			}
 
 			// Report joystick axes as analogs
 			//	rudder (6th byte, left joy left/right, left/right): Left 2B, center (normal) 82 (calc 84), right DC
@@ -166,8 +155,7 @@ void vrpn_Futaba_InterLink_Elite::decodePacket(size_t bytes, vrpn_uint8 *buffer)
 			//	elevator (3rd byte, right joy up/down, forward/back): Up 34, center (normal) 81 (calc 81), down CF
 			normalize_axes(buffer[1], buffer[2], 5, (1.0f / 0.70f), channel[2], channel[3]);
 
-			if (vrpn_Dial::num_dials > 0)
-			{
+			if (vrpn_Dial::num_dials > 0) {
 				// dial (5th byte): Ch6 00-FF
 				// Do the unsigned/signed conversion at the last minute so the
 				// signed values work properly.

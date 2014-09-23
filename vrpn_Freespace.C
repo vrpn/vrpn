@@ -3,7 +3,7 @@
 #include "quat.h"
 #include <freespace/freespace_codecs.h>
 #include <cstring>
-static q_type gs_qIdent = Q_ID_QUAT;
+static const q_type gs_qIdent = Q_ID_QUAT;
 
 // libfreespace provides linear acceleration values in (mm/(s^2))^-3 
 // VRPN wants these in meters/(s^2)

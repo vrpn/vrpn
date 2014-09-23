@@ -8,7 +8,7 @@
 
 #if defined(VRPN_USE_HID)
 
-static double POLL_INTERVAL = 1e+6 / 30.0;		// If we have not heard, ask.
+static const double POLL_INTERVAL = 1e+6 / 30.0;		// If we have not heard, ask.
 
 // USB vendor and product IDs for the models we support
 static const vrpn_uint16 CONTOUR_VENDOR = 0x0b33;

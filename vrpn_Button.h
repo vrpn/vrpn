@@ -203,6 +203,7 @@ public:
    virtual void mainloop();
 
 protected:
+   bool reported_failure;
    virtual void read();
    void report_no_timestamp(); // set the glove to report data without timestamp
 };
