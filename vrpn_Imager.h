@@ -457,6 +457,11 @@ public:
 
   // XXX Add routines to read scaled pixels.  Clamp values.
 
+  // Report the type of the values stored in the region.  The above routines
+  // use this to decode automatically, but user code may want to do different
+  // things with different types of data.
+  vrpn_uint16 get_val_type(void) const { return d_valType; }
+
   vrpn_int16  d_chanIndex;	//< Which channel this region holds data for 
   vrpn_uint16 d_rMin, d_rMax;	//< Range of indices for the rows
   vrpn_uint16 d_cMin, d_cMax;	//< Range of indices for the columns

@@ -8,11 +8,9 @@
 # Barth (haba@pdc.kth.se).
 */
 
-
 #include "vrpn_Joylin.h"
 
 #ifdef VRPN_USE_JOYLIN
-
 
 #define NAME_LENGTH 128
 
@@ -23,7 +21,6 @@
 #include "vrpn_Shared.h"                // for timeval, vrpn_gettimeofday
 #include "vrpn_Types.h"                 // for vrpn_float64
 
-struct timeval;
 #include <sys/ioctl.h>                  // for ioctl
 #include <unistd.h>                     // for read
 #include <string.h>                     // for strncpy
@@ -76,13 +73,16 @@ int vrpn_Joylin::init()
   ioctl(fd, JSIOCGBUTTONS, &num_buttons);
   ioctl(fd, JSIOCGNAME(namelen), devname);
   
-  fprintf(stderr, "Joystick (%s) has %d axes and %d buttons. Driver version is %d.%d.%d.\n",
+#ifdef DEBUG
+  printf("Joystick (%s) has %d axes and %d buttons. Driver version is %d.%d.%d.\n",
 	  devname, num_channel, num_buttons, version >> 16, (version >> 8) & 0xff, version & 0xff);
+#endif
 
   return 0;
 }
 
-void vrpn_Joylin::mainloop(void) {
+void vrpn_Joylin::mainloop(void)
+{
   struct timeval zerotime;
   fd_set fdset;
   struct js_event js;
@@ -93,11 +93,15 @@ void vrpn_Joylin::mainloop(void) {
   
   // Since we are a server, call the generic server mainloop()
   server_mainloop();
- 
 
-  FD_ZERO(&fdset);                      /* clear fdset              */
-  FD_SET(fd, &fdset);                   /* include fd in fdset      */ 
-  select(fd+1, &fdset, NULL, NULL, &zerotime);
+  if (fd < 0) { return; }
+
+  bool got_response;
+  do {
+    got_response = false;
+    FD_ZERO(&fdset);                      /* clear fdset              */
+    FD_SET(fd, &fdset);                   /* include fd in fdset      */ 
+    select(fd+1, &fdset, NULL, NULL, &zerotime);
 
     if (FD_ISSET(fd, &fdset)){            
       if (read(fd, &js, sizeof(struct js_event)) != sizeof(struct js_event)) {
@@ -111,6 +115,7 @@ void vrpn_Joylin::mainloop(void) {
 	  init();
 	  return;
       }
+      got_response = true;
 
       switch(js.type & ~JS_EVENT_INIT) {
       case JS_EVENT_BUTTON:
@@ -143,6 +148,7 @@ void vrpn_Joylin::mainloop(void) {
       vrpn_Analog::report_changes(); // report any analog event;
       vrpn_Button::report_changes(); // report any button event;
     }
+  } while (got_response);
 }
 
 #else 

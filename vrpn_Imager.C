@@ -92,8 +92,8 @@ bool  vrpn_Imager_Server::send_begin_frame(const vrpn_uint16 cMin, const vrpn_ui
 			 const vrpn_uint16 dMin, const vrpn_uint16 dMax,
 			 const struct timeval *time)
 {
-  // msgbuf must be float64-aligned!  It is the buffer to send to the client; static to avoid reallocating
-  static  vrpn_float64 fbuf [vrpn_CONNECTION_TCP_BUFLEN/sizeof(vrpn_float64)];
+  // msgbuf must be float64-aligned!  It is the buffer to send to the client
+  vrpn_float64 fbuf [vrpn_CONNECTION_TCP_BUFLEN/sizeof(vrpn_float64)];
   char	  *msgbuf = (char *) fbuf;
   int	  buflen = sizeof(fbuf);
   struct  timeval timestamp;
@@ -166,8 +166,8 @@ bool  vrpn_Imager_Server::send_end_frame(const vrpn_uint16 cMin, const vrpn_uint
 			 const vrpn_uint16 dMin, const vrpn_uint16 dMax,
 			 const struct timeval *time)
 {
-  // msgbuf must be float64-aligned!  It is the buffer to send to the client; static to avoid reallocating
-  static  vrpn_float64 fbuf [vrpn_CONNECTION_TCP_BUFLEN/sizeof(vrpn_float64)];
+  // msgbuf must be float64-aligned!  It is the buffer to send to the client
+  vrpn_float64 fbuf [vrpn_CONNECTION_TCP_BUFLEN/sizeof(vrpn_float64)];
   char	  *msgbuf = (char *) fbuf;
   int	  buflen = sizeof(fbuf);
   struct  timeval timestamp;
@@ -223,7 +223,7 @@ bool  vrpn_Imager_Server::send_end_frame(const vrpn_uint16 cMin, const vrpn_uint
 bool  vrpn_Imager_Server::send_discarded_frames(const vrpn_uint16 count,
 			 const struct timeval *time)
 {
-  // msgbuf must be float64-aligned!  It is the buffer to send to the client; static to avoid reallocating
+  // msgbuf must be float64-aligned!  It is the buffer to send to the client
   vrpn_float64 fbuf [vrpn_CONNECTION_TCP_BUFLEN/sizeof(vrpn_float64)];
   char	  *msgbuf = (char *) fbuf;
   int	  buflen = sizeof(fbuf);
@@ -281,8 +281,8 @@ bool  vrpn_Imager_Server::send_region_using_base_pointer(vrpn_int16 chanIndex,
 		    vrpn_uint32 depthStride, vrpn_uint16 dMin, vrpn_uint16 dMax,
 		    const struct timeval *time)
 {
-  // msgbuf must be float64-aligned!  It is the buffer to send to the client; static to avoid reallocating
-  static  vrpn_float64 fbuf [vrpn_CONNECTION_TCP_BUFLEN/sizeof(vrpn_float64)];
+  // msgbuf must be float64-aligned!  It is the buffer to send to the client;
+  vrpn_float64 fbuf [vrpn_CONNECTION_TCP_BUFLEN/sizeof(vrpn_float64)];
   char    *msgbuf = reinterpret_cast<char *>(fbuf);
   int	  buflen = sizeof(fbuf);
   struct  timeval timestamp;
@@ -447,7 +447,7 @@ bool  vrpn_Imager_Server::send_region_using_base_pointer(vrpn_int16 chanIndex, v
 		    const struct timeval *time)
 {
   // msgbuf must be float64-aligned!  It is the buffer to send to the client
-  static  vrpn_float64 fbuf [vrpn_CONNECTION_TCP_BUFLEN/sizeof(vrpn_float64)];
+  vrpn_float64 fbuf [vrpn_CONNECTION_TCP_BUFLEN/sizeof(vrpn_float64)];
   char	  *msgbuf = (char *) fbuf;
   int	  buflen = sizeof(fbuf);
   struct  timeval timestamp;
@@ -616,7 +616,7 @@ bool  vrpn_Imager_Server::send_region_using_base_pointer(vrpn_int16 chanIndex, v
 		    const struct timeval *time)
 {
   // msgbuf must be float64-aligned!  It is the buffer to send to the client
-  static  vrpn_float64 fbuf [vrpn_CONNECTION_TCP_BUFLEN/sizeof(vrpn_float64)];
+  vrpn_float64 fbuf [vrpn_CONNECTION_TCP_BUFLEN/sizeof(vrpn_float64)];
   char	  *msgbuf = (char *) fbuf;
   int	  buflen = sizeof(fbuf);
   struct  timeval timestamp;
@@ -884,7 +884,7 @@ bool  vrpn_Imager_Server::send_region_using_first_pointer(vrpn_int16 chanIndex, 
 bool  vrpn_Imager_Server::send_description(void)
 {
   // msgbuf must be float64-aligned!
-  static  vrpn_float64 fbuf [vrpn_CONNECTION_TCP_BUFLEN/sizeof(vrpn_float64)];
+  vrpn_float64 fbuf [vrpn_CONNECTION_TCP_BUFLEN/sizeof(vrpn_float64)];
   char	  *msgbuf = (char *) fbuf;
   int	  buflen = sizeof(fbuf);
   struct  timeval timestamp;
@@ -1195,8 +1195,7 @@ int vrpn_Imager_Remote::handle_connection_dropped_message(void *userdata,
 bool  vrpn_Imager_Remote::throttle_sender(vrpn_int32 N)
 {
   // msgbuf must be float64-aligned!
-  // Static to avoid new/delete each call.
-  static  vrpn_float64 fbuf [vrpn_CONNECTION_TCP_BUFLEN/sizeof(vrpn_float64)];
+  vrpn_float64 fbuf [vrpn_CONNECTION_TCP_BUFLEN/sizeof(vrpn_float64)];
   char	  *msgbuf = (char *) fbuf;
   int	  buflen = sizeof(fbuf);
   struct  timeval timestamp;
@@ -1667,8 +1666,7 @@ bool  vrpn_ImagerPose_Server::set_range(const vrpn_float64 origin[3], const vrpn
 bool  vrpn_ImagerPose_Server::send_description(void)
 {
   // msgbuf must be float64-aligned!
-  // Static to avoid new/delete each call.
-  static  vrpn_float64 fbuf [vrpn_CONNECTION_TCP_BUFLEN/sizeof(vrpn_float64)];
+  vrpn_float64 fbuf [vrpn_CONNECTION_TCP_BUFLEN/sizeof(vrpn_float64)];
   char	  *msgbuf = (char *) fbuf;
   int	  buflen = sizeof(fbuf);
   struct  timeval timestamp;

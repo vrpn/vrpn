@@ -14,7 +14,7 @@ static const vrpn_uint16 USB_ROLL_UP_DRUM_KIT = 32801;
 
 vrpn_DreamCheeky::vrpn_DreamCheeky(vrpn_HidAcceptor *filter, const char *name, vrpn_Connection *c)
   : _filter(filter)
-  , vrpn_HidInterface(_filter)
+  , vrpn_HidInterface(filter)
   , vrpn_BaseClass(name, c)
 {
 }

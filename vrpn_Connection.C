@@ -104,9 +104,6 @@ struct timeval;
 //#define VERBOSE
 //#define VERBOSE2
 //#define VERBOSE3
-//#define PRINT_READ_HISTOGRAM
-
-//   Warning:  PRINT_READ_HISTOGRAM is not thread-safe.
 
 // On Win32, this constant is defined as ~0 (sockets are unsigned ints)
 #ifndef	VRPN_USE_WINSOCK_SOCKETS
@@ -2222,8 +2219,7 @@ int vrpn_udp_request_lob_packet(
  * the default value is NULL, which uses the default NIC.
  */
 
-static
-int vrpn_get_a_TCP_socket (SOCKET * listen_sock, int * listen_portnum,
+static int vrpn_get_a_TCP_socket (SOCKET * listen_sock, int * listen_portnum,
                            const char * NIC_IP = NULL)
 {
   struct sockaddr_in listen_name;	/* The listen socket binding name */
@@ -2274,8 +2270,7 @@ int vrpn_get_a_TCP_socket (SOCKET * listen_sock, int * listen_portnum,
  * it returns 0. If there is an error along the way, it returns -1.
  */
 
-static
-int vrpn_poll_for_accept(SOCKET listen_sock, SOCKET *accept_sock, double timeout = 0.0)
+static int vrpn_poll_for_accept(SOCKET listen_sock, SOCKET *accept_sock, double timeout = 0.0)
 {
 	fd_set	rfds;
 	struct	timeval t;
@@ -2334,8 +2329,7 @@ int vrpn_poll_for_accept(SOCKET listen_sock, SOCKET *accept_sock, double timeout
  *      This routine returns a file descriptor that points to the socket
  * to the server on success and -1 on failure.
  */
-static
-int vrpn_start_server(const char * machine, char * server_name, char * args,
+static int vrpn_start_server(const char * machine, char * server_name, char * args,
                       const char * IPaddress = NULL)
 {
 #if defined(VRPN_USE_WINSOCK_SOCKETS) || defined(__CYGWIN__)
@@ -2832,38 +2826,6 @@ int vrpn_Endpoint_IP::mainloop (timeval * timeout) {
 	tcp_messages_read = tcp_messages_read; // Avoid compiler warning
 #endif
     }
-#ifdef	PRINT_READ_HISTOGRAM
-#define      HISTSIZE 25
-   {
-        static vrpn_uint32 count = 0;
-        static int tcp_histogram[HISTSIZE+1];
-        static int udp_histogram[HISTSIZE+1];
-        count++;
-
-        if (tcp_messages_read > HISTSIZE) {tcp_histogram[HISTSIZE]++;}
-        else {tcp_histogram[tcp_messages_read]++;};
-
-        if (udp_messages_read > HISTSIZE) {udp_histogram[HISTSIZE]++;}
-        else {udp_histogram[udp_messages_read]++;};
-
-        if (count == 3000L) {
-		int i;
-                count = 0;
-		printf("\nHisto (tcp): ");
-                for (i = 0; i < HISTSIZE+1; i++) {
-                        printf("%d ",tcp_histogram[i]);
-                        tcp_histogram[i] = 0;
-                }
-                printf("\n");
-		printf("      (udp): ");
-                for (i = 0; i < HISTSIZE+1; i++) {
-                        printf("%d ",udp_histogram[i]);
-                        udp_histogram[i] = 0;
-                }
-                printf("\n");
-        }
-   }
-#endif
       	break;
 
       case COOKIE_PENDING:
@@ -3112,7 +3074,7 @@ int vrpn_Endpoint_IP::send_pending_reports (void) {
     fprintf(stderr, "vrpn_Endpoint::send_pending_reports():  "
                     "select() failed.\n");
 #ifdef VRPN_USE_WINSOCK_SOCKETS
-    static char Message[1024];
+    char Message[1024];
     FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS |
                   FORMAT_MESSAGE_MAX_WIDTH_MASK, NULL, WSAGetLastError(),
                   MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPSTR)Message, 1024, NULL);
@@ -4887,7 +4849,10 @@ vrpn_Connection::vrpn_Connection
 vrpn_Connection::~vrpn_Connection (void) {
 
   // Clean up types, senders, and callbacks.
-  delete d_dispatcher;
+  if (d_dispatcher) {
+    delete d_dispatcher;
+    d_dispatcher = NULL;
+  }
 
   if (d_references > 0) {
     fprintf(stderr, "Connection was deleted while %d references still remain.\n",

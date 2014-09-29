@@ -12,36 +12,28 @@
 static const vrpn_uint16 CHPRODUCTS_VENDOR = 0x068e;
 static const vrpn_uint16 FIGHTERSTICK_USB = 0x00f3;
 
-static double POLL_INTERVAL = 1e+6 / 30.0;		// If we have not heard, ask.
+static const double POLL_INTERVAL = 1e+6 / 30.0;		// If we have not heard, ask.
 
 #define GAMEPAD_TRIGGER_THRESHOLD 30
 
 //////////////////////////////////////////////////////////////////////////
 // helpers
 //////////////////////////////////////////////////////////////////////////
-static unsigned long duration(struct timeval t1, struct timeval t2)
-{
-	return ((t1.tv_usec - t2.tv_usec) + (1000000L * (t1.tv_sec - t2.tv_sec)));
-}
 
 static vrpn_float64 normalize_dpad(unsigned char up, unsigned char right, unsigned char down, unsigned char left)
 {
 	int x = 0;
 	int y = 0;
-	if (right)
-	{
+	if (right) {
 		x += 1;
 	}
-	if (left)
-	{
+	if (left) {
 		x -= 1;
 	}
-	if (up)
-	{
+	if (up) {
 		y += 1;
 	}
-	if (down)
-	{
+	if (down) {
 		y -= 1;
 	}
 	size_t index = ((x + 1) * 3) + (y + 1);
@@ -82,7 +74,9 @@ static vrpn_float64 normalize_trigger(unsigned int trigger)
 // Common base class
 //////////////////////////////////////////////////////////////////////////
 vrpn_CHProducts_Controller_Raw::vrpn_CHProducts_Controller_Raw(vrpn_HidAcceptor *filter, const char *name, vrpn_Connection *c) :
-	_filter(filter), vrpn_HidInterface(_filter), vrpn_BaseClass(name, c)
+	_filter(filter)
+	, vrpn_HidInterface(filter)
+	, vrpn_BaseClass(name, c)
 {
 	init_hid();
 }
@@ -140,7 +134,7 @@ void vrpn_CHProducts_Fighterstick_USB::mainloop(void)
 	server_mainloop();
 	struct timeval current_time;
 	vrpn_gettimeofday(&current_time, NULL);
-	if (duration(current_time, _timestamp) > POLL_INTERVAL)
+	if (vrpn_TimevalDuration(current_time, _timestamp) > POLL_INTERVAL)
 	{
 		_timestamp = current_time;
 		report_changes();

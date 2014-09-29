@@ -25,6 +25,7 @@ d_level_to_print(0)
 /** Deletes any callbacks that are still registered. */
 vrpn_TextPrinter::~vrpn_TextPrinter()
 {
+    d_semaphore.p();
   /* XXX No longer removes these.  We get into trouble with the
      system-defined vrpn_System_TextPrinter destructor because it
      may run after the vrpn_ConnectionManager destructor has run,
@@ -51,6 +52,7 @@ vrpn_TextPrinter::~vrpn_TextPrinter()
 	victim = next;
     }
 #endif // XXX
+    d_semaphore.v();
 }
 
 /** Adds an object to the list of watched objects.  Returns 0 on success and
@@ -62,11 +64,13 @@ vrpn_TextPrinter::~vrpn_TextPrinter()
 */
 int vrpn_TextPrinter::add_object(vrpn_BaseClass *o)
 {
+    d_semaphore.p();
     vrpn_TextPrinter_Watch_Entry    *victim;
 
     // Make sure we have an actual object.
     if (o == NULL) {
 	fprintf(stderr, "vrpn_TextPrinter::add_object(): NULL pointer passed\n");
+        d_semaphore.v();
 	return -1;
     }
 
@@ -80,6 +84,7 @@ int vrpn_TextPrinter::add_object(vrpn_BaseClass *o)
     while (victim != NULL) {
 	if ( (o->d_connection == victim->obj->d_connection) &&
 	    (strcmp( o->d_servicename, victim->obj->d_servicename) == 0) ) {
+            d_semaphore.v();
 	    return 0;
 	}
 	victim = victim->next;
@@ -88,6 +93,7 @@ int vrpn_TextPrinter::add_object(vrpn_BaseClass *o)
     // Add the object to the beginning of the list.
     if ( (victim = new vrpn_TextPrinter_Watch_Entry) == NULL) {
 	fprintf(stderr,"vrpn_TextPrinter::add_object(): out of memory\n");
+        d_semaphore.v();
 	return -1;
     }
     victim->obj = o;
@@ -100,9 +106,11 @@ int vrpn_TextPrinter::add_object(vrpn_BaseClass *o)
 	fprintf(stderr,"vrpn_TextPrinter::add_object(): Can't register callback\n");
 	d_first_watched_object = victim->next;
 	delete victim;
+        d_semaphore.v();
 	return -1;
     }
 
+    d_semaphore.v();
     return 0;
 }
 
@@ -113,6 +121,7 @@ int vrpn_TextPrinter::add_object(vrpn_BaseClass *o)
 */
 void	vrpn_TextPrinter::remove_object(vrpn_BaseClass *o)
 {
+    d_semaphore.p();
     vrpn_TextPrinter_Watch_Entry    *victim, **snitch;
 
 #ifdef	VERBOSE
@@ -122,10 +131,14 @@ void	vrpn_TextPrinter::remove_object(vrpn_BaseClass *o)
     // Make sure we have an actual object.
     if (o == NULL) {
 	fprintf(stderr,"vrpn_TextPrinter::remove_object(): NULL pointer passed\n");
+        d_semaphore.v();
 	return;
     }
 
     // Find the entry in the list (if it is there).
+    // Starts this pointing at the first watched object, so it will
+    // update that object if it is the one who pointed us at the one
+    // to be deleted.
     snitch = &d_first_watched_object;
     victim = *snitch;
     while ( (victim != NULL) &&
@@ -152,10 +165,12 @@ void	vrpn_TextPrinter::remove_object(vrpn_BaseClass *o)
 	delete victim;
 
 	// We're done.
+        d_semaphore.v();
 	return;
     }
 
     // Object not in the list, so we're done.
+    d_semaphore.v();
     return;
 }
 
@@ -173,6 +188,8 @@ int vrpn_TextPrinter::text_message_handler(void *userdata, vrpn_HANDLERPARAM p)
     vrpn_uint32		level;
     char		message[vrpn_MAX_TEXT_LEN];
 
+    me->d_semaphore.p();
+
 #ifdef	VERBOSE
     printf( "vrpn_TextPrinter: text handler called\n");
 #endif
@@ -183,6 +200,7 @@ int vrpn_TextPrinter::text_message_handler(void *userdata, vrpn_HANDLERPARAM p)
     // Decode the message
     if (vrpn_BaseClassUnique::decode_text_message_from_buffer(message, &severity, &level, p.buffer) != 0) {
 	fprintf(stderr,"vrpn_TextPrinter::text_message_handler(): Can't decode message\n");
+        me->d_semaphore.v();
 	return -1;
     }
 
@@ -213,7 +231,27 @@ int vrpn_TextPrinter::text_message_handler(void *userdata, vrpn_HANDLERPARAM p)
 		 obj->d_connection->sender_name(p.sender), message);
     }
 
+    me->d_semaphore.v();
     return 0;
+}
+
+/// Change the level of printing for the object (sets the minimum level to
+/// print). Default is Warnings and Errors of all levels.
+void vrpn_TextPrinter::set_min_level_to_print(
+      vrpn_TEXT_SEVERITY severity, vrpn_uint32 level)
+{
+  d_semaphore.p();
+  d_severity_to_print = severity; d_level_to_print = level;
+  d_semaphore.v();
+}
+
+/// Change the ostream that will be used to print messages.  Setting a
+/// NULL ostream results in no printing.
+void   vrpn_TextPrinter::set_ostream_to_use(FILE *o)
+{
+  d_semaphore.p();
+  d_ostream = o;
+  d_semaphore.v();
 }
 
 
@@ -243,14 +281,13 @@ vrpn_BaseClass::vrpn_BaseClass (const char * name, vrpn_Connection * c)
     // Note that this might also be true if it was called once before but failed.
     bool firstTimeCalled = (d_connection==NULL);
 
-    if (firstTimeCalled)
-    {
+    if (firstTimeCalled) {
         // Get the connection for this object established. If the user passed in a
         // NULL connection object, then we determine the connection from the name of
         // the object itself (for example, Tracker0@mumble.cs.unc.edu will make a
         // connection to the machine mumble on the standard VRPN port).
         //
-        // The vrpn_BassClassUnique destructor handles telling the connection we
+        // The vrpn_BaseClassUnique destructor handles telling the connection we
         // are no longer referring to it.  Since we only add the reference once
         // here (when d_connection is NULL), it is okay for the unique destructor
         // to remove the reference.
@@ -263,7 +300,7 @@ vrpn_BaseClass::vrpn_BaseClass (const char * name, vrpn_Connection * c)
         }
 
         // Get the part of the name for this device that does not include the connection.
-        // The vrpn_BassClassUnique destructor handles the deletion of the space.
+        // The vrpn_BaseClassUnique destructor handles the deletion of the space.
         d_servicename = vrpn_copy_service_name(name);
     }
 }
@@ -287,19 +324,17 @@ int vrpn_BaseClass::init(void)
     // In the case of multiple inheritance from this base class, the rest of
     //  the code in this function will be executed each time init is called.
 
-    // If we have established a connection, then register the sender and types
-    // that this device type uses.  If one of these fails, set the connection
-    // for this object to NULL to indicate failure, and print an error message.
     if (d_connection) {
+        // Register the sender and types
+        // that this device type uses.  If one of these fails, set the connection
+        // for this object to NULL to indicate failure, and print an error message.
         if (register_senders() || register_types()) {
             fprintf(stderr,"vrpn_BaseClassUnique: Can't register IDs\n");
             d_connection = NULL;
             return -1;
         }
-    }
 
-    // Register the text and ping/pong types, which will be available to all classes for use.
-    if (d_connection) {
+        // Register the text and ping/pong types, which will be available to all classes for use.
         d_text_message_id  = d_connection->register_message_type("vrpn_Base text_message");
         if (d_text_message_id  == -1) {
             fprintf(stderr,"vrpn_BaseClassUnique: Can't register Text type ID\n");
@@ -318,22 +353,19 @@ int vrpn_BaseClass::init(void)
             d_connection = NULL;
             return -1;
         }
-    }
 
-    // Sign us up with the standard print function.
-    if (d_connection) {
+        // Sign us up with the standard print function.
         vrpn_System_TextPrinter.add_object(this);
-    }
-
-    if (d_connection == NULL) {
-        return -1;
-    } else {
         return 0;
+    
+    } else {
+        // Error if we don't have a connection.
+        return -1;
     }
 }
 
 /** Registers the senders (usually only one, that part of the name of the
-    device coming after the "@" sign).  For example, the sender for
+    device coming before the "@" sign).  For example, the sender for
     Tracker0@mumble.cs.unc.edu is Tracker0.  Both the remote device and the
     server device will register the same sender.  If for some reason, there
     is a different sender or more than one sender, this function should be
@@ -357,6 +389,7 @@ int vrpn_BaseClass::register_senders()
 
 
 vrpn_BaseClassUnique::vrpn_BaseClassUnique()  :
+shutup(false),  // don't suppress the "No response from server" messages
 d_connection(NULL),
 d_servicename(NULL),
 d_num_autodeletions(0),
@@ -366,8 +399,6 @@ d_flatline(0)
 {
     // Initialize variables
     d_time_first_ping.tv_sec = d_time_first_ping.tv_usec = 0;
-
-    shutup = false;	// don't suppress the "No response from server" messages
 }
 
 /** Unregister all of the message handlers that were to be autodeleted.
@@ -392,14 +423,14 @@ vrpn_BaseClassUnique::~vrpn_BaseClassUnique ()
     // notify the connection that this object is no longer using it.
     // This was added in the vrpn_BaseClass constructor for exactly one of the
     // objects that are sharing this unique destructor.
-    if (d_connection!=NULL) {
+    if (d_connection != NULL) {
         d_connection->removeReference();
     }
 
     // Delete the space allocated in the constructor for the servicename
     // Because this destructor may be called multiple times, set the pointer
     // to NULL after deleting it, so it won't get deleted again.
-    if (d_servicename) {
+    if (d_servicename != NULL) {
         delete [] d_servicename;
         d_servicename = NULL;
     }

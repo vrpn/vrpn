@@ -166,6 +166,7 @@ class VRPN_API vrpn_Button_Python: public vrpn_Button_Parallel {
 	virtual void mainloop();
   protected:
   	virtual void read(void);
+        bool d_first_fail;
 };
 
 
@@ -202,6 +203,7 @@ public:
    virtual void mainloop();
 
 protected:
+   bool reported_failure;
    virtual void read();
    void report_no_timestamp(); // set the glove to report data without timestamp
 };

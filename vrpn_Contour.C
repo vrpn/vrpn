@@ -8,7 +8,7 @@
 
 #if defined(VRPN_USE_HID)
 
-static double POLL_INTERVAL = 1e+6 / 30.0;		// If we have not heard, ask.
+static const double POLL_INTERVAL = 1e+6 / 30.0;		// If we have not heard, ask.
 
 // USB vendor and product IDs for the models we support
 static const vrpn_uint16 CONTOUR_VENDOR = 0x0b33;
@@ -36,7 +36,7 @@ static void normalize_axes(const unsigned int x, const unsigned int y, const sho
 
 vrpn_Contour::vrpn_Contour(vrpn_HidAcceptor *filter, const char *name, vrpn_Connection *c)
   : _filter(filter)
-  , vrpn_HidInterface(_filter)
+  , vrpn_HidInterface(filter)
   , vrpn_BaseClass(name, c)
 {
 	init_hid();
@@ -175,8 +175,6 @@ void vrpn_Contour_ShuttleXpress::decodePacket(size_t bytes, vrpn_uint8 *buffer) 
         // byte is removed by the HIDAPI driver.
 	// XXX Check to see that this works with HIDAPI, there may be two smaller reports.
 	if (bytes == 5) {
-		static bool set = false;
-
 		// analog (1st byte): 0 center, 1..7 right, -1..-7 left
 		normalize_axis((unsigned int) ((static_cast<float>(static_cast<vrpn_int8>(buffer[0])) * 128.0f / 7.0f) + 128.0f), 0, 1.0f, channel[0]);
 
