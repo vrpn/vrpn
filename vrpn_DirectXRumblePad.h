@@ -40,6 +40,8 @@ protected:
 	//static void FAIL(vrpn_DirectXRumblePad *obj, const char *msg) { struct timeval now; vrpn_gettimeofday(&now, NULL); obj->send_text_message(msg, now, vrpn_TEXT_ERROR); }
 
 private:
+	time_t	last_error;
+
 	// Windows enumeration/window callback functions
 	static BOOL CALLBACK joystick_enum_cb(LPCDIDEVICEINSTANCE lpddi, LPVOID ref);
 	static DWORD CALLBACK thread_proc(LPVOID ref);

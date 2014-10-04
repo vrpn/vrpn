@@ -36,7 +36,7 @@ vrpn_Freespace::vrpn_Freespace(FreespaceDeviceId freespaceId,
 	vrpn_Button::num_buttons = 5;
 	vrpn_Dial::num_dials = 1;
 	memset(&_lastBodyFrameTime, 0, sizeof(_lastBodyFrameTime));
-    _timestamp.tv_sec = 0;
+	_timestamp.tv_sec = 0;
 }
 
 void vrpn_Freespace::freespaceInit() {
