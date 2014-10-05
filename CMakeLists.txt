@@ -534,9 +534,6 @@ else()
 	set(JSONCPP_SOURCES)
 endif()
 
-
-
-
 ###
 # libnifalcon
 ###
