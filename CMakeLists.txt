@@ -1245,16 +1245,10 @@ if(VRPN_BUILD_SERVER_LIBRARY)
 	if(VRPN_INSTALL)
 		install(TARGETS
 			vrpnserver
-			ARCHIVE
-			DESTINATION
-			lib
-			COMPONENT
-			serversdk
-			PUBLIC_HEADER
-			DESTINATION
-			include
-			COMPONENT
-			serversdk)
+			RUNTIME DESTINATION bin COMPONENT serversdk
+			LIBRARY DESTINATION lib${LIB_SUFFIX} COMPONENT serversdk
+			ARCHIVE DESTINATION lib${LIB_SUFFIX} COMPONENT serversdk
+			PUBLIC_HEADER DESTINATION include COMPONENT serversdk)
 	endif()
 	add_cppcheck(vrpnserver STYLE UNUSED_FUNCTIONS)
 endif()
@@ -1292,16 +1286,10 @@ if(VRPN_BUILD_CLIENT_LIBRARY)
 	if(VRPN_INSTALL)
 		install(TARGETS
 			vrpn
-			ARCHIVE
-			DESTINATION
-			lib
-			COMPONENT
-			clientsdk
-			PUBLIC_HEADER
-			DESTINATION
-			include
-			COMPONENT
-			clientsdk)
+			RUNTIME DESTINATION bin COMPONENT clientsdk
+			LIBRARY DESTINATION lib${LIB_SUFFIX} COMPONENT clientsdk
+			ARCHIVE DESTINATION lib${LIB_SUFFIX} COMPONENT clientsdk
+			PUBLIC_HEADER DESTINATION include COMPONENT clientsdk)
 	endif()
 	add_cppcheck(vrpn STYLE UNUSED_FUNCTIONS)
 endif()
