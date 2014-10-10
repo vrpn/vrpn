@@ -31,8 +31,9 @@ class VRPN_API vrpn_Tracker_3DMouse : public vrpn_Tracker_Serial, public vrpn_Bu
   virtual void clear_values(void);
 
   unsigned char		_buffer[2048];
-  int				_filtering_count;
-  int				_numbuttons;
+  int			_filtering_count;
+  int			_numbuttons;
+  int			_count;
 };
 
 #endif

@@ -8,7 +8,7 @@
 
 #if defined(VRPN_USE_HID)
 
-static double POLL_INTERVAL = 1e+6 / 30.0;		// If we have not heard, ask.
+static const double POLL_INTERVAL = 1e+6 / 30.0;		// If we have not heard, ask.
 
 #define MS_GAMEPAD_LEFT_THUMB_DEADZONE 7849
 #define MS_GAMEPAD_RIGHT_THUMB_DEADZONE 8689

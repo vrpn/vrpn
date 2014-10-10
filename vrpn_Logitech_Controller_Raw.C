@@ -12,7 +12,7 @@
 static const vrpn_uint16 LOGITECH_VENDOR = 0x046d;	// 3Dconnexion is made by Logitech
 static const vrpn_uint16 EXTREME_3D_PRO = 0xc215;
 
-static double POLL_INTERVAL = 1e+6 / 30.0;		// If we have not heard, ask.
+static const double POLL_INTERVAL = 1e+6 / 30.0;		// If we have not heard, ask.
 
 #define GAMEPAD_TRIGGER_THRESHOLD 30
 

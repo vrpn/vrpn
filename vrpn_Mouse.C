@@ -205,6 +205,7 @@ vrpn_Button_SerialMouse::vrpn_Button_SerialMouse(const char *name,vrpn_Connectio
     : vrpn_Button_Filter(name, c)
 {
     status = BUTTON_FAIL;
+    bool printed_error = false;
     // Find out the port name and baud rate;
     if (port == NULL) {
 		fprintf(stderr,"vrpn_Button_SerialMouse: NULL port name\n");
@@ -249,9 +250,8 @@ void vrpn_Button_SerialMouse::mainloop()
 	    break;
 	case BUTTON_FAIL:
       	{	
-	    static int first = 1;
-	    if (!first)	break;
-	    first = 0;
+	    if (!printed_error)	break;
+	    printed_error = 0;
 	    send_text_message("vrpn_Button_SerialMouse failure!", timestamp, vrpn_TEXT_ERROR);
         }
       	break;

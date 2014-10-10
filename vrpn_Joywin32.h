@@ -49,6 +49,7 @@ protected:
     vrpn_uint32	  _numchannels;	  // How many analog channels
 
     vrpn_uint8	  _joyNumber;
+    struct timeval last_error_report;	// When the last error report was sent
     
     // joystick caps
     JOYCAPS _jc;

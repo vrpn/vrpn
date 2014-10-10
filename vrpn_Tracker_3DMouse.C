@@ -23,7 +23,8 @@ vrpn_Tracker_3DMouse::vrpn_Tracker_3DMouse(const char *name, vrpn_Connection *c,
     vrpn_Tracker_Serial(name, c, port, baud),
     vrpn_Button_Filter(name, c),
     _filtering_count(filtering_count),
-    _numbuttons(5)
+    _numbuttons(5),
+    _count(0)
 {
 	vrpn_Button::num_buttons = _numbuttons;
 	clear_values();
@@ -42,14 +43,11 @@ vrpn_Tracker_3DMouse::~vrpn_Tracker_3DMouse()
 
 void vrpn_Tracker_3DMouse::reset()
 {
-	static int numResets = 0;	// How many resets have we tried?
 	int ret, i;
-
-	numResets++;		  	// We're trying another reset
 
 	clear_values();
 
-	fprintf(stderr, "Resetting the 3DMouse (attempt %d)\n", numResets);
+	fprintf(stderr, "Resetting the 3DMouse...\n");
 	if (vrpn_write_characters(serial_fd, (unsigned char*)"*R", 2) == 2)
 	{
 		fprintf(stderr,".");
@@ -171,7 +169,6 @@ void vrpn_Tracker_3DMouse::reset()
 	else
 	{
 		fprintf(stderr, "3DMouse gives status (this is good)\n");
-		numResets = 0; 	// Success, use simple reset next time
 	}
 
 	// Set filtering count if the constructor parameter said to.
@@ -210,7 +207,6 @@ bool vrpn_Tracker_3DMouse::set_filtering_count(int count)
 int vrpn_Tracker_3DMouse::get_report(void)
 {
    int ret;		// Return value from function call to be checked
-   static int count = 0;
    timeval waittime;
    waittime.tv_sec = 2;
    waittime.tv_usec = 0;
@@ -224,7 +220,7 @@ int vrpn_Tracker_3DMouse::get_report(void)
 		status = vrpn_TRACKER_RESETTING;
 		return 0;
 	}
-	ret = vrpn_read_available_characters(serial_fd, _buffer+count, 16-count, &waittime);
+	ret = vrpn_read_available_characters(serial_fd, _buffer+_count, 16-_count, &waittime);
 	if (ret < 0)
 	{
 		perror("  3DMouse read failed (disconnected)");
@@ -232,16 +228,16 @@ int vrpn_Tracker_3DMouse::get_report(void)
 		return 0;
 	}
 
-	count += ret;
-	if (count < 16) return 0;
-	if (count > 16)
+	_count += ret;
+	if (_count < 16) return 0;
+	if (_count > 16)
 	{
 		perror("  3DMouse read failed (wrong message)");
 		status = vrpn_TRACKER_RESETTING;
 		return 0;
 	}
 
-	count = 0;
+	_count = 0;
 	
 	tmpc = _buffer[0];
 	if (tmpc & 32)

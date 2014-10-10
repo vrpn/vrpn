@@ -34,6 +34,7 @@ class VRPN_API vrpn_Tng3: public vrpn_Serial_Analog,
     int _numbuttons;	// How many buttons to open
     int _numchannels;	// How many analog channels to open
 
+    unsigned _num_read;		// How many characters have been read on this report?
     unsigned _expected_chars;	// How many characters to expect in the report
     unsigned char _buffer[512];	// Buffer of characters in report
     unsigned _bufcount;		// How many characters we have so far

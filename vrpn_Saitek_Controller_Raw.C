@@ -12,7 +12,7 @@
 static const vrpn_uint16 SAITEK_VENDOR = 0x06a3;
 static const vrpn_uint16 ST290_PRO = 0x0d60;
 
-static double POLL_INTERVAL = 1e+6 / 30.0;		// If we have not heard, ask.
+static const double POLL_INTERVAL = 1e+6 / 30.0;		// If we have not heard, ask.
 
 #define GAMEPAD_TRIGGER_THRESHOLD 30
 
