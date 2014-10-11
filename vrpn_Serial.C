@@ -607,3 +607,15 @@ int vrpn_write_characters(int comm, const unsigned char *buffer, size_t bytes)
 #endif
 }
 
+int     vrpn_write_slowly(int comm, const unsigned char *buffer, size_t bytes, int millisec_delay)
+{       size_t  i;
+
+        for (i = 0; i < bytes; i++) {
+                vrpn_SleepMsecs(millisec_delay);
+                if (vrpn_write_characters(comm, &buffer[i], 1) != 1) {
+                        return -1;
+                }
+        }
+        return static_cast<int>(bytes);
+}
+
