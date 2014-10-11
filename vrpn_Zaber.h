@@ -24,6 +24,7 @@ public:
 	unsigned d_bufcount;		      //< How many characters we have so far
 
 	struct timeval timestamp;   //< Time of the last report from the device
+	struct timeval d_last_poll; //< Time of last poll of the device.
 
 	virtual int reset(void);		//< Set device back to starting config
 	virtual	int get_report(void);		//< Try to read a report from the device

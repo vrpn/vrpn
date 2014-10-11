@@ -40,6 +40,9 @@ vrpn_Zaber::vrpn_Zaber (const char * name, vrpn_Connection * c,
 		vrpn_Serial_Analog(name, c, port),
         vrpn_Analog_Output(name, c)
 {
+  d_last_poll.tv_sec = 0;
+  d_last_poll.tv_usec = 0;
+
   num_channel = 0;	// This is an estimate; will change when the reset happens
   o_num_channel = 0;
 
@@ -442,12 +445,11 @@ void	vrpn_Zaber::mainloop()
 	    struct timeval current_time;
 	    vrpn_gettimeofday(&current_time, NULL);
 	    if ( vrpn_TimevalDuration(current_time,timestamp) > POLL_INTERVAL) {
-	      static struct timeval last_poll = {0, 0};
 
-	      if (vrpn_TimevalDuration(current_time, last_poll) > TIMEOUT_TIME_INTERVAL) {
+	      if (vrpn_TimevalDuration(current_time, d_last_poll) > TIMEOUT_TIME_INTERVAL) {
 		// Tell unit 1 to stop, which will cause it to respond.
 		send_command(1,23,0);
-	        vrpn_gettimeofday(&last_poll, NULL);
+	        vrpn_gettimeofday(&d_last_poll, NULL);
 	      } else {
 		return;
 	      }
