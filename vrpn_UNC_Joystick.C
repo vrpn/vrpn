@@ -14,7 +14,6 @@
 
 static const vrpn_float64 JoyScale[] = {1019, 200, 200, 350, 200, 200, 350};
 
-
 vrpn_Joystick::vrpn_Joystick(char * name, 
 		    vrpn_Connection * c, char * portname,int baud, 
 			     vrpn_float64 update_rate):
@@ -204,8 +203,8 @@ int vrpn_Joystick::get_report() {
 
 void vrpn_Joystick::parse (int index, int reset_rest_pos)
 {
-   static unsigned int temp;
-   static unsigned int mask1 = 7, mask2 = 127, left = 1, right = 2;
+   unsigned int temp;
+   static const unsigned int mask1 = 7, mask2 = 127, left = 1, right = 2;
    
    int chan;	// Channel number extracted from report
    int value;	// Integer value extracted from report

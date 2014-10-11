@@ -588,14 +588,11 @@ void vrpn_Tracker_NovintFalcon::reset()
     // nothing to do
     if (m_devflags < 0) return;
 
-    static int numResets = 0; // How many resets have we tried?
     int ret, i;
-    numResets++;              // We're trying another reset
-
     clear_values();
 
-    fprintf(stderr, "Resetting the NovintFalcon #%d (attempt %d)\n",
-        vrpn_NovintFalcon_Device::MASK_DEVICEIDX & m_devflags, numResets);
+    fprintf(stderr, "Resetting the NovintFalcon #%d\n",
+        vrpn_NovintFalcon_Device::MASK_DEVICEIDX & m_devflags);
 
     if (m_dev)
         delete m_dev;
@@ -618,7 +615,6 @@ void vrpn_Tracker_NovintFalcon::reset()
     }
 
     fprintf(stderr, "Reset Completed.\n");
-    numResets = 0;    // clear variable to avoid confusion.
     status = vrpn_TRACKER_SYNCING;    // We're trying for a new reading
 }
 

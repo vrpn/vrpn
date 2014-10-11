@@ -39,8 +39,8 @@
 #include "vrpn_Types.h"                 // for vrpn_float64, vrpn_int16, etc
 #include "vrpn_raw_sgibox.h"
 
-static	unsigned char	BBOX_RESET = 0x20;
-const	int	VRPN_DIAL_RANGE = 200;
+static	const unsigned char	BBOX_RESET = 0x20;
+static	const int		VRPN_DIAL_RANGE = 200;
 
 static int VRPN_CALLBACK sgibox_raw_con_cb(void * userdata, vrpn_HANDLERPARAM p);
 static int VRPN_CALLBACK sgibox_raw_alert_handler(void * userdata, vrpn_HANDLERPARAM);
@@ -48,7 +48,7 @@ static int VRPN_CALLBACK sgibox_raw_alert_handler(void * userdata, vrpn_HANDLERP
 // This routine writes out the characters slowly, so as not to
 // overburden the poor button box, which seems to choke when a
 // bunch of characters are all sent at once.
-static	int	write_slowly(int fd, unsigned char *buffer, int len)
+static	int	write_slowly(int fd, const unsigned char *buffer, int len)
 {	int	i;
 
 	for (i = 0; i < len; i++) {

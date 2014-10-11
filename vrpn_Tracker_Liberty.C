@@ -29,7 +29,9 @@ vrpn_Tracker_Liberty::vrpn_Tracker_Liberty(const char *name, vrpn_Connection *c,
     vrpn_Tracker_Serial(name,c,port,baud),
     do_filter(enable_filtering),
     num_stations(numstations>vrpn_LIBERTY_MAX_STATIONS ? vrpn_LIBERTY_MAX_STATIONS : numstations),
-    whoami_len(whoamilen>vrpn_LIBERTY_MAX_WHOAMI_LEN ? vrpn_LIBERTY_MAX_WHOAMI_LEN : whoamilen)
+    num_resets(0),
+    whoami_len(whoamilen>vrpn_LIBERTY_MAX_WHOAMI_LEN ? vrpn_LIBERTY_MAX_WHOAMI_LEN : whoamilen),
+    got_single_sync_char(0)
 {
 	int i;
 
@@ -123,7 +125,6 @@ int vrpn_Tracker_Liberty::report_length(int sensor)
 
 void vrpn_Tracker_Liberty::reset()
 {
-   static int numResets = 0;	// How many resets have we tried?
    int i,resetLen,ret;
    char reset[10];
    char errmsg[512];
@@ -145,8 +146,8 @@ void vrpn_Tracker_Liberty::reset()
    // end, we're doing them all.
    fprintf(stderr,"[DEBUG] Beginning Reset");
    resetLen = 0;
-   numResets++;		  	// We're trying another reset
-   if (numResets > 0) {	// Try to get it out of a query loop if its in one
+   num_resets++;		  	// We're trying another reset
+   if (num_resets > 0) {	// Try to get it out of a query loop if its in one
    	reset[resetLen++] = (char) (13); // Return key -> get ready
 	reset[resetLen++] = 'F';
 	reset[resetLen++] = '0';
@@ -158,18 +159,18 @@ void vrpn_Tracker_Liberty::reset()
       headaches for people who are keeping state in their trackers (especially
       the InterSense trackers).  Taking them out in version 05.01; you can put
       them back in if your tracker isn't resetting as well.
-   if (numResets > 3) {	// Get a little more aggressive
+   if (num_resets > 3) {	// Get a little more aggressive
 	reset[resetLen++] = 'W'; // Reset to factory defaults
 	reset[resetLen++] = (char) (11); // Ctrl + k --> Burn settings into EPROM
    }
    */
-   if (numResets > 2) {
+   if (num_resets > 2) {
        reset[resetLen++] = (char) (25); // Ctrl + Y -> reset the tracker
        reset[resetLen++] = (char) (13); // Return Key
    }
    reset[resetLen++] = 'P'; // Put it into polled (not continuous) mode
 
-   sprintf(errmsg, "Resetting the tracker (attempt %d)", numResets);
+   sprintf(errmsg, "Resetting the tracker (attempt %d)", num_resets);
    VRPN_MSG_WARNING(errmsg);
    for (i = 0; i < resetLen; i++) {
 	if (vrpn_write_characters(serial_fd, (unsigned char*)&reset[i], 1) == 1) {
@@ -185,7 +186,7 @@ void vrpn_Tracker_Liberty::reset()
    // You only need to sleep 10 seconds for an actual Liberty.
    // For the Intersense trackers, you need to sleep 20. So,
    // sleeping 20 is the more general solution...
-   if (numResets > 2) {
+   if (num_resets > 2) {
        vrpn_SleepMsecs(1000.0*20);	// Sleep to let the reset happen, if we're doing ^Y
    }
 
@@ -258,7 +259,7 @@ void vrpn_Tracker_Liberty::reset()
    } else {
      VRPN_MSG_WARNING("Liberty/Isense gives status (this is good)");
 printf("LIBERTY LATUS STATUS (whoami):\n%s\n\n",statusmsg);
-     numResets = 0; 	// Success, use simple reset next time
+     num_resets = 0; 	// Success, use simple reset next time
    }
 
    //--------------------------------------------------------------------
@@ -439,7 +440,6 @@ int vrpn_Tracker_Liberty::get_report(void)
    char errmsg[512];	// Error message to send to VRPN
    int ret;		// Return value from function call to be checked
    unsigned char *bufptr;	// Points into buffer at the current value to read
-   static int singleSyncChar = 0; // set if we only get a single sync char
 
    //--------------------------------------------------------------------
    // Each report starts with the ASCII 'LY' characters. If we're synching,
@@ -452,7 +452,7 @@ int vrpn_Tracker_Liberty::get_report(void)
 
      // Try to get the first sync character if don't already have it. 
      // If none, just return.
-     if (singleSyncChar != 1) {
+     if (got_single_sync_char != 1) {
        ret = vrpn_read_available_characters(serial_fd, buffer, 1);
        if (ret != 1) {
 	 //if (DEBUG) fprintf(stderr,"[DEBUG]: Missed First Sync Char, ret= %i\n",ret);
@@ -464,11 +464,11 @@ int vrpn_Tracker_Liberty::get_report(void)
      ret = vrpn_read_available_characters(serial_fd, &buffer[1], 1);
      if (ret == 1) {
        //Got second sync Char
-       singleSyncChar = 0;
+       got_single_sync_char = 0;
      }
      else if (ret != -1) {
        if (DEBUG) fprintf(stderr,"[DEBUG]: Missed Second Sync Char\n");
-       singleSyncChar = 1;
+       got_single_sync_char = 1;
        return 0;
      }
 

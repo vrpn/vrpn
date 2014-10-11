@@ -26,6 +26,7 @@ protected:
   double  _requested_focus;   //< Where we asked the focus to be set to
 
   struct timeval timestamp;   //< Time of the last report from the device
+  struct timeval last_poll;   //< Last time we polled the device
 
   virtual int reset(void);		//< Set device back to starting config
   virtual int get_report(void);		//< Try to read a report from the device

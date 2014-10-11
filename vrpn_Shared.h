@@ -441,7 +441,7 @@ inline int vrpn_unbuffer(ByteT ** input, T * lvalue) {
 // building blocks towards making your own code thread-safe.  They are
 // here to enable the vrpn_Imager_Logger class to do its thing.
 
-#if defined(sgi) || (defined(_WIN32) && !defined(__CYGWIN__)) || defined(linux)
+#if defined(sgi) || (defined(_WIN32) && !defined(__CYGWIN__)) || defined(linux) || defined(__APPLE__)
 #  define vrpn_THREADS_AVAILABLE
 #else
 #  undef vrpn_THREADS_AVAILABLE
