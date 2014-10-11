@@ -5,6 +5,9 @@
 #include <cstring>
 static const q_type gs_qIdent = Q_ID_QUAT;
 
+// We've not yet initialized the FreeSpace library.
+bool vrpn_Freespace::_freespace_initialized = false;
+
 // libfreespace provides linear acceleration values in (mm/(s^2))^-3 
 // VRPN wants these in meters/(s^2)
 static vrpn_float64 convertFreespaceLinearAccelation(int16_t mmpss) {
@@ -29,7 +32,6 @@ vrpn_Freespace::vrpn_Freespace(FreespaceDeviceId freespaceId,
         vrpn_Tracker_Server(name, conn),
         vrpn_Button_Filter(name, conn),
         vrpn_Dial(name, conn),
-        _freespaceDevice(freespaceId)											   
 {
 	memcpy(&_deviceInfo, deviceInfo, sizeof(_deviceInfo));
 	// 5 buttons + a scroll wheel
@@ -40,12 +42,12 @@ vrpn_Freespace::vrpn_Freespace(FreespaceDeviceId freespaceId,
 }
 
 void vrpn_Freespace::freespaceInit() {
-	static bool freespaceInit = false;
-	if (!freespaceInit) {
-		freespaceInit = true;
+	if (!_freespace_initialized) {
+		_freespace_initialized = true;
 		int rc = freespace_init();
 		if (rc != FREESPACE_SUCCESS) {
 			fprintf(stderr, "vrpn_Freespace::freespaceInit: failed to init freespace lib. rc=%d\n", rc);
+			_freespace_initialized = false;
 		}
 	}
 }
