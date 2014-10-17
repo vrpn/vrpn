@@ -220,5 +220,5 @@ CALL_GRAPH             = YES
 # graphs for selected functions only using the \callergraph command.
 
 # For config item CALLER_GRAPH, default is 0
-CALLER_GRAPH           = YES
+CALLER_GRAPH           = NO
 
