@@ -21,28 +21,6 @@ PROJECT_BRIEF          = "Virtual Reality Peripheral Network"
 # Default value for BRIEF_MEMBER_DESC omitted
 # Default value for REPEAT_BRIEF omitted
 
-# This tag implements a quasi-intelligent brief description abbreviator 
-# that is used to form the text in various listings. Each string 
-# in this list, if found as the leading text of the brief description, will be 
-# stripped from the text and the result after processing the whole list, is 
-# used as the annotated text. Otherwise, the brief description is used as-is. 
-# If left blank, the following values are used ("$name" is automatically 
-# replaced with the name of the entity): "The $name class" "The $name widget" 
-# "The $name file" "is" "provides" "specifies" "contains" 
-# "represents" "a" "an" "the"
-
-# For config item ABBREVIATE_BRIEF, default is 
-ABBREVIATE_BRIEF       = "The $name class" \
-                         "The $name widget" \
-                         "The $name file" \
-                         is \
-                         provides \
-                         specifies \
-                         contains \
-                         represents \
-                         a \
-                         an \
-                         the
 # Default value for ALWAYS_DETAILED_SEC omitted
 # Default value for INLINE_INHERITED_MEMB omitted
 
@@ -127,22 +105,6 @@ BUILTIN_STL_SUPPORT    = YES
 # For config item TYPEDEF_HIDES_STRUCT, default is 0
 TYPEDEF_HIDES_STRUCT   = YES
 
-# The SYMBOL_CACHE_SIZE determines the size of the internal cache use to 
-# determine which symbols to keep in memory and which to flush to disk. 
-# When the cache is full, less often used symbols will be written to disk. 
-# For small to medium size projects (<1000 input files) the default value is 
-# probably good enough. For larger projects a too small cache size can cause 
-# doxygen to be busy swapping symbols to and from disk most of the time 
-# causing a significant performance penalty. 
-# If the system has enough physical memory increasing the cache will improve the 
-# performance by keeping more symbols in memory. Note that the value works on 
-# a logarithmic scale so increasing the size by one will roughly double the 
-# memory usage. The cache size is given by this formula: 
-# 2^(16+SYMBOL_CACHE_SIZE). The valid range is 0..9, the default is 0, 
-# corresponding to a cache size of 2^16 = 65536 symbols.
-
-# For config item SYMBOL_CACHE_SIZE, default is 
-SYMBOL_CACHE_SIZE      = 0
 # Default value for LOOKUP_CACHE_SIZE omitted
 
 #---------------------------------------------------------------------------
