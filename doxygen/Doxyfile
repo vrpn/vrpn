@@ -63,11 +63,6 @@ MULTILINE_CPP_IS_BRIEF = YES
 # Default value for INHERIT_DOCS omitted
 # Default value for SEPARATE_MEMBER_PAGES omitted
 
-# The TAB_SIZE tag can be used to set the number of spaces in a tab. 
-# Doxygen uses this value to replace tabs by spaces in code fragments.
-
-# For config item TAB_SIZE, default is 4
-TAB_SIZE               = 8
 # Default value for ALIASES omitted
 # Default value for TCL_SUBST omitted
 # Default value for OPTIMIZE_OUTPUT_FOR_C omitted
@@ -307,7 +302,7 @@ GENERATE_TREEVIEW      = YES
 # executive. If left blank a4wide will be used.
 
 # For config item PAPER_TYPE, default is a4
-PAPER_TYPE             = a4wide
+PAPER_TYPE             = letter
 # Default value for EXTRA_PACKAGES omitted
 # Default value for LATEX_HEADER omitted
 # Default value for LATEX_FOOTER omitted
@@ -390,14 +385,6 @@ PREDEFINED             = VRPN_USE_PHANTOM_SERVER \
 # Configuration options related to the dot tool
 #---------------------------------------------------------------------------
 
-# If the CLASS_DIAGRAMS tag is set to YES (the default) Doxygen will 
-# generate a inheritance diagram (in HTML, RTF and LaTeX) for classes with base 
-# or super classes. Setting the tag to NO turns the diagrams off. Note that 
-# this option also works with HAVE_DOT disabled, but it is recommended to 
-# install and use dot, since it yields more powerful graphs.
-
-# For config item CLASS_DIAGRAMS, default is 1
-CLASS_DIAGRAMS         = NO
 # Default value for MSCGEN_PATH omitted
 # Default value for HIDE_UNDOC_RELATIONS omitted
 
