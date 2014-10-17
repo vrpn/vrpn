@@ -1,12 +1,9 @@
-# Default value for DOXYFILE_ENCODING omitted
-
 # The PROJECT_NAME tag is a single word (or sequence of words) that should 
 # identify the project. Note that if you do not use Doxywizard you need 
 # to put quotes around the project name if it contains spaces.
 
 # For config item PROJECT_NAME, default is My Project
 PROJECT_NAME           = vrpn
-# Default value for PROJECT_NUMBER omitted
 
 # Using the PROJECT_BRIEF tag one can provide an optional one line description 
 # for a project that appears at the top of each page and should give viewer 
@@ -14,15 +11,6 @@ PROJECT_NAME           = vrpn
 
 # For config item PROJECT_BRIEF, default is 
 PROJECT_BRIEF          = "Virtual Reality Peripheral Network"
-# Default value for PROJECT_LOGO omitted
-# Default value for OUTPUT_DIRECTORY omitted
-# Default value for CREATE_SUBDIRS omitted
-# Default value for OUTPUT_LANGUAGE omitted
-# Default value for BRIEF_MEMBER_DESC omitted
-# Default value for REPEAT_BRIEF omitted
-
-# Default value for ALWAYS_DETAILED_SEC omitted
-# Default value for INLINE_INHERITED_MEMB omitted
 
 # If the FULL_PATH_NAMES tag is set to YES then Doxygen will prepend the full 
 # path before files name in the file list and in the header files. If set 
@@ -30,9 +18,6 @@ PROJECT_BRIEF          = "Virtual Reality Peripheral Network"
 
 # For config item FULL_PATH_NAMES, default is 1
 FULL_PATH_NAMES        = NO
-# Default value for STRIP_FROM_PATH omitted
-# Default value for STRIP_FROM_INC_PATH omitted
-# Default value for SHORT_NAMES omitted
 
 # If the JAVADOC_AUTOBRIEF tag is set to YES then Doxygen 
 # will interpret the first line (until the first dot) of a JavaDoc-style 
@@ -60,17 +45,6 @@ QT_AUTOBRIEF           = YES
 
 # For config item MULTILINE_CPP_IS_BRIEF, default is 0
 MULTILINE_CPP_IS_BRIEF = YES
-# Default value for INHERIT_DOCS omitted
-# Default value for SEPARATE_MEMBER_PAGES omitted
-
-# Default value for ALIASES omitted
-# Default value for TCL_SUBST omitted
-# Default value for OPTIMIZE_OUTPUT_FOR_C omitted
-# Default value for OPTIMIZE_OUTPUT_JAVA omitted
-# Default value for OPTIMIZE_FOR_FORTRAN omitted
-# Default value for OPTIMIZE_OUTPUT_VHDL omitted
-# Default value for EXTENSION_MAPPING omitted
-# Default value for MARKDOWN_SUPPORT omitted
 
 # If you use STL classes (i.e. std::string, std::vector, etc.) but do not want 
 # to include (a tag file for) the STL sources as input, then you should 
@@ -81,13 +55,6 @@ MULTILINE_CPP_IS_BRIEF = YES
 
 # For config item BUILTIN_STL_SUPPORT, default is 0
 BUILTIN_STL_SUPPORT    = YES
-# Default value for CPP_CLI_SUPPORT omitted
-# Default value for SIP_SUPPORT omitted
-# Default value for IDL_PROPERTY_SUPPORT omitted
-# Default value for DISTRIBUTE_GROUP_DOC omitted
-# Default value for SUBGROUPING omitted
-# Default value for INLINE_GROUPED_CLASSES omitted
-# Default value for INLINE_SIMPLE_STRUCTS omitted
 
 # When TYPEDEF_HIDES_STRUCT is enabled, a typedef of a struct, union, or enum 
 # is documented as struct, union, or enum with the name of the typedef. So 
@@ -100,8 +67,6 @@ BUILTIN_STL_SUPPORT    = YES
 # For config item TYPEDEF_HIDES_STRUCT, default is 0
 TYPEDEF_HIDES_STRUCT   = YES
 
-# Default value for LOOKUP_CACHE_SIZE omitted
-
 #---------------------------------------------------------------------------
 # Build related configuration options
 #---------------------------------------------------------------------------
@@ -113,9 +78,6 @@ TYPEDEF_HIDES_STRUCT   = YES
 
 # For config item EXTRACT_ALL, default is 0
 EXTRACT_ALL            = YES
-# Default value for EXTRACT_PRIVATE omitted
-# Default value for EXTRACT_PACKAGE omitted
-# Default value for EXTRACT_STATIC omitted
 
 # If the EXTRACT_LOCAL_CLASSES tag is set to YES classes (and structs) 
 # defined locally in source files will be included in the documentation. 
@@ -123,43 +85,6 @@ EXTRACT_ALL            = YES
 
 # For config item EXTRACT_LOCAL_CLASSES, default is 1
 EXTRACT_LOCAL_CLASSES  = NO
-# Default value for EXTRACT_LOCAL_METHODS omitted
-# Default value for EXTRACT_ANON_NSPACES omitted
-# Default value for HIDE_UNDOC_MEMBERS omitted
-# Default value for HIDE_UNDOC_CLASSES omitted
-# Default value for HIDE_FRIEND_COMPOUNDS omitted
-# Default value for HIDE_IN_BODY_DOCS omitted
-# Default value for INTERNAL_DOCS omitted
-# Default value for CASE_SENSE_NAMES omitted
-# Default value for HIDE_SCOPE_NAMES omitted
-# Default value for SHOW_INCLUDE_FILES omitted
-# Default value for FORCE_LOCAL_INCLUDES omitted
-# Default value for INLINE_INFO omitted
-# Default value for SORT_MEMBER_DOCS omitted
-# Default value for SORT_BRIEF_DOCS omitted
-# Default value for SORT_MEMBERS_CTORS_1ST omitted
-# Default value for SORT_GROUP_NAMES omitted
-# Default value for SORT_BY_SCOPE_NAME omitted
-# Default value for STRICT_PROTO_MATCHING omitted
-# Default value for GENERATE_TODOLIST omitted
-# Default value for GENERATE_TESTLIST omitted
-# Default value for GENERATE_BUGLIST omitted
-# Default value for GENERATE_DEPRECATEDLIST omitted
-# Default value for ENABLED_SECTIONS omitted
-# Default value for MAX_INITIALIZER_LINES omitted
-# Default value for SHOW_USED_FILES omitted
-# Default value for SHOW_FILES omitted
-# Default value for SHOW_NAMESPACES omitted
-# Default value for FILE_VERSION_FILTER omitted
-# Default value for LAYOUT_FILE omitted
-# Default value for CITE_BIB_FILES omitted
-# Default value for QUIET omitted
-# Default value for WARNINGS omitted
-# Default value for WARN_IF_UNDOCUMENTED omitted
-# Default value for WARN_IF_DOC_ERROR omitted
-# Default value for WARN_NO_PARAMDOC omitted
-# Default value for WARN_FORMAT omitted
-# Default value for WARN_LOGFILE omitted
 
 #---------------------------------------------------------------------------
 # configuration options related to the input files
@@ -172,7 +97,6 @@ EXTRACT_LOCAL_CLASSES  = NO
 
 # For config item INPUT, default is 
 INPUT                  = ..
-# Default value for INPUT_ENCODING omitted
 
 # If the value of the INPUT tag contains directories, you can use the 
 # FILE_PATTERNS tag to specify one or more wildcard pattern (like *.cpp 
@@ -185,19 +109,6 @@ INPUT                  = ..
 # For config item FILE_PATTERNS, default is 
 FILE_PATTERNS          = *.h \
                          *.C
-# Default value for RECURSIVE omitted
-# Default value for EXCLUDE omitted
-# Default value for EXCLUDE_SYMLINKS omitted
-# Default value for EXCLUDE_PATTERNS omitted
-# Default value for EXCLUDE_SYMBOLS omitted
-# Default value for EXAMPLE_PATH omitted
-# Default value for EXAMPLE_PATTERNS omitted
-# Default value for EXAMPLE_RECURSIVE omitted
-# Default value for IMAGE_PATH omitted
-# Default value for INPUT_FILTER omitted
-# Default value for FILTER_PATTERNS omitted
-# Default value for FILTER_SOURCE_FILES omitted
-# Default value for FILTER_SOURCE_PATTERNS omitted
 
 #---------------------------------------------------------------------------
 # configuration options related to source browsing
@@ -210,8 +121,6 @@ FILE_PATTERNS          = *.h \
 
 # For config item SOURCE_BROWSER, default is 0
 SOURCE_BROWSER         = YES
-# Default value for INLINE_SOURCES omitted
-# Default value for STRIP_CODE_COMMENTS omitted
 
 # If the REFERENCED_BY_RELATION tag is set to YES 
 # then for each documented function all documented 
@@ -226,48 +135,6 @@ REFERENCED_BY_RELATION = YES
 
 # For config item REFERENCES_RELATION, default is 0
 REFERENCES_RELATION    = YES
-# Default value for REFERENCES_LINK_SOURCE omitted
-# Default value for USE_HTAGS omitted
-# Default value for VERBATIM_HEADERS omitted
-# Default value for ALPHABETICAL_INDEX omitted
-# Default value for COLS_IN_ALPHA_INDEX omitted
-# Default value for IGNORE_PREFIX omitted
-# Default value for GENERATE_HTML omitted
-# Default value for HTML_OUTPUT omitted
-# Default value for HTML_FILE_EXTENSION omitted
-# Default value for HTML_HEADER omitted
-# Default value for HTML_FOOTER omitted
-# Default value for HTML_STYLESHEET omitted
-# Default value for HTML_EXTRA_FILES omitted
-# Default value for HTML_COLORSTYLE_HUE omitted
-# Default value for HTML_COLORSTYLE_SAT omitted
-# Default value for HTML_COLORSTYLE_GAMMA omitted
-# Default value for HTML_TIMESTAMP omitted
-# Default value for HTML_DYNAMIC_SECTIONS omitted
-# Default value for HTML_INDEX_NUM_ENTRIES omitted
-# Default value for GENERATE_DOCSET omitted
-# Default value for DOCSET_FEEDNAME omitted
-# Default value for DOCSET_BUNDLE_ID omitted
-# Default value for DOCSET_PUBLISHER_ID omitted
-# Default value for DOCSET_PUBLISHER_NAME omitted
-# Default value for GENERATE_HTMLHELP omitted
-# Default value for CHM_FILE omitted
-# Default value for HHC_LOCATION omitted
-# Default value for GENERATE_CHI omitted
-# Default value for CHM_INDEX_ENCODING omitted
-# Default value for BINARY_TOC omitted
-# Default value for TOC_EXPAND omitted
-# Default value for GENERATE_QHP omitted
-# Default value for QCH_FILE omitted
-# Default value for QHP_NAMESPACE omitted
-# Default value for QHP_VIRTUAL_FOLDER omitted
-# Default value for QHP_CUST_FILTER_NAME omitted
-# Default value for QHP_CUST_FILTER_ATTRS omitted
-# Default value for QHP_SECT_FILTER_ATTRS omitted
-# Default value for QHG_LOCATION omitted
-# Default value for GENERATE_ECLIPSEHELP omitted
-# Default value for ECLIPSE_DOC_ID omitted
-# Default value for DISABLE_INDEX omitted
 
 # The GENERATE_TREEVIEW tag is used to specify whether a tree-like index 
 # structure should be generated to display hierarchical information. 
@@ -281,21 +148,6 @@ REFERENCES_RELATION    = YES
 
 # For config item GENERATE_TREEVIEW, default is 0
 GENERATE_TREEVIEW      = YES
-# Default value for ENUM_VALUES_PER_LINE omitted
-# Default value for TREEVIEW_WIDTH omitted
-# Default value for EXT_LINKS_IN_WINDOW omitted
-# Default value for FORMULA_FONTSIZE omitted
-# Default value for FORMULA_TRANSPARENT omitted
-# Default value for USE_MATHJAX omitted
-# Default value for MATHJAX_RELPATH omitted
-# Default value for MATHJAX_EXTENSIONS omitted
-# Default value for SEARCHENGINE omitted
-# Default value for SERVER_BASED_SEARCH omitted
-# Default value for GENERATE_LATEX omitted
-# Default value for LATEX_OUTPUT omitted
-# Default value for LATEX_CMD_NAME omitted
-# Default value for MAKEINDEX_CMD_NAME omitted
-# Default value for COMPACT_LATEX omitted
 
 # The PAPER_TYPE tag can be used to set the paper type that is used 
 # by the printer. Possible values are: a4, letter, legal and 
@@ -303,21 +155,6 @@ GENERATE_TREEVIEW      = YES
 
 # For config item PAPER_TYPE, default is a4
 PAPER_TYPE             = letter
-# Default value for EXTRA_PACKAGES omitted
-# Default value for LATEX_HEADER omitted
-# Default value for LATEX_FOOTER omitted
-# Default value for PDF_HYPERLINKS omitted
-# Default value for USE_PDFLATEX omitted
-# Default value for LATEX_BATCHMODE omitted
-# Default value for LATEX_HIDE_INDICES omitted
-# Default value for LATEX_SOURCE_CODE omitted
-# Default value for LATEX_BIB_STYLE omitted
-# Default value for GENERATE_RTF omitted
-# Default value for RTF_OUTPUT omitted
-# Default value for COMPACT_RTF omitted
-# Default value for RTF_HYPERLINKS omitted
-# Default value for RTF_STYLESHEET_FILE omitted
-# Default value for RTF_EXTENSIONS_FILE omitted
 
 #---------------------------------------------------------------------------
 # configuration options related to the man page output
@@ -328,25 +165,6 @@ PAPER_TYPE             = letter
 
 # For config item GENERATE_MAN, default is 0
 GENERATE_MAN           = YES
-# Default value for MAN_OUTPUT omitted
-# Default value for MAN_EXTENSION omitted
-# Default value for MAN_LINKS omitted
-# Default value for GENERATE_XML omitted
-# Default value for XML_OUTPUT omitted
-# Default value for XML_SCHEMA omitted
-# Default value for XML_DTD omitted
-# Default value for XML_PROGRAMLISTING omitted
-# Default value for GENERATE_AUTOGEN_DEF omitted
-# Default value for GENERATE_PERLMOD omitted
-# Default value for PERLMOD_LATEX omitted
-# Default value for PERLMOD_PRETTY omitted
-# Default value for PERLMOD_MAKEVAR_PREFIX omitted
-# Default value for ENABLE_PREPROCESSING omitted
-# Default value for MACRO_EXPANSION omitted
-# Default value for EXPAND_ONLY_PREDEF omitted
-# Default value for SEARCH_INCLUDES omitted
-# Default value for INCLUDE_PATH omitted
-# Default value for INCLUDE_FILE_PATTERNS omitted
 
 # The PREDEFINED tag can be used to specify one or more macro names that 
 # are defined before the preprocessor is started (similar to the -D option of 
@@ -373,20 +191,10 @@ PREDEFINED             = VRPN_USE_PHANTOM_SERVER \
                          VRPN_USE_TRIVISIOCOLIBRI \
                          VRPN_USE_HID \
                          VRPN_USE_LIBUSB_1_0
-# Default value for EXPAND_AS_DEFINED omitted
-# Default value for SKIP_FUNCTION_MACROS omitted
-# Default value for TAGFILES omitted
-# Default value for GENERATE_TAGFILE omitted
-# Default value for ALLEXTERNALS omitted
-# Default value for EXTERNAL_GROUPS omitted
-# Default value for PERL_PATH omitted
 
 #---------------------------------------------------------------------------
 # Configuration options related to the dot tool
 #---------------------------------------------------------------------------
-
-# Default value for MSCGEN_PATH omitted
-# Default value for HIDE_UNDOC_RELATIONS omitted
 
 # If you set the HAVE_DOT tag to YES then doxygen will assume the dot tool is 
 # available from the path. This tool is part of Graphviz, a graph visualization 
@@ -395,18 +203,6 @@ PREDEFINED             = VRPN_USE_PHANTOM_SERVER \
 
 # For config item HAVE_DOT, default is 0
 HAVE_DOT               = YES
-# Default value for DOT_NUM_THREADS omitted
-# Default value for DOT_FONTNAME omitted
-# Default value for DOT_FONTSIZE omitted
-# Default value for DOT_FONTPATH omitted
-# Default value for CLASS_GRAPH omitted
-# Default value for COLLABORATION_GRAPH omitted
-# Default value for GROUP_GRAPHS omitted
-# Default value for UML_LOOK omitted
-# Default value for UML_LIMIT_NUM_FIELDS omitted
-# Default value for TEMPLATE_RELATIONS omitted
-# Default value for INCLUDE_GRAPH omitted
-# Default value for INCLUDED_BY_GRAPH omitted
 
 # If the CALL_GRAPH and HAVE_DOT options are set to YES then 
 # doxygen will generate a call dependency graph for every global function 
@@ -425,16 +221,4 @@ CALL_GRAPH             = YES
 
 # For config item CALLER_GRAPH, default is 0
 CALLER_GRAPH           = YES
-# Default value for GRAPHICAL_HIERARCHY omitted
-# Default value for DIRECTORY_GRAPH omitted
-# Default value for DOT_IMAGE_FORMAT omitted
-# Default value for INTERACTIVE_SVG omitted
-# Default value for DOT_PATH omitted
-# Default value for DOTFILE_DIRS omitted
-# Default value for MSCFILE_DIRS omitted
-# Default value for DOT_GRAPH_MAX_NODES omitted
-# Default value for MAX_DOT_GRAPH_DEPTH omitted
-# Default value for DOT_TRANSPARENT omitted
-# Default value for DOT_MULTI_TARGETS omitted
-# Default value for GENERATE_LEGEND omitted
-# Default value for DOT_CLEANUP omitted
+
