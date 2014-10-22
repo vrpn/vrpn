@@ -4225,7 +4225,9 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object (vrpn_Connection *connect
         VRPN_CHECK (templated_setup_device_name_only<vrpn_3DConnexion_SpaceMouse>);
       } else if (VRPN_ISIT ("vrpn_3DConnexion_SpaceMousePro")) {
         VRPN_CHECK (templated_setup_device_name_only<vrpn_3DConnexion_SpaceMousePro>);
-      } else if (VRPN_ISIT ("vrpn_3DConnexion_SpaceBall5000")) {
+	  } else if (VRPN_ISIT("vrpn_3DConnexion_SpaceMouseWireless")) {
+		VRPN_CHECK(templated_setup_device_name_only<vrpn_3DConnexion_SpaceMouseWireless>);
+	  } else if (VRPN_ISIT("vrpn_3DConnexion_SpaceBall5000")) {
         VRPN_CHECK (templated_setup_device_name_only<vrpn_3DConnexion_SpaceBall5000>);
       } else if (VRPN_ISIT ("vrpn_3DConnexion_SpacePilot")) {
         VRPN_CHECK (templated_setup_device_name_only<vrpn_3DConnexion_SpacePilot>);
