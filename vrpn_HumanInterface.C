@@ -145,19 +145,24 @@ void vrpn_HidInterface::update()
 		return;
 	}
 
-        int ret = hid_read(_device, inbuf, sizeof(inbuf));
-        if (ret < 0) {
-		fprintf(stderr,"vrpn_HidInterface::update(): Read error\n");
-		fprintf(stderr,"  (On one version of Red Hat Linux, this was from not having libusb-devel installed when configuring in CMake.)\n");
-		return;
-        }
+	// Continue reading until we eat up all of the reports.  If we only handle
+	// one report per loop cycle, we can accumulate latency.
+	int ret;
+	do {
+		ret = hid_read(_device, inbuf, sizeof(inbuf));
+		if (ret < 0) {
+			fprintf(stderr, "vrpn_HidInterface::update(): Read error\n");
+			fprintf(stderr, "  (On one version of Red Hat Linux, this was from not having libusb-devel installed when configuring in CMake.)\n");
+			return;
+		}
 
-        // Handle any data we got.  This can include fewer bytes than we
-        // asked for.
-        if (ret > 0) {
-          vrpn_uint8 *data = static_cast<vrpn_uint8 *>(static_cast<void*>(inbuf));
-          on_data_received(ret, data);
-        }
+		// Handle any data we got.  This can include fewer bytes than we
+		// asked for.
+		if (ret > 0) {
+			vrpn_uint8 *data = static_cast<vrpn_uint8 *>(static_cast<void*>(inbuf));
+			on_data_received(ret, data);
+		}
+	} while (ret > 0);
 }
 
 // This is based on sample code from UMinn Duluth at
