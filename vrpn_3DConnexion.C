@@ -23,6 +23,7 @@ typedef struct input_devinfo {
 
 // USB vendor and product IDs for the models we support
 static const vrpn_uint16 vrpn_3DCONNEXION_VENDOR = 0x046d; //1133;	// 3Dconnexion is made by Logitech
+static const vrpn_uint16 vrpn_SPACEMOUSEWIRELESS_VENDOR = 9583; 	// Made by a different vendor...
 static const vrpn_uint16 vrpn_3DCONNEXION_TRAVELER = 50723;
 static const vrpn_uint16 vrpn_3DCONNEXION_NAVIGATOR = 50726;
 static const vrpn_uint16 vrpn_3DCONNEXION_NAVIGATOR_FOR_NOTEBOOKS = 0xc628;	// 50728;
@@ -335,7 +336,7 @@ vrpn_3DConnexion_SpaceMousePro::vrpn_3DConnexion_SpaceMousePro(const char *name,
 }
 
 vrpn_3DConnexion_SpaceMouseWireless::vrpn_3DConnexion_SpaceMouseWireless(const char *name, vrpn_Connection *c)
-	: vrpn_3DConnexion(_filter = new vrpn_HidProductAcceptor(vrpn_3DCONNEXION_VENDOR, vrpn_3DCONNEXION_SPACEMOUSEWIRELESS), 2, name, c)
+	: vrpn_3DConnexion(_filter = new vrpn_HidProductAcceptor(vrpn_SPACEMOUSEWIRELESS_VENDOR, vrpn_3DCONNEXION_SPACEMOUSEWIRELESS), 2, name, c)
 {
 }
 
