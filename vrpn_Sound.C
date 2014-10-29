@@ -128,13 +128,13 @@ vrpn_int32 vrpn_Sound::decodeSound_local(const char *buf, char **filename, vrpn_
 	return 0;
 }
 
-// not supported
-vrpn_int32 vrpn_Sound::encodeSound_remote(const char *filename, const vrpn_SoundID id, char **buf)
+/// @todo not supported
+vrpn_int32 vrpn_Sound::encodeSound_remote(const char * /*filename*/, const vrpn_SoundID /*id*/, char **/*buf*/)
 {
 	return 0;
 }
-// not supported yet
-vrpn_int32 vrpn_Sound::decodeSound_remote(const char *buf, char **filename, vrpn_SoundID *id, const int payload)
+/// @todo not supported yet
+vrpn_int32 vrpn_Sound::decodeSound_remote(const char */*buf*/, char **/*filename*/, vrpn_SoundID */*id*/, const int /*payload*/)
 {
 	return 0;
 }
@@ -557,9 +557,10 @@ vrpn_int32 vrpn_Sound::decodeLoadModel_local(const char *buf, char **filename, c
 	return 0;
 }
 
-// Remote stuff not supported yet!
-vrpn_int32 vrpn_Sound::encodeLoadModel_remote(const char *filename, char **buf) {return 0;}
-vrpn_int32 vrpn_Sound::decodeLoadModel_remote(const char *buf, char **filename, const int payload) {return 0;}
+/// @todo Remote stuff not supported yet!
+vrpn_int32 vrpn_Sound::encodeLoadModel_remote(const char */*filename*/, char **/*buf*/) {return 0;}
+/// @todo Remote stuff not supported yet!
+vrpn_int32 vrpn_Sound::decodeLoadModel_remote(const char */*buf*/, char **/*filename*/, const int /*payload*/) {return 0;}
    
 vrpn_int32 vrpn_Sound::encodeLoadPolyQuad(const vrpn_QuadDef quad, char* buf) {
 	char *mptr = buf;
@@ -1038,8 +1039,8 @@ vrpn_int32 vrpn_Sound_Client::LoadModel_local(const char *filename) {
 }
 
 	
-/* Remote stuff not supported yet!*/
-vrpn_int32 vrpn_Sound_Client::LoadModel_remote(const char *data) {
+/** @todo Remote stuff not supported yet!*/
+vrpn_int32 vrpn_Sound_Client::LoadModel_remote(const char * /*data*/) {
 return 0;
 }
 	   

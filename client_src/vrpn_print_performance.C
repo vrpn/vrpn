@@ -15,10 +15,8 @@
 #include <string.h>                     // for strcmp, strncpy
 #include <vrpn_Analog.h>                // for vrpn_Analog_Remote, etc
 #include <vrpn_Button.h>                // for vrpn_Button_Remote, etc
-#include <vrpn_Dial.h>                  // for vrpn_Dial_Remote, etc
 #include <vrpn_FileConnection.h>  // For preload and accumulate settings
 #include <vrpn_Shared.h>                // for vrpn_gettimeofday, etc
-#include <vrpn_Text.h>                  // for vrpn_Text_Receiver, etc
 #include <vrpn_Tracker.h>               // for vrpn_TRACKERACCCB, etc
 #include <vector>                       // for vector
 
@@ -44,8 +42,6 @@ class device_info {
 	vrpn_Tracker_Remote *tkr;
 	vrpn_Button_Remote  *btn;
 	vrpn_Analog_Remote  *ana;
-	vrpn_Dial_Remote    *dial;
-    vrpn_Text_Receiver  *text;
 };
 const unsigned MAX_DEVICES = 50;
 
@@ -183,7 +179,7 @@ void	VRPN_CALLBACK handle_button (void *userdata, const vrpn_BUTTONCB b)
 	name, b.button, b.state?"pressed":"released");
 }
 
-void	VRPN_CALLBACK handle_analog (void *userdata, const vrpn_ANALOGCB a)
+void	VRPN_CALLBACK handle_analog (void *userdata, const vrpn_ANALOGCB /*a*/)
 {
     const char *name = (const char *)userdata;
     struct timeval now;
@@ -214,28 +210,6 @@ void	VRPN_CALLBACK handle_analog (void *userdata, const vrpn_ANALOGCB a)
 */
 }
 
-void	VRPN_CALLBACK handle_dial (void *userdata, const vrpn_DIALCB d)
-{
-	/*
-    const char *name = (const char *)userdata;
-
-    printf("Dial %s, number %d was moved by %5.2f\n",
-	name, d.dial, d.change);
-	*/
-}
-
-void	VRPN_CALLBACK handle_text (void *userdata, const vrpn_TEXTCB t)
-{
-	/*
-    const char *name = (const char *)userdata;
-
-    // Warnings and errors are printed by the system text printer.
-    if (t.type == vrpn_TEXT_NORMAL) {
-      printf("%s: Text message: %s\n", name, t.message);
-    }
-    */
-}
-
 
 // WARNING: On Windows systems, this handler is called in a separate
 // thread from the main program (this differs from Unix).  To avoid all
@@ -257,8 +231,6 @@ void Usage (const char * arg0) {
 "  -notracker:  Don't print tracker reports for following devices\n"
 "  -nobutton:  Don't print button reports for following devices\n"
 "  -noanalog:  Don't print analog reports for following devices\n"
-"  -nodial:  Don't print dial reports for following devices\n"
-"  -notext:  Don't print text messages (warnings, errors) for following devices\n"
 "  deviceX:  VRPN name of device to connect to (eg: Tracker0@ioglab)\n"
 "  The default behavior is to print all message types for all devices listed\n"
 "  The order of the parameters can be changed to suit\n",
@@ -272,8 +244,6 @@ int main (int argc, char * argv [])
   int   print_for_tracker = 1;	// Print tracker reports?
   int   print_for_button = 1;	// Print button reports?
   int   print_for_analog = 1;	// Print analog reports?
-  int   print_for_dial = 1;	// Print dial reports?
-  int	print_for_text = 1;	// Print warning/error messages?
 
   // If we happen to open a file, neither preload nor accumulate the
   // messages in memory, to avoid crashing for huge files.
@@ -295,10 +265,6 @@ int main (int argc, char * argv [])
       print_for_button = 0;
     } else if (!strcmp(argv[i], "--noanalog")) {
       print_for_analog = 0;
-    } else if (!strcmp(argv[i], "--nodial")) {
-      print_for_dial = 0;
-    } else if (!strcmp(argv[i], "--notext")) {
-      print_for_text = 0;
     } else if (!strcmp(argv[i], "--reportinterval")) {
       if (++i >= argc) { Usage(argv[0]); }
       report_interval = atoi(argv[i]);
@@ -321,11 +287,7 @@ int main (int argc, char * argv [])
 	dev->tkr = new vrpn_Tracker_Remote(dev->name);
 	dev->ana = new vrpn_Analog_Remote(dev->name);
 	dev->btn = new vrpn_Button_Remote(dev->name);
-	dev->dial = new vrpn_Dial_Remote(dev->name);
-        dev->text = new vrpn_Text_Receiver(dev->name);
-	if ( (dev->ana == NULL) || (dev->btn == NULL) ||
-	    (dev->dial == NULL) || (dev->tkr == NULL) ||
-            (dev->text == NULL) ) {
+	if ((dev->tkr == NULL) || (dev->ana == NULL) || (dev->btn == NULL) ) {
 	    fprintf(stderr,"Error opening %s\n", dev->name);
 	    return -1;
 	} else {
@@ -372,22 +334,6 @@ int main (int argc, char * argv [])
 	    dev->ana->register_change_handler(dev->name, handle_analog);
 	}
 
-	if (print_for_dial) {
-	    printf(" Dial");
-	    dev->dial->register_change_handler(dev->name, handle_dial);
-	}
-
-	if (print_for_text) {
-	  printf(" Text");
-	  dev->text->register_message_handler(dev->name, handle_text);
-	} else {
-	  vrpn_System_TextPrinter.remove_object(dev->tkr);
-	  vrpn_System_TextPrinter.remove_object(dev->btn);
-	  vrpn_System_TextPrinter.remove_object(dev->ana);
-	  vrpn_System_TextPrinter.remove_object(dev->dial);
-	  vrpn_System_TextPrinter.remove_object(dev->text);
-	}
-
 	printf(".\n");
 	num_devices++;
     }
@@ -413,8 +359,6 @@ int main (int argc, char * argv [])
 	  device_list[i].tkr->mainloop();
 	  device_list[i].btn->mainloop();
 	  device_list[i].ana->mainloop();
-	  device_list[i].dial->mainloop();
-	  device_list[i].text->mainloop();
       }
 
       // Sleep for 1ms so we don't eat the CPU
