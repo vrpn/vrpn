@@ -2,6 +2,7 @@
 //
 //	July 2003- Matt McCallus
 
+/// @todo Requires deprecated DXERR.lib for DXTrace and DXTRACE_ERR
 #ifdef _WIN32
 
 
