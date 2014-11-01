@@ -2565,7 +2565,7 @@ int check_vrpn_file_cookie (const char * buffer)
   return 0;
 }
 
-int vrpn_cookie_size (void) {
+size_t vrpn_cookie_size (void) {
   return vrpn_MAGICLEN + vrpn_ALIGN;
 }
 

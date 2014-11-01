@@ -968,7 +968,7 @@ VRPN_API int check_vrpn_file_cookie (const char * buffer);
 /// @}
 
 /// @brief Returns the size of the magic cookie buffer, plus any alignment overhead.
-VRPN_API int vrpn_cookie_size (void);
+VRPN_API size_t vrpn_cookie_size (void);
 
 VRPN_API int write_vrpn_cookie (char * buffer, int length, long remote_log_mode);
 
