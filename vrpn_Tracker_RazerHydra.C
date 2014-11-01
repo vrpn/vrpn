@@ -82,8 +82,8 @@ class vrpn_Tracker_RazerHydra::MyInterface : public vrpn_HidInterface
 {
     public:
         MyInterface(unsigned which_interface, vrpn_Tracker_RazerHydra *hydra)
-#ifdef __APPLE__
-        // The InterfaceNumber is not supported on the mac version -- it
+#ifndef _WIN32
+			// The InterfaceNumber is not supported on the mac and Linux versions -- it
         // is always returned as -1.  So we need to do this based on which
         // device shows up first and hope that it is always the same order.
         // On my mac, the control interface shows up first on iHid, so we
@@ -103,8 +103,8 @@ class vrpn_Tracker_RazerHydra::MyInterface : public vrpn_HidInterface
         {
             if (d_my_interface == HYDRA_CONTROL_INTERFACE)
             {
-#ifdef __APPLE__
-                d_hydra->send_text_message(vrpn_TEXT_WARNING)
+#ifndef _WIN32
+				d_hydra->send_text_message(vrpn_TEXT_WARNING)
                         << "Got report on controller channel.  This means that we need to swap channels. "
                         << "Swapping channels.";
 
@@ -383,8 +383,8 @@ void vrpn_Tracker_RazerHydra::_listening_after_set_feature()
                 << _attempt << " attempt" << (_attempt > 1 ? ". " : "s. ")
                 << " Will give it another try. "
                 << "If this doesn't work, unplug and replug device and restart the VRPN server.";
-#ifdef __APPLE__
-        if ((_attempt % 2) == 0)
+#ifndef _WIN32
+		if ((_attempt % 2) == 0)
         {
             send_text_message(vrpn_TEXT_WARNING)
                     << "Switching control and data interface (mac can't tell the difference).";
