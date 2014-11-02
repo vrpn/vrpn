@@ -687,7 +687,7 @@ int vrpn_Log::saveLogSoFar(void) {
 
 
 int vrpn_Log::logIncomingMessage
-                   (vrpn_int32 payloadLen, struct timeval time,
+                   (size_t payloadLen, struct timeval time,
                     vrpn_int32 type, vrpn_int32 sender, const char * buffer) {
 
   // Log it the same way, whether it's a User or System message.
@@ -696,7 +696,7 @@ int vrpn_Log::logIncomingMessage
 
   if (logMode() & vrpn_LOG_INCOMING) {
 //fprintf(stderr, "Logging incoming message of type %d.\n", type);
-      return logMessage(payloadLen, time,
+      return logMessage(static_cast<vrpn_int32>(payloadLen), time,
                         type, sender, buffer, vrpn_TRUE);
   }
 //fprintf(stderr, "Not logging incoming messages (type %d)...\n", type);
@@ -1778,12 +1778,12 @@ int vrpn_noint_block_read(int infile, char buffer[], int length)
 
 #else /* winsock sockets */
 
-int vrpn_noint_block_write(SOCKET outsock, char *buffer, int length)
+int vrpn_noint_block_write(SOCKET outsock, char *buffer, size_t length)
 {
 	int nwritten, sofar = 0;
 	do {
 		    /* Try to write the remaining data */
-		nwritten = send(outsock, buffer+sofar, length-sofar, 0);
+		nwritten = send(outsock, buffer+sofar, static_cast<int>(length)-sofar, 0);
 
 		if (nwritten == SOCKET_ERROR) {
 			return -1;
@@ -1795,7 +1795,7 @@ int vrpn_noint_block_write(SOCKET outsock, char *buffer, int length)
 	return(sofar);			/* All bytes written */
 }
 
-int vrpn_noint_block_read(SOCKET insock, char *buffer, int length)
+int vrpn_noint_block_read(SOCKET insock, char *buffer, size_t length)
 {
     int nread, sofar = 0;  
 
@@ -1809,7 +1809,7 @@ int vrpn_noint_block_read(SOCKET insock, char *buffer, int length)
 
     do {
             /* Try to read all remaining data */
-        nread = recv(insock, buffer+sofar, length-sofar, 0);
+        nread = recv(insock, buffer+sofar, static_cast<int>(length)-sofar, 0);
 
 		if (nread == SOCKET_ERROR) {
             return -1;
@@ -2480,9 +2480,9 @@ static int vrpn_start_server(const char * machine, char * server_name, char * ar
  * add_vrpn_cookie.
  */
 
-int write_vrpn_cookie (char * buffer, int length, long remote_log_mode)
+int write_vrpn_cookie (char * buffer, size_t length, long remote_log_mode)
 {
-  if (static_cast<unsigned>(length) < vrpn_MAGICLEN + vrpn_ALIGN + 1)
+  if (length < vrpn_MAGICLEN + vrpn_ALIGN + 1)
     return -1;
 
   sprintf(buffer, "%s  %c", vrpn_MAGIC, static_cast<char>(remote_log_mode + '0'));
@@ -3666,7 +3666,7 @@ int vrpn_Endpoint_IP::setup_new_connection (void) {
              "Internal error - array too small.  The code's broken.");
           return -1;
   }
-  sendlen = vrpn_cookie_size();
+  sendlen = static_cast<vrpn_int32>(vrpn_cookie_size());
 
   // Write the magic cookie header to the server
   if (vrpn_noint_block_write(d_tcpSocket, sendbuf, sendlen)
@@ -3748,7 +3748,7 @@ int vrpn_Endpoint_IP::finish_new_connection_setup (void) {
   unsigned short udp_portnum;
   int i;
 
-  sendlen = vrpn_cookie_size();
+  sendlen = static_cast<vrpn_int32>(vrpn_cookie_size());
   recvbuf = new char[sendlen];
   if (recvbuf == NULL) {
     fprintf(stderr,"vrpn_Endpoint_IP::finish_new_connection_setup(): Out of memory when allocating receiver buffer\n");
@@ -3958,7 +3958,7 @@ int vrpn_Endpoint_IP::getOneTCPMessage (int fd, char * buf, size_t buflen) {
     return -1;
   }
 
-  retval = dispatch(type, sender, time, payload_len, buf);
+  retval = dispatch(type, sender, time, static_cast<vrpn_uint32>(payload_len), buf);
   if (retval) {
     return -1;
   }
