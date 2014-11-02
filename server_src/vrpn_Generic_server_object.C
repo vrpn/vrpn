@@ -59,6 +59,7 @@
 #include "vrpn_Poser.h"                 // for vrpn_Poser
 #include "vrpn_Poser_Tek4662.h"         // for vrpn_Poser_Tek4662
 #include "vrpn_raw_sgibox.h"            // for vrpn_raw_SGIBox, for access to the SGI button & dial box connected to the serial port of an linux PC
+#include "vrpn_Retrolink.h"             // for vrpn_Retolink_GameCube, etc.
 #include "vrpn_Saitek_Controller_Raw.h"	// for vrpn_Saitek_ST290_Pro, etc.
 #include "vrpn_sgibox.h"                //for access to the B&D box connected to an SGI via the IRIX GL drivers
 #include "vrpn_Sound.h"                 // for vrpn_Sound
@@ -4193,10 +4194,14 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object (vrpn_Connection *connect
         VRPN_CHECK (setup_ImageStream);
       } else if (VRPN_ISIT ("vrpn_Contour_ShuttleXpress")) {
         VRPN_CHECK (templated_setup_HID_device_name_only<vrpn_Contour_ShuttleXpress>);
+	  } else if (VRPN_ISIT("vrpn_Retrolink_GameCube")) {
+		VRPN_CHECK(templated_setup_HID_device_name_only<vrpn_Retrolink_GameCube>);
+	  } else if (VRPN_ISIT("vrpn_Contour_ShuttleXpress")) {
+        VRPN_CHECK (templated_setup_HID_device_name_only<vrpn_Contour_ShuttleXpress>);
       } else if (VRPN_ISIT ("vrpn_Futaba_InterLink_Elite")) {
-          VRPN_CHECK (templated_setup_HID_device_name_only<vrpn_Futaba_InterLink_Elite>);
+        VRPN_CHECK (templated_setup_HID_device_name_only<vrpn_Futaba_InterLink_Elite>);
       } else if (VRPN_ISIT ("vrpn_Griffin_PowerMate")) {
-          VRPN_CHECK (templated_setup_HID_device_name_only<vrpn_Griffin_PowerMate>);
+        VRPN_CHECK (templated_setup_HID_device_name_only<vrpn_Griffin_PowerMate>);
       } else if (VRPN_ISIT ("vrpn_Xkeys_Desktop")) {
         VRPN_CHECK (templated_setup_HID_device_name_only<vrpn_Xkeys_Desktop>);
       } else if (VRPN_ISIT ("vrpn_Xkeys_Pro")) {
