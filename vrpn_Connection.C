@@ -1745,7 +1745,7 @@ int vrpn_noint_block_write (int outfile, const char buffer[], int length)
  * of EOF being reached before all the data arrives).
  */
 
-int vrpn_noint_block_read(int infile, char buffer[], int length)
+int vrpn_noint_block_read(int infile, char buffer[], size_t length)
 {
         register int    sofar;          /* How many we read so far */
         register int    ret;            /* Return value from the read() */
@@ -1842,10 +1842,10 @@ int vrpn_noint_block_read(SOCKET insock, char *buffer, size_t length)
 
 #ifdef VRPN_USE_WINSOCK_SOCKETS
 int vrpn_noint_block_read_timeout(SOCKET infile, char buffer[], 
-				 int length, struct timeval *timeout)
+				 size_t length, struct timeval *timeout)
 #else
 int vrpn_noint_block_read_timeout(int infile, char buffer[], 
-				 int length, struct timeval *timeout)
+				 size_t length, struct timeval *timeout)
 #endif
 {
         register int    sofar;          /* How many we read so far */
