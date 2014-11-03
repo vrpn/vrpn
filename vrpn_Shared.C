@@ -826,7 +826,7 @@ static int __iTrash = vrpn_gettimeofday(&__tv, (struct timezone *)NULL);
 #include <signal.h>                     // for pthread_kill, SIGKILL
 #endif
 
-#define ALL_ASSERT(exp, msg) if(!(exp)){ fprintf(stderr, "\nAssertion failed! \n %s (%s, %s)\n", msg, __FILE__, __LINE__); }
+#define ALL_ASSERT(exp, msg) if(!(exp)){ fprintf(stderr, "\nAssertion failed! \n %s (%s, %d)\n", msg, __FILE__, __LINE__); }
 
 // init all fields in init()
 vrpn_Semaphore::vrpn_Semaphore( int cNumResources ) :
