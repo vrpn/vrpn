@@ -19,6 +19,7 @@
 
 // Internal Includes
 #include "vrpn_Tracker_RazerHydra.h"
+VRPN_SUPPRESS_EMPTY_OBJECT_WARNING()
 
 #ifdef VRPN_USE_HID
 #include "vrpn_HumanInterface.h"        // for vrpn_HidInterface, etc

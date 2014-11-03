@@ -5,6 +5,7 @@
 #include <math.h>                       // for fabs
 
 #include "vrpn_Contour.h"
+VRPN_SUPPRESS_EMPTY_OBJECT_WARNING()
 
 #if defined(VRPN_USE_HID)
 

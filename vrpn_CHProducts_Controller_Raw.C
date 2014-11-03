@@ -6,6 +6,8 @@
 
 #include "vrpn_CHProducts_Controller_Raw.h"
 
+VRPN_SUPPRESS_EMPTY_OBJECT_WARNING()
+
 #if defined(VRPN_USE_HID)
 
 // USB vendor and product IDs for the models we support

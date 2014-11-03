@@ -12,6 +12,8 @@
 #include "quat.h"
 #include "vrpn_Tracker_Wintracker.h"
 
+VRPN_SUPPRESS_EMPTY_OBJECT_WARNING()
+
 //using namespace std;
 
 const unsigned VENDOR_ID = 0x09d9;

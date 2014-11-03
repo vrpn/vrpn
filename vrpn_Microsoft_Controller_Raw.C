@@ -6,6 +6,8 @@
 
 #include "vrpn_Microsoft_Controller_Raw.h"
 
+VRPN_SUPPRESS_EMPTY_OBJECT_WARNING()
+
 #if defined(VRPN_USE_HID)
 
 static const double POLL_INTERVAL = 1e+6 / 30.0;		// If we have not heard, ask.

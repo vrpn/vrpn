@@ -14,6 +14,8 @@
 const unsigned SPACEPOINT_VENDOR = 0x20ff;
 const unsigned SPACEPOINT_PRODUCT = 0x0100;
 
+VRPN_SUPPRESS_EMPTY_OBJECT_WARNING()
+
 #ifdef VRPN_USE_HID
 vrpn_Tracker_SpacePoint::vrpn_Tracker_SpacePoint(const char * name, vrpn_Connection * trackercon) :
                     vrpn_Tracker(name, trackercon), vrpn_Button(name, trackercon),

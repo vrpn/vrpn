@@ -5,6 +5,7 @@
 #include <math.h>                       // for sqrt and fabs
 
 #include "vrpn_Saitek_Controller_Raw.h"
+VRPN_SUPPRESS_EMPTY_OBJECT_WARNING()
 
 #if defined(VRPN_USE_HID)
 
