@@ -16,13 +16,13 @@
 
 #undef VERBOSE
 
-static double	POLL_INTERVAL = 5e+6;		// If we haven't heard, ask.
-static double	TIMEOUT_INTERVAL = 10e+6;	// If we haven't heard, complain.
+static const double	POLL_INTERVAL = 5e+6;		// If we haven't heard, ask.
+static const double	TIMEOUT_INTERVAL = 10e+6;	// If we haven't heard, complain.
 
-static double	REV_PER_TICK_WHEEL = 1.0/15;	// How many revolutions per encoder tick (checked)
-static double	REV_PER_TICK_BALL = 1.0/164;	// How many revolutions per encoder tick (guess)
+static const double	REV_PER_TICK_WHEEL = 1.0/15;	// How many revolutions per encoder tick (checked)
+static const double	REV_PER_TICK_BALL = 1.0/164;	// How many revolutions per encoder tick (guess)
 
-static unsigned char	reset_char = 0x81;    // Reset string sent to Orb
+static const unsigned char	reset_char = 0x81;    // Reset string sent to Orb
 
 // Defines the modes in which the box can find itself.
 #define	STATUS_RESETTING	(-1)	// Resetting the box

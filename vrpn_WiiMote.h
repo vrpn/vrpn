@@ -162,6 +162,8 @@ class VRPN_API vrpn_WiiMote: public vrpn_Analog, public vrpn_Button_Filter, publ
 		vrpn_WiiMote_SharedData *sharedData;
 		/// thread for asynchronous reconnection function:
 		vrpn_Thread *connectThread;
+#else
+		struct timeval last_reconnect_attempt
 #endif
 		/// The WiiMote to use
 		vrpn_Wiimote_Device  *wiimote;

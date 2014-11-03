@@ -64,7 +64,8 @@ vrpn_Tng3::vrpn_Tng3 (const char * name,
     vrpn_Serial_Analog(name, c, port, baud),
     vrpn_Button_Filter(name, c),
     _numbuttons(numbuttons),
-    _numchannels(numchannels)
+    _numchannels(numchannels),
+    _num_read(0)
 {
     // Verify the validity of the parameters
     if (_numbuttons > MAX_TBUTTONS) {
@@ -154,7 +155,6 @@ int vrpn_Tng3::get_report(void)
 {
     int i;
     unsigned int buttonBits = 0;
-    static  int num_read = 0;
 
     // Zero timeout, poll for any available characters
     struct timeval timeout = {0, 0};
@@ -171,7 +171,7 @@ int vrpn_Tng3::get_report(void)
         }
 
 	// we got a good start byte... we're reading now
-        num_read = 0;   //< Ignore the status byte for the following record
+        _num_read = 0;   //< Ignore the status byte for the following record
 	status = STATUS_READING;
 
 	// invert the bits for the next packet start
@@ -190,7 +190,7 @@ int vrpn_Tng3::get_report(void)
     timeout.tv_sec = 0;
     timeout.tv_usec = 0;
     int result = vrpn_read_available_characters(serial_fd, 
-		  &_buffer[num_read], DATA_RECORD_LENGTH-num_read, &timeout);    
+		  &_buffer[_num_read], DATA_RECORD_LENGTH-_num_read, &timeout);    
 
     if (result < 0) {
       VRPN_MSG_WARNING("Bad read");
@@ -199,8 +199,8 @@ int vrpn_Tng3::get_report(void)
     }
 
     // If we don't have a full record, go back again.
-    num_read += result;
-    if (num_read < DATA_RECORD_LENGTH) {
+    _num_read += result;
+    if (_num_read < DATA_RECORD_LENGTH) {
 	return 0;
     }
 

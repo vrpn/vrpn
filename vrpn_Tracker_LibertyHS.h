@@ -64,6 +64,7 @@ class VRPN_API vrpn_Tracker_LibertyHS: public vrpn_Tracker_USB {
   int	do_filter;		//< Should we turn on filtering for pos/orient?
   int	num_stations;		//< How many stations (trackers) on this LibertyHS?
   int   receptor_index;         //< Index of receptor used to detect and launch the markers
+  int   num_resets;		//< Number of resets we've tried this time.
   char	add_reset_cmd[2048];	//< Additional reset commands to be sent
   int   whoami_len;   //< Number of chars in whoami response
   int   read_len;     //< Number of bytes in usb read buffer

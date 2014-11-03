@@ -20,7 +20,6 @@
 
 void vrpn_Tracker_3Space::reset()
 {
-   static int numResets = 0;	// How many resets have we tried?
    int i,resetLen,ret;
    unsigned char reset[10];
 
@@ -31,27 +30,27 @@ void vrpn_Tracker_3Space::reset()
    // a query mode if it is in one.  These additions are cumulative: by the
    // end, we're doing them all.
    resetLen = 0;
-   numResets++;		  	// We're trying another reset
-   if (numResets > 1) {	// Try to get it out of a query loop if its in one
+   d_numResets++;		  	// We're trying another reset
+   if (d_numResets > 1) {	// Try to get it out of a query loop if its in one
    	reset[resetLen++] = (char) (13); // Return key -> get ready
    }
-   if (numResets > 7) {
+   if (d_numResets > 7) {
 	reset[resetLen++] = 'Y'; // Put tracker into tracking (not point) mode
    }
-   if (numResets > 3) {	// Get a little more aggressive
-   	if (numResets > 4) { // Even more aggressive
+   if (d_numResets > 3) {	// Get a little more aggressive
+   	if (d_numResets > 4) { // Even more aggressive
       	reset[resetLen++] = 't'; // Toggle extended mode (in case it is on)
    }
    reset[resetLen++] = 'W'; // Reset to factory defaults
    reset[resetLen++] = (char) (11); // Ctrl + k --> Burn settings into EPROM
    }
    reset[resetLen++] = (char) (25); // Ctrl + Y -> reset the tracker
-   send_text_message("Resetting", timestamp, vrpn_TEXT_ERROR, numResets);
+   send_text_message("Resetting", timestamp, vrpn_TEXT_ERROR, d_numResets);
    for (i = 0; i < resetLen; i++) {
 	if (vrpn_write_characters(serial_fd, &reset[i], 1) == 1) {
 		vrpn_SleepMsecs(1000*2);  // Wait 2 seconds each character
    	} else {
-		send_text_message("Failed writing to tracker", timestamp, vrpn_TEXT_ERROR, numResets);
+		send_text_message("Failed writing to tracker", timestamp, vrpn_TEXT_ERROR, d_numResets);
 		perror("3Space: Failed writing to tracker");
 		status = vrpn_TRACKER_FAIL;
 		return;
@@ -107,7 +106,7 @@ void vrpn_Tracker_3Space::reset()
      return;
    } else {
      send_text_message("Got status (tracker back up)!", timestamp, vrpn_TEXT_ERROR, 0);
-     numResets = 0; 	// Success, use simple reset next time
+     d_numResets = 0; 	// Success, use simple reset next time
    }
 
    // Set output format to be position,quaternion
@@ -188,7 +187,7 @@ int vrpn_Tracker_3Space::get_report(void)
 	unsigned char decode[17];
 	int i;
 
-	static unsigned char mask[8] = {0x01, 0x02, 0x04, 0x08,
+	const unsigned char mask[8] = {0x01, 0x02, 0x04, 0x08,
 					0x10, 0x20, 0x40, 0x80 };
 	// Clear the MSB in the first byte
 	buffer[0] &= 0x7F;

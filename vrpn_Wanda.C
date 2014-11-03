@@ -7,7 +7,17 @@
 #include "vrpn_Types.h"                 // for vrpn_float64, vrpn_int32
 #include "vrpn_Wanda.h"
 
-static int dbug_wanda = getenv("DBUG_WANDA") ? 1 : 0;
+// This will cause the value to be set when the program is run, before
+// main() is called.  It will be the same for all vrpn_Wanda instances.
+int vrpn_Wanda::dbug_wanda = getenv("DBUG_WANDA") ? 1 : 0;
+
+// Returns time in seconds in a double.
+inline double the_time()
+{
+    struct timeval ts;
+    vrpn_gettimeofday(&ts, NULL);
+    return (double)(ts.tv_sec + ts.tv_usec/1e6);
+}
 
 void
 print_bits( char *buf, int num_bytes )
@@ -28,7 +38,9 @@ vrpn_Wanda::vrpn_Wanda(char * name,
 		    vrpn_Connection * c, char * portname,int baud, 
 			     vrpn_float64 update_rate):
       vrpn_Serial_Analog(name, c, portname, baud, 7), vrpn_Button_Filter(name, c),
-      bytesread(0)
+      bytesread(0),
+      first(1),
+      index(0)
 { 
   num_buttons = 3;  // Wanda has 3 buttons
   num_channel = 2;
@@ -41,6 +53,9 @@ vrpn_Wanda::vrpn_Wanda(char * name,
   // reset buttons & channels
   buttons[0] = buttons[1] = buttons[2] = 0;
   channel[0] = channel[1] = 0;
+
+  // Set the time
+  last_val_timestamp = the_time();
 }
 
 void
@@ -51,12 +66,6 @@ vrpn_Wanda::report_new_button_info()
 	}
 	vrpn_Button::report_changes(); // report any button event;
 }
-inline double the_time() {
-    struct timeval ts;
-    vrpn_gettimeofday(&ts, NULL);
-    return (double)(ts.tv_sec + ts.tv_usec/1e6);
-}
-static double last_val_timestamp = the_time();
 
 
 void
@@ -84,20 +93,17 @@ vrpn_Wanda::report_new_valuator_info()
    }
 }
 
-void vrpn_Wanda::mainloop(void) {
-   static int first = 1;
-   static int num = 0;    // total number of bytes read in 'buffer'
-   static int index = 0;
-
+void vrpn_Wanda::mainloop(void)
+{
    server_mainloop();
 
    if (first) {
-      num += vrpn_read_available_characters(serial_fd,buffer+num,1024-num);
+      bytesread += vrpn_read_available_characters(serial_fd,buffer+bytesread,1024-bytesread);
 
-      if (num < 2) return;
+      if (bytesread < 2) return;
 
-      if (num > 2) {
-		  fprintf(stderr,"wanda huh?  expected 2 characters on opening (got %d)\n", num);
+      if (bytesread > 2) {
+		  fprintf(stderr,"wanda huh?  expected 2 characters on opening (got %d)\n", bytesread);
 	  } else {
          if (buffer[0] == 'M' && buffer[1] == '3') {
             fprintf(stderr,"Read init message from wanda\n");
@@ -105,7 +111,7 @@ void vrpn_Wanda::mainloop(void) {
             fprintf(stderr,"vrpn_Wanda:  ERROR, expected 'M3' from wanda...\n");
          }
       }
-      num = 0;
+      bytesread = 0;
       first = 0;
       return;
    }
@@ -114,22 +120,22 @@ void vrpn_Wanda::mainloop(void) {
    int new_valuator_info = 0;
 
    // read available characters into end of buffer
-//   num += vrpn_read_available_characters(serial_fd,buffer+num,1024-num);
-   int num_read = vrpn_read_available_characters(serial_fd,buffer+num,1024-num);
+//   bytesread += vrpn_read_available_characters(serial_fd,buffer+bytesread,1024-bytesread);
+   int num_read = vrpn_read_available_characters(serial_fd,buffer+bytesread,1024-bytesread);
 #if 1
    if (dbug_wanda)
       if (num_read > 0)
-         print_bits(buffer+num, num_read);
+         print_bits(buffer+bytesread, num_read);
 #endif
-   num += num_read;
+   bytesread += num_read;
 
    // handling synching
-   while( index == 0 && num > 0 && !(buffer[0] & (1<<6)) ) {
+   while( index == 0 && bytesread > 0 && !(buffer[0] & (1<<6)) ) {
       fprintf(stderr,"synching wanda\n");
-      for(int i=0;i<num-1;i++)
+      for(int i=0;i<bytesread-1;i++)
          buffer[i] = buffer[i+1];
 
-      num--;
+      bytesread--;
    }
 
 #if 1
@@ -137,7 +143,7 @@ void vrpn_Wanda::mainloop(void) {
    // XXX - hack.  why doesn't wanda send a record when the user
    // XXX - isn't pushing the joystick ball?  we weren't getting
    // XXX - the last record
-//   if (num == 3 && index == 3 && curtime - last_val_timestamp > 0.2) {
+//   if (bytesread == 3 && index == 3 && curtime - last_val_timestamp > 0.2) {
    if (curtime - last_val_timestamp > 0.2) {
       int new_valuator_info = 0;
 
@@ -163,12 +169,12 @@ void vrpn_Wanda::mainloop(void) {
 #if 1
    if (dbug_wanda)
       if (num_read > 0)
-         fprintf(stderr, "\t(num = %d)\n", num);
+         fprintf(stderr, "\t(bytesread = %d)\n", bytesread);
 #endif
 
-   while( num >= 3 && index < num ) {
+   while( bytesread >= 3 && index < bytesread ) {
       // as soon as 3 bytes are available, report them...
-      if (index == 0 && num >= 3) {
+      if (index == 0 && bytesread >= 3) {
          // update valuators & buttons #0 & #2
 
          signed char x  = static_cast<char>((buffer[1] | ((buffer[0]&3)  << 6)));
@@ -210,7 +216,7 @@ void vrpn_Wanda::mainloop(void) {
 
       // if index is at 3 & there are more bytes & the next byte
       // isn't the start of a new record, then process button info
-      if (index == 3 && num > 3 && !(buffer[3] & (1<<6))) {
+      if (index == 3 && bytesread > 3 && !(buffer[3] & (1<<6))) {
          int new_val = (buffer[3]) ? 1 : 0; // yellow button
 
          if (new_val != buttons[1]) {
@@ -228,10 +234,10 @@ void vrpn_Wanda::mainloop(void) {
          report_new_valuator_info();
 
       // if next byte is start of new record, shift bytes
-      if (index == 4 || (index == 3 && num > 3 && (buffer[3] & (1<<6)))) {
-         for(int i=index;i<num;i++)
+      if (index == 4 || (index == 3 && bytesread > 3 && (buffer[3] & (1<<6)))) {
+         for(int i=index;i<bytesread;i++)
             buffer[i - index] = buffer[i];
-         num -= index;
+         bytesread -= index;
          index = 0;
       }
    }

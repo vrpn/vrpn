@@ -102,8 +102,8 @@ int vrpn_Tracker_Dyna::get_status()
 
 void vrpn_Tracker_Dyna::reset() {
     //static int numResets = 0;	// How many resets have we tried?;
-  static char T_PDYN_C_CTL_C[4] ="\003\003\003";
-  static int T_PDYN_RECORD_LENGTH = 8;
+  static const char T_PDYN_C_CTL_C[4] ="\003\003\003";
+  static const int T_PDYN_RECORD_LENGTH = 8;
 
   vrpn_write_characters(serial_fd, (unsigned char*)T_PDYN_C_CTL_C, strlen(T_PDYN_C_CTL_C));
   vrpn_write_characters(serial_fd,(const unsigned char *) "4", 1); // set to polling mode;

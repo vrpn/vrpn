@@ -30,7 +30,7 @@ class VRPN_API vrpn_Log {
     int saveLogSoFar(void);
       ///< Saves any messages logged so far.
 
-    int logIncomingMessage (vrpn_int32 payloadLen, struct timeval time,
+    int logIncomingMessage (size_t payloadLen, struct timeval time,
                     vrpn_int32 type, vrpn_int32 sender, const char * buffer);
       ///< Should be called with the timeval adjusted by the clock offset
       ///< on the receiving Endpoint.

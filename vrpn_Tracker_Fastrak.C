@@ -36,7 +36,8 @@ vrpn_Tracker_Fastrak::vrpn_Tracker_Fastrak(const char *name, vrpn_Connection *c,
     vrpn_Tracker_Serial(name,c,port,baud),
     do_filter(enable_filtering),
     num_stations(numstations>vrpn_FASTRAK_MAX_STATIONS ? vrpn_FASTRAK_MAX_STATIONS : numstations),
-    do_is900_timestamps(is900_timestamps)
+    do_is900_timestamps(is900_timestamps),
+    num_resets(0)
 {
 	int i;
 
@@ -167,7 +168,6 @@ int vrpn_Tracker_Fastrak::report_length(int sensor)
 
 void vrpn_Tracker_Fastrak::reset()
 {
-   static int numResets = 0;	// How many resets have we tried?
    int i,resetLen,ret;
    unsigned char reset[10];
    char errmsg[512];
@@ -187,31 +187,31 @@ void vrpn_Tracker_Fastrak::reset()
    // a query mode if it is in one.  These additions are cumulative: by the
    // end, we're doing them all.
    resetLen = 0;
-   numResets++;		  	// We're trying another reset
-   if (numResets > 1) {	// Try to get it out of a query loop if its in one
+   num_resets++;		  	// We're trying another reset
+   if (num_resets > 1) {	// Try to get it out of a query loop if its in one
    	reset[resetLen++] = (unsigned char) (13); // Return key -> get ready
    }
-   if (numResets > 5) {
+   if (num_resets > 5) {
 	reset[resetLen++] = 'Y'; // Put tracker into tracking (not point) mode
    }
-   if (numResets > 4) { // Even more aggressive
+   if (num_resets > 4) { // Even more aggressive
        reset[resetLen++] = 't'; // Toggle extended mode (in case it is on)
    }
    /* XXX These commands are probably never needed, and can cause real
       headaches for people who are keeping state in their trackers (especially
       the InterSense trackers).  Taking them out in version 05.01; you can put
       them back in if your tracker isn't resetting as well.
-   if (numResets > 3) {	// Get a little more aggressive
+   if (num_resets > 3) {	// Get a little more aggressive
 	reset[resetLen++] = 'W'; // Reset to factory defaults
 	reset[resetLen++] = (unsigned char) (11); // Ctrl + k --> Burn settings into EPROM
    }
    */
-   if (numResets > 2) {
+   if (num_resets > 2) {
        reset[resetLen++] = (unsigned char) (25); // Ctrl + Y -> reset the tracker
    }
    reset[resetLen++] = 'c'; // Put it into polled (not continuous) mode
 
-   sprintf(errmsg, "Resetting the tracker (attempt %d)", numResets);
+   sprintf(errmsg, "Resetting the tracker (attempt %d)", num_resets);
    VRPN_MSG_WARNING(errmsg);
    for (i = 0; i < resetLen; i++) {
 	if (vrpn_write_characters(serial_fd, &reset[i], 1) == 1) {
@@ -227,7 +227,7 @@ void vrpn_Tracker_Fastrak::reset()
    // You only need to sleep 10 seconds for an actual Fastrak.
    // For the Intersense trackers, you need to sleep 20. So,
    // sleeping 20 is the more general solution...
-   if (numResets > 2) {
+   if (num_resets > 2) {
        vrpn_SleepMsecs(1000.0*20);	// Sleep to let the reset happen, if we're doing ^Y
    }
 
@@ -289,7 +289,7 @@ void vrpn_Tracker_Fastrak::reset()
      return;
    } else {
      VRPN_MSG_WARNING("Fastrak/Isense gives status (this is good)");
-     numResets = 0; 	// Success, use simple reset next time
+     num_resets = 0; 	// Success, use simple reset next time
    }
 
    //--------------------------------------------------------------------

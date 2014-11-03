@@ -65,6 +65,7 @@ public:
 	virtual void mainloop(void);
 
 private:
+        static bool _freespace_initialized;
 	static void freespaceInit();
 	/**
 	 * private constructor since opening of the device can fail.

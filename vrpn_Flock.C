@@ -309,7 +309,7 @@ void vrpn_Tracker_Flock::reset()
    vrpn_set_rts( serial_fd );
    vrpn_SleepMsecs(1000);
    vrpn_clear_rts( serial_fd );
-   vrpn_SleepMsecs(5000);
+   vrpn_SleepMsecs(2000);
 
    // set vars for error handling
    // set them right away so they are set properly in the
@@ -338,7 +338,7 @@ void vrpn_Tracker_Flock::reset()
    vrpn_drain_output_buffer( serial_fd );
 
    // wait for tracker to respond and flush buffers
-   vrpn_SleepMsecs(500);
+   vrpn_SleepMsecs(5000);
 
    // Send the tracker a string that should reset it.
 
@@ -371,7 +371,7 @@ void vrpn_Tracker_Flock::reset()
    vrpn_drain_output_buffer( serial_fd );
 
    // wait for auto reconfig
-   vrpn_SleepMsecs(500);
+   vrpn_SleepMsecs(10000);
 
    // now set modes: pos/quat, group, stream
    resetLen=0;

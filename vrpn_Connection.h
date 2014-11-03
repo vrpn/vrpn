@@ -968,20 +968,20 @@ VRPN_API int check_vrpn_file_cookie (const char * buffer);
 /// @}
 
 /// @brief Returns the size of the magic cookie buffer, plus any alignment overhead.
-VRPN_API int vrpn_cookie_size (void);
+VRPN_API size_t vrpn_cookie_size (void);
 
-VRPN_API int write_vrpn_cookie (char * buffer, int length, long remote_log_mode);
+VRPN_API int write_vrpn_cookie (char * buffer, size_t length, long remote_log_mode);
 
 /// @name Utility routines for reading from and writing to sockets/file descriptors
 /// @{
 #ifndef VRPN_USE_WINSOCK_SOCKETS
- int VRPN_API vrpn_noint_block_write (int outfile, const char buffer[], int length);
- int VRPN_API vrpn_noint_block_read(int infile, char buffer[], int length);
+ int VRPN_API vrpn_noint_block_write (int outfile, const char buffer[], size_t length);
+ int VRPN_API vrpn_noint_block_read(int infile, char buffer[], size_t length);
  int VRPN_API vrpn_noint_select(int width, fd_set *readfds, fd_set *writefds,
 		     fd_set *exceptfds, struct timeval * timeout);
 #else /* winsock sockets */
- int VRPN_API vrpn_noint_block_write(SOCKET outsock, char *buffer, int length);
- int VRPN_API vrpn_noint_block_read(SOCKET insock, char *buffer, int length);
+ int VRPN_API vrpn_noint_block_write(SOCKET outsock, char *buffer, size_t length);
+ int VRPN_API vrpn_noint_block_read(SOCKET insock, char *buffer, size_t length);
 #endif /* VRPN_USE_WINSOCK_SOCKETS */
 /// @}
 

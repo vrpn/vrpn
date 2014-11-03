@@ -28,38 +28,33 @@
 #define	REPORT_ERROR(msg) { send_text_message(msg, timestamp, vrpn_TEXT_ERROR); }
 
 static const std::string &getDeviceNodes(const std::string &device_name) {
-  static std::map<std::string, std::string> s_devicesNodes;
-  static bool s_initialized = false;
+  std::map<std::string, std::string> s_devicesNodes;
 
-  static std::string default_node="unknown";
-  static std::string none_found="";
+  std::string none_found="";
 
-  if (!s_initialized) {
-    bool permission_missing = false;
-    unsigned int id = 0;
-    while (1) {
-      std::ostringstream oss;
-      oss << "/dev/input/event" << id;
+  bool permission_missing = false;
+  unsigned int id = 0;
+  while (1) {
+    std::ostringstream oss;
+    oss << "/dev/input/event" << id;
 
-      int fd = open(oss.str().c_str(), O_RDONLY);
-      if(fd >= 0){
-        char name[512];
-        if(ioctl(fd, EVIOCGNAME(sizeof(name)), name) >= 0) {
-          s_devicesNodes[name] = oss.str();
-        }
-
-        close(fd);
-      } else {
-        if (errno == ENOENT) break;
-        if (errno == EACCES) permission_missing = true;
+    int fd = open(oss.str().c_str(), O_RDONLY);
+    if(fd >= 0){
+      char name[512];
+      if(ioctl(fd, EVIOCGNAME(sizeof(name)), name) >= 0) {
+        s_devicesNodes[name] = oss.str();
       }
-      errno = 0;
-      id++;
+
+      close(fd);
+    } else {
+      if (errno == ENOENT) break;
+      if (errno == EACCES) permission_missing = true;
     }
-    s_initialized = true;
-    if (permission_missing) {
-      std::cout << "vrpn_DevInput device scan warning : permission denied for some nodes !" << std::endl;
-    }
+    errno = 0;
+    id++;
+  }
+  if (permission_missing) {
+    std::cout << "vrpn_DevInput device scan warning : permission denied for some nodes !" << std::endl;
   }
 
   std::map<std::string, std::string>::iterator node_name = s_devicesNodes.find(device_name);

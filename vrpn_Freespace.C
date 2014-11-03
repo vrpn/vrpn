@@ -3,7 +3,10 @@
 #include "quat.h"
 #include <freespace/freespace_codecs.h>
 #include <cstring>
-static q_type gs_qIdent = Q_ID_QUAT;
+static const q_type gs_qIdent = Q_ID_QUAT;
+
+// We've not yet initialized the FreeSpace library.
+bool vrpn_Freespace::_freespace_initialized = false;
 
 // libfreespace provides linear acceleration values in (mm/(s^2))^-3 
 // VRPN wants these in meters/(s^2)
@@ -29,23 +32,22 @@ vrpn_Freespace::vrpn_Freespace(FreespaceDeviceId freespaceId,
         vrpn_Tracker_Server(name, conn),
         vrpn_Button_Filter(name, conn),
         vrpn_Dial(name, conn),
-        _freespaceDevice(freespaceId)											   
 {
 	memcpy(&_deviceInfo, deviceInfo, sizeof(_deviceInfo));
 	// 5 buttons + a scroll wheel
 	vrpn_Button::num_buttons = 5;
 	vrpn_Dial::num_dials = 1;
 	memset(&_lastBodyFrameTime, 0, sizeof(_lastBodyFrameTime));
-    _timestamp.tv_sec = 0;
+	_timestamp.tv_sec = 0;
 }
 
 void vrpn_Freespace::freespaceInit() {
-	static bool freespaceInit = false;
-	if (!freespaceInit) {
-		freespaceInit = true;
+	if (!_freespace_initialized) {
+		_freespace_initialized = true;
 		int rc = freespace_init();
 		if (rc != FREESPACE_SUCCESS) {
 			fprintf(stderr, "vrpn_Freespace::freespaceInit: failed to init freespace lib. rc=%d\n", rc);
+			_freespace_initialized = false;
 		}
 	}
 }

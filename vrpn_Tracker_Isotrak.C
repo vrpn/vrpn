@@ -36,7 +36,8 @@ vrpn_Tracker_Isotrak::vrpn_Tracker_Isotrak(const char *name, vrpn_Connection *c,
                     const char *additional_reset_commands) :
     vrpn_Tracker_Serial(name,c,port,baud),
     do_filter(enable_filtering),
-    num_stations(numstations>vrpn_ISOTRAK_MAX_STATIONS ? vrpn_ISOTRAK_MAX_STATIONS : numstations)
+    num_stations(numstations>vrpn_ISOTRAK_MAX_STATIONS ? vrpn_ISOTRAK_MAX_STATIONS : numstations),
+    num_resets(0)
 {
         reset_time.tv_sec = reset_time.tv_usec = 0;
         if (additional_reset_commands == NULL) {
@@ -89,7 +90,6 @@ int vrpn_Tracker_Isotrak::set_sensor_output_format(int /*sensor*/)
 
 void vrpn_Tracker_Isotrak::reset()
 {
-    static int numResets = 0;	// How many resets have we tried?
     int i,resetLen,ret;
     unsigned char reset[10];
     char errmsg[512];
@@ -106,21 +106,21 @@ void vrpn_Tracker_Isotrak::reset()
     // After a few tries with this, use a [return] character, and then use the ^Y to reset. 
     
     resetLen = 0;
-    numResets++;		  	
+    num_resets++;		  	
     
     // We're trying another reset
-    if (numResets > 1) {	        // Try to get it out of a query loop if its in one
+    if (num_resets > 1) {	        // Try to get it out of a query loop if its in one
             reset[resetLen++] = (unsigned char) (13); // Return key -> get ready
     }
     
-    if (numResets > 2) {
+    if (num_resets > 2) {
         reset[resetLen++] = (unsigned char) (25); // Ctrl + Y -> reset the tracker
     }
     
     reset[resetLen++] = 'c'; // Put it into polled (not continuous) mode
     
     
-    sprintf(errmsg, "Resetting the tracker (attempt %d)", numResets);
+    sprintf(errmsg, "Resetting the tracker (attempt %d)", num_resets);
     VRPN_MSG_WARNING(errmsg);
     
     for (i = 0; i < resetLen; i++) {
@@ -134,7 +134,7 @@ void vrpn_Tracker_Isotrak::reset()
             }
     }
     //XXX Take out the sleep and make it keep spinning quickly
-    if (numResets > 2) {
+    if (num_resets > 2) {
         vrpn_SleepMsecs(1000.0*20);	// Sleep to let the reset happen, if we're doing ^Y
     }
     
@@ -197,7 +197,7 @@ void vrpn_Tracker_Isotrak::reset()
         return;
     } else {
         VRPN_MSG_WARNING("Isotrack gives correct status (this is good)");
-        numResets = 0; 	// Success, use simple reset next time
+        num_resets = 0; 	// Success, use simple reset next time
     }
     
     //--------------------------------------------------------------------

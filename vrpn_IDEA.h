@@ -81,6 +81,7 @@ public:
     double d_initial_move;
     double d_fractional_c_a;
     double d_reset_location;
+    struct timeval d_last_poll;
 
     virtual int reset(void);      //< Set device back to starting config
     virtual int get_report(void); //< Try to read a report from the device

@@ -12,7 +12,7 @@
 static const vrpn_uint16 SAITEK_VENDOR = 0x06a3;
 static const vrpn_uint16 ST290_PRO = 0x0d60;
 
-static double POLL_INTERVAL = 1e+6 / 30.0;		// If we have not heard, ask.
+static const double POLL_INTERVAL = 1e+6 / 30.0;		// If we have not heard, ask.
 
 #define GAMEPAD_TRIGGER_THRESHOLD 30
 
@@ -77,7 +77,7 @@ static vrpn_float64 normalize_trigger(unsigned int trigger)
 // Common base class
 //////////////////////////////////////////////////////////////////////////
 vrpn_Saitek_Controller_Raw::vrpn_Saitek_Controller_Raw(vrpn_HidAcceptor *filter, const char *name, vrpn_Connection *c) :
-	_filter(filter), vrpn_HidInterface(_filter), vrpn_BaseClass(name, c)
+	_filter(filter), vrpn_HidInterface(filter), vrpn_BaseClass(name, c)
 {
 	init_hid();
 }

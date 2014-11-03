@@ -22,9 +22,13 @@ protected:
   void report_new_valuator_info();
 
 private:
+  double last_val_timestamp;
   double resetval[vrpn_CHANNEL_MAX];
   long MAX_TIME_INTERVAL;
   int  bytesread;
+  int  first;
+  int  index;
+  static int dbug_wanda;
 };
 
 

@@ -83,8 +83,8 @@ public:
     // returns the elapsed time in the file
     virtual int time_since_connection_open (timeval * elapsed_time);
 
-	// returns the current time in the file since the epoch (UTC time).
-	virtual timeval get_time( ) {  return d_time;  }
+    // returns the current time in the file since the epoch (UTC time).
+    virtual timeval get_time( ) {  return d_time;  }
 
     virtual vrpn_File_Connection * get_File_Connection (void);
 
@@ -175,6 +175,7 @@ protected:
     // }}}
     // {{{ time-keeping
 protected:
+    timeval d_last_told;  // Last time we printed error about no open file.
     timeval d_time;  // current time in file
     timeval d_start_time;  // time of first record in file
     timeval d_earliest_user_time;  // time of first user message

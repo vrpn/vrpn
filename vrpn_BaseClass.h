@@ -13,46 +13,6 @@
   example of how to create a new VRPN object type using this as a base class.
 */
 
-/*
-Things to do to base objects to convert from VRPN version 4.XX to 5.00:
-    In the header file:
-	Include the BaseClass header
-	Derive from the BaseClass
-	Remove mainloop() pure virtual from the base class
-	Remove connectionPtr from the base class
-	Remove connection and my_id from the data objects
-	Declare register_types()
-    In the source file:
-	Call the base-class constructor
-	Call the base-class init() routine.
-	Remove parts of the constructor
-		Dealing with service and connection set up
-		Dealing with registering the sender
-		deleting the servicename
-	Move the constructor code to register the types into a separate function
-	Replace the message registration commands with calls to autodelete ones
-	Delete the unregister commands for the message handlers
-	Remove the connectionPtr function
-	Remove the vrpn_get_connection_by_name clause from the remote
-          constructor
-	Change connection-> to d_connection->
-	Change my_id to d_sender_id
-	Remove the timeout parameter to all mainloop() functions
-	Put a call to client_mainloop() in the Remote object mainloop() function
-Things to do in the server object (server device) files to convert from 4.XX
-  to 5.00:
-	Replace the message registration commands with calls to autodelete ones
-		(Note that the handler for update rate has been removed from
-                the tracker class -- it should not have been there in the first place.
-                This saves the derived class from having to unregister the old one before
-                registering its	own).
-	Delete the unregister commands for the message handlers
-	Change connection-> to d_connection->
-	Change my_id to d_sender_id
-	Remove the timeout parameter to all mainloop() functions
-	Put a call to server_mainloop() in each server mainloop()
-*/
-
 #ifndef VRPN_BASECLASS
 #define VRPN_BASECLASS
 
@@ -62,6 +22,74 @@ Things to do in the server object (server device) files to convert from 4.XX
 #include "vrpn_Connection.h"
 #include "vrpn_Shared.h"                // for timeval, vrpn_gettimeofday
 #include "vrpn_Types.h"                 // for vrpn_int32, vrpn_uint32
+
+/*
+-----------------------------------------------------------------------------
+Answer to the question:
+   "Why is there both a UNIQUE and NON-UNIQUE base class?",
+   or
+   "Why can't everything from vrpn_BaseClass be moved into vrpn_BaseClassUnique?"
+
+   The first reason is that removing vrpn_BaseClass would require the
+   vrpn_BaseClassUnique constructor to take a name and connection object as
+   parameters, which would cause some problems due to the way virtual base
+   classes are implemented in C++.
+
+   Any class that inherits from a virtual base (either directly or several
+   generations removed) must provide an explicit call to the constructor
+   of the virtual base.  This is done because the virtual base constructor
+   is invoked from the very first class in the constructor chain.
+
+   Take for example vrpn_Tng3, which inherits vrpn_Button and vrpn_Serial_Analog
+   (and thus vrpn_Analog).  Creating a new instance of a vrpn_Tng3 object will call
+   the constructors in this order:
+       Tng3
+       BaseClassUnique  (because it is a virtual base)
+       Button
+       BaseClass   (coming from Button)
+       Serial_Analog
+       Analog
+       BaseClass   (coming from Analog)
+
+   Right now, BaseClassUnique's constructor has no parameters.  So the
+   Tng3 constructor does not have to explicitly invoke BaseClassUnique, although
+   implicitly it will call BaseClassUnique's 0-parameter constructor before doing
+   anything else.  But if BaseClass is eliminated, then BaseClassUnique's
+   constructor must do the work of creating the connection and copying the
+   service name.  So BaseClassUnique's constructor must now take a couple
+   parameters, which means that every class (including Tng3, Button, Analog,
+   and Serial_Analog) would have to explicitly name the constructor for
+   BaseClassUnique in the code and specify parameters for connection and
+   service-name, even though only one such call to the BaseClassUnique's
+   constructor would ever actually occur at runtime (that of Tng3 since it's
+   located at the lowest level of the family tree; the rest of the calls
+   would be ignored).  This would mean inserting
+   "vrpn_BaseClassUnique(name,connection)" into the initializer section of
+   every constructor in *every* class under the BaseClassUnique subtree.
+
+   The second reason we have both a unique and non-unique base class is that
+   the "register_types" virtual function must be called several times for
+   multiply-inherited devices, with a different virtual target in each case.
+   Presently, register_types() is called from vrpn_BaseClass::init().
+   init() may be called multiple times using a different vftable entry for
+   register_types() each time (e.g. for the Tng3 it will refer once to
+   vrpn_Analog::register_types() and once to vrpn_Button::register_types()).
+   Both init() and the pure-virtual declaration of register_types() are found
+   in BaseClass.  Moving init() up into BaseClassUnique instead of BaseClass
+   means that register_types() would have to move up as well.  And if
+   register_types() is declared in the virtual base class, BaseClassUnique,
+   it can only have one virtual target.
+
+   So it might appear that vrpn_BaseClass has no data members and would
+   therefore be easy to eliminate.  However it actually does have a data
+   member: the vftable entry for "register_types".  And this data member
+   *must* be duplicated in the case of multiply-inherited device because a
+   single object will need several distinct virtual targets for
+   "register_types".
+
+   [Jeff Feasel  19 May 2005]
+-----------------------------------------------------------------------------
+*/
 
 const int vrpn_MAX_BCADRS =	100;
 ///< Internal value for number of BaseClass addresses
@@ -84,6 +112,11 @@ class	VRPN_API vrpn_BaseClass;
 // name of the object that sent the message.
 //  The user could create their own TextPrinter, and attach whatever objects
 // they want to it.
+//  NOTE: Because there is a vrpn_System_TextPrinter that all vrpn_BaseClass
+// objects talk to, and because those objects may be in multiple threads, the
+// vrpn_TextPrinter class has to be thread-safe.  This requires all user-
+// callable methods to be thread-safe because the destructor may be called
+// during a method call.
 
 class VRPN_API vrpn_TextPrinter {
   public:
@@ -105,14 +138,16 @@ class VRPN_API vrpn_TextPrinter {
 
     /// Change the level of printing for the object (sets the minimum level to
     /// print). Default is Warnings and Errors of all levels.
-    void    set_min_level_to_print(vrpn_TEXT_SEVERITY severity, vrpn_uint32 level = 0)
-		{ d_severity_to_print = severity; d_level_to_print = level; };
+    void    set_min_level_to_print(vrpn_TEXT_SEVERITY severity, vrpn_uint32 level = 0);
 
     /// Change the ostream that will be used to print messages.  Setting a
     /// NULL ostream results in no printing.
-    void   set_ostream_to_use(FILE *o) { d_ostream = o; };
+    void   set_ostream_to_use(FILE *o);
 
   protected:
+    /// Mutex to ensure thread safety;
+    vrpn_Semaphore  d_semaphore;
+
     /// Structure to hold the objects that are being watched.
     class VRPN_API vrpn_TextPrinter_Watch_Entry {
       public:
@@ -279,78 +314,6 @@ class VRPN_API vrpn_BaseClass : virtual public vrpn_BaseClassUnique {
 	virtual int register_types(void) = 0;
 };
 
-// End of defined VRPN_BASECLASS for vrpn_BaseClass.h
-
-
-/*
------------------------------------------------------------------------------
-Answer to the question:
-   "Why is there both a UNIQUE and NON-UNIQUE base class?",
-   or
-   "Why can't everything from vrpn_BaseClass be moved into vrpn_BaseClassUnique?"
-
-   The first reason is that removing vrpn_BaseClass would require the
-   vrpn_BaseClassUnique constructor to take a name and connection object as
-   parameters, which would cause some problems due to the way virtual base
-   classes are implemented in C++.
-
-   Any class that inherits from a virtual base (either directly or several
-   generations removed) must provide an explicit call to the constructor
-   of the virtual base.  This is done because the virtual base constructor
-   is invoked from the very first class in the constructor chain.
-
-   Take for example vrpn_Tng3, which inherits vrpn_Button and vrpn_Serial_Analog
-   (and thus vrpn_Analog).  Creating a new instance of a vrpn_Tng3 object will call
-   the constructors in this order:
-       Tng3
-       BaseClassUnique  (because it is a virtual base)
-       Button
-       BaseClass   (coming from Button)
-       Serial_Analog
-       Analog
-       BaseClass   (coming from Analog)
-
-   Right now, BaseClassUnique's constructor has no parameters.  So the
-   Tng3 constructor does not have to explicitly invoke BaseClassUnique, although
-   implicitly it will call BaseClassUnique's 0-parameter constructor before doing
-   anything else.  But if BaseClass is eliminated, then BaseClassUnique's
-   constructor must do the work of creating the connection and copying the
-   service name.  So BassClassUnique's constructor must now take a couple
-   parameters, which means that every class (including Tng3, Button, Analog,
-   and Serial_Analog) would have to explicitly name the constructor for
-   BaseClassUnique in the code and specify parameters for connection and
-   service-name, even though only one such call to the BaseClassUnique's
-   constructor would ever actually occur at runtime (that of Tng3 since it's
-   located at the lowest level of the family tree; the rest of the calls
-   would be ignored).  This would mean inserting
-   "vrpn_BaseClassUnique(name,connection)" into the initializer section of
-   every constructor in *every* class under the BaseClassUnique subtree.
-
-   The second reason we have both a unique and non-unique base class is that
-   the "register_types" virtual function must be called several times for
-   multiply-inherited devices, with a different virtual target in each case.
-   Presently, register_types() is called from vrpn_BaseClass::init().
-   init() may be called multiple times using a different vftable entry for
-   register_types() each time (e.g. for the Tng3 it will refer once to
-   vrpn_Analog::register_types() and once to vrpn_Button::register_types()).
-   Both init() and the pure-virtual declaration of register_types() are found
-   in BaseClass.  Moving init() up into BaseClassUnique instead of BaseClass
-   means that register_types() would have to move up as well.  And if
-   register_types() is declared in the virtual base class, BaseClassUnique,
-   it can only have one virtual target.
-
-   So it might appear that vrpn_BaseClass has no data members and would
-   therefore be easy to eliminate.  However it actually does have a data
-   member: the vftable entry for "register_types".  And this data member
-   *must* be duplicated in the case of multiply-inherited device because a
-   single object will need several distinct virtual targets for
-   "register_types".
-
-   [Jeff Feasel  19 May 2005]
------------------------------------------------------------------------------
-*/
-
-
 //---------------------------------------------------------------
 // Within VRPN (and other libraries), it is wise to avoid using the
 // Standard Template Library.  This is very annoying, but required
@@ -480,4 +443,5 @@ protected:
   CHANGELIST_ENTRY	*d_change_list;
 };
 
+// End of defined VRPN_BASECLASS for vrpn_BaseClass.h
 #endif

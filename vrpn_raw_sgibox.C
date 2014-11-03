@@ -39,26 +39,11 @@
 #include "vrpn_Types.h"                 // for vrpn_float64, vrpn_int16, etc
 #include "vrpn_raw_sgibox.h"
 
-static	unsigned char	BBOX_RESET = 0x20;
-const	int	VRPN_DIAL_RANGE = 200;
+static	const unsigned char	BBOX_RESET = 0x20;
+static	const int		VRPN_DIAL_RANGE = 200;
 
 static int VRPN_CALLBACK sgibox_raw_con_cb(void * userdata, vrpn_HANDLERPARAM p);
 static int VRPN_CALLBACK sgibox_raw_alert_handler(void * userdata, vrpn_HANDLERPARAM);
-
-// This routine writes out the characters slowly, so as not to
-// overburden the poor button box, which seems to choke when a
-// bunch of characters are all sent at once.
-static	int	write_slowly(int fd, unsigned char *buffer, int len)
-{	int	i;
-
-	for (i = 0; i < len; i++) {
-		vrpn_SleepMsecs(1);
-		if (vrpn_write_characters(fd, &buffer[i], 1) != 1) {
-			return -1;
-		}
-	}
-	return len;
-}
 
 vrpn_raw_SGIBox::vrpn_raw_SGIBox(char * name, vrpn_Connection * c,
 				 char *serialPortName):
@@ -111,11 +96,11 @@ int vrpn_raw_SGIBox::reset() {  /* Button/Dial box setup */
 		perror("vrpn_raw_SGIBox::reset(): Can't flush incoming buffer");
 		return -1;
 	  }
-	  if (write_slowly(serialfd, &BBOX_RESET,1) != 1) {
+	  if (vrpn_write_slowly(serialfd, &BBOX_RESET,1,1) != 1) {
 		perror("vrpn_raw_SGIBox::reset(): Can't write reset command");
 		return -1;
 	  }
-	  if (write_slowly(serialfd, &BBOX_RESET,1) != 1) {
+	  if (vrpn_write_slowly(serialfd, &BBOX_RESET,1,1) != 1) {
 		perror("vrpn_raw_SGIBox::reset(): Can't write reset command");
 		return -1;
 	  }
@@ -141,12 +126,12 @@ int vrpn_raw_SGIBox::reset() {  /* Button/Dial box setup */
 #ifdef	VERBOSE
   if (serialfd != -1) {
 	printf("vrpn_raw_SGIBox: flashing the lights on then off...\n");
-	if (write_slowly(serialfd, lightson,5) != 5) {
+	if (vrpn_write_slowly(serialfd, lightson,5,1) != 5) {
 		perror("vrpn_raw_SGIBox::reset(): Can't turn the lights on");
 		return -1;
 	}
 	vrpn_SleepMsecs(1000.0*5);
-	if (write_slowly(serialfd, lightsoff,5) != 5) {
+	if (vrpn_write_slowly(serialfd, lightsoff,5,1) != 5) {
 		perror("vrpn_raw_SGIBox::reset(): Can't turn the lights off");
 		return -1;
 	}
@@ -158,7 +143,7 @@ int vrpn_raw_SGIBox::reset() {  /* Button/Dial box setup */
   if (serialfd != -1) {
     // for some reason, enabling the dials disables the buttons
     // so we have to enable the dials first
-  	  if (write_slowly(serialfd, enabledials,5) != 5) {
+  	  if (vrpn_write_slowly(serialfd, enabledials,5,1) != 5) {
 		perror("vrpn_raw_SGIBox::reset(): Can't enable dials");
 		return -1;
 	  }
@@ -171,7 +156,7 @@ int vrpn_raw_SGIBox::reset() {  /* Button/Dial box setup */
 	  // command the first time. So we send it twice to make sure
 	  for (i=0; i < 2; i++) {
 
-	    if (write_slowly(serialfd, enablebuttons,5) != 5) {
+	    if (vrpn_write_slowly(serialfd, enablebuttons,5,1) != 5) {
 	      perror("vrpn_raw_SGIBox::reset(): Can't enable buttons");
 	      return -1;
 	    }
@@ -180,7 +165,7 @@ int vrpn_raw_SGIBox::reset() {  /* Button/Dial box setup */
 	      printf("vrpn_raw_SGIBOX::reset() : Enabled Buttons\n");
 	    }
 #endif 
-	    if (write_slowly(serialfd, activatebuttons,5) != 5) {
+	    if (vrpn_write_slowly(serialfd, activatebuttons,5,1) != 5) {
 	      perror("vrpn_raw_SGIBox::reset(): Can't activate buttons\n");
 	      return -1;
 	    }
@@ -383,7 +368,7 @@ int	vrpn_raw_SGIBox::send_light_command(void)  {
   // send it.
   
   msg[0] = 0x75; memcpy(&msg[1],lights,4);
-  if (write_slowly(serialfd, msg, 5) != 5) {
+  if (vrpn_write_slowly(serialfd, msg, 5,1) != 5) {
 	  perror("Could not write light control message");
 	  //XXX Should be vrpn_Text message
 	  reset();

@@ -67,6 +67,13 @@ extern VRPN_API int vrpn_read_available_characters(int comm, unsigned char *buff
 		size_t count, struct timeval *timeout);
 /// @}
 
+/// @name Write routines
+///
+/// Write the specified number of characters.  Some devices can't accept writes that
+/// are too fast, so need time between characters; the write_slowly function handles
+/// this case.
+/// @}
 extern VRPN_API int vrpn_write_characters(int comm, const unsigned char *buffer, size_t bytes);
+extern VRPN_API int vrpn_write_slowly(int comm, const unsigned char *buffer, size_t bytes, int millisec_delay);
 
 #endif

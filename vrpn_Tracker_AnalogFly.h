@@ -134,6 +134,7 @@ class VRPN_API vrpn_Tracker_AnalogFly : public vrpn_Tracker {
     vrpn_Button_Remote	* d_clutch_button;
     int			d_clutch_which;
     bool                d_clutch_engaged;
+    bool		d_clutch_was_off;
 
     q_matrix_type d_initMatrix, d_currentMatrix, d_clutchMatrix;
 

@@ -89,21 +89,6 @@
 #define	STATUS_READING		(1) // Looking for the rest of the report
 #define MAX_TIME_INTERVAL (2000000) // max time between reports (usec)
 
-// This routine writes out the characters slowly, so as not to
-// overburden the Spaceball (came from VRPN Magellan driver code)
-static	int	vrpn_write_slowly(int fd, unsigned char *buffer, size_t len, int MsecWait)
-{	size_t	i;
-
-	for (i = 0; i < len; i++) {
-		vrpn_SleepMsecs(MsecWait);
-		if (vrpn_write_characters(fd, &buffer[i], 1) != 1) {
-			return -1;
-		}
-	}
-	return static_cast<int>(len);
-}
-
-
 // This creates a vrpn_Spaceball and sets it to reset mode. It opens
 // the serial device using the code in the vrpn_Serial_Analog constructor.
 vrpn_Spaceball::vrpn_Spaceball (const char * name, vrpn_Connection * c,

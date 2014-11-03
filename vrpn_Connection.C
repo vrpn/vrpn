@@ -104,9 +104,6 @@ struct timeval;
 //#define VERBOSE
 //#define VERBOSE2
 //#define VERBOSE3
-//#define PRINT_READ_HISTOGRAM
-
-//   Warning:  PRINT_READ_HISTOGRAM is not thread-safe.
 
 // On Win32, this constant is defined as ~0 (sockets are unsigned ints)
 #ifndef	VRPN_USE_WINSOCK_SOCKETS
@@ -690,7 +687,7 @@ int vrpn_Log::saveLogSoFar(void) {
 
 
 int vrpn_Log::logIncomingMessage
-                   (vrpn_int32 payloadLen, struct timeval time,
+                   (size_t payloadLen, struct timeval time,
                     vrpn_int32 type, vrpn_int32 sender, const char * buffer) {
 
   // Log it the same way, whether it's a User or System message.
@@ -699,7 +696,7 @@ int vrpn_Log::logIncomingMessage
 
   if (logMode() & vrpn_LOG_INCOMING) {
 //fprintf(stderr, "Logging incoming message of type %d.\n", type);
-      return logMessage(payloadLen, time,
+      return logMessage(static_cast<vrpn_int32>(payloadLen), time,
                         type, sender, buffer, vrpn_TRUE);
   }
 //fprintf(stderr, "Not logging incoming messages (type %d)...\n", type);
@@ -1748,7 +1745,7 @@ int vrpn_noint_block_write (int outfile, const char buffer[], int length)
  * of EOF being reached before all the data arrives).
  */
 
-int vrpn_noint_block_read(int infile, char buffer[], int length)
+int vrpn_noint_block_read(int infile, char buffer[], size_t length)
 {
         register int    sofar;          /* How many we read so far */
         register int    ret;            /* Return value from the read() */
@@ -1781,12 +1778,12 @@ int vrpn_noint_block_read(int infile, char buffer[], int length)
 
 #else /* winsock sockets */
 
-int vrpn_noint_block_write(SOCKET outsock, char *buffer, int length)
+int vrpn_noint_block_write(SOCKET outsock, char *buffer, size_t length)
 {
 	int nwritten, sofar = 0;
 	do {
 		    /* Try to write the remaining data */
-		nwritten = send(outsock, buffer+sofar, length-sofar, 0);
+		nwritten = send(outsock, buffer+sofar, static_cast<int>(length)-sofar, 0);
 
 		if (nwritten == SOCKET_ERROR) {
 			return -1;
@@ -1798,7 +1795,7 @@ int vrpn_noint_block_write(SOCKET outsock, char *buffer, int length)
 	return(sofar);			/* All bytes written */
 }
 
-int vrpn_noint_block_read(SOCKET insock, char *buffer, int length)
+int vrpn_noint_block_read(SOCKET insock, char *buffer, size_t length)
 {
     int nread, sofar = 0;  
 
@@ -1812,7 +1809,7 @@ int vrpn_noint_block_read(SOCKET insock, char *buffer, int length)
 
     do {
             /* Try to read all remaining data */
-        nread = recv(insock, buffer+sofar, length-sofar, 0);
+        nread = recv(insock, buffer+sofar, static_cast<int>(length)-sofar, 0);
 
 		if (nread == SOCKET_ERROR) {
             return -1;
@@ -1845,10 +1842,10 @@ int vrpn_noint_block_read(SOCKET insock, char *buffer, int length)
 
 #ifdef VRPN_USE_WINSOCK_SOCKETS
 int vrpn_noint_block_read_timeout(SOCKET infile, char buffer[], 
-				 int length, struct timeval *timeout)
+				 size_t length, struct timeval *timeout)
 #else
 int vrpn_noint_block_read_timeout(int infile, char buffer[], 
-				 int length, struct timeval *timeout)
+				 size_t length, struct timeval *timeout)
 #endif
 {
         register int    sofar;          /* How many we read so far */
@@ -2222,8 +2219,7 @@ int vrpn_udp_request_lob_packet(
  * the default value is NULL, which uses the default NIC.
  */
 
-static
-int vrpn_get_a_TCP_socket (SOCKET * listen_sock, int * listen_portnum,
+static int vrpn_get_a_TCP_socket (SOCKET * listen_sock, int * listen_portnum,
                            const char * NIC_IP = NULL)
 {
   struct sockaddr_in listen_name;	/* The listen socket binding name */
@@ -2274,8 +2270,7 @@ int vrpn_get_a_TCP_socket (SOCKET * listen_sock, int * listen_portnum,
  * it returns 0. If there is an error along the way, it returns -1.
  */
 
-static
-int vrpn_poll_for_accept(SOCKET listen_sock, SOCKET *accept_sock, double timeout = 0.0)
+static int vrpn_poll_for_accept(SOCKET listen_sock, SOCKET *accept_sock, double timeout = 0.0)
 {
 	fd_set	rfds;
 	struct	timeval t;
@@ -2334,8 +2329,7 @@ int vrpn_poll_for_accept(SOCKET listen_sock, SOCKET *accept_sock, double timeout
  *      This routine returns a file descriptor that points to the socket
  * to the server on success and -1 on failure.
  */
-static
-int vrpn_start_server(const char * machine, char * server_name, char * args,
+static int vrpn_start_server(const char * machine, char * server_name, char * args,
                       const char * IPaddress = NULL)
 {
 #if defined(VRPN_USE_WINSOCK_SOCKETS) || defined(__CYGWIN__)
@@ -2486,9 +2480,9 @@ int vrpn_start_server(const char * machine, char * server_name, char * args,
  * add_vrpn_cookie.
  */
 
-int write_vrpn_cookie (char * buffer, int length, long remote_log_mode)
+int write_vrpn_cookie (char * buffer, size_t length, long remote_log_mode)
 {
-  if (static_cast<unsigned>(length) < vrpn_MAGICLEN + vrpn_ALIGN + 1)
+  if (length < vrpn_MAGICLEN + vrpn_ALIGN + 1)
     return -1;
 
   sprintf(buffer, "%s  %c", vrpn_MAGIC, static_cast<char>(remote_log_mode + '0'));
@@ -2571,7 +2565,7 @@ int check_vrpn_file_cookie (const char * buffer)
   return 0;
 }
 
-int vrpn_cookie_size (void) {
+size_t vrpn_cookie_size (void) {
   return vrpn_MAGICLEN + vrpn_ALIGN;
 }
 
@@ -2832,38 +2826,6 @@ int vrpn_Endpoint_IP::mainloop (timeval * timeout) {
 	tcp_messages_read = tcp_messages_read; // Avoid compiler warning
 #endif
     }
-#ifdef	PRINT_READ_HISTOGRAM
-#define      HISTSIZE 25
-   {
-        static vrpn_uint32 count = 0;
-        static int tcp_histogram[HISTSIZE+1];
-        static int udp_histogram[HISTSIZE+1];
-        count++;
-
-        if (tcp_messages_read > HISTSIZE) {tcp_histogram[HISTSIZE]++;}
-        else {tcp_histogram[tcp_messages_read]++;};
-
-        if (udp_messages_read > HISTSIZE) {udp_histogram[HISTSIZE]++;}
-        else {udp_histogram[udp_messages_read]++;};
-
-        if (count == 3000L) {
-		int i;
-                count = 0;
-		printf("\nHisto (tcp): ");
-                for (i = 0; i < HISTSIZE+1; i++) {
-                        printf("%d ",tcp_histogram[i]);
-                        tcp_histogram[i] = 0;
-                }
-                printf("\n");
-		printf("      (udp): ");
-                for (i = 0; i < HISTSIZE+1; i++) {
-                        printf("%d ",udp_histogram[i]);
-                        udp_histogram[i] = 0;
-                }
-                printf("\n");
-        }
-   }
-#endif
       	break;
 
       case COOKIE_PENDING:
@@ -3112,7 +3074,7 @@ int vrpn_Endpoint_IP::send_pending_reports (void) {
     fprintf(stderr, "vrpn_Endpoint::send_pending_reports():  "
                     "select() failed.\n");
 #ifdef VRPN_USE_WINSOCK_SOCKETS
-    static char Message[1024];
+    char Message[1024];
     FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS |
                   FORMAT_MESSAGE_MAX_WIDTH_MASK, NULL, WSAGetLastError(),
                   MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPSTR)Message, 1024, NULL);
@@ -3704,7 +3666,7 @@ int vrpn_Endpoint_IP::setup_new_connection (void) {
              "Internal error - array too small.  The code's broken.");
           return -1;
   }
-  sendlen = vrpn_cookie_size();
+  sendlen = static_cast<vrpn_int32>(vrpn_cookie_size());
 
   // Write the magic cookie header to the server
   if (vrpn_noint_block_write(d_tcpSocket, sendbuf, sendlen)
@@ -3786,7 +3748,7 @@ int vrpn_Endpoint_IP::finish_new_connection_setup (void) {
   unsigned short udp_portnum;
   int i;
 
-  sendlen = vrpn_cookie_size();
+  sendlen = static_cast<vrpn_int32>(vrpn_cookie_size());
   recvbuf = new char[sendlen];
   if (recvbuf == NULL) {
     fprintf(stderr,"vrpn_Endpoint_IP::finish_new_connection_setup(): Out of memory when allocating receiver buffer\n");
@@ -3996,7 +3958,7 @@ int vrpn_Endpoint_IP::getOneTCPMessage (int fd, char * buf, size_t buflen) {
     return -1;
   }
 
-  retval = dispatch(type, sender, time, payload_len, buf);
+  retval = dispatch(type, sender, time, static_cast<vrpn_uint32>(payload_len), buf);
   if (retval) {
     return -1;
   }
@@ -4887,7 +4849,10 @@ vrpn_Connection::vrpn_Connection
 vrpn_Connection::~vrpn_Connection (void) {
 
   // Clean up types, senders, and callbacks.
-  delete d_dispatcher;
+  if (d_dispatcher) {
+    delete d_dispatcher;
+    d_dispatcher = NULL;
+  }
 
   if (d_references > 0) {
     fprintf(stderr, "Connection was deleted while %d references still remain.\n",

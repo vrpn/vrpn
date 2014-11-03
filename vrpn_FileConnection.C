@@ -75,6 +75,9 @@ vrpn_File_Connection::vrpn_File_Connection (const char * station_name,
     d_preload(vrpn_FILE_CONNECTIONS_SHOULD_PRELOAD),
     d_accumulate(vrpn_FILE_CONNECTIONS_SHOULD_ACCUMULATE)
 {
+    d_last_told.tv_sec = 0;
+    d_last_told.tv_usec = 0;
+
     // Because we are a file connection, our status should be CONNECTED
     // Later set this to BROKEN if there is a problem opening/reading the file.
     if (d_endpoints[0] == NULL) {
@@ -612,7 +615,7 @@ int vrpn_File_Connection::eof()
 //    0 for normal result (played one entry)
 int vrpn_File_Connection::playone()
 {
-    static timeval tvMAX = { LONG_MAX, 999999L };
+    static const timeval tvMAX = { LONG_MAX, 999999L };
 
     int ret = playone_to_filetime(tvMAX);
     if (ret != 0) {
@@ -1048,12 +1051,11 @@ int vrpn_File_Connection::read_entry (void)
 
     // Only print this message every second or so
     if (!d_file) {
-      static struct timeval last_told = {0,0};
-      static struct timeval now;
+      struct timeval now;
       vrpn_gettimeofday(&now, NULL);
-      if (now.tv_sec != last_told.tv_sec) {
+      if (now.tv_sec != d_last_told.tv_sec) {
         fprintf(stderr, "vrpn_File_Connection::read_entry: no open file\n");
-        memcpy(&last_told, &now, sizeof(last_told));
+        memcpy(&d_last_told, &now, sizeof(d_last_told));
       }
       delete newEntry;
       return -1;
@@ -1195,9 +1197,6 @@ int vrpn_File_Connection::reset()
 
     return 0;
 }
-
-// }}}
-// {{{ static handlers
 
 // static
 int vrpn_File_Connection::handle_set_replay_rate(

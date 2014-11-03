@@ -77,6 +77,7 @@ class VRPN_API vrpn_Tracker_Fastrak: public vrpn_Tracker_Serial {
   int	do_filter;		//< Should we turn on filtering for pos/orient?
   int	num_stations;		//< How many stations maximum on this Fastrak?
   char	add_reset_cmd[2048];	//< Additional reset commands to be sent
+  int   num_resets;		//< How many resets we have tried.
 
   // another modification by Debug, 5/23/01
   bool really_fastrak;  // to distinguish it from intersense when using buttons!!!

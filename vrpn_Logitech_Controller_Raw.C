@@ -12,7 +12,7 @@
 static const vrpn_uint16 LOGITECH_VENDOR = 0x046d;	// 3Dconnexion is made by Logitech
 static const vrpn_uint16 EXTREME_3D_PRO = 0xc215;
 
-static double POLL_INTERVAL = 1e+6 / 30.0;		// If we have not heard, ask.
+static const double POLL_INTERVAL = 1e+6 / 30.0;		// If we have not heard, ask.
 
 #define GAMEPAD_TRIGGER_THRESHOLD 30
 
@@ -77,7 +77,7 @@ static vrpn_float64 normalize_trigger(unsigned int trigger)
 // Common base class
 //////////////////////////////////////////////////////////////////////////
 vrpn_Logitech_Controller_Raw::vrpn_Logitech_Controller_Raw(vrpn_HidAcceptor *filter, const char *name, vrpn_Connection *c) :
-	_filter(filter), vrpn_HidInterface(_filter), vrpn_BaseClass(name, c)
+	_filter(filter), vrpn_HidInterface(filter), vrpn_BaseClass(name, c)
 {
 	init_hid();
 }

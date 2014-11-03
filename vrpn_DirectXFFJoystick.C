@@ -36,6 +36,18 @@ vrpn_DirectXFFJoystick::vrpn_DirectXFFJoystick (const char * name, vrpn_Connecti
 		_numbuttons(min(128,vrpn_BUTTON_MAX_BUTTONS)),     // Maximum available
 		_numforceaxes(0)				   // Filles in later.
 {
+  // Never yet sent forces.
+  _forcetime.tv_sec = 0;
+  _forcetime.tv_usec = 0;
+
+  // Never sent a report
+  _last_report.tv_sec = 0;
+  _last_report.tv_usec = 0;
+
+  // No nonzero previous forces.
+  _fx_1 = _fy_1 = 0.0;
+  _fx_2 = _fy_2 = 0.0;
+
   // In case we exit early for some reason.
   _status = STATUS_BROKEN;
   
@@ -315,9 +327,6 @@ BOOL CALLBACK vrpn_DirectXFFJoystick::EnumObjectsCallback( const DIDEVICEOBJECTI
 {
     vrpn_DirectXFFJoystick  *me = (vrpn_DirectXFFJoystick*)(selfPtr);
 
-    static int nSliderCount = 0;  // Number of returned slider controls
-    static int nPOVCount = 0;     // Number of returned POV controls
-
 #ifdef	DEBUG
     printf("vrpn_DirectXFFJoystick::EnumObjectsCallback(): Found type %d object\n", pdidoi->dwType);
 #endif
@@ -369,12 +378,11 @@ int vrpn_DirectXFFJoystick::get_report(void)
 
   // If it has been long enough, update the force sent to the user.
   {
-    static struct timeval forcetime = {0,0};
     struct timeval now;
     vrpn_gettimeofday(&now, NULL);
-    if (vrpn_TimevalDuration(now, forcetime) >= 1000000.0 / _force_rate) {
+    if (vrpn_TimevalDuration(now, _forcetime) >= 1000000.0 / _force_rate) {
       send_normalized_force(_fX, _fY);
-      forcetime = now;
+      _forcetime = now;
     }
   }
 
@@ -478,8 +486,6 @@ void	vrpn_DirectXFFJoystick::report(vrpn_uint32 class_of_service)
 // A force of 1 goes the the right in X and up in Y
 void  vrpn_DirectXFFJoystick::send_normalized_force(double fx, double fy)
 {
-  static double fx_1 = 0, fx_2 = 0, fy_1 = 0, fy_2 = 0;
-
   // Make sure we have force capability.  If not, then set our status to
   // broken.
   if ( (_force_rate <= 0) || (_ForceEffect == NULL) ) {
@@ -498,11 +504,11 @@ void  vrpn_DirectXFFJoystick::send_normalized_force(double fx, double fy)
     fy /= len;
   }
 
-  // XXX This version of the driver averages the last three force commands
+  // This version of the driver averages the last three force commands
   // before setting the force.
 
-  double fx_avg = (fx + fx_1 + fx_2 )/3.0;
-  double fy_avg = (fy + fy_1 + fy_2 )/3.0;
+  double fx_avg = (fx + _fx_1 + _fx_2 )/3.0;
+  double fy_avg = (fy + _fy_1 + _fy_2 )/3.0;
 
   // Convert the force from (-1..1) into the maximum range for each axis and then send it to
   // the device.
@@ -512,8 +518,8 @@ void  vrpn_DirectXFFJoystick::send_normalized_force(double fx, double fy)
   INT xForce = (INT)(fx_avg * DI_FFNOMINALMAX);
   INT yForce = (INT)(fy_avg * DI_FFNOMINALMAX);
 
-  fx_2 = fx_1;  fy_2 = fy_1;
-  fx_1 = fx;    fy_1 = fy;
+  _fx_2 = _fx_1;  _fy_2 = _fy_1;
+  _fx_1 = fx;    _fy_1 = fy;
 
   LONG rglDirection[2];	  // Direction for the force (does not carry magnitude)
   DICONSTANTFORCE cf;	  // Magnitude of the force
@@ -565,12 +571,11 @@ void	vrpn_DirectXFFJoystick::mainloop()
   switch(_status) {
     case STATUS_BROKEN:
 	{
-	  static  struct  timeval last_report = {0,0};
 	  struct  timeval now;
 	  vrpn_gettimeofday(&now, NULL);
-	  if (vrpn_TimevalDuration(now, last_report) > MAX_TIME_INTERVAL) {
+	  if (vrpn_TimevalDuration(now, _last_report) > MAX_TIME_INTERVAL) {
 	    send_text_message("Cannot talk to joystick", now, vrpn_TEXT_ERROR);
-	    last_report = now;
+	    _last_report = now;
 	  }
 	}
 	break;
