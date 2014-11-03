@@ -1780,10 +1780,11 @@ int vrpn_noint_block_read(int infile, char buffer[], size_t length)
 
 int vrpn_noint_block_write(SOCKET outsock, char *buffer, size_t length)
 {
-	int nwritten, sofar = 0;
+	int nwritten;
+	size_t sofar = 0;
 	do {
 		    /* Try to write the remaining data */
-		nwritten = send(outsock, buffer+sofar, static_cast<int>(length)-sofar, 0);
+		nwritten = send(outsock, buffer+sofar, length - sofar, 0);
 
 		if (nwritten == SOCKET_ERROR) {
 			return -1;
@@ -1792,12 +1793,13 @@ int vrpn_noint_block_write(SOCKET outsock, char *buffer, size_t length)
 		sofar += nwritten;		
 	} while ( sofar < length );
 	
-	return(sofar);			/* All bytes written */
+	return static_cast<int>(sofar);			/* All bytes written */
 }
 
 int vrpn_noint_block_read(SOCKET insock, char *buffer, size_t length)
 {
-    int nread, sofar = 0;  
+	int nread;
+	size_t sofar = 0;
 
   // TCH 4 Jan 2000 - hackish - Cygwin will block forever on a 0-length
   // read(), and from the man pages this is close enough to in-spec that
@@ -1809,7 +1811,7 @@ int vrpn_noint_block_read(SOCKET insock, char *buffer, size_t length)
 
     do {
             /* Try to read all remaining data */
-        nread = recv(insock, buffer+sofar, static_cast<int>(length)-sofar, 0);
+        nread = recv(insock, buffer+sofar, length - sofar, 0);
 
 		if (nread == SOCKET_ERROR) {
             return -1;
@@ -1821,7 +1823,7 @@ int vrpn_noint_block_read(SOCKET insock, char *buffer, size_t length)
         sofar += nread;        
     } while (sofar < length);
 	    
-    return(sofar);			/* All bytes read */
+    return static_cast<int>(sofar);			/* All bytes read */
 }
 
 
@@ -1848,7 +1850,7 @@ int vrpn_noint_block_read_timeout(int infile, char buffer[],
 				 size_t length, struct timeval *timeout)
 #endif
 {
-        register int    sofar;          /* How many we read so far */
+        size_t    sofar;          /* How many we read so far */
         register int    ret;            /* Return value from the read() */
         struct	timeval timeout2;
         struct	timeval *timeout2ptr;
@@ -1942,7 +1944,7 @@ int vrpn_noint_block_read_timeout(int infile, char buffer[],
 #endif
         if (ret == 0) return(0);	/* EOF reached */
 
-        return(sofar);			/* All bytes read */
+		return static_cast<int>(sofar);			/* All bytes read */
 }
 
 /**
