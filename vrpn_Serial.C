@@ -72,7 +72,12 @@ int vrpn_open_commport(const char *portname, long baud, int charsize, vrpn_SER_P
 
 
 #if defined(_WIN32)
-  hCom = CreateFile( portname,
+  if (curCom + 1 >= maxCom) {
+	  fprintf(stderr, "VRPN: To many communication connections open, edit vrpn_Serial.C and recompile\n");
+	  return -1;
+  }
+
+  hCom = CreateFile(portname,
 		     GENERIC_READ | GENERIC_WRITE,
 		     0,    // comm devices must be opened w/exclusive-access 
 		     NULL, // no security attributes 
@@ -80,10 +85,7 @@ int vrpn_open_commport(const char *portname, long baud, int charsize, vrpn_SER_P
 		     0, // not overlapped I/O 
 		     NULL);  // hTemplate must be NULL for comm devices     );
 
-  if (curCom >= maxCom) {
-      fprintf(stderr, "VRPN: To many communication connections open, edit vrpn_Serial.C and recompile\n");
-      return -1;
-  }
+
   
   if (hCom == INVALID_HANDLE_VALUE) {    
     perror("vrpn_open_commport: cannot open serial port");
