@@ -475,6 +475,11 @@
 // DO NOT EDIT BELOW THIS LINE FOR NORMAL CONFIGURATION SETTING. //
 //---------------------------------------------------------------//
 
+// Use this macro in a file if it might be empty (compiling out completely)
+// to squash Visual Studio warning LNK4221.
+// Inspiration from http://stackoverflow.com/questions/1822887/what-is-the-best-way-to-eliminate-ms-visual-c-linker-warning-warning-lnk422
+#define VRPN_SUPPRESS_EMPTY_OBJECT_WARNING() namespace { char vrpn_SuppressEmptyObjectDummy##__LINE__; }
+
 // Load the library for WiiUse.
 #ifdef  VRPN_USE_WIIUSE
   #ifdef	_DEBUG
