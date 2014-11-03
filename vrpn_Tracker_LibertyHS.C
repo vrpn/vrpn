@@ -17,6 +17,8 @@
 #include "vrpn_Tracker_LibertyHS.h"
 #include "vrpn_MessageMacros.h"         // for VRPN_MSG_INFO, VRPN_MSG_WARNING, VRPN_MSG_ERROR
 
+VRPN_SUPPRESS_EMPTY_OBJECT_WARNING()
+
 #if defined(VRPN_USE_LIBUSB_1_0)
 
 #include <libusb.h>                     // for libusb_bulk_transfer, etc

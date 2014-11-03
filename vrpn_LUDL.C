@@ -14,6 +14,8 @@
 
 #include "vrpn_LUDL.h"
 
+VRPN_SUPPRESS_EMPTY_OBJECT_WARNING()
+
 #if defined(VRPN_USE_LIBUSB_1_0)
 
 #include <stdio.h>                      // for fprintf, stderr, sprintf, etc

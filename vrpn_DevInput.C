@@ -10,6 +10,8 @@
 
 #include "vrpn_DevInput.h"
 
+VRPN_SUPPRESS_EMPTY_OBJECT_WARNING()
+
 #ifdef VRPN_USE_DEV_INPUT
 #include <sys/select.h>                 // for select, FD_ISSET, FD_SET, etc
 #include <vrpn_Shared.h>                // for vrpn_gettimeofday
