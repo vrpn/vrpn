@@ -2,12 +2,14 @@
 #include <stddef.h>                     // for size_t
 #include <stdio.h>                      // for fprintf() and such
 
+#ifdef	_MSC_VER
+// Don't tell us about strcpy being dangerous.
+#define _CRT_SECURE_NO_WARNINGS
+#endif
+
 #include "vrpn_Shared.h"
 
-#ifdef	MSVC
-// Don't tell us about strcpy being dangerous.
-#pragma	warning ( disable : 4996)
-#endif
+
 
 #if defined(__APPLE__) || defined(__ANDROID__)
 #include <unistd.h>
