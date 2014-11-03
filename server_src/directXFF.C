@@ -20,10 +20,9 @@ int main (int argc, const char *argv[])
 	int	bail_on_error = 1;
 	int	verbose = 0;
 	int	realparams = 0;
-	unsigned int	i;
 	
 	// Parse the command line
-	i = 1;
+	int i = 1;
 	while (i < argc) {
 	if (!strcmp(argv[i], "-warn")) {// Don't bail on errors
 		bail_on_error = 0;
@@ -49,12 +48,11 @@ int main (int argc, const char *argv[])
 	}
 #endif
 
-        char handTrackerName[20];
-	strcpy( handTrackerName, "Joystick0" );
+	const char handTrackerName[] = "Joystick0";
 
 	vrpn_Connection * connection = vrpn_create_server_connection();
 	// Create the joystick for analog and buttons
-        vrpn_DirectXFFJoystick *joyServer = new vrpn_DirectXFFJoystick(handTrackerName, 
+	vrpn_DirectXFFJoystick *joyServer = new vrpn_DirectXFFJoystick(handTrackerName,
                                        connection, 200, 200);
         if (joyServer==NULL) {
 	  fprintf(stderr, "Could not create Joystick\n");
