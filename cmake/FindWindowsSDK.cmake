@@ -67,12 +67,64 @@ if(MSVC_VERSION GREATER 1310) # Newer than VS .NET/VS Toolkit 2003
 		elseif("${CMAKE_VS_PLATFORM_TOOLSET}" STREQUAL "v100")
 			# This is the VS2010 toolset
 		else()
+			message(STATUS "FindWindowsSDK: Detected Visual Studio 2012 or newer, not using the _xp toolset variant: including SDK versions that drop XP support in search!")
+			# These versions have no XP (and possibly Vista pre-SP1) support
 			set(_winsdk_vistaonly
+				# Windows Software Development Kit (SDK) for Windows 8.1
+				# http://msdn.microsoft.com/en-gb/windows/desktop/bg162891
+				v8.1
+
+				# Included in Visual Studio 2012
+				v8.0A
+
+				# Microsoft Windows SDK for Windows 8 and .NET Framework 4.5
+				# This is the first version to also include the DirectX SDK
+				# http://msdn.microsoft.com/en-US/windows/desktop/hh852363.aspx
 				v8.0
-				v8.0A)
+
+				# Microsoft Windows SDK for Windows 7 and .NET Framework 4
+				# http://www.microsoft.com/downloads/en/details.aspx?FamilyID=6b6c21d2-2006-4afa-9702-529fa782d63b
+				v7.1
+				)
 		endif()
 	endif()
-	foreach(_winsdkver v7.1 v7.0A v6.1 v6.0A v6.0)
+	foreach(_winsdkver
+		${_winsdk_vistaonly}
+
+		# Included in Visual Studio 2013
+		# Includes the v120_xp toolset
+		v8.1A
+
+		# Included with VS 2012 Update 1 or later
+		# Introduces v110_xp toolset
+		v7.1A
+
+		# Included with VS 2010
+		v7.0A
+
+		# Windows SDK for Windows 7 and .NET Framework 3.5 SP1
+		# Works with VC9
+		#http://www.microsoft.com/en-us/download/details.aspx?id=18950
+		v7.0
+
+		# Two versions call themselves "v6.1":
+		# Older:
+		# Windows Vista Update & .NET 3.0 SDK
+		# http://www.microsoft.com/en-us/download/details.aspx?id=14477
+
+		# Newer:
+		# Windows Server 2008 & .NET 3.5 SDK
+		# may have broken VS9SP1? they recommend v7.0 instead, or a KB...
+		# http://www.microsoft.com/en-us/download/details.aspx?id=24826
+		v6.1
+
+		# Included in VS 2008
+		v6.0A
+
+		# Microsoft Windows Software Development Kit for Windows Vista and .NET Framework 3.0 Runtime Components
+		# http://blogs.msdn.com/b/stanley/archive/2006/11/08/microsoft-windows-software-development-kit-for-windows-vista-and-net-framework-3-0-runtime-components.aspx
+		v6.0)
+
 		get_filename_component(_sdkdir
 			"[HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Microsoft SDKs\\Windows\\${_winsdkver};InstallationFolder]"
 			ABSOLUTE)
