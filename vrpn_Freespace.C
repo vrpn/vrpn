@@ -31,7 +31,7 @@ vrpn_Freespace::vrpn_Freespace(FreespaceDeviceId freespaceId,
         const char *name, vrpn_Connection *conn):
         vrpn_Tracker_Server(name, conn),
         vrpn_Button_Filter(name, conn),
-        vrpn_Dial(name, conn),
+        vrpn_Dial(name, conn)
 {
 	memcpy(&_deviceInfo, deviceInfo, sizeof(_deviceInfo));
 	// 5 buttons + a scroll wheel
