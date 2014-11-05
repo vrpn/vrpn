@@ -72,7 +72,7 @@ int main (int argc, char ** argv) {
     fprintf(stderr, "vrpn_Connection::close_log:  "
                     "Couldn't write magic cookie to log file "
                     "(got %d, expected %d).\n",
-            retval, vrpn_cookie_size());
+            retval, static_cast<int>(vrpn_cookie_size()));
     goto CLEANUP;
   }
 
