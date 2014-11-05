@@ -98,7 +98,7 @@ set(CPACK_PACKAGE_CONTACT "VRPN Community <vrpn@listserv.unc.edu>")
 # Compiler flags we got from Hans for Windows and from Sheldon Andrews
 # for other architectures.
 if(MSVC)	# MS-Windows Visual Studio, both 32 and 64 bits
-    set(CMAKE_DEBUG_POSTFIX "d" CACHE STRING "add a postfix, usually d on windows")
+	set(CMAKE_DEBUG_POSTFIX "d" CACHE STRING "add a postfix, usually d on windows")
 	if(MSVC_VERSION GREATER 1310) # This compiler flag needs newer than VS.NET 2003 (7.1)
 		# Choose fast, possibly less accurate floating point
 		# See http://msdn.microsoft.com/en-us/library/e7s85ffb(v=vs.80).aspx
@@ -638,7 +638,7 @@ option_requires(VRPN_USE_NATIONAL_INSTRUMENTS_MX
 	${DEFAULT_OFF_IF_SUBPROJECT}
 	NIDAQMX_FOUND)
 
-if(NIDAQMX_FOUND)
+if(VRPN_USE_NATIONAL_INSTRUMENTS_MX)
 	include_directories(${NIDAQMX_INCLUDE_DIRS})
 	list(APPEND SERVER_EXTRA_LIBS ${NIDAQMX_LIBRARIES})
 endif()
@@ -652,7 +652,7 @@ option_requires(VRPN_USE_VIEWPOINT
 	${DEFAULT_OFF_IF_SUBPROJECT}
 	VIEWPOINT_FOUND)
 
-if(VIEWPOINT_FOUND)
+if(VRPN_USE_VIEWPOINT)
 	include_directories(${VIEWPOINT_INCLUDE_DIRS})
 	list(APPEND SERVER_EXTRA_LIBS ${VIEWPOINT_LIBRARIES})
 
@@ -674,11 +674,14 @@ if(WIN32 OR CYGWIN)
 		"Build with support for Adrienne timecode server"
 		${DEFAULT_OFF_IF_SUBPROJECT}
 		ADRIENNE_FOUND)
-	if(VRPN_INCLUDE_TIMECODE_SERVER)
-		set(VRPN_ADRIENNE_INCLUDE_FILENAME "${ADRIENNE_INCLUDE_FILENAME}")
-		set(VRPN_ADRIENNE_INCLUDE_HAS_EXTERN_C
-			${ADRIENNE_INCLUDE_HAS_EXTERN_C})
-	endif()
+else()
+	set(VRPN_INCLUDEE_TIMECODE_SERVER OFF)
+endif()
+
+if(VRPN_INCLUDE_TIMECODE_SERVER)
+	set(VRPN_ADRIENNE_INCLUDE_FILENAME "${ADRIENNE_INCLUDE_FILENAME}")
+	set(VRPN_ADRIENNE_INCLUDE_HAS_EXTERN_C
+		${ADRIENNE_INCLUDE_HAS_EXTERN_C})
 endif()
 
 ###
@@ -690,6 +693,8 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
 		"Build with support for Linux kernel joystick interface (Uses kernel header - may make servers GPL)"
 		${DEFAULT_OFF_IF_SUBPROJECT}
 		HAVE_LINUX_JOYSTICK_H)
+else()
+	set(VRPN_USE_JOYLIN OFF)
 endif()
 
 ###
@@ -701,6 +706,8 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
 		"Build with flags to enable the use of DevInput. (Uses kernel header - may make servers GPL)"
 		${DEFAULT_OFF_IF_SUBPROJECT}
 		HAVE_LINUX_INPUT_H)
+else()
+	set(VRPN_USE_DEV_INPUT OFF)
 endif()
 
 ###
@@ -735,25 +742,27 @@ if(VRPN_USE_PDI)
 	list(APPEND
 		SERVER_EXTRA_LIBS
 		"C:/Program Files (x86)/Polhemus/PDI/PDI_90/Lib/Win32/PDI.lib")
-        set(PDI_SOURCES vrpn_Tracker_PDI.C)
+	set(PDI_SOURCES vrpn_Tracker_PDI.C)
 endif()
 
 ###
 # PhaseSpace API
 ###
+# TODO Actually do a proper search for the PhaseSpace API headers and libraries
+# and not use link_directories.
 option(VRPN_INCLUDE_PHASESPACE
 	"Build with PhaseSpace library support"
 	OFF)
 set(PHASESPACE_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/phasespace" CACHE PATH "location of PhaseSpace headers")
 set(PHASESPACE_LIBRARY_DIR "${CMAKE_SOURCE_DIR}/phasespace" CACHE PATH "location of PhaseSpace libraries (libowlsock.so, etc")
 if(VRPN_INCLUDE_PHASESPACE)
-  include_directories(${PHASESPACE_INCLUDE_DIR})
-  link_directories(${PHASESPACE_LIBRARY_DIR})
-  if(WIN32)
-    list(APPEND SERVER_EXTRA_LIBS libowlsock)
-  else()
-    list(APPEND SERVER_EXTRA_LIBS owlsock)
-  endif()
+	include_directories(${PHASESPACE_INCLUDE_DIR})
+	link_directories(${PHASESPACE_LIBRARY_DIR})
+	if(WIN32)
+		list(APPEND SERVER_EXTRA_LIBS libowlsock)
+	else()
+		list(APPEND SERVER_EXTRA_LIBS owlsock)
+	endif()
 endif()
 
 ###
@@ -762,7 +771,6 @@ endif()
 # National Instruments Nidaq traditional
 # US Digital SEI/A2
 # microscribe3D library
-# PhaseSpace OWL API
 # GLI Interactive LLC MotionNode library
 # Hillcrest Labs' Freespace
 #
