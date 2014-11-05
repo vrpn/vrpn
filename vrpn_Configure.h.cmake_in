@@ -437,12 +437,6 @@
 #define VRPN_WIIUSE_H "wiiuse.h"
 #define VRPN_WIIUSE_LIB_PATH "F:/taylorr/STM/src/wiiuse_v0.12/src"
 
-#if defined(VRPNDLL_EXPORTS) && !defined(VRPN_USE_SHARED_LIBRARY)
-  #define VRPN_FREESPACE_LIB_PATH "../libfreespace/lib"
-#else
-  #define VRPN_FREESPACE_LIB_PATH "../../libfreespace/lib"
-#endif
-
 #define VRPN_TRIVISIOCOLIBRI_H          "C:/Program Files/Trivisio/Colibri/include/TrivisioColibri.h"
 #define VRPN_TRIVISIOCOLIBRI_LIB_PATH   "C:/Program Files/Trivisio/Colibri/lib/"
 
@@ -466,16 +460,6 @@
 // to squash Visual Studio warning LNK4221.
 // Inspiration from http://stackoverflow.com/questions/1822887/what-is-the-best-way-to-eliminate-ms-visual-c-linker-warning-warning-lnk422
 #define VRPN_SUPPRESS_EMPTY_OBJECT_WARNING() namespace { char vrpn_SuppressEmptyObjectDummy##__LINE__; }
-
-
-#ifdef  VRPN_USE_FREESPACE
-  #ifdef	_DEBUG
-//    #pragma comment(lib, VRPN_FREESPACE_LIB_PATH "/Debug/libfreespaced.lib")
-    #pragma comment(lib, VRPN_FREESPACE_LIB_PATH "/Release/libfreespace.lib")
-  #else
-    #pragma comment(lib, VRPN_FREESPACE_LIB_PATH "/Release/libfreespace.lib")
-  #endif
-#endif
 
 // Load National Instruments libraries if we are using them.
 // If this doesn't match where you have installed these libraries,
