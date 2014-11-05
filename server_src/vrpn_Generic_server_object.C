@@ -3362,8 +3362,13 @@ int vrpn_Generic_Server_Object::setup_Freespace (char * & pch, char * line, FILE
 
 #ifdef	VRPN_USE_FREESPACE
   // Open the Freespace if we can.
-  _devices->add(vrpn_Freespace::create (s2, connection, controller,
-                                     (sendbody != 0), (senduser != 0)));
+  try {
+	  _devices->add(vrpn_Freespace::create(s2, connection, controller,
+		  (sendbody != 0), (senduser != 0)));
+  } catch (vrpn_MainloopObject::CannotWrapNullPointerIntoMainloopObject &) {
+	  fprintf(stderr, "vrpn_server: Can't open Freespace: driver could not connect as configured!\n");
+	  return -1;
+  }
 
   return 0;
 #else
