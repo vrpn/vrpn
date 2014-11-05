@@ -49,14 +49,27 @@ find_path(LIBFREESPACE_INCLUDE_DIR
 	PATH_SUFFIXES
 	include/)
 
+
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(LibFreespace
-	DEFAULT_MSG
-	LIBFREESPACE_LIBRARY
-	LIBFREESPACE_INCLUDE_DIR)
+if(WIN32)
+	find_package(WinHID QUIET)
+	find_package_handle_standard_args(LibFreespace
+		DEFAULT_MSG
+		LIBFREESPACE_LIBRARY
+		LIBFREESPACE_INCLUDE_DIR
+		WINHID_LIBRARIES)
+else()
+	find_package_handle_standard_args(LibFreespace
+		DEFAULT_MSG
+		LIBFREESPACE_LIBRARY
+		LIBFREESPACE_INCLUDE_DIR)
+endif()
 
 if(LIBFREESPACE_FOUND)
 	set(LIBFREESPACE_LIBRARIES "${LIBFREESPACE_LIBRARY}")
+	if(WIN32)
+		list(APPEND LIBFREESPACE_LIBRARIES ${WINHID_LIBRARIES})
+	endif()
 	set(LIBFREESPACE_INCLUDE_DIRS "${LIBFREESPACE_INCLUDE_DIR}")
 	mark_as_advanced(LIBFREESPACE_ROOT_DIR)
 endif()
