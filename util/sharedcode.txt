@@ -1,7 +1,15 @@
+client_src/vrpn_ping
+client_src/vrpn_print_devices
+client_src/vrpn_print_messages
+client_src/vrpn_print_performance
+server_src/vrpn
+server_src/vrpn_Generic_server_object
 vrpn_Analog
 vrpn_Analog_Output
+vrpn_Auxiliary_Logger
 vrpn_BaseClass
 vrpn_Button
+vrpn_Button_USB
 vrpn_Configure
 vrpn_Connection
 vrpn_Dial
@@ -12,6 +20,9 @@ vrpn_ForceDeviceServer
 vrpn_Forwarder
 vrpn_ForwarderController
 vrpn_HumanInterface
+vrpn_Imager
+vrpn_Imager_Stream_Buffer
+vrpn_Log
 vrpn_MainloopContainer
 vrpn_MainloopObject
 vrpn_MessageMacros
@@ -23,9 +34,8 @@ vrpn_SendTextMessageStreamProxy
 vrpn_Serial
 vrpn_SerialPort
 vrpn_Shared
+vrpn_SharedObject
 vrpn_Sound
 vrpn_Text
 vrpn_Tracker
 vrpn_Types
-server_src/vrpn
-server_src/vrpn_Generic_server_object
