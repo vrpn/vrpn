@@ -1,0 +1,7 @@
+---
+# Remove these blocked checks once the first batch are cleaned up
+# - readability-braces-around-statements
+Checks:          '*,-clang-analyzer-alpha*,-llvm-include-order,-google-*,-llvm-header-guard,-readability-braces-around-statements,-misc-use-override'
+HeaderFilterRegex: '.*'
+...
+

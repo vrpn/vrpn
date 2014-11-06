@@ -22,7 +22,7 @@ namespace {
         
         MAX_TIME_INTERVAL = 2000000 // max time between reports (usec)
     };
-}
+} // namespace
 vrpn_inertiamouse::vrpn_inertiamouse (const char* name, 
                                       vrpn_Connection * c,
                                       const char* port, 
