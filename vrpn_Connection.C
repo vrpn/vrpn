@@ -615,7 +615,7 @@ int vrpn_Log::saveLogSoFar(void) {
     if (retval != vrpn_cookie_size()) {
       fprintf(stderr, "vrpn_Log::saveLogSoFar:  "
               "Couldn't write magic cookie to log file "
-              "(got %d, expected %d).\n",
+              "(got %d, expected %lu).\n",
               static_cast<int>(retval), vrpn_cookie_size());
       lp = d_logTail;
       final_retval = -1;

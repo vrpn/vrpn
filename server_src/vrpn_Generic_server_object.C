@@ -114,7 +114,7 @@ namespace setup_vrpn_Atmel
 {
   int channel_mode[vrpn_CHANNEL_MAX];
   int channel_count = 0;
-}
+} // namespace setup_vrpn_Atmel
 
 #ifdef	SGI_BDBOX
 vrpn_SGIBox	* vrpn_special_sgibox;
