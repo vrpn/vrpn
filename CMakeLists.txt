@@ -923,6 +923,7 @@ set(VRPN_CLIENT_PUBLIC_HEADERS
 	vrpn_MainloopContainer.h
 	vrpn_MainloopObject.h
 	vrpn_Mutex.h
+	vrpn_RedundantTransmission.h
 	vrpn_SendTextMessageStreamProxy.h
 	vrpn_Serial.h
 	vrpn_SerialPort.h
@@ -1089,7 +1090,6 @@ set(VRPN_SERVER_PUBLIC_HEADERS
 	vrpn_Poser.h
 	vrpn_Poser_Tek4662.h
 	vrpn_raw_sgibox.h
-	vrpn_RedundantTransmission.h
 	vrpn_Retrolink.h
 	vrpn_Saitek_Controller_Raw.h
 	vrpn_sgibox.h
