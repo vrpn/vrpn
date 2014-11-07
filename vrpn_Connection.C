@@ -1930,7 +1930,7 @@ int vrpn_noint_block_read_timeout(int infile, char buffer[],
 #else
                 {
                     int nread;
-                    nread = recv(infile, buffer+sofar, length-sofar, 0);
+                    nread = recv(infile, buffer+sofar, static_cast<int>(length-sofar), 0);
                     sofar += nread;
                     ret = nread;
                 }
