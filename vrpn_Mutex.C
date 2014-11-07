@@ -947,7 +947,7 @@ void vrpn_PeerMutex::addPeer (const char * stationName) {
   int i;
 
   // complex
-  if (d_numPeers >= d_numConnectionsAllocated) {
+  while (d_numPeers >= d_numConnectionsAllocated) {
 
     // reallocate arrays
     d_numConnectionsAllocated = 2 * (d_numConnectionsAllocated + 1);
