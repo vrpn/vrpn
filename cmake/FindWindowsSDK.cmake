@@ -1,5 +1,7 @@
 # - Find the Windows SDK aka Platform SDK
 #
+# Relevant Wikipedia article: http://en.wikipedia.org/wiki/Microsoft_Windows_SDK
+#
 # Variables:
 #  WINDOWSSDK_FOUND - if any version of the windows or platform SDK was found that is usable with the current version of visual studio
 #  WINDOWSSDK_LATEST_DIR

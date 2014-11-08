@@ -188,7 +188,7 @@ find_library(DIRECTX_D3DX9_LIBRARY_DEBUG
 
 find_library(DIRECTX_XINPUT_LIBRARY
 	NAMES
-    Xinput9_1_0
+	Xinput9_1_0
 	Xinput
 	PATHS
 	${DXSDK_DIRS}
@@ -219,6 +219,7 @@ if(DIRECTX_INCLUDE_DIR)
 			int main(int argc, char * argv[]) {
 				return 0;
 			}
+			#endif
 			"
 			DIRECTX_SDK_SUPPORTS_COMPILER)
 		set(DIRECTX_EXTRA_CHECK DIRECTX_SDK_SUPPORTS_COMPILER)
