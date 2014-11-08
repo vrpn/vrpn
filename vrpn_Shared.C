@@ -4,7 +4,8 @@
 
 #ifdef	_MSC_VER
 // Don't tell us about strcpy being dangerous.
-#define _CRT_SECURE_NO_WARNINGS
+#define _CRT_SECURE_NO_WARNINGS 1
+#pragma warning(disable: 4996)
 #endif
 
 #include "vrpn_Shared.h"
