@@ -52,6 +52,10 @@
 #define	vrpn_DEFAULT_LISTEN_PORT_NO (3883)
 
 //-----------------------
+// Use compile-time static asserts.
+#cmakedefine VRPN_USE_STATIC_ASSERTIONS
+
+//-----------------------
 // Use Winsock2 library rather than Winsock.
 //#define       VRPN_USE_WINSOCK2
 #cmakedefine VRPN_USE_WINSOCK2

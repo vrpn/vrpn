@@ -832,7 +832,7 @@ if(UNIX)
 
 endif()
 
-
+option(VRPN_USE_STATIC_ASSERTIONS "Use some compile-time assertions" ON)
 option(VRPN_BUILD_EXTRA_COMPILER_WARNINGS
 	"Build with flags to enable extra warnings."
 	OFF)

@@ -321,7 +321,31 @@ namespace vrpn_detail {
 	struct remove_const<const T> {
 		typedef T type;
 	};
+
+    template<bool Condition>
+    struct vrpn_static_assert {};
+    /// @brief Each static assertion needs its message in this enum, or it will always fail.
+    template<>
+    struct vrpn_static_assert<true> {
+        enum {
+            SIZE_OF_BUFFER_ITEM_IS_NOT_ONE_BYTE
+        };
+    };
 } // end of namespace vrpn_detail
+
+#ifdef VRPN_USE_STATIC_ASSERTIONS
+/// @brief Static assertion macro for limited sets of messages.
+/// Inspired by http://eigen.tuxfamily.org/dox/TopicAssertions.html
+#if defined(__GXX_EXPERIMENTAL_CXX0X__) || (defined(_MSC_VER) && (_MSC_VER >= 1600))
+#define VRPN_STATIC_ASSERT(CONDITION, MESSAGE) static_assert(CONDITION, #MESSAGE)
+#else
+#define VRPN_STATIC_ASSERT(CONDITION, MESSAGE) (void)(::vrpn_detail::vrpn_static_assert<CONDITION>::MESSAGE)
+#endif
+#else
+/// Fall back to normal asserts.
+#include <assert.h>
+#define VRPN_STATIC_ASSERT(CONDITION, MESSAGE) assert((CONDITION) && #MESSAGE)
+#endif
 
 /// Function template to unbuffer values from a buffer stored in little-
 /// endian byte order. Specify the type to extract T as a template parameter.
@@ -331,11 +355,7 @@ template<typename T, typename ByteT>
 static inline T vrpn_unbuffer_from_little_endian(ByteT * & input) {
 	using namespace vrpn_byte_order;
 
-	/// @todo make this a static assertion
-	if (sizeof(ByteT) != 1) {
-		fprintf(stderr,"vrpn_unbuffer_from_little_endian:ByteT size != 1\n");
-		return 0;
-	}
+    VRPN_STATIC_ASSERT(sizeof(ByteT) == 1, SIZE_OF_BUFFER_ITEM_IS_NOT_ONE_BYTE);
 
 	/// Union to allow type-punning
 	union {
@@ -363,11 +383,7 @@ template<typename T, typename ByteT>
 inline T vrpn_unbuffer(ByteT * & input) {
 	using namespace vrpn_byte_order;
 
-	/// @todo make this a static assertion
-	if (sizeof(ByteT) != 1) {
-		fprintf(stderr,"vrpn_unbuffer:ByteT size != 1\n");
-		return 0;
-	}
+    VRPN_STATIC_ASSERT(sizeof(ByteT) == 1, SIZE_OF_BUFFER_ITEM_IS_NOT_ONE_BYTE);
 
 	/// Union to allow type-punning and ensure alignment
 	union {
@@ -393,11 +409,7 @@ template<typename T, typename ByteT>
 inline int vrpn_buffer(ByteT ** insertPt, vrpn_int32 * buflen, const T inVal) {
 	using namespace vrpn_byte_order;
 
-	/// @todo make this a static assertion
-	if (sizeof(ByteT) != 1) {
-		fprintf(stderr,"vrpn_buffer: ByteT size != 1\n");
-		return -1;
-	}
+    VRPN_STATIC_ASSERT(sizeof(ByteT) == 1, SIZE_OF_BUFFER_ITEM_IS_NOT_ONE_BYTE);
 
 	if ( (insertPt == NULL) || (buflen == NULL) ) {
 		fprintf(stderr, "vrpn_buffer: NULL pointer\n");
