@@ -217,8 +217,8 @@ void vrpn_3DConnexion::decodePacket(size_t bytes, vrpn_uint8 *buffer)
   // number of characters parsed each time rather than a constant 7 reports.
   if(bytes<7) bytes=7;
   if (bytes > 7) {
-	  fprintf(stderr, "vrpn_3DConnexion::decodePacket(): Long packet (%lu bytes), may mis-parse\n",
-		  bytes);
+	  fprintf(stderr, "vrpn_3DConnexion::decodePacket(): Long packet (%d bytes), may mis-parse\n",
+		  static_cast<int>(bytes));
   }
   // Decode all full reports.
   // Full reports for all of the pro devices are 7 bytes long (the first

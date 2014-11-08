@@ -615,8 +615,8 @@ int vrpn_Log::saveLogSoFar(void) {
     if (retval != vrpn_cookie_size()) {
       fprintf(stderr, "vrpn_Log::saveLogSoFar:  "
               "Couldn't write magic cookie to log file "
-              "(got %d, expected %lu).\n",
-              static_cast<int>(retval), vrpn_cookie_size());
+              "(got %d, expected %d).\n",
+              static_cast<int>(retval), static_cast<int>(vrpn_cookie_size()));
       lp = d_logTail;
       final_retval = -1;
     }
@@ -1932,7 +1932,7 @@ int vrpn_noint_block_read_timeout(int infile, char buffer[],
 #else
                 {
                     int nread;
-                    nread = recv(infile, buffer+sofar, length-sofar, 0);
+                    nread = recv(infile, buffer+sofar, static_cast<int>(length-sofar), 0);
                     sofar += nread;
                     ret = nread;
                 }
