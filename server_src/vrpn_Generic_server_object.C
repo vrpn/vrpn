@@ -98,6 +98,7 @@
 #include "vrpn_WiiMote.h"
 #include "vrpn_XInputGamepad.h"
 #include "vrpn_Xkeys.h"                 // for vrpn_Xkeys_Desktop, etc
+#include "vrpn_YEI_3Space.h"            // for vrpn_YEI_3Space_Sensor, etc
 #include "vrpn_Zaber.h"                 // for vrpn_Zaber
 
 
@@ -3968,6 +3969,29 @@ int vrpn_Generic_Server_Object::setup_Tracker_LibertyPDI(char * &pch, char * lin
 #endif
 }
 
+int vrpn_Generic_Server_Object::setup_YEI_3Space_Sensor (char * & pch, char * line, FILE * /*config_file*/)
+{
+  char name [LINESIZE], device [LINESIZE];
+  int baud_rate, calibrate_gyros, tare;
+  double frames_per_second;
+
+  VRPN_CONFIG_NEXT();
+  // Get the arguments (class, name, port, baud, calibrate_gyros, tare, frames_per_second
+  if (sscanf (pch, "%511s%511s%d%d%d%lf", name, device, &baud_rate, &calibrate_gyros, &tare, &frames_per_second) != 6) {
+    fprintf (stderr, "Bad vrpn_YEI_3Space_Sensor line: %s\n", line);
+    return -1;
+  }
+
+  // Open the device
+  if (verbose) {
+    printf ("Opening vrpn_YEI_3Space_Sensor: %s on port %s, baud %d\n",
+            name, device, baud_rate);
+  }
+  _devices->add(new vrpn_YEI_3Space_Sensor (name, connection, device, baud_rate, calibrate_gyros != 0, tare != 0, frames_per_second));
+
+  return 0;
+}
+
 #undef VRPN_CONFIG_NEXT
 
 vrpn_Generic_Server_Object::vrpn_Generic_Server_Object (vrpn_Connection *connection_to_use, const char *config_file_name, int port, bool be_verbose, bool bail_on_open_error)
@@ -4052,15 +4076,12 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object (vrpn_Connection *connect
       continue; \
     }
 
-
-      // Rewritten to move all this code out-of-line by Tom Hudson
-      // August 99.  We could even make it table-driven now.
-      // It seems that we're never going to document this program
-      // and that it will always be necessary to read the code to
-      // figure out how to write a config file.  This code rearrangement
-      // should make it easier to figure out what the possible tokens
-      // are in a config file by listing them close together here
-      // instead of hiding them in the middle of functions.
+      // This is a hack to get around a hard limit on how many if-then-else
+      // clauses you can have in the same function on Microsoft compilers.
+      // We break the checking into multiple chunks as needed.
+      // If any of the clauses work, we've found it.  Only if the else clause
+      // in the batch has not been called do we continue looking.
+      bool found_it_yet = true;
 
       if (VRPN_ISIT ("vrpn_raw_SGIBox")) {
         VRPN_CHECK (setup_raw_SGIBox);
@@ -4152,7 +4173,11 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object (vrpn_Connection *connect
         VRPN_CHECK (setup_DirectXFFJoystick);
       } else if (VRPN_ISIT ("vrpn_DirectXRumblePad")) {
         VRPN_CHECK (setup_RumblePad);
-      } else if (VRPN_ISIT ("vrpn_XInputGamepad")) {
+      } else {
+        found_it_yet = false;
+      }
+
+      if (!found_it_yet) if (VRPN_ISIT ("vrpn_XInputGamepad")) {
         VRPN_CHECK (setup_XInputPad);
       } else if (VRPN_ISIT ("vrpn_GlobalHapticsOrb")) {
         VRPN_CHECK (setup_GlobalHapticsOrb);
@@ -4300,6 +4325,8 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object (vrpn_Connection *connect
         VRPN_CHECK (setup_Tracker_FastrakPDI);
       } else if (VRPN_ISIT ("vrpn_Tracker_JsonNet")) {
         VRPN_CHECK (setup_Tracker_JsonNet);
+      } else if (VRPN_ISIT ("vrpn_YEI_3Space_Sensor")) {
+        VRPN_CHECK (setup_YEI_3Space_Sensor);
       } else {	// Never heard of it
         sscanf (line, "%511s", s1);	// Find out the class name
         fprintf (stderr, "vrpn_server: Unknown Device: %s\n", s1);

@@ -1,34 +1,31 @@
 #ifndef VRPN_YEI_3SPACE_H
 #define VRPN_YEI_3SPACE_H
 
-#include "vrpn_Analog.h"                // for vrpn_Serial_Analog
-#include "vrpn_Configure.h"             // for VRPN_API
-#include "vrpn_Connection.h"            // for vrpn_CONNECTION_LOW_LATENCY, etc
-#include "vrpn_Shared.h"                // for timeval
-#include "vrpn_Types.h"                 // for vrpn_uint32
+#include "vrpn_Analog.h"
+#include "vrpn_Analog_Output.h"
+#include "vrpn_Tracker.h"
 
 /** @brief Class to support reading data from serial YEI 3Space units.
 */
-class VRPN_API vrpn_YEI_3Space: public vrpn_Serial_Analog
+class VRPN_API vrpn_YEI_3Space_Sensor: public vrpn_Serial_Analog
 {
 public:
 	/** @brief Constructor.
 		@param name Name for the device
 		@param c Connection to use.
 		@param port serial port to connect to
-		@param baud Baud rate - 19200 for "wired"-type gloves (send/receive),
-			9600 implies a "wireless" (may be wired, but is send-only) glove
-		@param mode Set to 1 for the driver to request reports, set to 2
-			to stream them. (wireless implies 2, overriding value passed here)
-		@param tenbytes Whether reports should be 10 bytes instead of
-			the documented 9. (wireless implies true, overriding value passed here)
+		@param baud Baud rate - 115200 is default.
+		@param calibrate_gyros_on_setup - true to cause this to happen
+		@param tare_on_setup - true to cause this to happen
+		@param frames_per_second - How many frames/second to read
 	*/
-	vrpn_YEI_3Space (const char * name,
+	vrpn_YEI_3Space_Sensor (const char * name,
 		  vrpn_Connection * c,
 		  const char * port,
-		  int baud = 19200,
-		  int mode = 1,
-		  bool tenbytes = false);
+		  int baud = 115200,
+		  bool calibrate_gyros_on_setup = false,
+		  bool tare_on_setup = false,
+		  double frames_per_second = 50);
 
 	/// Called once through each main loop iteration to handle updates.
 	virtual void mainloop ();
@@ -36,6 +33,8 @@ public:
 	void syncing (void);
 
   protected:
+    double  d_frames_per_second;    //< How many frames/second do we want?
+
 	bool _announced;		//< Did we make the note about potential warnings yet?
 	bool _wireless;			//< Whether this glove is using the wireless protocol
 	bool _gotInfo;			//< Whether we've sent a message about this wireless glove
@@ -51,8 +50,6 @@ public:
 
 	virtual int reset(void);		//< Set device back to starting config
 	virtual	void get_report(void);		//< Try to read a report from the device
-
-	virtual void clear_values(void);	//< Clears all channels to 0
 
 	/// Compute the CRC for the message, append it, and send message.
 	/// Returns 0 on success, -1 on failure.
