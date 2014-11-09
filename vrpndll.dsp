@@ -400,6 +400,10 @@ SOURCE=.\vrpn_Xkeys.C
 # End Source File
 # Begin Source File
 
+SOURCE=.\vrpn_YEI_3Space.C
+# End Source File
+# Begin Source File
+
 SOURCE=.\vrpn_Zaber.C
 # End Source File
 # End Group
@@ -721,6 +725,10 @@ SOURCE=.\vrpn_Wanda.h
 # Begin Source File
 
 SOURCE=.\vrpn_Xkeys.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\vrpn_YEI_3Space.h
 # End Source File
 # Begin Source File
 

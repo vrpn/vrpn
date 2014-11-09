@@ -722,6 +722,7 @@ SLIB_FILES =  $(LIB_FILES) \
 	vrpn_WiiMote.C \
 	vrpn_Xkeys.C \
 	vrpn_Tracker_LibertyHS.C \
+	vrpn_YEI_3Space.C \
 	vrpn_Zaber.C 
 
 SLIB_OBJECTS = $(patsubst %,$(SOBJECT_DIR)/%,$(SLIB_FILES:.C=.o))
@@ -807,6 +808,7 @@ SLIB_INCLUDES = $(LIB_INCLUDES) \
 	vrpn_WiiMote.h \
 	vrpn_Xkeys.h \
 	vrpn_Tracker_LibertyHS.h \
+	vrpn_YEI_3Space.h \
 	vrpn_Zaber.h 
 
 ifeq ($(HW_OS), pc_linux64)
