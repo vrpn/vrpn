@@ -31,27 +31,50 @@ vrpn_YEI_3Space_Sensor::vrpn_YEI_3Space_Sensor (const char * p_name
                                   , int p_baud
                                   , bool calibrate_gyros_on_setup
                                   , bool tare_on_setup
-                                  , double frames_per_second)
+                                  , double frames_per_second
+                                  , double red_LED_color
+                                  , double green_LED_color
+                                  , double blue_LED_color
+                                  , int LED_mode)
   : vrpn_Serial_Analog (p_name, p_c, p_port, p_baud, 8, vrpn_SER_PARITY_NONE)
   , d_frames_per_second(frames_per_second)
-  // XXX Remove these eventually
-  , _announced(false)	// Not yet announced our warning.
-  , _gotInfo (false)  // used to know if we have gotten a first full wireless report.
 {
   // Set the parameters in the parent classes
-  vrpn_Analog::num_channel = 14;
+  vrpn_Analog::num_channel = 11;
   // XXX Set other configs.
+
+  // Configure LED mode.
+  unsigned char set_LED_mode[2] = { 0xC4, 0 };
+  set_LED_mode[1] = static_cast<unsigned char>(LED_mode);
+  if (!send_command (set_LED_mode, sizeof(set_LED_mode))) {
+    VRPN_MSG_ERROR ("vrpn_YEI_3Space_Sensor::vrpn_YEI_3Space_Sensor: Unable to send set-LED-mode command\n");
+  }
+
+  // Configure LED color.
+  unsigned char set_LED_color[13] = { 0xEE, 0,0,0,0,0,0,0,0,0,0,0,0 };
+  unsigned char *bufptr = &set_LED_color[1];
+  vrpn_int32 buflen = 12;
+  vrpn_float32  LEDs[3];
+  LEDs[0] = static_cast<vrpn_float32>(red_LED_color);
+  LEDs[1] = static_cast<vrpn_float32>(green_LED_color);
+  LEDs[2] = static_cast<vrpn_float32>(blue_LED_color);
+  vrpn_buffer(&bufptr, &buflen, LEDs[0]);
+  vrpn_buffer(&bufptr, &buflen, LEDs[1]);
+  vrpn_buffer(&bufptr, &buflen, LEDs[2]);
+  if (!send_command (set_LED_color, sizeof(set_LED_color))) {
+    VRPN_MSG_ERROR ("vrpn_YEI_3Space_Sensor::vrpn_YEI_3Space_Sensor: Unable to send set-LED-color command\n");
+  }
 
   // Set the mode to reset
   _status = STATUS_RESETTING;
 }
 
 /******************************************************************************
- * NAME      : vrpn_YEI_3Space_Sensor::
+ * NAME      : vrpn_YEI_3Space_Sensor::send_command
  * ROLE      : 
  * ARGUMENTS : char *cmd : the command to be sent
  *             int   len : Length of the command to be sent
- * RETURN    : 0 on success, -1 on failure.
+ * RETURN    : true on success, false on failure.
  ******************************************************************************/
 
 // Info from YEI 3-Space Sensor User's Manual Wireless 2.0 R21 26 March2014
@@ -61,7 +84,7 @@ vrpn_YEI_3Space_Sensor::vrpn_YEI_3Space_Sensor (const char * p_name
 //  Command byte (command value)
 //  Command data (0 or more bytes of parameters, in big-endian format)
 //  Checksum (sum of all bytes in the packet % 256)
-int vrpn_YEI_3Space_Sensor::send_command (const unsigned char *p_cmd, int p_len)
+bool vrpn_YEI_3Space_Sensor::send_command (const unsigned char *p_cmd, int p_len)
 {
   const unsigned char START_OF_PACKET = 0xF7;
 
@@ -80,23 +103,67 @@ int vrpn_YEI_3Space_Sensor::send_command (const unsigned char *p_cmd, int p_len)
   memcpy(&(buffer[1]), p_cmd, p_len);
   buffer[p_len + 1] = static_cast<unsigned char>(checksum);
 
-  printf("XXX Sending %d characters\n", p_len+2);
-  for (int i = 0; i < p_len+2; i++) {
-    printf("%02X ", buffer[i]);
-  }
-  printf("\n");
-
   // Send the command and return whether it worked.
   int l_ret;
-  l_ret = vrpn_write_characters (serial_fd, p_cmd, p_len+2);
+  l_ret = vrpn_write_characters (serial_fd, buffer, p_len+2);
   // Tell if this all worked.
   if (l_ret == p_len+2) {
-    return 0;
+    return true;
   } else {
-    return -1;
+    return false;
   }
 }
 
+/******************************************************************************
+ * NAME      : vrpn_YEI_3Space_Sensor::receive_LED_mode_response
+ * ROLE      : 
+ * ARGUMENTS : struct timeval *timeout; how long to wait, NULL for forever
+ * RETURN    : true on success, false on failure.
+ ******************************************************************************/
+
+// Info from YEI 3-Space Sensor User's Manual Wireless 2.0 R21 26 March2014
+// http://www.yeitechnology.com/sites/default/files/YEI_3-Space_Sensor_Users_Manual_Wireless_2.0_r21_26Mar2014.pdf
+// Binary-mode command packet format:
+// Single byte: value 0 or 1.
+bool vrpn_YEI_3Space_Sensor::receive_LED_mode_response (struct timeval *timeout)
+{
+  unsigned char value;
+  int ret = vrpn_read_available_characters (serial_fd, &value, sizeof(value), timeout);
+  if (ret != sizeof(value)) {
+    return false;
+  }
+  d_LED_mode = value;
+  return true;
+}
+
+/******************************************************************************
+ * NAME      : vrpn_YEI_3Space_Sensor::receive_LED_values_response
+ * ROLE      : 
+ * ARGUMENTS : struct timeval *timeout; how long to wait, NULL for forever
+ * RETURN    : true on success, false on failure.
+ ******************************************************************************/
+
+// Info from YEI 3-Space Sensor User's Manual Wireless 2.0 R21 26 March2014
+// http://www.yeitechnology.com/sites/default/files/YEI_3-Space_Sensor_Users_Manual_Wireless_2.0_r21_26Mar2014.pdf
+// Binary-mode command packet format:
+// Three four-byte float responses, each big-endian.
+bool vrpn_YEI_3Space_Sensor::receive_LED_values_response (struct timeval *timeout)
+{
+  unsigned char buffer[3*sizeof(vrpn_float32)];
+  int ret = vrpn_read_available_characters (serial_fd, buffer, sizeof(buffer), timeout);
+  if (ret != sizeof(buffer)) {
+    return false;
+  }
+  vrpn_float32 value;
+  unsigned char *bufptr = buffer;
+  vrpn_unbuffer(&bufptr, &value);
+  d_LED_color[0] = value;
+  vrpn_unbuffer(&bufptr, &value);
+  d_LED_color[1] = value;
+  vrpn_unbuffer(&bufptr, &value);
+  d_LED_color[2] = value;
+  return true;
+}
 
 /******************************************************************************
  * NAME      : vrpn_YEI_3Space_Sensor::reset
@@ -111,84 +178,75 @@ int vrpn_YEI_3Space_Sensor::reset (void)
   int            l_ret;
   char           l_errmsg[256];
 
-  // Clear out the incoming characters and then ask the device to stop
-  // streaming and ask it for the LED mode to make sure we get a response.
-  vrpn_flush_input_buffer (serial_fd);
+  // Ask the device to stop streaming and then wait a little and flush the
+  // input buffer and then ask it for the LED mode and make sure we get a response.
   unsigned char stop_streaming[1] = { 0x56 };
-  if (send_command (stop_streaming, sizeof(stop_streaming)) != 0) {
+  if (!send_command (stop_streaming, sizeof(stop_streaming))) {
     VRPN_MSG_ERROR ("vrpn_YEI_3Space_Sensor::reset: Unable to send stop-streaming command\n");
     return -1;
   }
+  vrpn_SleepMsecs(50);
+  vrpn_flush_input_buffer (serial_fd);
   unsigned char get_led_mode[1] = { 0xC8 };
-  if (send_command (get_led_mode, sizeof(get_led_mode)) != 0) {
-    VRPN_MSG_ERROR ("vrpn_YEI_3Space_Sensor::reset: Unable to send get-led-mode command\n");
-    return -1;
-  }
-  unsigned char start_streaming[1] = { 0x55 };
-  if (send_command (start_streaming, sizeof(start_streaming)) != 0) {
+  if (!send_command (get_led_mode, sizeof(get_led_mode))) {
     VRPN_MSG_ERROR ("vrpn_YEI_3Space_Sensor::reset: Unable to send get-led-mode command\n");
     return -1;
   }
   l_timeout.tv_sec = 2;
   l_timeout.tv_usec = 0;
-  l_ret = vrpn_read_available_characters (serial_fd, l_inbuf, sizeof(l_inbuf), &l_timeout);
-  printf("XXX received %d characters\n", l_ret);
-  for (int i = 0; i < l_ret; i++) {
-    printf("%02X ", l_inbuf[i]);
-  }
-  printf("\n");
-  exit(0);
-
-  // XXX We get nothing when we try binary commands, either at 115200 or at 9600
-  // baud.  When we run Tera Term (open-source terminal program), :0 gives us a
-  // quaternion returned at either baud rate.  Try doing ASCII and see if we get
-  // a response.  If so, we're maybe a bit closer to knowing this can work.
-
-  l_ret = vrpn_read_available_characters (serial_fd, l_inbuf, 1, &l_timeout);
-
-  if (l_ret != 1) {
-    VRPN_MSG_ERROR ("vrpn_YEI_3Space_Sensor: Unable to read from the glove\n");
+  if (!receive_LED_mode_response(&l_timeout)) {
+    VRPN_MSG_ERROR ("vrpn_YEI_3Space_Sensor::reset: Unable to read get-led-mode response\n");
     return -1;
   }
 
-  if (l_inbuf[0] != 85) {
-    VRPN_MSG_ERROR ("vrpn_YEI_3Space_Sensor: Cannot get response on init command");
+  // Request the 3 LED colors and set our internal values to match them.
+  unsigned char get_led_values[1] = { 0xEF };
+  if (!send_command (get_led_values, sizeof(get_led_values))) {
+    VRPN_MSG_ERROR ("vrpn_YEI_3Space_Sensor::reset: Unable to send get-led-values command\n");
     return -1;
+  }
+  if (!receive_LED_values_response(&l_timeout)) {
+    VRPN_MSG_ERROR ("vrpn_YEI_3Space_Sensor::reset: Unable to read get-led-mode response\n");
+    return -1;
+  }
+
+  // Configure streaming speed based on the requested frames/second value.
+  unsigned char set_streaming_timing[13] = { 0x52, 0,0,0,0,0,0,0,0,0,0,0,0 };
+  vrpn_uint32 interval;
+  if (d_frames_per_second <= 0) {
+    VRPN_MSG_ERROR ("vrpn_YEI_3Space_Sensor::reset: Bad frames/second value, setting to maximum\n");
+    interval = 0;
   } else {
-    vrpn_flush_input_buffer (serial_fd);
-    send_command ( (unsigned char *) "G", 1); //Command to Query informations from the glove
-    vrpn_SleepMsecs (100);  //Give it time to respond
-    l_timeout.tv_sec = 2;
-    l_timeout.tv_usec = 0;
-    l_ret = vrpn_read_available_characters (serial_fd, l_inbuf, 32, &l_timeout);
-
-    if (l_ret != 32) {
-      VRPN_MSG_ERROR ("vrpn_YEI_3Space_Sensor: Cannot get info. from the glove");
-      return -1;
-    }
-    if ( (l_inbuf[0] != 66) || (l_inbuf[1] != 82)) {
-      VRPN_MSG_ERROR ("vrpn_YEI_3Space_Sensor: Cannot get good header on info command");
-      return -1;
-    }
-
-    sprintf (l_errmsg, "vrpn_YEI_3Space_Sensor: glove \"%s\"version %d.%d\n", &l_inbuf [16], l_inbuf [2], l_inbuf [3]);
-    VRPN_MSG_INFO (l_errmsg);
-
-    if (l_inbuf[4] | 1) {
-      VRPN_MSG_INFO ("A right glove is ready");
-    } else {
-      VRPN_MSG_INFO ("A left glove is ready");
-    }
-    if (l_inbuf[5] | 16) {
-      VRPN_MSG_INFO ("Pitch and Roll are available");
-    } else {
-      VRPN_MSG_INFO ("Pitch and Roll are not available");
-    }
+    interval = static_cast<vrpn_uint32>(1e6 * 1 / d_frames_per_second);
+  }
+  vrpn_uint32 duration = 0xFFFFFFFF;
+  vrpn_uint32 delay = 0;
+  unsigned char *bufptr = &set_streaming_timing[1];
+  vrpn_int32 buflen = 12;
+  vrpn_buffer(&bufptr, &buflen, interval);
+  vrpn_buffer(&bufptr, &buflen, duration);
+  vrpn_buffer(&bufptr, &buflen, delay);
+  if (!send_command (set_streaming_timing, sizeof(set_streaming_timing))) {
+    VRPN_MSG_ERROR ("vrpn_YEI_3Space_Sensor::reset: Unable to send set-streaming-timing command\n");
+    return -1;
   }
 
-  // If we're in continuous mode, request continuous sends
-  if (_mode == 2) {
-    send_command ( (unsigned char *) "D", 1); // Command to query streaming data from the glove
+  // Configure the set of values we want to have streamed.
+  // The value 0xFF means "nothing."  We want to stream the untared
+  // orientiation as a quaternion, the tared orientation as a quaternion,
+  // all corrected sensor data, the temperature in Celsius, and the
+  // confidence factor.
+  unsigned char set_streaming_slots[9] = { 0x50, 0x06,0x00,0x20,0x43,0x2D,0xFF,0xFF,0xFF };
+  if (!send_command (set_streaming_slots, sizeof(set_streaming_slots))) {
+    VRPN_MSG_ERROR ("vrpn_YEI_3Space_Sensor::reset: Unable to send set-streaming-slots command\n");
+    return -1;
+  }
+
+  // Start streaming mode.
+  unsigned char start_streaming[1] = { 0x55 };
+  if (!send_command (start_streaming, sizeof(start_streaming))) {
+    VRPN_MSG_ERROR ("vrpn_YEI_3Space_Sensor::reset: Unable to send start-streaming command\n");
+    return -1;
   }
 
   // We're now entering the syncing mode which send the read command to the glove
@@ -207,33 +265,6 @@ int vrpn_YEI_3Space_Sensor::reset (void)
  ******************************************************************************/
 void vrpn_YEI_3Space_Sensor::syncing (void)
 {
-
-  if (_wireless) {
-    // For a wireless glove, syncing means we got a header byte and need
-    // to wait for the end of the report to see if we guessed right and
-    // will get a capability byte.
-    int l_ret;
-    l_ret = vrpn_read_available_characters (serial_fd, &_buffer [_bufcount],
-                                            _expected_chars - _bufcount);
-    if (l_ret == -1) {
-      VRPN_MSG_ERROR ("Error reading the glove");
-      _status = STATUS_RESETTING;
-      return;
-    }
-    _bufcount += l_ret;
-    if (_bufcount < _expected_chars) {	// Not done -- go back for more
-      return;
-    }
-    if (_buffer[_bufcount - 1] == 0x40 || _buffer[_bufcount - 1] == 0x01) {
-      VRPN_MSG_INFO ("Got capability byte as expected - switching into read mode.");
-      _bufcount = 0;
-      _status = STATUS_READING;
-    } else {
-      VRPN_MSG_WARNING ("Got a header byte, but capability byte not found - resetting.");
-      _status = STATUS_RESETTING;
-    }
-    return;
-  }
 
   switch (_mode)
     {

@@ -3974,10 +3974,14 @@ int vrpn_Generic_Server_Object::setup_YEI_3Space_Sensor (char * & pch, char * li
   char name [LINESIZE], device [LINESIZE];
   int baud_rate, calibrate_gyros, tare;
   double frames_per_second;
+  float red_LED, green_LED, blue_LED;
+  int LED_mode;
 
   VRPN_CONFIG_NEXT();
   // Get the arguments (class, name, port, baud, calibrate_gyros, tare, frames_per_second
-  if (sscanf (pch, "%511s%511s%d%d%d%lf", name, device, &baud_rate, &calibrate_gyros, &tare, &frames_per_second) != 6) {
+  if (sscanf (pch, "%511s%511s%d%d%d%lf%f%f%f%d",
+      name, device, &baud_rate, &calibrate_gyros, &tare, &frames_per_second,
+      &red_LED, &green_LED, &blue_LED, &LED_mode) != 10) {
     fprintf (stderr, "Bad vrpn_YEI_3Space_Sensor line: %s\n", line);
     return -1;
   }
@@ -3987,7 +3991,9 @@ int vrpn_Generic_Server_Object::setup_YEI_3Space_Sensor (char * & pch, char * li
     printf ("Opening vrpn_YEI_3Space_Sensor: %s on port %s, baud %d\n",
             name, device, baud_rate);
   }
-  _devices->add(new vrpn_YEI_3Space_Sensor (name, connection, device, baud_rate, calibrate_gyros != 0, tare != 0, frames_per_second));
+  _devices->add(new vrpn_YEI_3Space_Sensor (name, connection, device, baud_rate,
+    calibrate_gyros != 0, tare != 0, frames_per_second,
+    red_LED, green_LED, blue_LED, LED_mode));
 
   return 0;
 }
