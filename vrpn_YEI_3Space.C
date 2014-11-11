@@ -36,15 +36,10 @@ vrpn_YEI_3Space_Sensor::vrpn_YEI_3Space_Sensor (const char * p_name
                                   , int LED_mode)
   : vrpn_Tracker_Server (p_name, p_c, 2)
   , vrpn_Serial_Analog (p_name, p_c, p_port, p_baud, 8, vrpn_SER_PARITY_NONE)
-  , vrpn_Analog_Output (p_name)
   , d_frames_per_second(frames_per_second)
 {
   // Set the parameters in the parent classes
   vrpn_Analog::num_channel = 11;
-  vrpn_Analog_Output::o_num_channel = 3;
-
-  // Set the callback handler for the analog output.
-  // XXX
 
   // Configure LED mode.
   unsigned char set_LED_mode[2] = { 0xC4, 0 };
@@ -66,6 +61,22 @@ vrpn_YEI_3Space_Sensor::vrpn_YEI_3Space_Sensor (const char * p_name
   vrpn_buffer(&bufptr, &buflen, LEDs[2]);
   if (!send_command (set_LED_color, sizeof(set_LED_color))) {
     VRPN_MSG_ERROR ("vrpn_YEI_3Space_Sensor::vrpn_YEI_3Space_Sensor: Unable to send set-LED-color command\n");
+  }
+
+  // If we're supposed to calibrate the gyros on startup, do so now.
+  if (calibrate_gyros_on_setup) {
+    unsigned char begin_gyroscope_calibration[1] = { 0xA5 };
+    if (!send_command (begin_gyroscope_calibration, sizeof(begin_gyroscope_calibration))) {
+      VRPN_MSG_ERROR ("vrpn_YEI_3Space_Sensor::vrpn_YEI_3Space_Sensor: Unable to send set-gyroscope-calibration command\n");
+    }
+  }
+
+  // If we're supposed to tare on startup, do so now.
+  if (tare_on_setup) {
+    unsigned char tare[1] = { 0x60 };
+    if (!send_command (tare, sizeof(tare))) {
+      VRPN_MSG_ERROR ("vrpn_YEI_3Space_Sensor::vrpn_YEI_3Space_Sensor: Unable to send tare command\n");
+    }
   }
 
   // Set the mode to reset
