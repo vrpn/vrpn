@@ -3,18 +3,16 @@
 #include <stdio.h>                      // for sprintf, printf
 
 #include "vrpn_YEI_3Space.h"
-#include "vrpn_BaseClass.h"             // for ::vrpn_TEXT_ERROR, etc
-#include "vrpn_Serial.h"
-#include "vrpn_Shared.h"                // for timeval, vrpn_SleepMsecs, etc
 #include "vrpn_MessageMacros.h"         // for VRPN_MSG_INFO, VRPN_MSG_WARNING, VRPN_MSG_ERROR
+#include "quat.h"
 
 #undef VERBOSE
 
 // Defines the modes in which the device can find itself.
 #define	STATUS_RESETTING	(-1)	// Resetting the device
-#define	STATUS_SYNCING		(0)	// Looking for the first character of report
-#define	STATUS_READING		(1)	// Looking for the rest of the report
+#define	STATUS_READING		(0)	// Looking for the a report
 
+static const int REPORT_LENGTH = 16 + 16 + 36 + 4 + 4;
 #define MAX_TIME_INTERVAL       (2000000) // max time between reports (usec)
 
 
@@ -36,12 +34,17 @@ vrpn_YEI_3Space_Sensor::vrpn_YEI_3Space_Sensor (const char * p_name
                                   , double green_LED_color
                                   , double blue_LED_color
                                   , int LED_mode)
-  : vrpn_Serial_Analog (p_name, p_c, p_port, p_baud, 8, vrpn_SER_PARITY_NONE)
+  : vrpn_Tracker_Server (p_name, p_c, 2)
+  , vrpn_Serial_Analog (p_name, p_c, p_port, p_baud, 8, vrpn_SER_PARITY_NONE)
+  , vrpn_Analog_Output (p_name)
   , d_frames_per_second(frames_per_second)
 {
   // Set the parameters in the parent classes
   vrpn_Analog::num_channel = 11;
-  // XXX Set other configs.
+  vrpn_Analog_Output::o_num_channel = 3;
+
+  // Set the callback handler for the analog output.
+  // XXX
 
   // Configure LED mode.
   unsigned char set_LED_mode[2] = { 0xC4, 0 };
@@ -66,7 +69,7 @@ vrpn_YEI_3Space_Sensor::vrpn_YEI_3Space_Sensor (const char * p_name
   }
 
   // Set the mode to reset
-  _status = STATUS_RESETTING;
+  d_status = STATUS_RESETTING;
 }
 
 /******************************************************************************
@@ -174,9 +177,6 @@ bool vrpn_YEI_3Space_Sensor::receive_LED_values_response (struct timeval *timeou
 int vrpn_YEI_3Space_Sensor::reset (void)
 {
   struct timeval l_timeout;
-  unsigned char	 l_inbuf [256];
-  int            l_ret;
-  char           l_errmsg[256];
 
   // Ask the device to stop streaming and then wait a little and flush the
   // input buffer and then ask it for the LED mode and make sure we get a response.
@@ -236,7 +236,7 @@ int vrpn_YEI_3Space_Sensor::reset (void)
   // orientiation as a quaternion, the tared orientation as a quaternion,
   // all corrected sensor data, the temperature in Celsius, and the
   // confidence factor.
-  unsigned char set_streaming_slots[9] = { 0x50, 0x06,0x00,0x20,0x43,0x2D,0xFF,0xFF,0xFF };
+  unsigned char set_streaming_slots[9] = { 0x50, 0x06,0x00,0x25,0x2B,0x2D,0xFF,0xFF,0xFF };
   if (!send_command (set_streaming_slots, sizeof(set_streaming_slots))) {
     VRPN_MSG_ERROR ("vrpn_YEI_3Space_Sensor::reset: Unable to send set-streaming-slots command\n");
     return -1;
@@ -249,40 +249,14 @@ int vrpn_YEI_3Space_Sensor::reset (void)
     return -1;
   }
 
-  // We're now entering the syncing mode which send the read command to the glove
-  _status = STATUS_SYNCING;
+  // We're now entering the reading mode with no characters.
+  d_expected_characters = REPORT_LENGTH;
+  d_characters_read = 0;
+  d_status = STATUS_READING;
 
   vrpn_gettimeofday (&timestamp, NULL);	// Set watchdog now
   return 0;
 }
-
-
-/******************************************************************************
- * NAME      : vrpn_YEI_3Space_Sensor::syncing
- * ROLE      : Send the "C" command to ask for new data from the glove
- * ARGUMENTS : void
- * RETURN    : void
- ******************************************************************************/
-void vrpn_YEI_3Space_Sensor::syncing (void)
-{
-
-  switch (_mode)
-    {
-    case 1:
-      send_command ((unsigned char *) "C", 1);  // Command to query data from the glove
-      break;
-    case 2:
-      // Nothing to be done here -- continuous mode was requested in the reset.
-      break;
-    default :
-      VRPN_MSG_ERROR ("vrpn_YEI_3Space_Sensor::syncing : internal error : unknown state");
-      printf ("mode %d\n", _mode);
-      break;
-    }
-  _bufcount = 0;
-  _status = STATUS_READING;
-}
-
 
 /******************************************************************************
  * NAME      : vrpn_YEI_3Space_Sensor::get_report
@@ -295,24 +269,21 @@ void vrpn_YEI_3Space_Sensor::get_report (void)
 {
   int  l_ret;		// Return value from function call to be checked
 
-  // XXX This should be called when the first character of a report is read.
-  vrpn_gettimeofday(&timestamp, NULL);
-
   //--------------------------------------------------------------------
   // Read as many bytes of this report as we can, storing them
   // in the buffer.  We keep track of how many have been read so far
   // and only try to read the rest.
   //--------------------------------------------------------------------
 
-  l_ret = vrpn_read_available_characters (serial_fd, &_buffer [_bufcount],
-                                          _expected_chars - _bufcount);
+  l_ret = vrpn_read_available_characters (serial_fd, &d_buffer [d_characters_read],
+                                          d_expected_characters - d_characters_read);
   if (l_ret == -1) {
-      VRPN_MSG_ERROR ("Error reading the glove");
-      _status = STATUS_RESETTING;
+      VRPN_MSG_ERROR ("vrpn_YEI_3Space_Sensor::get_report(): Error reading the glove");
+      d_status = STATUS_RESETTING;
       return;
   }
 #ifdef  VERBOSE
-  if (l_ret != 0) printf("... got %d characters (%d total)\n",l_ret, _bufcount);
+  if (l_ret != 0) printf("... got %d characters (%d total)\n",l_ret, d_characters_read);
 #endif
 
   //--------------------------------------------------------------------
@@ -320,7 +291,7 @@ void vrpn_YEI_3Space_Sensor::get_report (void)
   // the report is read.
   //--------------------------------------------------------------------
 
-  if ( (l_ret > 0) && (_bufcount == 0) ) {
+  if ( (l_ret > 0) && (d_characters_read == 0) ) {
 	vrpn_gettimeofday(&timestamp, NULL);
   }
 
@@ -329,76 +300,51 @@ void vrpn_YEI_3Space_Sensor::get_report (void)
   // going back until we get as many as we expect.
   //--------------------------------------------------------------------
 
-  _bufcount += l_ret;
-  if (_bufcount < _expected_chars) {    // Not done -- go back for more
+  d_characters_read += l_ret;
+  if (d_characters_read < d_expected_characters) {    // Not done -- go back for more
       return;
   }
 
   //--------------------------------------------------------------------
-  // We now have enough characters to make a full report.  First check to
-  // make sure that the first one is what we expect.
+  // We now have enough characters to make a full report.  Parse each
+  // input in order and check to make sure they work, then send the results.
+  //--------------------------------------------------------------------
+  vrpn_float32 value;
+  unsigned char *bufptr = d_buffer;
 
-  if (_buffer[0] != 128) {
-    VRPN_MSG_WARNING ("Unexpected first character in report, resetting");
-    _status = STATUS_RESETTING;
-    _bufcount = 0;
-    return;
-  }
+  // Read the two orientations and report them
+  q_vec_type  pos;
+  pos[Q_X] = pos[Q_Y] = pos[Q_Z] = 0;
+  q_type  quat;
 
-  if (_wireless) {
-    if (_buffer[_bufcount - 1] != 0x40 && _buffer[_bufcount - 1] != 0x01) {
-      // The last byte wasn't a capability byte, so this report is invalid.
-      // Reset!
-      VRPN_MSG_WARNING ("Unexpected last character in report, resetting");
-      _status = STATUS_RESETTING;
-      _bufcount = 0;
-      return;
+  for (int i = 0; i < 2; i++) {
+    vrpn_unbuffer(&bufptr, &value);
+    quat[Q_X] = value;
+    vrpn_unbuffer(&bufptr, &value);
+    quat[Q_Y] = value;
+    vrpn_unbuffer(&bufptr, &value);
+    quat[Q_Z] = value;
+    vrpn_unbuffer(&bufptr, &value);
+    quat[Q_W] = value;
+    if (0 != report_pose(i, timestamp, pos, quat)) {
+        VRPN_MSG_ERROR ("vrpn_YEI_3Space_Sensor::get_report(): Error sending sensor report");
+        d_sensor = STATUS_RESETTING;
     }
   }
 
-#ifdef	VERBOSE
-  printf ("Got a complete report (%d of %d)!\n", _bufcount, _expected_chars);
-#endif
-
-  //--------------------------------------------------------------------
-  // Decode the report and store the values in it into the analog values
-  // if appropriate.
-  //--------------------------------------------------------------------
-
-  channel[1] = _buffer[1] / 255.0; //Thumb
-  channel[2] = _buffer[2] / 255.0;
-  channel[3] = _buffer[3] / 255.0;
-  channel[4] = _buffer[4] / 255.0;
-  channel[5] = _buffer[5] / 255.0; // Pinkie
-  channel[6] = 180 * _buffer[6] / 255.0; // Pitch
-  channel[7] = 180 * _buffer[7] / 255.0; // Roll
-
-  if (_wireless && !_gotInfo) {
-    _gotInfo = true;
-    // Bit 0 set in the capability byte implies a right-hand glove.
-    if (_buffer[9] == 0x01) {
-      VRPN_MSG_INFO ("A 'wireless-type' right glove is ready and reporting");
-    } else {
-      VRPN_MSG_INFO ("A 'wireless-type' left glove is ready and reporting");
-    }
+  // Read the analog values and put them into the channels.
+  for (int i = 0; i < vrpn_Analog::getNumChannels(); i++) {
+    vrpn_unbuffer(&bufptr, &value);
+    channel[i] = value;
   }
 
   //--------------------------------------------------------------------
-  // Done with the decoding, send the reports and go back to syncing
+  // Done with the decoding, send the analog reports and clear our counts
   //--------------------------------------------------------------------
 
-  report_changes();
-  switch (_mode) {
-    case 1:
-      _status = STATUS_SYNCING;
-      break;
-    case 2:           // Streaming Mode, just go back for the next report.
-      _bufcount = 0;
-      break;
-    default :
-      VRPN_MSG_ERROR ("vrpn_YEI_3Space_Sensor::get_report : internal error : unknown state");
-      break;
-  }
+  vrpn_Analog::report_changes();
+  d_expected_characters = REPORT_LENGTH;
+  d_characters_read = 0;
 }
 
 
@@ -442,24 +388,15 @@ void vrpn_YEI_3Space_Sensor::mainloop ()
 {
   char l_errmsg[256];
 
+  vrpn_Tracker_Server::mainloop();
   server_mainloop();
-  if (_wireless) {
-    if (!_announced) {
-      VRPN_MSG_INFO ("Will connect to a receive-only 'wireless-type' glove - there may be a few warnings before we succeed.");
-      _announced = true;
-    }
-  }
-  switch (_status)
+
+  switch (d_status)
     {
     case STATUS_RESETTING:
-      if (reset()== -1)
-	{
-	  VRPN_MSG_ERROR ("vrpn_Analog_YEI_3Space: Cannot reset the glove!");
-	}
-      break;
-
-    case STATUS_SYNCING:
-      syncing ();
+      if (reset()== -1) {
+	  VRPN_MSG_ERROR ("vrpn_Analog_YEI_3Space: Cannot reset!");
+      }
       break;
 
     case STATUS_READING:
@@ -483,7 +420,7 @@ void vrpn_YEI_3Space_Sensor::mainloop ()
                    timestamp.tv_sec,
                    static_cast<long> (timestamp.tv_usec));
           VRPN_MSG_ERROR (l_errmsg);
-          _status = STATUS_RESETTING;
+          d_status = STATUS_RESETTING;
         }
       }
       break;
