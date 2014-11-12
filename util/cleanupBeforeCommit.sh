@@ -131,6 +131,15 @@ AddExecutablePrivilege() {
     chmod a+x ${FILETOPROCESS}
 }
 
+# Excludes submodules directory
+FindFilesNamed() {
+    find * -path submodules -prune -o -name "$1" -print
+}
+
+# Excludes submodules directory
+FindFilesNamedCaseInsensitive() {
+    find * -path submodules -prune -o -iname "$1" -print
+}
 
 ###
 # Main script - process files!
@@ -161,7 +170,7 @@ AddExecutablePrivilege() {
     RemoveExecutablePrivilege
 
     # Clean up all CMake files we control
-    for fn in $(find * -path submodules -prune -o -name "CMakeLists.txt" -print) *.cmake cmake/*.cmake submodules/*.cmake submodules/CMakeLists.txt; do
+    for fn in $(FindFilesNamed "CMakeLists.txt") *.cmake cmake/*.cmake submodules/*.cmake submodules/CMakeLists.txt; do
         StartProcessingFile ${fn}
         RemoveDosEndlines
         LeadingFourSpacesToTabs
@@ -169,183 +178,57 @@ AddExecutablePrivilege() {
         RemoveExecutablePrivilege
     done
 
-    # Clean up all ChangeLog files.  Don't trim whitespace from these.
-    for fn in $(find . -name "ChangeLog"); do
-        StartProcessingFile ${fn}
-        RemoveDosEndlines
-        RemoveExecutablePrivilege
-    done
-
-    # Clean up all .in and Format files.  Don't trim whitespace from these.
-    for fn in $(find . -name \*.in) $(find . -name "Format"); do
-        StartProcessingFile ${fn}
-        RemoveDosEndlines
-        RemoveExecutablePrivilege
-    done
-
-    # Clean up all Makefile and README files.  Don't trim whitespace from these.
-    for fn in $(find . -name "Makefile") $(find . -name README\*); do
-        StartProcessingFile ${fn}
-        RemoveDosEndlines
-        RemoveExecutablePrivilege
-    done
-
-    # Clean up all makefile and Makefile.python files.  Don't trim whitespace from these.
-    for fn in $(find . -name "makefile") $(find . -name Makefile.python); do
-        StartProcessingFile ${fn}
-        RemoveDosEndlines
-        RemoveExecutablePrivilege
-    done
-
-    # Clean up all .C and .cpp files.  Don't trim whitespace from these.
-    for fn in $(find . -name \*.C) $(find . -name \*.cpp); do
-        StartProcessingFile ${fn}
-        RemoveDosEndlines
-        RemoveExecutablePrivilege
-    done
-
-    # Clean up all .hpp files.  Don't trim whitespace from these.
-    for fn in $(find . -name \*.hpp); do
-        StartProcessingFile ${fn}
-        RemoveDosEndlines
-        RemoveExecutablePrivilege
-    done
-
-    # Clean up all .c and .h files.  Don't trim whitespace from these.
-    for fn in $(find . -name \*.c) $(find . -name \*.h); do
-        StartProcessingFile ${fn}
-        RemoveDosEndlines
-        RemoveExecutablePrivilege
-    done
-
-    # Clean up all .Cdef and .hdef files.  Don't trim whitespace from these.
-    for fn in $(find . -name \*.Cdef) $(find . -name \*.hdef); do
-        StartProcessingFile ${fn}
-        RemoveDosEndlines
-        RemoveExecutablePrivilege
-    done
-
-    # Clean up all .classpath and .xml files.  Don't trim whitespace from these.
-    for fn in $(find . -name \*.classpath) $(find . -name \*.xml); do
-        StartProcessingFile ${fn}
-        RemoveDosEndlines
-        RemoveExecutablePrivilege
-    done
-
-    # Clean up all .project and .css files.  Don't trim whitespace from these.
-    for fn in $(find . -name \*.project) $(find . -name \*.css); do
-        StartProcessingFile ${fn}
-        RemoveDosEndlines
-        RemoveExecutablePrivilege
-    done
-
-    # Clean up all .properties and .cfg files. Don't trim whitespace from these.
-    for fn in $(find . -name \*.properties) $(find . -name \*.cfg); do
-        StartProcessingFile ${fn}
-        RemoveDosEndlines
-        RemoveExecutablePrivilege
-    done
-
-    # Clean up all .java and .html files. Don't trim whitespace from these.
-    for fn in $(find . -name \*.java) $(find . -name \*.html); do
-        StartProcessingFile ${fn}
-        RemoveDosEndlines
-        RemoveExecutablePrivilege
-    done
-
-    # Clean up all .htm and .txt files. Don't trim whitespace from these.
-    for fn in $(find . -name \*.htm) $(find . -name \*.txt); do
-        StartProcessingFile ${fn}
-        RemoveDosEndlines
-        RemoveExecutablePrivilege
-    done
-
-    # Clean up all .psf and .vmd files. Don't trim whitespace from these.
-    for fn in $(find . -name \*.psf) $(find . -name \*.vmd); do
-        StartProcessingFile ${fn}
-        RemoveDosEndlines
-        RemoveExecutablePrivilege
-    done
-
-    # Clean up all .inf and .ui files. Don't trim whitespace from these.
-    for fn in $(find . -name \*.inf) $(find . -name \*.ui); do
-        StartProcessingFile ${fn}
-        RemoveDosEndlines
-        RemoveExecutablePrivilege
-    done
-
-    # Clean up all .cvsignore and package-list files. Don't trim whitespace from these.
-    for fn in $(find . -name \*.cvsignore) $(find . -name package-list); do
-        StartProcessingFile ${fn}
-        RemoveDosEndlines
-        RemoveExecutablePrivilege
-    done
-
-    # Clean up all .i and Readme files. Don't trim whitespace from these.
-    for fn in $(find . -name \*.i) $(find . -name Readme); do
-        StartProcessingFile ${fn}
-        RemoveDosEndlines
-        RemoveExecutablePrivilege
-    done
-
-    # Clean up all .pl and GNUmakefile files. Don't trim whitespace from these.
-    for fn in $(find . -name \*.pl) $(find . -name GNUmakefile); do
-        StartProcessingFile ${fn}
-        RemoveDosEndlines
-        RemoveExecutablePrivilege
-    done
-
-    # Clean up all .afm-plus and .qsp files. Don't trim whitespace from these.
-    for fn in $(find . -name \*.afm-plus) $(find . -name \*.qsp); do
-        StartProcessingFile ${fn}
-        RemoveDosEndlines
-        RemoveExecutablePrivilege
-    done
-
-    # Clean up all .prefs and .rc files. Don't trim whitespace from these.
-    for fn in $(find . -name \*.prefs) $(find . -name \*.rc); do
-        StartProcessingFile ${fn}
-        RemoveDosEndlines
-        RemoveExecutablePrivilege
-    done
-
-    # Clean up all .jconf and .imp files. Don't trim whitespace from these.
-    for fn in $(find . -name \*.jconf) $(find . -name \*.imp); do
-        StartProcessingFile ${fn}
-        RemoveDosEndlines
-        RemoveExecutablePrivilege
-    done
-
-    # Clean up all .tcl and .afm-plus_imd files. Don't trim whitespace from these.
-    for fn in $(find . -name \*.tcl) $(find . -name \*.afm-plus_imd); do
-        StartProcessingFile ${fn}
-        RemoveDosEndlines
-        RemoveExecutablePrivilege
-    done
-
-    # Clean up all .UNC and Doxyfile files. Don't trim whitespace from these.
-    for fn in $(find . -name \*.UNC) $(find . -name Doxyfile); do
-        StartProcessingFile ${fn}
-        RemoveDosEndlines
-        RemoveExecutablePrivilege
-    done
-
-    # Clean up all .mk and set_instruments_for_sound_server files. Don't trim whitespace from these.
-    for fn in $(find . -name \*.mk) $(find . -name set_instruments_for_sound_server); do
-        StartProcessingFile ${fn}
-        RemoveDosEndlines
-        RemoveExecutablePrivilege
-    done
-
-    # Clean up all .py and .vrpndef files. Don't trim whitespace from these.
-    for fn in $(find . -name \*.py) $(find . -name \*.vrpndef); do
-        StartProcessingFile ${fn}
-        RemoveDosEndlines
-        RemoveExecutablePrivilege
-    done
-
-    # Clean up all .cmake_in files. Don't trim whitespace from these.
-    for fn in $(find . -name \*.cmake_in); do
+    # Clean up lots of files without trimming whitespace.
+    (
+        FindFilesNamed "Format"
+        FindFilesNamed Doxyfile
+        FindFilesNamed GNUmakefile
+        FindFilesNamed Makefile.python
+        FindFilesNamed package-list
+        FindFilesNamed Readme
+        FindFilesNamed set_instruments_for_sound_server
+        FindFilesNamed \*.afm-plus
+        FindFilesNamed \*.afm-plus_imd
+        FindFilesNamed \*.c
+        FindFilesNamed \*.C
+        FindFilesNamed \*.Cdef
+        FindFilesNamed \*.cfg
+        FindFilesNamed \*.classpath
+        FindFilesNamed \*.cmake_in
+        FindFilesNamed \*.cpp
+        FindFilesNamed \*.css
+        FindFilesNamed \*.cvsignore
+        FindFilesNamed \*.h
+        FindFilesNamed \*.hdef
+        FindFilesNamed \*.hpp
+        FindFilesNamed \*.htm
+        FindFilesNamed \*.html
+        FindFilesNamed \*.i
+        FindFilesNamed \*.imp
+        FindFilesNamed \*.in
+        FindFilesNamed \*.inf
+        FindFilesNamed \*.java
+        FindFilesNamed \*.jconf
+        FindFilesNamed \*.mk
+        FindFilesNamed \*.pl
+        FindFilesNamed \*.prefs
+        FindFilesNamed \*.project
+        FindFilesNamed \*.properties
+        FindFilesNamed \*.psf
+        FindFilesNamed \*.py
+        FindFilesNamed \*.qsp
+        FindFilesNamed \*.rc
+        FindFilesNamed \*.tcl
+        FindFilesNamed \*.txt
+        FindFilesNamed \*.ui
+        FindFilesNamed \*.UNC
+        FindFilesNamed \*.vmd
+        FindFilesNamed \*.vrpndef
+        FindFilesNamed \*.xml
+        FindFilesNamedCaseInsensitive "ChangeLog"
+        FindFilesNamedCaseInsensitive "Makefile"
+        FindFilesNamedCaseInsensitive README\*
+    ) | while read fn; do
         StartProcessingFile ${fn}
         RemoveDosEndlines
         RemoveExecutablePrivilege
@@ -353,32 +236,29 @@ AddExecutablePrivilege() {
 
     #########################################################################
     # Clean up all .patch and .sh files. Only change to DOS.
-    for fn in $(find . -name \*.patch) $(find . -name \*.sh); do
+
+    for fn in $(FindFilesNamed \*.patch) $(FindFilesNamed \*.sh); do
         StartProcessingFile ${fn}
         RemoveDosEndlines
     done
 
     #########################################################################
     # Clean up all .dsp and .dsw files. These should be DOS format when done.
-    for fn in $(find . -name \*.dsw) $(find . -name \*.dsp); do
-        StartProcessingFile ${fn}
-        AddDosEndlines
-        RemoveExecutablePrivilege
-    done
-
     # Clean up all .sln and .vcproj files. These should be DOS format when done.
-    for fn in $(find . -name \*.sln) $(find . -name \*.vcproj); do
+    # Clean up all .vcp and .vcw files. These should be DOS format when done.
+    (
+        FindFilesNamed \*.dsw
+        FindFilesNamed \*.dsp
+        FindFilesNamed \*.sln
+        FindFilesNamed \*.vcproj
+        FindFilesNamed \*.vcp
+        FindFilesNamed \*.vcw
+    ) | while read fn; do
         StartProcessingFile ${fn}
         AddDosEndlines
         RemoveExecutablePrivilege
     done
 
-    # Clean up all .vcp and .vcw files. These should be DOS format when done.
-    for fn in $(find . -name \*.vcp) $(find . -name \*.vcw); do
-        StartProcessingFile ${fn}
-        AddDosEndlines
-        RemoveExecutablePrivilege
-    done
 
 )
 
