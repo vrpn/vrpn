@@ -14,26 +14,17 @@ option_requires(VRPN_USE_LOCAL_JSONCPP
 	LOCAL_HIDAPI_SUBMODULE_RETRIEVED)
 
 if(VRPN_USE_LOCAL_JSONCPP)
-	set(JSONCPP_INCLUDE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/jsoncpp/jsoncpp/include/")
-	set(JSONCPP_SOURCES
-		# jsoncpp/jsoncpp/include/json/version.h # not included as a "generated" file
-		"${CMAKE_CURRENT_SOURCE_DIR}/jsoncpp/jsoncpp/include/json/forwards.h"
-		"${CMAKE_CURRENT_SOURCE_DIR}/jsoncpp/jsoncpp/include/json/reader.h"
-		"${CMAKE_CURRENT_SOURCE_DIR}/jsoncpp/jsoncpp/include/json/assertions.h"
-		"${CMAKE_CURRENT_SOURCE_DIR}/jsoncpp/jsoncpp/include/json/value.h"
-		"${CMAKE_CURRENT_SOURCE_DIR}/jsoncpp/jsoncpp/include/json/writer.h"
-		"${CMAKE_CURRENT_SOURCE_DIR}/jsoncpp/jsoncpp/include/json/config.h"
-		"${CMAKE_CURRENT_SOURCE_DIR}/jsoncpp/jsoncpp/include/json/json.h"
-		"${CMAKE_CURRENT_SOURCE_DIR}/jsoncpp/jsoncpp/include/json/autolink.h"
-		"${CMAKE_CURRENT_SOURCE_DIR}/jsoncpp/jsoncpp/include/json/features.h"
-		"${CMAKE_CURRENT_SOURCE_DIR}/jsoncpp/jsoncpp/src/lib_json/json_value.cpp"
-		"${CMAKE_CURRENT_SOURCE_DIR}/jsoncpp/jsoncpp/src/lib_json/json_batchallocator.h"
-		"${CMAKE_CURRENT_SOURCE_DIR}/jsoncpp/jsoncpp/src/lib_json/json_internalarray.inl"
-		"${CMAKE_CURRENT_SOURCE_DIR}/jsoncpp/jsoncpp/src/lib_json/json_writer.cpp"
-		"${CMAKE_CURRENT_SOURCE_DIR}/jsoncpp/jsoncpp/src/lib_json/json_tool.h"
-		"${CMAKE_CURRENT_SOURCE_DIR}/jsoncpp/jsoncpp/src/lib_json/json_internalmap.inl"
-		"${CMAKE_CURRENT_SOURCE_DIR}/jsoncpp/jsoncpp/src/lib_json/json_valueiterator.inl"
-		"${CMAKE_CURRENT_SOURCE_DIR}/jsoncpp/jsoncpp/src/lib_json/json_reader.cpp")
+	if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/jsoncpp/jsoncpp")
+		set(_jsoncpp_base "${CMAKE_CURRENT_SOURCE_DIR}/jsoncpp/jsoncpp")
+	else()
+		set(_jsoncpp_base "${CMAKE_CURRENT_SOURCE_DIR}/jsoncpp")
+	endif()
+	set(JSONCPP_INCLUDE_DIRS "${_jsoncpp_base}/include/")
+	file(GLOB JSONCPP_SOURCES
+		"${_jsoncpp_base}/include/json/*.h"
+		"${_jsoncpp_base}/src/lib_json/*.inl"
+		"${_jsoncpp_base}/src/lib_json/*.h"
+		"${_jsoncpp_base}/src/lib_json/*.cpp")
 	source_group("JSONCPP Submodule" FILES ${JSONCPP_SOURCES})
 	set(JSONCPP_LIBRARIES "")
 	set(JSONCPP_FOUND TRUE)
