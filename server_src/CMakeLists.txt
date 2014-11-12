@@ -182,9 +182,7 @@ if(WIN32 AND VRPN_USE_NIDAQ)
 #	list(APPEND SRV_TEST_SOURCES nidaqServer.cpp) # missing getOptClean
 endif()
 
-set(SRV_SERVER_SOURCES
-	wiimote_head_tracker.C
-)
+set(SRV_SERVER_SOURCES)
 
 ###
 # Tests
@@ -212,19 +210,4 @@ foreach(SOURCE ${SRV_SERVER_SOURCES})
 	install(TARGETS ${APP} RUNTIME DESTINATION bin COMPONENT servers)
 endforeach()
 
-###
-# Install extra files
-###
-
-# Wiimote jconf files for fishtank VR
-set(VRPN_WIIMOTE_JCONFS
-	vrpn.wiimoteheadtracker.fishtankvr.1280x1024.jconf
-	vrpn.wiimoteheadtracker.fishtankvr.1024x768.jconf
-	vrpn.wiimoteheadtracker.fishtankvr.800x600.jconf)
-
-install(FILES
-	${VRPN_WIIMOTE_JCONFS}
-	DESTINATION
-	share/vrpn-${BRIEF_VERSION}/vrjuggler-2.2-config
-	COMPONENT servers)
 
