@@ -113,6 +113,10 @@ SOURCE=.\vrpn_Analog_5dt.C
 # End Source File
 # Begin Source File
 
+SOURCE=.\vrpn_YEI_3Space.C
+# End Source File
+# Begin Source File
+
 SOURCE=.\vrpn_Analog_Output.C
 # End Source File
 # Begin Source File
@@ -439,6 +443,10 @@ SOURCE=.\vrpn_ADBox.h
 # Begin Source File
 
 SOURCE=.\vrpn_Analog.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\vrpn_YEI_3Space.h
 # End Source File
 # Begin Source File
 

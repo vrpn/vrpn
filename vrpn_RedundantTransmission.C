@@ -470,7 +470,6 @@ int vrpn_RedundantReceiver::register_handler (vrpn_int32 type,
     return -1;
   }
 
-
   ce->handler = handler;
   ce->userdata = userdata;
   ce->sender = sender;
@@ -478,6 +477,7 @@ int vrpn_RedundantReceiver::register_handler (vrpn_int32 type,
   if (type == vrpn_ANY_TYPE) {
     ce->next = d_generic.cb;
     d_generic.cb = ce;
+	return 0;
   } else if (type < 0) {
     fprintf(stderr, "vrpn_RedundantReceiver::register_handler:  "
                     "Negative type passed in.\n");
