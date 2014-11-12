@@ -19,7 +19,7 @@ if(NOT WIN32)
 endif()
 
 if(WIN32)
-    ADD_DEFINITIONS( -D_CRT_SECURE_NO_WARNINGS )
+	ADD_DEFINITIONS( -D_CRT_SECURE_NO_WARNINGS )
 endif()
 
 #-----------------------------------------------------------------------------
