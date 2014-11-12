@@ -104,6 +104,12 @@ TrimTrailingWhitespace() {
     sed -i 's/[ \t]*$//' ${FILETOPROCESS}
 }
 
+LeadingFourSpacesToTabs() {
+    # sed tip from http://kvz.io/blog/2011/03/31/spaces-vs-tabs/
+    StatusMessage "Converting leading four-space groups into tabs with sed"
+    sed -i -e ':repeat; s/^\(\t*\)    /\1\t/; t repeat' ${FILETOPROCESS}
+}
+
 # Greps for lines that aren't all whitespace and don't start with # as a comment marker
 # such as in vrpn.cfg
 CheckForUncommentedLines() {
@@ -155,9 +161,10 @@ AddExecutablePrivilege() {
     RemoveExecutablePrivilege
 
     # Clean up all CMake files we control
-    for fn in $(find * -name "CMakeLists.txt") *.cmake cmake/*.cmake submodules/*.cmake; do
+    for fn in $(find * -path submodules -prune -o -name "CMakeLists.txt" -print) *.cmake cmake/*.cmake submodules/*.cmake submodules/CMakeLists.txt; do
         StartProcessingFile ${fn}
         RemoveDosEndlines
+        LeadingFourSpacesToTabs
         TrimTrailingWhitespace
         RemoveExecutablePrivilege
     done
