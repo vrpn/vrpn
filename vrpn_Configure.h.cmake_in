@@ -1,4 +1,4 @@
-#ifndef	VRPN_CONFIGURE_H
+#ifndef VRPN_CONFIGURE_H
 
 //--------------------------------------------------------------
 /* IMPORTANT NOTE: If this file is named vrpn_Configure.h, it is
@@ -49,7 +49,7 @@
 // Change this to make a location-specific default if you like.
 // The parentheses are to keep it from being expanded into something
 // unexpected if the code has a dot after it.
-#define	vrpn_DEFAULT_LISTEN_PORT_NO (3883)
+#define vrpn_DEFAULT_LISTEN_PORT_NO (3883)
 
 //-----------------------
 // Use compile-time static asserts.
@@ -69,7 +69,7 @@
 // include it when porting applications to Windows.  Turn this
 // off if you have another implementation, or if you want to call
 // vrpn_gettimeofday() directly.
-#define	VRPN_EXPORT_GETTIMEOFDAY
+#define VRPN_EXPORT_GETTIMEOFDAY
 
 //-----------------------
 // Tells VRPN to compile with support for the Message-Passing
@@ -105,7 +105,9 @@
 // Yes, HDAPI fails if it even has them in the path (as so many other
 // things also fail).  At least we're rid of them now.  When you
 // uncomment it (to use GHOST), add the following to the include
-// directories for the vrpn_phantom project: $(SYSTEMDRIVE)\Program Files\SensAble\GHOST\v4.0\include,$(SYSTEMDRIVE)\Program Files\SensAble\GHOST\v4.0\external\stl,
+// directories for the vrpn_phantom project: $(SYSTEMDRIVE)\Program
+// Files\SensAble\GHOST\v4.0\include,$(SYSTEMDRIVE)\Program
+// Files\SensAble\GHOST\v4.0\external\stl,
 #cmakedefine VRPN_USE_HDAPI
 
 //------------------------
@@ -132,8 +134,8 @@
 // first calls vrpn_gettimeofday()).  The second version by Haris
 // Fretzagias relies on the timing supplied by Windows.  To use
 // the second version, also define VRPN_WINDOWS_CLOCK_V2.
-#define	VRPN_UNSAFE_WINDOWS_CLOCK
-#define	VRPN_WINDOWS_CLOCK_V2
+#define VRPN_UNSAFE_WINDOWS_CLOCK
+#define VRPN_WINDOWS_CLOCK_V2
 
 //-----------------------
 // Instructs VRPN library and server to include code that uses
@@ -221,7 +223,7 @@
 // rather than the default world-origin with identity rotation.
 // Please don't anyone new use the room space transforms built
 // into VRPN -- they are a hack pulled forward from Trackerlib.
-#define	DESKTOP_PHANTOM_DEFAULTS
+#define DESKTOP_PHANTOM_DEFAULTS
 
 //------------------------
 // Instructs VRPN to use microscribe3D library to construct a unified
@@ -289,15 +291,15 @@
 //------------------------
 // Instructs VRPN to compile code for the Nintendo Wii Remote controller,
 // getting access to it through the Wiiuse library in Windows and Linux.
-// Note that this requires installing a bunch of other stuff, including
-// a Windows driver developer kit to access the HID devices, and that some bluetooth
-// stacks (like the one in Windows XP) cause people trouble -- there is a
-// specific one needed for Linux and some options for Windows.  See the
-// README file in the WiiUse library for more info.  Also note that the
+// Note that this requires installing a bunch of other stuff, and that some
+// bluetooth stacks cause people trouble.  See the README file in the WiiUse
+// library for more info.  Also note that the
 // WiiUse library is GPL, which is more restrictive than the VRPN public-
 // domain license, so check out its license file before building this driver
-// into your code.
-// To get the WiiUse library to compile, you need to add the include path
+// into your code.  The original WiiUse library was abandoned and a new
+// fork by Ryan Pavlik is available at https://github.com/rpavlik/wiiuse.
+// To get the WiiUse library to compile on Visual Studio 2005 (apparently
+// not for VS 2008), you need to add the include path
 // to the driver developer kit (C:\WINDDK\3790.1830\inc\wxp) and the
 // library path to hid.lib (C:\WINDDK\3790.1830\lib\wxp\i386) to the
 // include and library directories in Visual Studio.
@@ -310,9 +312,10 @@
 
 // Instructs VRPN to compile code to handle Hillcrest Labs' Freespace
 // devices such as the Loop, and FRCM.  You will also need the libfreespace
-// library which is available at http://libfreespace.hillcrestlabs.com/content/download.
-// There are prebuilt binaries for Windows, and source available that should work
-// on Windows, Linux or OS X.  You will need to make sure the header files
+// library which is available at
+// http://libfreespace.hillcrestlabs.com/content/download.
+// There are prebuilt binaries for Windows, and source available that should
+// work on Windows, Linux or OS X.  You will need to make sure the header files
 // and library are accessible to the compiler.  libfreespace is released under
 // the LGPL and we (Hillcrest Labs) view static and dynamic linking as the same.
 // We (Hillcrest Labs) do not require code linked to libfreespace (statically or
@@ -328,19 +331,14 @@
 #cmakedefine VRPN_USE_LIBNIFALCON
 
 //------------------------
-// Instructs VRPN to compile code to handle JSON network messages.
-// This requires jsoncpp.
-// JSON Network (USP) mesages are used by the vrpn widgets for Android,
-//#define VRPN_USE_JSONNET
-#cmakedefine VRPN_USE_JSONNET
-
-//------------------------
 // Instructs VRPN to compile code to use Trivisio's Colibri inertial
 // tracker.  You will also need the SDK, which is available at
 // http://www.trivisio.com/products/motiontracking/colibri#download
-// (tested on Windows).  VRPN_TRIVISIOCOLIBRI_H and VRPN_TRIVISIOCOLIBRI_LIB_PATH
+// (tested on Windows).  VRPN_TRIVISIOCOLIBRI_H and
+// VRPN_TRIVISIOCOLIBRI_LIB_PATH
 // below point to the default installation locations on Windows.  Edit them
-// if installed elsewhere.  Note that Trivisio.dll and pthreadVC2.dll need to be in
+// if installed elsewhere.  Note that Trivisio.dll and pthreadVC2.dll need to be
+// in
 // the path when running the server on Windows
 //#define VRPN_USE_TRIVISIOCOLIBRI
 #cmakedefine VRPN_USE_TRIVISIOCOLIBRI
@@ -376,7 +374,8 @@
 // package installed so that we can compile the code.  You
 // will also need to uncommment the SYSLIBS line for HID in the
 // server_src/Makefile for this to link.
-// Note that to compile on Windows you will need to have downloaded and installed
+// Note that to compile on Windows you will need to have downloaded and
+// installed
 // the libusb.h file and libusb-1.0.lib files; the default location for
 // the library is C:Program Files\libusb-1.0 and for the include file
 // is in C:Program Files\libusb-1.0\libusb.  To open a device on Windows, you
@@ -387,7 +386,8 @@
 // HID device or a device that has another driver, as it can prevent the
 // device from operating except through LibUSB.
 // Note that on Linux you will also need to have the libusb-1.0-0-dev
-// package installed so that we can compile the code.  //#define VRPN_USE_LIBUSB_1_0
+// package installed so that we can compile the code.  //#define
+// VRPN_USE_LIBUSB_1_0
 #cmakedefine VRPN_USE_LIBUSB_1_0
 
 // Instructs VRPN to compile code to handle JSON network messages.
@@ -427,7 +427,6 @@
 //#define VRPN_USE_PDI
 #cmakedefine VRPN_USE_PDI
 
-
 //------------------------------------------------------------------//
 // SYSTEM CONFIGURATION SECTION                                     //
 // EDIT THESE DEFINITIONS TO POINT TO OPTIONAL LIBRARIES.  THEY ARE //
@@ -441,16 +440,21 @@
 #define VRPN_WIIUSE_H "wiiuse.h"
 #define VRPN_WIIUSE_LIB_PATH "F:/taylorr/STM/src/wiiuse_v0.12/src"
 
-#define VRPN_TRIVISIOCOLIBRI_H          "C:/Program Files/Trivisio/Colibri/include/TrivisioColibri.h"
-#define VRPN_TRIVISIOCOLIBRI_LIB_PATH   "C:/Program Files/Trivisio/Colibri/lib/"
+#define VRPN_TRIVISIOCOLIBRI_H                                                 \
+    "C:/Program Files/Trivisio/Colibri/include/TrivisioColibri.h"
+#define VRPN_TRIVISIOCOLIBRI_LIB_PATH "C:/Program Files/Trivisio/Colibri/lib/"
 
-#define VRPN_HDAPI_PATH         VRPN_SYSTEMDRIVE "/Program Files/SensAble/3DTouch/lib/"
-#define VRPN_HDAPI_UTIL_PATH    VRPN_SYSTEMDRIVE "/Program Files/SensAble/3DTouch/utilities/lib/"
-#define VRPN_GHOST_31_PATH      VRPN_SYSTEMDRIVE "/Program Files/SensAble/GHOST/v3.1/lib/"
-#define VRPN_GHOST_40_PATH      VRPN_SYSTEMDRIVE "/Program Files/SensAble/GHOST/v4.0/lib/"
+#define VRPN_HDAPI_PATH VRPN_SYSTEMDRIVE "/Program Files/SensAble/3DTouch/lib/"
+#define VRPN_HDAPI_UTIL_PATH                                                   \
+    VRPN_SYSTEMDRIVE "/Program Files/SensAble/3DTouch/utilities/lib/"
+#define VRPN_GHOST_31_PATH                                                     \
+    VRPN_SYSTEMDRIVE "/Program Files/SensAble/GHOST/v3.1/lib/"
+#define VRPN_GHOST_40_PATH                                                     \
+    VRPN_SYSTEMDRIVE "/Program Files/SensAble/GHOST/v4.0/lib/"
 
-#define VRPN_NIDAQ_PATH         VRPN_SYSTEMDRIVE "/Program Files/National Instruments/NI-DAQ/Lib/"
-#define VRPN_USDIGITAL_PATH     VRPN_SYSTEMDRIVE "/Program Files/SEI Explorer/"
+#define VRPN_NIDAQ_PATH                                                        \
+    VRPN_SYSTEMDRIVE "/Program Files/National Instruments/NI-DAQ/Lib/"
+#define VRPN_USDIGITAL_PATH VRPN_SYSTEMDRIVE "/Program Files/SEI Explorer/"
 
 #ifdef VRPN_USE_MOTIONNODE
 #pragma comment(lib, "libMotionNodeSDK.lib")
@@ -462,8 +466,12 @@
 
 // Use this macro in a file if it might be empty (compiling out completely)
 // to squash Visual Studio warning LNK4221.
-// Inspiration from http://stackoverflow.com/questions/1822887/what-is-the-best-way-to-eliminate-ms-visual-c-linker-warning-warning-lnk422
-#define VRPN_SUPPRESS_EMPTY_OBJECT_WARNING() namespace { char vrpn_SuppressEmptyObjectDummy##__LINE__; }
+// Inspiration from
+// http://stackoverflow.com/questions/1822887/what-is-the-best-way-to-eliminate-ms-visual-c-linker-warning-warning-lnk422
+#define VRPN_SUPPRESS_EMPTY_OBJECT_WARNING()                                   \
+    namespace {                                                                \
+        char vrpn_SuppressEmptyObjectDummy##__LINE__;                          \
+    }
 
 // Load National Instruments libraries if we are using them.
 // If this doesn't match where you have installed these libraries,
@@ -473,9 +481,9 @@
 // NOTE: The paths to these libraries are set in the Settings/Link tab of
 // the various project files.  The paths to the include files are in the
 // Settings/C++/preprocessor tab.
-#ifdef	VRPN_USE_NATIONAL_INSTRUMENTS
-#pragma comment (lib, VRPN_NIDAQ_PATH "nidaq32.lib")
-#pragma comment (lib, VRPN_NIDAQ_PATH "nidex32.lib")
+#ifdef VRPN_USE_NATIONAL_INSTRUMENTS
+#pragma comment(lib, VRPN_NIDAQ_PATH "nidaq32.lib")
+#pragma comment(lib, VRPN_NIDAQ_PATH "nidex32.lib")
 #endif
 
 // Load US Digital libraries if we are using them.
@@ -486,8 +494,8 @@
 // NOTE: The paths to these libraries are set in the Settings/Link tab of
 // the various project files.  The paths to the include files are in the
 // Settings/C++/preprocessor tab.
-#ifdef  VRPN_USE_USDIGITAL
-#pragma comment (lib, VRPN_USDIGITAL_PATH "SEIDrv32.lib")
+#ifdef VRPN_USE_USDIGITAL
+#pragma comment(lib, VRPN_USDIGITAL_PATH "SEIDrv32.lib")
 #endif
 
 // Load Microscribe-3D SDK libraries
@@ -495,17 +503,18 @@
 // edit the following lines to point at the correct libraries.  Do
 // this here rather than in the project settings so that it can be
 // turned on and off using the definition above.
-#ifdef        VRPN_USE_MICROSCRIBE
-#pragma comment (lib, "armdll32.lib")
+#ifdef VRPN_USE_MICROSCRIBE
+#pragma comment(lib, "armdll32.lib")
 #endif
 
 // Load Trivisio Colibri library
-#ifdef  VRPN_USE_TRIVISIOCOLIBRI
-#pragma comment (lib, VRPN_TRIVISIOCOLIBRI_LIB_PATH "Trivisio.lib")
+#ifdef VRPN_USE_TRIVISIOCOLIBRI
+#pragma comment(lib, VRPN_TRIVISIOCOLIBRI_LIB_PATH "Trivisio.lib")
 #endif
 
 // This will be defined in the VRPN (non-DLL) project and nothing else
-// Overrides USE_SHARED_LIBRARY to get rid of "inconsistent DLL linkage" warnings.
+// Overrides USE_SHARED_LIBRARY to get rid of "inconsistent DLL linkage"
+// warnings.
 #ifdef VRPNDLL_NOEXPORTS
 #undef VRPN_USE_SHARED_LIBRARY
 #endif
@@ -519,26 +528,27 @@
 
 // For client code, make sure we add the proper library dependency to the linker
 #ifdef _WIN32
-  #ifdef VRPN_USE_WINSOCK2
-    #pragma comment (lib, "ws2_32.lib")  // VRPN requires the Windows Sockets library.
-  #else
-    #pragma comment (lib, "wsock32.lib")  // VRPN requires the Windows Sockets library.
-  #endif
+#ifdef VRPN_USE_WINSOCK2
+#pragma comment(lib, "ws2_32.lib") // VRPN requires the Windows Sockets library.
+#else
+#pragma comment(lib,                                                           \
+                "wsock32.lib") // VRPN requires the Windows Sockets library.
+#endif
 #ifdef VRPN_USE_SHARED_LIBRARY
 #ifdef VRPNDLL_EXPORTS
-#define  VRPN_API		 __declspec(dllexport)
+#define VRPN_API __declspec(dllexport)
 #else
-#define  VRPN_API		 __declspec(dllimport)
+#define VRPN_API __declspec(dllimport)
 #endif
 #else
-#define  VRPN_API
+#define VRPN_API
 #endif
-#define	 VRPN_CALLBACK	 __stdcall
+#define VRPN_CALLBACK __stdcall
 #else
 // In the future, other architectures may need their own sections
-#define  VRPN_API
-#define  VRPN_CALLBACK
+#define VRPN_API
+#define VRPN_CALLBACK
 #endif
 
-#define	VRPN_CONFIGURE_H
+#define VRPN_CONFIGURE_H
 #endif
