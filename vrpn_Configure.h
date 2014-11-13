@@ -39,6 +39,12 @@
 #define vrpn_DEFAULT_LISTEN_PORT_NO (3883)
 
 //-----------------------
+// Use compile-time static asserts.
+// Should be reasonably portable, but off by default because they
+// haven't been tested for extreme portability.
+//#define VRPN_USE_STATIC_ASSERTIONS
+
+//-----------------------
 // Use Winsock2 library rather than Winsock.
 //#define	VRPN_USE_WINSOCK2
 
@@ -490,10 +496,24 @@
 // to squash Visual Studio warning LNK4221.
 // Inspiration from
 // http://stackoverflow.com/questions/1822887/what-is-the-best-way-to-eliminate-ms-visual-c-linker-warning-warning-lnk422
+#ifdef _MSC_VER
 #define VRPN_SUPPRESS_EMPTY_OBJECT_WARNING()                                   \
     namespace {                                                                \
         char vrpn_SuppressEmptyObjectDummy##__LINE__;                          \
     }
+#else
+#define VRPN_SUPPRESS_EMPTY_OBJECT_WARNING()
+#endif
+
+// DirectInput include file and libraries.
+// Load DirectX SDK libraries and tell which version we need if we are using it.
+#ifdef VRPN_USE_DIRECTINPUT
+#define DIRECTINPUT_VERSION 0x0800
+#include <dinput.h>
+#endif
+
+// autolinking pragma only works/makes sense with MSVC
+#ifdef _MSC_VER // [
 
 // Load the library for WiiUse.
 #ifdef VRPN_USE_WIIUSE
@@ -536,19 +556,17 @@
 #endif
 #endif
 
-// DirectInput include file and libraries.
-// Load DirectX SDK libraries and tell which version we need if we are using it.
-#ifdef VRPN_USE_DIRECTINPUT
-#define DIRECTINPUT_VERSION 0x0800
-#include <dinput.h>
-#endif
-
 #ifdef VRPN_USE_DIRECTINPUT
 #pragma comment(lib, "dxguid.lib")
 // Newer versions of the SDK have renamed this dxerr.lib;
 // dxerr9.lib has also been said to work.
 #pragma comment(lib, "dxerr.lib")
 #pragma comment(lib, "dinput8.lib")
+#endif
+
+
+#ifdef VRPN_USE_MOTIONNODE
+#pragma comment(lib, "libMotionNodeSDK.lib")
 #endif
 
 // Load National Instruments libraries if we are using them.
@@ -602,6 +620,8 @@
 #pragma comment(lib, VRPN_LIBUSB_PATH "libusb-1.0.lib")
 #endif
 
+#endif // ] _MSC_VER
+
 // This will be defined in the VRPN (non-DLL) project and nothing else
 // Overrides USE_SHARED_LIBRARY to get rid of "inconsistent DLL linkage"
 // warnings.
@@ -617,13 +637,15 @@
 #endif
 
 // For client code, make sure we add the proper library dependency to the linker
-#ifdef _WIN32
+#ifdef _WIN32 // [
+#ifdef _MSC_VER // [
 #ifdef VRPN_USE_WINSOCK2
 #pragma comment(lib, "ws2_32.lib") // VRPN requires the Windows Sockets library.
 #else
 #pragma comment(lib,                                                           \
                 "wsock32.lib") // VRPN requires the Windows Sockets library.
 #endif
+#endif // ] _MSC_VER
 #ifdef VRPN_USE_SHARED_LIBRARY
 #ifdef VRPNDLL_EXPORTS
 #define VRPN_API __declspec(dllexport)
@@ -634,11 +656,11 @@
 #define VRPN_API
 #endif
 #define VRPN_CALLBACK __stdcall
-#else
+#else // ] WIN32 [
 // In the future, other architectures may need their own sections
 #define VRPN_API
 #define VRPN_CALLBACK
-#endif
+#endif // ] not WIN32
 
 #define VRPN_CONFIGURE_H
 #endif
