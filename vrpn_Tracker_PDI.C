@@ -1,6 +1,8 @@
 // $Header: /PDIvrpn.root/2.0.0/PDIVRPN/vrpn/vrpn_Tracker_G4.cpp 1     6/05/12 12:21p Ben $
 #include "vrpn_Tracker_PDI.h"
 
+VRPN_SUPPRESS_EMPTY_OBJECT_WARNING()
+
 #ifdef  VRPN_USE_PDI
 
 using namespace std;
