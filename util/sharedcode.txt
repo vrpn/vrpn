@@ -12,6 +12,7 @@ vrpn_Button
 vrpn_Button_USB
 vrpn_Configure
 vrpn_Connection
+vrpn_ConnectionPtr
 vrpn_Dial
 vrpn_FileConnection
 vrpn_FileController
