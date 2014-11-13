@@ -57,7 +57,6 @@
 
 //-----------------------
 // Use Winsock2 library rather than Winsock.
-//#define       VRPN_USE_WINSOCK2
 #cmakedefine VRPN_USE_WINSOCK2
 
 //-----------------------
@@ -80,20 +79,17 @@
 // C++ Directories include path.  The original implementation is
 // done with MPICH2, but an attempt has been made to use only
 // MPI version 1 basic functions.
-//#define	VRPN_USE_MPI
 #cmakedefine VRPN_USE_MPI
 
 //-----------------------
 // Tells VRPN to compile with support for the Modbus
 // library.
-//#define	vrpn_USE_MODBUS
 #cmakedefine VRPN_USE_MODBUS
 
 //-----------------------
 // Instructs VRPN to use phantom library to construct a unified
 // server, using phantom as a common device, and phantom
 // configuration in .cfg file.
-//#define	VRPN_USE_PHANTOM_SERVER
 #cmakedefine VRPN_USE_PHANTOM_SERVER
 
 //------------------------
@@ -152,7 +148,6 @@
 //    For Visual studio .NET, add to the top of the Projects and Solutions/
 //  VC++ Directories entry.
 //    This will let the code find the right version when it compiles.
-//#define	VRPN_USE_DIRECTINPUT
 #cmakedefine VRPN_USE_DIRECTINPUT
 #cmakedefine VRPN_USE_WINDOWS_XINPUT
 
@@ -167,7 +162,6 @@
 // of the Platform SDK.  WARNING: With the August 2006 DirectX SDK, you
 // cannot link against the debug library in Visual Studio 6.0,
 // only the release.  Visual Studio.NET doesn't have this problem.
-//#define	VRPN_USE_DIRECTSHOW
 #cmakedefine VRPN_USE_DIRECTSHOW
 
 //-----------------------
@@ -177,7 +171,6 @@
 // can be synchronized with events on a movie.  The Adrienne folder
 // should be located at the same level as the VRPN folder for the
 // code to find it.
-//#define	VRPN_INCLUDE_TIMECODE_SERVER
 #cmakedefine VRPN_INCLUDE_TIMECODE_SERVER
 #cmakedefine VRPN_ADRIENNE_INCLUDE_FILENAME "@VRPN_ADRIENNE_INCLUDE_FILENAME@"
 #cmakedefine VRPN_ADRIENNE_INCLUDE_HAS_EXTERN_C
@@ -191,7 +184,6 @@
 // at the same level as the vrpn directory.  The isense.dll should
 // be put either in Windows/system32 or in the location where the
 // executable lives or somewhere on the path.
-//#define VRPN_INCLUDE_INTERSENSE
 #cmakedefine VRPN_INCLUDE_INTERSENSE
 
 //-----------------------
@@ -201,8 +193,6 @@
 // the National Instruments libraries if this is defined.  Either or
 // both of these can be defined, depending on which library you
 // need to use.
-//#define	VRPN_USE_NATIONAL_INSTRUMENTS
-//#define	VRPN_USE_NATIONAL_INSTRUMENTS_MX
 #cmakedefine VRPN_USE_NATIONAL_INSTRUMENTS
 #cmakedefine VRPN_USE_NATIONAL_INSTRUMENTS_MX
 
@@ -214,7 +204,6 @@
 // the US Digital library if this is defined.  You also need to
 // define VRPN_USE_NATIONAL_INSTRUMENTS_MX above if you want to
 // use this.
-//#define	VRPN_USE_USDIGITAL
 #cmakedefine VRPN_USE_USDIGITAL
 
 //-----------------------
@@ -228,7 +217,6 @@
 //------------------------
 // Instructs VRPN to use microscribe3D library to construct a unified
 // server
-//#define VRPN_USE_MICROSCRIBE
 #cmakedefine VRPN_USE_MICROSCRIBE
 
 //------------------------
@@ -251,7 +239,6 @@
 // at run time.  Edit the path below to say where the .lib file
 // can be found.
 //
-//#define VRPN_INCLUDE_PHASESPACE
 #cmakedefine VRPN_INCLUDE_PHASESPACE
 
 //-----------------------
@@ -263,7 +250,6 @@
 // languages other than C++ (and not even for Java).  If you don't
 // have a good reason to, don't define it.
 // Not implemented for .so-based Unix systems.
-//#define VRPN_USE_SHARED_LIBRARY
 #cmakedefine VRPN_USE_SHARED_LIBRARY
 
 //------------------------
@@ -272,7 +258,6 @@
 // Makefile to include "-lgpm" into the SYSLIBS definition line for the
 // architecture you use this on.  We had to change this because not all
 // Linux releases included this library.
-//#define VRPN_USE_GPM_MOUSE
 #cmakedefine VRPN_USE_GPM_MOUSE
 
 //------------------------
@@ -285,7 +270,6 @@
 // have pointed the vrpn and vrpndll project include paths to it and
 // the vrpndll and vrpn_server lib paths to it.
 // WARNING: This code does not compile under visual studio 6.0.
-//#define VRPN_USE_MOTIONNODE
 #cmakedefine VRPN_USE_MOTIONNODE
 
 //------------------------
@@ -307,7 +291,6 @@
 // file and library.
 // Note that the wiiuse.dll needs to be in the path when running a server
 // that uses WiiUse in Windows.
-//#define VRPN_USE_WIIUSE
 #cmakedefine VRPN_USE_WIIUSE
 
 // Instructs VRPN to compile code to handle Hillcrest Labs' Freespace
@@ -320,7 +303,6 @@
 // the LGPL and we (Hillcrest Labs) view static and dynamic linking as the same.
 // We (Hillcrest Labs) do not require code linked to libfreespace (statically or
 // dynamically) to be released under any particular license.
-//#define VRPN_USE_FREESPACE
 #cmakedefine VRPN_USE_FREESPACE
 
 //------------------------
@@ -340,14 +322,12 @@
 // if installed elsewhere.  Note that Trivisio.dll and pthreadVC2.dll need to be
 // in
 // the path when running the server on Windows
-//#define VRPN_USE_TRIVISIOCOLIBRI
 #cmakedefine VRPN_USE_TRIVISIOCOLIBRI
 
 //------------------------
 // Instructs VRPN to attempt to use HID.  If you don't have libusb installed
 // on Linux, you'll want to turn this off so that it doesn't fail to compile.
 // This should work fine on Windows and Mac.
-//#define VRPN_USE_HID
 #cmakedefine VRPN_USE_HID
 
 //------------------------
@@ -362,7 +342,6 @@
 // Note that on Linux you will also need to have the libusb package
 // installed in order to compile HIDAPI.  You'll also need to uncomment
 // the Makefile line in server_src that links with usb.
-//#define VRPN_USE_LOCAL_HIDAPI
 #cmakedefine VRPN_USE_LOCAL_HIDAPI
 
 //------------------------
@@ -386,8 +365,7 @@
 // HID device or a device that has another driver, as it can prevent the
 // device from operating except through LibUSB.
 // Note that on Linux you will also need to have the libusb-1.0-0-dev
-// package installed so that we can compile the code.  //#define
-// VRPN_USE_LIBUSB_1_0
+// package installed so that we can compile the code.
 #cmakedefine VRPN_USE_LIBUSB_1_0
 
 // Instructs VRPN to compile code to handle JSON network messages.
@@ -401,16 +379,12 @@
 // and VRPN_VIEWPOINT_LIB_PATH below to point to the correct location
 // on your system.  Note that the VRPN server and ViewPoint calibration
 // software must use the same copy of the VPX_InterApp.dll
-//#define VRPN_USE_VIEWPOINT
 #cmakedefine VRPN_USE_VIEWPOINT
 #define VRPN_VIEWPOINT_H "vpx.h"
 #cmakedefine VRPN_VIEWPOINT_LIB_PATH "@VRPN_VIEWPOINT_LIB_PATH@"
 
 //------------------------
 // Use DevInput devices.
-//#if defined(linux) && !defined(__APPLE__)
-//#define VRPN_USE_DEV_INPUT
-//#endif
 #cmakedefine VRPN_USE_DEV_INPUT
 
 //-------------------------
@@ -424,7 +398,6 @@
 // (PDI) library to enable opening several of their trackers using
 // this interface (the G4 was the original one this was written
 // for, but new versions are available for the Fastrak and Liberty).
-//#define VRPN_USE_PDI
 #cmakedefine VRPN_USE_PDI
 
 //------------------------------------------------------------------//
@@ -438,15 +411,10 @@
 #define VRPN_PHASESPACE_LIB_PATH "../../phasespace/"
 
 #define VRPN_WIIUSE_H "wiiuse.h"
-#define VRPN_WIIUSE_LIB_PATH "F:/taylorr/STM/src/wiiuse_v0.12/src"
 
 #define VRPN_TRIVISIOCOLIBRI_H                                                 \
     "C:/Program Files/Trivisio/Colibri/include/TrivisioColibri.h"
 #define VRPN_TRIVISIOCOLIBRI_LIB_PATH "C:/Program Files/Trivisio/Colibri/lib/"
-
-#define VRPN_HDAPI_PATH VRPN_SYSTEMDRIVE "/Program Files/SensAble/3DTouch/lib/"
-#define VRPN_HDAPI_UTIL_PATH                                                   \
-    VRPN_SYSTEMDRIVE "/Program Files/SensAble/3DTouch/utilities/lib/"
 #define VRPN_GHOST_31_PATH                                                     \
     VRPN_SYSTEMDRIVE "/Program Files/SensAble/GHOST/v3.1/lib/"
 #define VRPN_GHOST_40_PATH                                                     \
