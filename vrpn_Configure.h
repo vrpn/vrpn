@@ -564,7 +564,6 @@
 #pragma comment(lib, "dinput8.lib")
 #endif
 
-
 #ifdef VRPN_USE_MOTIONNODE
 #pragma comment(lib, "libMotionNodeSDK.lib")
 #endif
@@ -637,7 +636,7 @@
 #endif
 
 // For client code, make sure we add the proper library dependency to the linker
-#ifdef _WIN32 // [
+#ifdef _WIN32   // [
 #ifdef _MSC_VER // [
 #ifdef VRPN_USE_WINSOCK2
 #pragma comment(lib, "ws2_32.lib") // VRPN requires the Windows Sockets library.
