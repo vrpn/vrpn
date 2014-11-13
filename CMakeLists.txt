@@ -838,6 +838,14 @@ option(VRPN_BUILD_EXTRA_COMPILER_WARNINGS
 if(VRPN_BUILD_EXTRA_COMPILER_WARNINGS)
 	include(EnableExtraCompilerWarnings)
 	globally_enable_extra_compiler_warnings()
+	if(NOT MSVC)
+		# shadowing virtual functions is pretty much unavoidable with the
+		# multiple inheritance design and methods like "report_changes"
+		check_cxx_compiler_flag(-Wno-overloaded-virtual SUPPORTS_WNO_OVERLOADED_VIRTUAL_FLAG)
+		if(SUPPORTS_WNO_OVERLOADED_VIRTUAL_FLAG)
+			set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-overloaded-virtual")
+		endif()
+	endif()
 endif()
 
 set(VRPN_CLIENT_ONLY)
