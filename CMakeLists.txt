@@ -927,6 +927,7 @@ set(VRPN_CLIENT_PUBLIC_HEADERS
 	vrpn_BaseClass.h
 	vrpn_Button.h
 	vrpn_Connection.h
+	vrpn_ConnectionPtr.h
 	vrpn_Dial.h
 	vrpn_FileConnection.h
 	vrpn_FileController.h
