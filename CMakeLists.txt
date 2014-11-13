@@ -742,7 +742,6 @@ if(VRPN_USE_PDI)
 	list(APPEND
 		SERVER_EXTRA_LIBS
 		"C:/Program Files (x86)/Polhemus/PDI/PDI_90/Lib/Win32/PDI.lib")
-	set(PDI_SOURCES vrpn_Tracker_PDI.C)
 endif()
 
 ###
@@ -1028,6 +1027,7 @@ set(VRPN_SERVER_SOURCES
 	vrpn_Tracker_MotionNode.C
 	vrpn_Tracker_NDI_Polaris.C
 	vrpn_Tracker_NovintFalcon.C
+	vrpn_Tracker_PDI.C
 	vrpn_Tracker_PhaseSpace.C
 	vrpn_Tracker_RazerHydra.C
 	vrpn_Tracker_SpacePoint.C
@@ -1130,6 +1130,7 @@ set(VRPN_SERVER_PUBLIC_HEADERS
 	vrpn_Tracker_MotionNode.h
 	vrpn_Tracker_NDI_Polaris.h
 	vrpn_Tracker_NovintFalcon.h
+	vrpn_Tracker_PDI.h
 	vrpn_Tracker_PhaseSpace.h
 	vrpn_Tracker_RazerHydra.h
 	vrpn_Tracker_SpacePoint.h
