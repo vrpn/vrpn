@@ -114,7 +114,7 @@ if(JAVA_FOUND AND JNI_FOUND AND JAVAH_EXECUTABLE AND VRPN_BUILD_JAVA)
 		# Currently link with the client-side libraries only for the Android build.
 		target_link_libraries(java_vrpn vrpn)
 	else()
-		target_link_libraries(java_vrpn vrpnserver ${JNI_LIBRARIES})
+		target_link_libraries(java_vrpn vrpnserver ${JAVA_JVM_LIBRARY})
 		add_dependencies(java_vrpn java_vrpn_jar)
 	endif()
 
