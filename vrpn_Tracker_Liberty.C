@@ -340,6 +340,7 @@ printf("LIBERTY LATUS STATUS (whoami):\n%s\n\n",statusmsg);
 
 	// Make a copy of the additional reset string, since it is consumed
 	strncpy(add_cmd_copy, add_reset_cmd, sizeof(add_cmd_copy));
+	add_cmd_copy[sizeof(add_cmd_copy)-1] = '\0';
 
 	// Pass through the string, testing each line to see if it is
 	// a sleep command or a line to send to the tracker. Continue until

@@ -605,7 +605,7 @@ int vrpn_Log::saveLogSoFar(void)
         final_retval = -1;
     }
 
-    if (!d_wroteMagicCookie) {
+    if (!d_wroteMagicCookie && !final_retval) {
         // Write out the log header (magic cookie)
         // TCH 20 May 1999
 

@@ -352,14 +352,15 @@ void vrpn_Tracker_Fastrak::reset()
    // buffer.
    if (strlen(add_reset_cmd) > 0) {
 	char	*next_line;
-	char	add_cmd_copy[sizeof(add_reset_cmd)];
-	char	string_to_send[sizeof(add_reset_cmd)];
+	char	add_cmd_copy[sizeof(add_reset_cmd)+1];
+	char	string_to_send[sizeof(add_reset_cmd)+1];
 	int	seconds_to_wait;
 
 	printf("  Fastrak writing extended reset commands...\n");
 
 	// Make a copy of the additional reset string, since it is consumed
 	strncpy(add_cmd_copy, add_reset_cmd, sizeof(add_cmd_copy));
+	add_cmd_copy[sizeof(add_cmd_copy)-1] = '\0';
 
 	// Pass through the string, testing each line to see if it is
 	// a sleep command or a line to send to the tracker. Continue until
