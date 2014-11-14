@@ -226,7 +226,7 @@ vrpn_Tracker_RazerHydra::vrpn_Tracker_RazerHydra(const char *name, vrpn_Connecti
     , status(HYDRA_WAITING_FOR_CONNECT)
     , _wasInGamepadMode(false) /// assume not - if we have to send a command, then set to true
     , _attempt(0)
-    , _docking_distance(0.1)
+    , _docking_distance(0.1f)
 {
     // Set up the control and data channels
     _ctrl = new MyInterface(HYDRA_CONTROL_INTERFACE, this);
