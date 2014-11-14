@@ -1718,7 +1718,7 @@ int vrpn_noint_select(int width, fd_set *readfds, fd_set *writefds,
 
 #ifndef VRPN_USE_WINSOCK_SOCKETS
 
-int vrpn_noint_block_write(int outfile, const char buffer[], int length)
+int vrpn_noint_block_write(int outfile, const char buffer[], size_t length)
 {
     register int sofar; /* How many characters sent so far */
     register int ret;   /* Return value from write() */
