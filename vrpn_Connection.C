@@ -1793,7 +1793,7 @@ int vrpn_noint_block_write(SOCKET outsock, char *buffer, size_t length)
     size_t sofar = 0;
     do {
         /* Try to write the remaining data */
-        nwritten = send(outsock, buffer + sofar, length - sofar, 0);
+        nwritten = send(outsock, buffer + sofar, static_cast<int>(length - sofar), 0);
 
         if (nwritten == SOCKET_ERROR) {
             return -1;
@@ -1908,7 +1908,7 @@ int vrpn_noint_block_read_timeout(int infile, char buffer[], size_t length,
         if (!FD_ISSET(infile, &readfds)) { /* No characters */
             if ((timeout != NULL) && (timeout->tv_sec == 0) &&
                 (timeout->tv_usec == 0)) { /* Quick poll */
-                return sofar;              /* Timeout! */
+                return static_cast<int>(sofar);              /* Timeout! */
             }
         }
 

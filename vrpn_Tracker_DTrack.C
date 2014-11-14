@@ -335,7 +335,7 @@ void vrpn_Tracker_DTrack::mainloop()
 		joy_simulate.resize(num_channel);
 		joy_last.resize(num_channel);
 
-		for(int j=j0; j<num_channel; j++){
+		for(size_t j=j0; j<num_channel; j++){
 			joy_simulate[j] = false;
 			joy_last[j] = 0;
 		}
