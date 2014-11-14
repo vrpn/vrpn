@@ -1418,19 +1418,21 @@ create_dashboard_scripts("${CMAKE_CURRENT_SOURCE_DIR}/DashboardBuildInitialCache
 
 #-----------------------------------------------------------------------------
 # If we succeeded, we can go on and include packaging!
-include(CPack)
-cpack_add_component(serversdk
-	DISPLAY_NAME
-	"VRPN Server Library and C++ Headers")
-cpack_add_component(clientsdk
-	DISPLAY_NAME
-	"VRPN Client Library and C++ Headers")
-cpack_add_component(tests DISPLAY_NAME "Test applications")
-cpack_add_component(clients DISPLAY_NAME "Client applications")
-cpack_add_component(servers DISPLAY_NAME "Server applications")
-cpack_add_component(mainserver
-	DISPLAY_NAME
-	"VRPN main server application")
-cpack_add_component(python DISPLAY_NAME "Python bindings")
-cpack_add_component(java DISPLAY_NAME "Java bindings")
-cpack_add_component(doc DISPLAY_NAME "C++ API Documentation")
+if(VRPN_INSTALL)
+	include(CPack)
+	cpack_add_component(serversdk
+		DISPLAY_NAME
+		"VRPN Server Library and C++ Headers")
+	cpack_add_component(clientsdk
+		DISPLAY_NAME
+		"VRPN Client Library and C++ Headers")
+	cpack_add_component(tests DISPLAY_NAME "Test applications")
+	cpack_add_component(clients DISPLAY_NAME "Client applications")
+	cpack_add_component(servers DISPLAY_NAME "Server applications")
+	cpack_add_component(mainserver
+		DISPLAY_NAME
+		"VRPN main server application")
+	cpack_add_component(python DISPLAY_NAME "Python bindings")
+	cpack_add_component(java DISPLAY_NAME "Java bindings")
+	cpack_add_component(doc DISPLAY_NAME "C++ API Documentation")
+endif()
