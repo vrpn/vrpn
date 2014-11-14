@@ -1533,6 +1533,26 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="vrpn_RetroLink.C"
+				>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath="vrpn_RedundantTransmission.C"
 				>
 				<FileConfiguration
@@ -2393,6 +2413,26 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="vrpn_YEI_3Space.C"
+				>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath="vrpn_Zaber.C"
 				>
 				<FileConfiguration
@@ -2706,6 +2746,10 @@
 				>
 			</File>
 			<File
+				RelativePath="vrpn_RetroLink.h"
+				>
+			</File>
+			<File
 				RelativePath="vrpn_RedundantTransmission.h"
 				>
 			</File>
@@ -2879,6 +2923,10 @@
 			</File>
 			<File
 				RelativePath="vrpn_Xkeys.h"
+				>
+			</File>
+			<File
+				RelativePath="vrpn_YEI_3Space.h"
 				>
 			</File>
 			<File

@@ -689,6 +689,7 @@ SLIB_FILES =  $(LIB_FILES) \
 	vrpn_Poser_Analog.C \
 	vrpn_Poser_Tek4662.C \
 	vrpn_raw_sgibox.C \
+	vrpn_Retrolink.C \
 	vrpn_Saitek_Controller_Raw.C \
 	vrpn_sgibox.C \
 	vrpn_Spaceball.C \
@@ -775,6 +776,7 @@ SLIB_INCLUDES = $(LIB_INCLUDES) \
 	vrpn_Poser_Analog.h \
 	vrpn_Poser_Tek4662.h \
 	vrpn_raw_sgibox.h \
+	vrpn_Retrolink.h \
 	vrpn_Saitek_Controller_Raw.h \
 	vrpn_sgibox.h \
 	vrpn_Spaceball.h \
