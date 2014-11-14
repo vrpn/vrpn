@@ -50,13 +50,16 @@ if(PYTHONLIBS_FOUND AND (VRPN_BUILD_PYTHON_HANDCODED_2X OR VRPN_BUILD_PYTHON_HAN
 		PROPERTIES
 		FOLDER "Python Bindings"
 		OUTPUT_NAME vrpn)
-	if(WIN32)
-#		install(TARGETS vrpn-python
-#			RUNTIME DESTINATION lib/${PYTHONVERSIONDIR}dist-packages/ COMPONENT python
-#			LIBRARY DESTINATION lib/${PYTHONVERSIONDIR}dist-packages/ COMPONENT python)
-	else()
-		install(TARGETS vrpn-python
-			RUNTIME DESTINATION lib/${PYTHONVERSIONDIR}dist-packages/ COMPONENT python
-			LIBRARY DESTINATION lib/${PYTHONVERSIONDIR}dist-packages/ COMPONENT python)
+
+	if(VRPN_INSTALL)
+		if(WIN32)
+#			install(TARGETS vrpn-python
+#				RUNTIME DESTINATION lib/${PYTHONVERSIONDIR}dist-packages/ COMPONENT python
+#				LIBRARY DESTINATION lib/${PYTHONVERSIONDIR}dist-packages/ COMPONENT python)
+		else()
+			install(TARGETS vrpn-python
+				RUNTIME DESTINATION lib/${PYTHONVERSIONDIR}dist-packages/ COMPONENT python
+				LIBRARY DESTINATION lib/${PYTHONVERSIONDIR}dist-packages/ COMPONENT python)
+		endif()
 	endif()
 endif()

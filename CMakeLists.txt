@@ -22,10 +22,12 @@ include(CreateDashboardScripts)
 include(CheckIncludeFileCXX)
 
 if((NOT CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR) OR VRPN_SUBPROJECT_BUILD)
+	# If you're using this as a subproject and want things installed, set VRPN_INSTALL TRUE.
 	set(SUBPROJECT TRUE)
 	set(DEFAULT_OFF_IF_SUBPROJECT OFF_BY_DEFAULT)
 	set(TRUE_UNLESS_SUBPROJECT FALSE)
 else()
+	set(VRPN_INSTALL TRUE)
 	set(SUBPROJECT FALSE)
 	set(DEFAULT_OFF_IF_SUBPROJECT)
 	set(TRUE_UNLESS_SUBPROJECT TRUE)
@@ -1191,20 +1193,20 @@ if(VRPN_BUILD_SERVER_LIBRARY)
 
 	add_subdirectory(gpsnmealib)
 	target_link_libraries(vrpnserver gpsnmea)
-
-	install(TARGETS
-		vrpnserver
-		ARCHIVE
-		DESTINATION
-		lib
-		COMPONENT
-		serversdk
-		PUBLIC_HEADER
-		DESTINATION
-		include
-		COMPONENT
-		serversdk)
-
+	if(VRPN_INSTALL)
+		install(TARGETS
+			vrpnserver
+			ARCHIVE
+			DESTINATION
+			lib
+			COMPONENT
+			serversdk
+			PUBLIC_HEADER
+			DESTINATION
+			include
+			COMPONENT
+			serversdk)
+	endif()
 	add_cppcheck(vrpnserver STYLE UNUSED_FUNCTIONS)
 endif()
 
@@ -1238,19 +1240,20 @@ if(VRPN_BUILD_CLIENT_LIBRARY)
 		FOLDER
 		"Library")
 
-	install(TARGETS
-		vrpn
-		ARCHIVE
-		DESTINATION
-		lib
-		COMPONENT
-		clientsdk
-		PUBLIC_HEADER
-		DESTINATION
-		include
-		COMPONENT
-		clientsdk)
-
+	if(VRPN_INSTALL)
+		install(TARGETS
+			vrpn
+			ARCHIVE
+			DESTINATION
+			lib
+			COMPONENT
+			clientsdk
+			PUBLIC_HEADER
+			DESTINATION
+			include
+			COMPONENT
+			clientsdk)
+	endif()
 	add_cppcheck(vrpn STYLE UNUSED_FUNCTIONS)
 endif()
 
@@ -1318,7 +1321,9 @@ if(VRPN_BUILD_SERVERS AND VRPN_BUILD_SERVER_LIBRARY AND BUILD_TESTING AND WIN32)
 		add_executable(${APP} ${SOURCE})
 		target_link_libraries(${APP} vrpnserver)
 		set_target_properties(${APP} PROPERTIES FOLDER Tests)
-		install(TARGETS ${APP} RUNTIME DESTINATION bin COMPONENT tests)
+		if(VRPN_INSTALL)
+			install(TARGETS ${APP} RUNTIME DESTINATION bin COMPONENT tests)
+		endif()
 	endforeach()
 endif()
 

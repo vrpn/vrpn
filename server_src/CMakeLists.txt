@@ -60,18 +60,20 @@ if(VRPN_USE_PHANTOM_SERVER AND OPENGL_FOUND)
 		${PHANTOM_HEADERS})
 	set_target_properties(vrpn_phantom PROPERTIES FOLDER Library)
 
-	install(TARGETS
-		vrpn_phantom
-		ARCHIVE
-		DESTINATION
-		lib
-		COMPONENT
-		serversdk
-		PUBLIC_HEADER
-		DESTINATION
-		include
-		COMPONENT
-		serversdk)
+	if(VRPN_INSTALL)
+		install(TARGETS
+			vrpn_phantom
+			ARCHIVE
+			DESTINATION
+			lib
+			COMPONENT
+			serversdk
+			PUBLIC_HEADER
+			DESTINATION
+			include
+			COMPONENT
+			serversdk)
+	endif()
 	set(VRPNPHANTOMLIB vrpn_phantom)
 endif()
 
@@ -106,9 +108,12 @@ set_property(TARGET
 	PROJECT_LABEL
 	"vrpn_server")
 set_target_properties(vrpn_server PROPERTIES FOLDER "Main Server")
-install(TARGETS vrpn_server
-	RUNTIME DESTINATION bin
-	COMPONENT mainserver)
+
+if(VRPN_INSTALL)
+	install(TARGETS vrpn_server
+		RUNTIME DESTINATION bin
+		COMPONENT mainserver)
+endif()
 
 if(VRPN_USE_NATIONAL_INSTRUMENTS)
 	add_executable(daq_server
@@ -117,7 +122,9 @@ if(VRPN_USE_NATIONAL_INSTRUMENTS)
 		NIUtil.h)
 	target_link_libraries(daq_server ${VRPN_SERVER_LIBRARY})
 	set_target_properties(daq_server PROPERTIES FOLDER Servers)
-	install(TARGETS daq_server RUNTIME DESTINATION bin COMPONENT servers)
+	if(VRPN_INSTALL)
+		install(TARGETS daq_server RUNTIME DESTINATION bin COMPONENT servers)
+	endif()
 endif()
 
 #-----------------------------------------------------------------------------
@@ -125,20 +132,23 @@ endif()
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/vrpn.cfg"
 	"${CMAKE_CURRENT_BINARY_DIR}/vrpn.cfg"
 	@ONLY)
-if(WIN32)
+
+if(VRPN_INSTALL)
+	if(WIN32)
+		install(FILES "${CMAKE_CURRENT_BINARY_DIR}/vrpn.cfg"
+			DESTINATION bin
+			COMPONENT mainserver)
+	else()
+		install(FILES "${CMAKE_CURRENT_BINARY_DIR}/vrpn.cfg"
+			DESTINATION etc
+			COMPONENT mainserver)
+	endif()
+
 	install(FILES "${CMAKE_CURRENT_BINARY_DIR}/vrpn.cfg"
-		DESTINATION bin
-		COMPONENT mainserver)
-else()
-	install(FILES "${CMAKE_CURRENT_BINARY_DIR}/vrpn.cfg"
-		DESTINATION etc
+		DESTINATION share/vrpn-${BRIEF_VERSION}
+		RENAME vrpn.cfg.sample
 		COMPONENT mainserver)
 endif()
-
-install(FILES "${CMAKE_CURRENT_BINARY_DIR}/vrpn.cfg"
-	DESTINATION share/vrpn-${BRIEF_VERSION}
-	RENAME vrpn.cfg.sample
-	COMPONENT mainserver)
 
 #-----------------------------------------------------------------------------
 # Declaration of the simple test applications that don't have extra files
@@ -193,8 +203,11 @@ if(BUILD_TESTING)
 		add_executable(${APP} ${SOURCE})
 		target_link_libraries(${APP} ${VRPN_SERVER_LIBRARY})
 		set_target_properties(${APP} PROPERTIES FOLDER Tests)
-		install(TARGETS ${APP}
-			RUNTIME DESTINATION bin COMPONENT tests)
+
+		if(VRPN_INSTALL)
+			install(TARGETS ${APP}
+				RUNTIME DESTINATION bin COMPONENT tests)
+		endif()
 	endforeach()
 	add_test(test_vrpn test_vrpn)
 endif()
@@ -207,7 +220,10 @@ foreach(SOURCE ${SRV_SERVER_SOURCES})
 	add_executable(${APP} ${SOURCE})
 	target_link_libraries(${APP} ${VRPN_SERVER_LIBRARY})
 	set_target_properties(${APP} PROPERTIES FOLDER Servers)
-	install(TARGETS ${APP} RUNTIME DESTINATION bin COMPONENT servers)
+
+	if(VRPN_INSTALL)
+		install(TARGETS ${APP} RUNTIME DESTINATION bin COMPONENT servers)
+	endif()
 endforeach()
 
 

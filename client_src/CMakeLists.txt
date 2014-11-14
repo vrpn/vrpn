@@ -74,8 +74,9 @@ if(VRPN_BUILD_CLIENTS)
 			target_link_libraries(${APP} ${VRPN_CLIENT_LIBRARY})
 
 			set_target_properties(${APP} PROPERTIES FOLDER Tests)
-
-			install(TARGETS ${APP} RUNTIME DESTINATION bin COMPONENT tests)
+			if(VRPN_INSTALL)
+				install(TARGETS ${APP} RUNTIME DESTINATION bin COMPONENT tests)
+			endif()
 		endforeach()
 
 		if(GLUT_FOUND AND OPENGL_FOUND)
@@ -88,13 +89,15 @@ if(VRPN_BUILD_CLIENTS)
 
 			set_target_properties(testimager_client PROPERTIES FOLDER Tests)
 
-			install(TARGETS
-				testimager_client
-				RUNTIME
-				DESTINATION
-				bin
-				COMPONENT
-				tests)
+			if(VRPN_INSTALL)
+				install(TARGETS
+					testimager_client
+					RUNTIME
+					DESTINATION
+					bin
+					COMPONENT
+					tests)
+			endif()
 			option(VRPN_GLUT_IS_STATIC_FREEGLUT
 				"Is the GLUT used for the imaging test client a static build of FreeGLUT?"
 				NO)
@@ -118,13 +121,15 @@ if(VRPN_BUILD_CLIENTS)
 
 	set_target_properties(c_interface_example PROPERTIES FOLDER Tests)
 
-	install(TARGETS
-		c_interface_example
-		RUNTIME
-		DESTINATION
-		bin
-		COMPONENT
-		tests)
+	if(VRPN_INSTALL)
+		install(TARGETS
+			c_interface_example
+			RUNTIME
+			DESTINATION
+			bin
+			COMPONENT
+			tests)
+	endif()
 
 
 	###
@@ -137,7 +142,9 @@ if(VRPN_BUILD_CLIENTS)
 
 		set_target_properties(${APP} PROPERTIES FOLDER Clients)
 
-		install(TARGETS ${APP} RUNTIME DESTINATION bin COMPONENT clients)
+		if(VRPN_INSTALL)
+			install(TARGETS ${APP} RUNTIME DESTINATION bin COMPONENT clients)
+		endif()
 	endforeach()
 
 	###
@@ -146,12 +153,14 @@ if(VRPN_BUILD_CLIENTS)
 	add_executable(run_auxiliary_logger run_auxiliary_logger.C)
 	target_link_libraries(run_auxiliary_logger ${VRPN_CLIENT_LIBRARY})
 	set_target_properties(run_auxiliary_logger PROPERTIES FOLDER Servers)
-	install(TARGETS
-		run_auxiliary_logger
-		RUNTIME
-		DESTINATION
-		bin
-		COMPONENT
-		servers)
+	if(VRPN_INSTALL)
+		install(TARGETS
+			run_auxiliary_logger
+			RUNTIME
+			DESTINATION
+			bin
+			COMPONENT
+			servers)
+	endif()
 
 endif()
