@@ -399,7 +399,7 @@ all:	client
 client: $(OBJECT_DIR)/libjava_vrpn.a
 	@echo -----------------------------------------------------------------
 	@echo create shared library libjava_vrpn.so
-	$(CC) -shared -L../$(OBJECT_DIR) -o $(OBJECT_DIR)/libjava_vrpn.so $(OBJECT_DIR)/*.o -lvrpn
+	$(CC) -shared -L../$(OBJECT_DIR) -L../quat/$(OBJECT_DIR) -o $(OBJECT_DIR)/libjava_vrpn.so $(OBJECT_DIR)/*.o -lvrpnserver -lquat
 
 
 
