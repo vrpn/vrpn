@@ -1820,7 +1820,7 @@ int vrpn_noint_block_read(SOCKET insock, char *buffer, size_t length)
 
     do {
         /* Try to read all remaining data */
-        nread = recv(insock, buffer + sofar, length - sofar, 0);
+        nread = recv(insock, buffer + sofar, static_cast<int>(length - sofar), 0);
 
         if (nread == SOCKET_ERROR) {
             return -1;
@@ -1916,7 +1916,7 @@ int vrpn_noint_block_read_timeout(int infile, char buffer[], size_t length,
         if (timeout2ptr) {
             vrpn_gettimeofday(&now, NULL);
             if (vrpn_TimevalGreater(now, stop)) { /* Timeout! */
-                return sofar;
+                return static_cast<int>(sofar);
             }
             else {
                 timeout2 = vrpn_TimevalDiff(stop, now);
