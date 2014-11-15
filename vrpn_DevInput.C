@@ -32,8 +32,6 @@ VRPN_SUPPRESS_EMPTY_OBJECT_WARNING()
 static const std::string &getDeviceNodes(const std::string &device_name) {
   std::map<std::string, std::string> s_devicesNodes;
 
-  std::string none_found="";
-
   bool permission_missing = false;
   unsigned int id = 0;
   while (1) {
@@ -64,7 +62,7 @@ static const std::string &getDeviceNodes(const std::string &device_name) {
     return node_name->second;
   }
 
-  return none_found;
+  return "";
 }
 
 ///////////////////////////////////////////////////////////////////////////

@@ -79,6 +79,8 @@ vrpn_YEI_3Space_Sensor::vrpn_YEI_3Space_Sensor (const char * p_name
     }
   }
 
+  vrpn_gettimeofday(&timestamp, NULL);
+
   // Set the mode to reset
   d_status = STATUS_RESETTING;
 }

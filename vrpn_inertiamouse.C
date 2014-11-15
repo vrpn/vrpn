@@ -158,7 +158,7 @@ int vrpn_inertiamouse::get_report(void)
             packet |= (buffer_[++nextchar] & 0xf0) >> 4;
 
             int chnl = (packet >> 10) & 7;
-            if (chnl > Channels) {
+            if (chnl >= Channels) {
                status_ = STATUS_SYNCING;
                send_text_message("vrpn_inertiamouse: Too-large channel value", 
 		  timestamp, 
@@ -175,7 +175,7 @@ int vrpn_inertiamouse::get_report(void)
 //            normval *= 1.5;
 
             // update rotation data
-            if (chnl == 4 || chnl == 5) {
+            if ( (chnl == 4) || (chnl == 5) ) {
                 channel[chnl] = normval;
                 break;
             }

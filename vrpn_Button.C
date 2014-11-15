@@ -657,6 +657,7 @@ vrpn_Button_Python::vrpn_Button_Python(const char *name, vrpn_Connection *c,
 vrpn_Button_Python::vrpn_Button_Python(const char *name, vrpn_Connection *c,
                                        int p, unsigned ph)
     : vrpn_Button_Parallel(name, c, p, ph)
+    , d_first_fail(true)
 {
 }
 
