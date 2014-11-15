@@ -2697,7 +2697,6 @@ int vrpn_Generic_Server_Object::setup_ADBox(char *&pch, char *line,
 int vrpn_Generic_Server_Object::setup_VPJoystick(char *&pch, char *line,
                                                  FILE * /*config_file*/)
 {
-
     char name[LINESIZE], port[LINESIZE];
     int baud;
 
@@ -2729,45 +2728,24 @@ int vrpn_Generic_Server_Object::setup_Tracker_JsonNet(char *&pch, char *line,
      *
      * Create the device object
      */
-
-    char *s2;
-    char *str[LINESIZE];
-    char *s;
-    char sep[] = " ,\t,\n";
-    int count = 0;
+    char name[LINESIZE];
     int port;
-    // float timeToReachJoy;
-    // int nob, nof, nidbf;
-    // int idbf[VRPN_GSO_MAX_TRACKERS];
-    // bool actTracing;
 
     VRPN_CONFIG_NEXT();
-
-    // Get the arguments:
-
-    str[count] = strtok(pch, sep);
-    while (str[count] != NULL) {
-        count++;
-        // Get next token:
-        str[count] = strtok(NULL, sep);
-    }
-
-    if (count < 1) {
+    // Get the arguments (class, device_name, port)
+    if (sscanf(pch, "%511s%d", name, &port) != 2) {
         fprintf(stderr, "Bad vrpn_Tracker_JsonNet line: %s\n", line);
         return -1;
     }
-
-    s2 = str[0];
-    port = (int)strtol(str[1], &s, 0);
 
 #ifdef VRPN_USE_JSONNET
     // Open vrpn_Tracker_JsonNet:
 
     if (verbose) {
-        printf("Opening vrpn_Tracker_JsonNet: %s at port %d\n", s2, port);
+        printf("Opening vrpn_Tracker_JsonNet: %s at port %d\n", name, port);
     }
 
-    _devices->add(new vrpn_Tracker_JsonNet(s2, connection, port));
+    _devices->add(new vrpn_Tracker_JsonNet(name, connection, port));
 
     return 0;
 #else
@@ -4504,6 +4482,7 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(
 
             // copy for strtok work
             strncpy(scrap, line, LINESIZE - 1);
+            scrap[sizeof(scrap)-1] = '\0';
 // Figure out the device from the name and handle appropriately
 
 // WARNING: SUBSTRINGS WILL MATCH THE EARLIER STRING, SO
