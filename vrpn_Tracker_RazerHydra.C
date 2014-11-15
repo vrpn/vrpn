@@ -19,6 +19,7 @@
 
 // Internal Includes
 #include "vrpn_Tracker_RazerHydra.h"
+VRPN_SUPPRESS_EMPTY_OBJECT_WARNING()
 
 #ifdef VRPN_USE_HID
 #include "vrpn_HumanInterface.h"        // for vrpn_HidInterface, etc
@@ -82,8 +83,8 @@ class vrpn_Tracker_RazerHydra::MyInterface : public vrpn_HidInterface
 {
     public:
         MyInterface(unsigned which_interface, vrpn_Tracker_RazerHydra *hydra)
-#ifdef __APPLE__
-        // The InterfaceNumber is not supported on the mac version -- it
+#ifndef _WIN32
+			// The InterfaceNumber is not supported on the mac and Linux versions -- it
         // is always returned as -1.  So we need to do this based on which
         // device shows up first and hope that it is always the same order.
         // On my mac, the control interface shows up first on iHid, so we
@@ -103,8 +104,8 @@ class vrpn_Tracker_RazerHydra::MyInterface : public vrpn_HidInterface
         {
             if (d_my_interface == HYDRA_CONTROL_INTERFACE)
             {
-#ifdef __APPLE__
-                d_hydra->send_text_message(vrpn_TEXT_WARNING)
+#ifndef _WIN32
+				d_hydra->send_text_message(vrpn_TEXT_WARNING)
                         << "Got report on controller channel.  This means that we need to swap channels. "
                         << "Swapping channels.";
 
@@ -225,7 +226,7 @@ vrpn_Tracker_RazerHydra::vrpn_Tracker_RazerHydra(const char *name, vrpn_Connecti
     , status(HYDRA_WAITING_FOR_CONNECT)
     , _wasInGamepadMode(false) /// assume not - if we have to send a command, then set to true
     , _attempt(0)
-    , _docking_distance(0.1)
+    , _docking_distance(0.1f)
 {
     // Set up the control and data channels
     _ctrl = new MyInterface(HYDRA_CONTROL_INTERFACE, this);
@@ -383,8 +384,8 @@ void vrpn_Tracker_RazerHydra::_listening_after_set_feature()
                 << _attempt << " attempt" << (_attempt > 1 ? ". " : "s. ")
                 << " Will give it another try. "
                 << "If this doesn't work, unplug and replug device and restart the VRPN server.";
-#ifdef __APPLE__
-        if ((_attempt % 2) == 0)
+#ifndef _WIN32
+		if ((_attempt % 2) == 0)
         {
             send_text_message(vrpn_TEXT_WARNING)
                     << "Switching control and data interface (mac can't tell the difference).";
@@ -446,7 +447,10 @@ void vrpn_Tracker_RazerHydra::_report_for_sensor(int sensorNum, vrpn_uint8 * dat
     static const double SCALE_INT16_TO_FLOAT_PLUSMINUS_1 = 1.0 / 32768.0;
     static const double SCALE_UINT8_TO_FLOAT_0_TO_1 = 1.0 / 255.0;
     const int channelOffset = sensorNum * 3;
-    const int buttonOffset  = sensorNum * 7;
+    // There are only 7 buttons per hydra, but the original driver code here
+    // skipped 8 per hand-held unit.  We're leaving this the same to avoid
+    // clients having to remap their controls.
+    const int buttonOffset  = sensorNum * 8;
 
     d_sensor = sensorNum;
 

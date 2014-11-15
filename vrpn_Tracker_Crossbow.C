@@ -229,6 +229,11 @@ void vrpn_Tracker_Crossbow::reset() {
 
 	int curSize = 4, curLen = 0;
 	device_version = (char *) realloc(device_version, curSize * sizeof(char));
+	if (device_version == NULL) {
+		fprintf(stderr, "vrpn_Tracker_Crossbow::reset: Out of memory\n");
+		status = vrpn_TRACKER_FAIL;
+		return;
+	}
 	do {
 		if (!vrpn_read_available_characters(serial_fd, recv_buf, 1, &timeout)) {
 			fprintf(stderr, "vrpn_Tracker_Crossbow::reset: Crossbow not responding to stimulus\n");

@@ -98,7 +98,7 @@ set(CPACK_PACKAGE_CONTACT "VRPN Community <vrpn@listserv.unc.edu>")
 # Compiler flags we got from Hans for Windows and from Sheldon Andrews
 # for other architectures.
 if(MSVC)	# MS-Windows Visual Studio, both 32 and 64 bits
-    set(CMAKE_DEBUG_POSTFIX "d" CACHE STRING "add a postfix, usually d on windows")
+	set(CMAKE_DEBUG_POSTFIX "d" CACHE STRING "add a postfix, usually d on windows")
 	if(MSVC_VERSION GREATER 1310) # This compiler flag needs newer than VS.NET 2003 (7.1)
 		# Choose fast, possibly less accurate floating point
 		# See http://msdn.microsoft.com/en-us/library/e7s85ffb(v=vs.80).aspx
@@ -534,9 +534,6 @@ else()
 	set(JSONCPP_SOURCES)
 endif()
 
-
-
-
 ###
 # libnifalcon
 ###
@@ -583,7 +580,6 @@ if(WIN32)
 		list(APPEND
 			SERVER_EXTRA_LIBS
 			${DIRECTX_DXGUID_LIBRARY}
-			${DIRECTX_DXERR_LIBRARY}
 			${DIRECTX_DINPUT_LIBRARY})
 		find_path(DIRECTX_XINPUT_INCLUDE_DIR
 			xinput.h
@@ -642,7 +638,7 @@ option_requires(VRPN_USE_NATIONAL_INSTRUMENTS_MX
 	${DEFAULT_OFF_IF_SUBPROJECT}
 	NIDAQMX_FOUND)
 
-if(NIDAQMX_FOUND)
+if(VRPN_USE_NATIONAL_INSTRUMENTS_MX)
 	include_directories(${NIDAQMX_INCLUDE_DIRS})
 	list(APPEND SERVER_EXTRA_LIBS ${NIDAQMX_LIBRARIES})
 endif()
@@ -656,7 +652,7 @@ option_requires(VRPN_USE_VIEWPOINT
 	${DEFAULT_OFF_IF_SUBPROJECT}
 	VIEWPOINT_FOUND)
 
-if(VIEWPOINT_FOUND)
+if(VRPN_USE_VIEWPOINT)
 	include_directories(${VIEWPOINT_INCLUDE_DIRS})
 	list(APPEND SERVER_EXTRA_LIBS ${VIEWPOINT_LIBRARIES})
 
@@ -678,11 +674,14 @@ if(WIN32 OR CYGWIN)
 		"Build with support for Adrienne timecode server"
 		${DEFAULT_OFF_IF_SUBPROJECT}
 		ADRIENNE_FOUND)
-	if(VRPN_INCLUDE_TIMECODE_SERVER)
-		set(VRPN_ADRIENNE_INCLUDE_FILENAME "${ADRIENNE_INCLUDE_FILENAME}")
-		set(VRPN_ADRIENNE_INCLUDE_HAS_EXTERN_C
-			${ADRIENNE_INCLUDE_HAS_EXTERN_C})
-	endif()
+else()
+	set(VRPN_INCLUDEE_TIMECODE_SERVER OFF)
+endif()
+
+if(VRPN_INCLUDE_TIMECODE_SERVER)
+	set(VRPN_ADRIENNE_INCLUDE_FILENAME "${ADRIENNE_INCLUDE_FILENAME}")
+	set(VRPN_ADRIENNE_INCLUDE_HAS_EXTERN_C
+		${ADRIENNE_INCLUDE_HAS_EXTERN_C})
 endif()
 
 ###
@@ -694,6 +693,8 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
 		"Build with support for Linux kernel joystick interface (Uses kernel header - may make servers GPL)"
 		${DEFAULT_OFF_IF_SUBPROJECT}
 		HAVE_LINUX_JOYSTICK_H)
+else()
+	set(VRPN_USE_JOYLIN OFF)
 endif()
 
 ###
@@ -705,6 +706,8 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
 		"Build with flags to enable the use of DevInput. (Uses kernel header - may make servers GPL)"
 		${DEFAULT_OFF_IF_SUBPROJECT}
 		HAVE_LINUX_INPUT_H)
+else()
+	set(VRPN_USE_DEV_INPUT OFF)
 endif()
 
 ###
@@ -739,25 +742,40 @@ if(VRPN_USE_PDI)
 	list(APPEND
 		SERVER_EXTRA_LIBS
 		"C:/Program Files (x86)/Polhemus/PDI/PDI_90/Lib/Win32/PDI.lib")
-        set(PDI_SOURCES vrpn_Tracker_PDI.C)
 endif()
 
 ###
 # PhaseSpace API
 ###
+# TODO Actually do a proper search for the PhaseSpace API headers and libraries
+# and not use link_directories.
 option(VRPN_INCLUDE_PHASESPACE
 	"Build with PhaseSpace library support"
 	OFF)
 set(PHASESPACE_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/phasespace" CACHE PATH "location of PhaseSpace headers")
 set(PHASESPACE_LIBRARY_DIR "${CMAKE_SOURCE_DIR}/phasespace" CACHE PATH "location of PhaseSpace libraries (libowlsock.so, etc")
 if(VRPN_INCLUDE_PHASESPACE)
-  include_directories(${PHASESPACE_INCLUDE_DIR})
-  link_directories(${PHASESPACE_LIBRARY_DIR})
-  if(WIN32)
-    list(APPEND SERVER_EXTRA_LIBS libowlsock)
-  else()
-    list(APPEND SERVER_EXTRA_LIBS owlsock)
-  endif()
+	include_directories(${PHASESPACE_INCLUDE_DIR})
+	link_directories(${PHASESPACE_LIBRARY_DIR})
+	if(WIN32)
+		list(APPEND SERVER_EXTRA_LIBS libowlsock)
+	else()
+		list(APPEND SERVER_EXTRA_LIBS owlsock)
+	endif()
+endif()
+
+###
+# Hillcrest Labs' Freespace
+###
+find_package(LibFreespace)
+option_requires(VRPN_USE_FREESPACE
+	"Build with Hillcrest Labs' Freespace devices support"
+	${DEFAULT_OFF_IF_SUBPROJECT}
+	LIBFREESPACE_FOUND)
+
+if(VRPN_USE_FREESPACE)
+	include_directories(${LIBFREESPACE_INCLUDE_DIRS})
+	list(APPEND SERVER_EXTRA_LIBS ${LIBFREESPACE_LIBRARIES})
 endif()
 
 ###
@@ -766,9 +784,7 @@ endif()
 # National Instruments Nidaq traditional
 # US Digital SEI/A2
 # microscribe3D library
-# PhaseSpace OWL API
 # GLI Interactive LLC MotionNode library
-# Hillcrest Labs' Freespace
 #
 # All include paths should be moved out of at least vrpn_Configure.h.cmake_in
 # as well as all #pragma comment (lib, "" ) lines, since cmake replaces
@@ -791,9 +807,6 @@ option(VRPN_USE_MICROSCRIBE
 	OFF)
 option(VRPN_USE_MOTIONNODE
 	"Build with GLI Interactive LLC MotionNode library support"
-	OFF)
-option(VRPN_USE_FREESPACE
-	"Build with Hillcrest Labs' Freespace devices support"
 	OFF)
 option(VRPN_USE_TRIVISIOCOLIBRI
 	"Build with support for TrivisioColibri tracker"
@@ -818,13 +831,21 @@ if(UNIX)
 
 endif()
 
-
+option(VRPN_USE_STATIC_ASSERTIONS "Use some compile-time assertions" ON)
 option(VRPN_BUILD_EXTRA_COMPILER_WARNINGS
 	"Build with flags to enable extra warnings."
 	OFF)
 if(VRPN_BUILD_EXTRA_COMPILER_WARNINGS)
 	include(EnableExtraCompilerWarnings)
 	globally_enable_extra_compiler_warnings()
+	if(NOT MSVC)
+		# shadowing virtual functions is pretty much unavoidable with the
+		# multiple inheritance design and methods like "report_changes"
+		check_cxx_compiler_flag(-Wno-overloaded-virtual SUPPORTS_WNO_OVERLOADED_VIRTUAL_FLAG)
+		if(SUPPORTS_WNO_OVERLOADED_VIRTUAL_FLAG)
+			set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-overloaded-virtual")
+		endif()
+	endif()
 endif()
 
 set(VRPN_CLIENT_ONLY)
@@ -913,6 +934,7 @@ set(VRPN_CLIENT_PUBLIC_HEADERS
 	vrpn_BaseClass.h
 	vrpn_Button.h
 	vrpn_Connection.h
+	vrpn_ConnectionPtr.h
 	vrpn_Dial.h
 	vrpn_FileConnection.h
 	vrpn_FileController.h
@@ -926,6 +948,7 @@ set(VRPN_CLIENT_PUBLIC_HEADERS
 	vrpn_MainloopContainer.h
 	vrpn_MainloopObject.h
 	vrpn_Mutex.h
+	vrpn_RedundantTransmission.h
 	vrpn_SendTextMessageStreamProxy.h
 	vrpn_Serial.h
 	vrpn_SerialPort.h
@@ -991,6 +1014,7 @@ set(VRPN_SERVER_SOURCES
 	vrpn_Poser_Analog.C
 	vrpn_Poser_Tek4662.C
 	vrpn_raw_sgibox.C
+	vrpn_Retrolink.C
 	vrpn_Saitek_Controller_Raw.C
 	vrpn_sgibox.C
 	vrpn_Spaceball.C
@@ -1011,6 +1035,7 @@ set(VRPN_SERVER_SOURCES
 	vrpn_Tracker_MotionNode.C
 	vrpn_Tracker_NDI_Polaris.C
 	vrpn_Tracker_NovintFalcon.C
+	vrpn_Tracker_PDI.C
 	vrpn_Tracker_PhaseSpace.C
 	vrpn_Tracker_RazerHydra.C
 	vrpn_Tracker_SpacePoint.C
@@ -1026,6 +1051,7 @@ set(VRPN_SERVER_SOURCES
 	vrpn_XInputGamepad.C
 	vrpn_Xkeys.C
 	vrpn_Tracker_LibertyHS.C
+	vrpn_YEI_3Space.C
 	vrpn_Zaber.C
 	server_src/vrpn_Generic_server_object.C
 	${HIDAPI_SOURCES}
@@ -1091,7 +1117,7 @@ set(VRPN_SERVER_PUBLIC_HEADERS
 	vrpn_Poser.h
 	vrpn_Poser_Tek4662.h
 	vrpn_raw_sgibox.h
-	vrpn_RedundantTransmission.h
+	vrpn_Retrolink.h
 	vrpn_Saitek_Controller_Raw.h
 	vrpn_sgibox.h
 	vrpn_Spaceball.h
@@ -1112,6 +1138,7 @@ set(VRPN_SERVER_PUBLIC_HEADERS
 	vrpn_Tracker_MotionNode.h
 	vrpn_Tracker_NDI_Polaris.h
 	vrpn_Tracker_NovintFalcon.h
+	vrpn_Tracker_PDI.h
 	vrpn_Tracker_PhaseSpace.h
 	vrpn_Tracker_RazerHydra.h
 	vrpn_Tracker_SpacePoint.h
@@ -1127,6 +1154,7 @@ set(VRPN_SERVER_PUBLIC_HEADERS
 	vrpn_XInputGamepad.h
 	vrpn_Xkeys.h
 	vrpn_Tracker_LibertyHS.h
+	vrpn_YEI_3Space.h
 	vrpn_Zaber.h
 	server_src/vrpn_Generic_server_object.h)
 

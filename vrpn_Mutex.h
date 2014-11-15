@@ -1,11 +1,10 @@
 #ifndef VRPN_MUTEX_H
 #define VRPN_MUTEX_H
 
+#include <stddef.h> // for NULL
 
-#include <stddef.h>                     // for NULL
-
-#include "vrpn_Configure.h"             // for VRPN_CALLBACK, VRPN_API
-#include "vrpn_Types.h"                 // for vrpn_int32, vrpn_uint32, etc
+#include "vrpn_Configure.h" // for VRPN_CALLBACK, VRPN_API
+#include "vrpn_Types.h"     // for vrpn_int32, vrpn_uint32, etc
 
 class VRPN_API vrpn_Connection;
 struct vrpn_HANDLERPARAM;
@@ -20,16 +19,14 @@ struct vrpn_HANDLERPARAM;
 
 class VRPN_API vrpn_Mutex {
 
-  public:
+public:
+    vrpn_Mutex(const char *name, vrpn_Connection * = NULL);
+    virtual ~vrpn_Mutex(void) = 0;
 
-    vrpn_Mutex (const char * name, vrpn_Connection * = NULL);
-    virtual ~vrpn_Mutex (void) = 0;
+    void mainloop(void);
 
-    void mainloop (void);
-
-  protected:
-
-    vrpn_Connection * d_connection;
+protected:
+    vrpn_Connection *d_connection;
 
     vrpn_int32 d_myId;
     vrpn_int32 d_requestIndex_type;
@@ -40,123 +37,111 @@ class VRPN_API vrpn_Mutex {
     vrpn_int32 d_denyRequest_type;
     vrpn_int32 d_initialize_type;
 
-    void sendRequest (vrpn_int32 index);
-    void sendRelease (void);
-    void sendReleaseNotification (void);
-    void sendGrantRequest (vrpn_int32 index);
-    void sendDenyRequest (vrpn_int32 index);
-
+    void sendRequest(vrpn_int32 index);
+    void sendRelease(void);
+    void sendReleaseNotification(void);
+    void sendGrantRequest(vrpn_int32 index);
+    void sendDenyRequest(vrpn_int32 index);
 };
 
 class VRPN_API vrpn_Mutex_Server : public vrpn_Mutex {
 
-  public:
+public:
+    vrpn_Mutex_Server(const char *name, vrpn_Connection * = NULL);
+    virtual ~vrpn_Mutex_Server(void);
 
-    vrpn_Mutex_Server (const char * name, vrpn_Connection * = NULL);
-    virtual ~vrpn_Mutex_Server (void);
-
-  protected:
-
+protected:
     enum state { HELD, FREE };
 
     state d_state;
 
     vrpn_int32 d_remoteIndex;
-      ///< Counts remotes who have had IDs issued to them.
+    ///< Counts remotes who have had IDs issued to them.
 
-    static int VRPN_CALLBACK handle_requestIndex (void *, vrpn_HANDLERPARAM);
-    static int VRPN_CALLBACK handle_requestMutex (void *, vrpn_HANDLERPARAM);
-    static int VRPN_CALLBACK handle_release (void *, vrpn_HANDLERPARAM);
+    static int VRPN_CALLBACK handle_requestIndex(void *, vrpn_HANDLERPARAM);
+    static int VRPN_CALLBACK handle_requestMutex(void *, vrpn_HANDLERPARAM);
+    static int VRPN_CALLBACK handle_release(void *, vrpn_HANDLERPARAM);
 
-    static int VRPN_CALLBACK handle_gotConnection (void *, vrpn_HANDLERPARAM);
-    static int VRPN_CALLBACK handle_dropLastConnection (void *, vrpn_HANDLERPARAM);
+    static int VRPN_CALLBACK handle_gotConnection(void *, vrpn_HANDLERPARAM);
+    static int VRPN_CALLBACK
+    handle_dropLastConnection(void *, vrpn_HANDLERPARAM);
 };
 
 class VRPN_API vrpn_Mutex_Remote : public vrpn_Mutex {
 
-  public:
-
-    vrpn_Mutex_Remote (const char * name, vrpn_Connection * = NULL);
-    virtual ~vrpn_Mutex_Remote (void);
-
+public:
+    vrpn_Mutex_Remote(const char *name, vrpn_Connection * = NULL);
+    virtual ~vrpn_Mutex_Remote(void);
 
     // ACCESSORS
 
-
-    vrpn_bool isAvailable (void) const;
-      ///< True from when release() is called or we receive a release
-      ///< message from another process until request() is called or we
-      ///< grant the lock to another process in response to its request
-      ///< message.
-    vrpn_bool isHeldLocally (void) const;
-      ///< True from when RequestGranted callbacks are triggered until
-      ///< release() is called.
-    vrpn_bool isHeldRemotely (void) const;
-      ///< True from when we grant the lock to another process in response
-      ///< to its request message until we receive a release message from
-      ///< another process.
-
+    vrpn_bool isAvailable(void) const;
+    ///< True from when release() is called or we receive a release
+    ///< message from another process until request() is called or we
+    ///< grant the lock to another process in response to its request
+    ///< message.
+    vrpn_bool isHeldLocally(void) const;
+    ///< True from when RequestGranted callbacks are triggered until
+    ///< release() is called.
+    vrpn_bool isHeldRemotely(void) const;
+    ///< True from when we grant the lock to another process in response
+    ///< to its request message until we receive a release message from
+    ///< another process.
 
     // MANIPULATORS
 
+    void request(void);
+    ///< Request the distributed lock.  Does not request the lock
+    ///< if !isAvailable(), instead automatically triggering DeniedCallbacks.
 
-    void request (void);
-      ///< Request the distributed lock.  Does not request the lock
-      ///< if !isAvailable(), instead automatically triggering DeniedCallbacks.
+    void release(void);
+    ///< Release the distributed lock.  Does nothing if !isHeldLocally()
+    ///< and there isn't a request pending.
 
-    void release (void);
-      ///< Release the distributed lock.  Does nothing if !isHeldLocally()
-      ///< and there isn't a request pending.
+    void addRequestGrantedCallback(void *userdata, int (*)(void *));
+    ///< These callbacks are triggered when OUR request is granted.
+    void addRequestDeniedCallback(void *userdata, int (*)(void *));
+    ///< These callbacks are triggered when OUR request is denied.
+    void addTakeCallback(void *userdata, int (*)(void *));
+    ///< These callbacks are triggered when ANY peer gets the mutex.
+    void addReleaseCallback(void *userdata, int (*)(void *));
+    ///< These callbacks are triggered when ANY peer releases the
+    ///< mutex.
 
-    void addRequestGrantedCallback (void * userdata, int (*) (void *));
-      ///< These callbacks are triggered when OUR request is granted.
-    void addRequestDeniedCallback (void * userdata, int (*) (void *));
-      ///< These callbacks are triggered when OUR request is denied.
-    void addTakeCallback (void * userdata, int (*) (void *));
-      ///< These callbacks are triggered when ANY peer gets the mutex.
-    void addReleaseCallback (void * userdata, int (*) (void *));
-      ///< These callbacks are triggered when ANY peer releases the
-      ///< mutex.
+protected:
+    void requestIndex(void);
 
-  protected:
-
-    void requestIndex (void);
-
-    enum state { OURS, REQUESTING, AVAILABLE, HELD_REMOTELY};
+    enum state { OURS, REQUESTING, AVAILABLE, HELD_REMOTELY };
 
     state d_state;
     vrpn_int32 d_myIndex;
     vrpn_bool d_requestBeforeInit;
 
-    static int VRPN_CALLBACK handle_grantRequest (void *, vrpn_HANDLERPARAM);
-    static int VRPN_CALLBACK handle_denyRequest (void *, vrpn_HANDLERPARAM);
-    static int VRPN_CALLBACK handle_releaseNotification (void *, vrpn_HANDLERPARAM);
+    static int VRPN_CALLBACK handle_grantRequest(void *, vrpn_HANDLERPARAM);
+    static int VRPN_CALLBACK handle_denyRequest(void *, vrpn_HANDLERPARAM);
+    static int VRPN_CALLBACK
+    handle_releaseNotification(void *, vrpn_HANDLERPARAM);
 
-    static int VRPN_CALLBACK handle_initialize (void *, vrpn_HANDLERPARAM);
+    static int VRPN_CALLBACK handle_initialize(void *, vrpn_HANDLERPARAM);
 
-    static int VRPN_CALLBACK handle_gotConnection (void *, vrpn_HANDLERPARAM);
+    static int VRPN_CALLBACK handle_gotConnection(void *, vrpn_HANDLERPARAM);
 
-    void triggerGrantCallbacks (void);
-    void triggerDenyCallbacks (void);
-    void triggerTakeCallbacks (void);
-    void triggerReleaseCallbacks (void);
+    void triggerGrantCallbacks(void);
+    void triggerDenyCallbacks(void);
+    void triggerTakeCallbacks(void);
+    void triggerReleaseCallbacks(void);
 
     struct mutexCallback {
-      int (* f) (void *);
-      void * userdata;
-      mutexCallback * next;
+        int (*f)(void *);
+        void *userdata;
+        mutexCallback *next;
     };
 
-    mutexCallback * d_reqGrantedCB;
-    mutexCallback * d_reqDeniedCB;
-    mutexCallback * d_takeCB;
-    mutexCallback * d_releaseCB;
+    mutexCallback *d_reqGrantedCB;
+    mutexCallback *d_reqDeniedCB;
+    mutexCallback *d_takeCB;
+    mutexCallback *d_releaseCB;
 };
-
-
-
-
-
 
 /// vrpn_PeerMutex
 ///
@@ -208,93 +193,79 @@ class VRPN_API vrpn_Mutex_Remote : public vrpn_Mutex {
 // for details (and how to fix if it ever becomes a problem),
 // see the implementation notes in vrpn_Mutex.C.
 
-
-
 class VRPN_API vrpn_PeerMutex {
 
-  public:
+public:
+    vrpn_PeerMutex(const char *name, int port, const char *NICaddress = NULL);
+    ///< This constructor opens a new connection/port for the mutex.
 
-    vrpn_PeerMutex (const char * name, int port,
-                    const char * NICaddress = NULL);
-      ///< This constructor opens a new connection/port for the mutex.
-
-    ~vrpn_PeerMutex (void);
-      ///< If isHeldLocally(), calls release().
-
+    ~vrpn_PeerMutex(void);
+    ///< If isHeldLocally(), calls release().
 
     // ACCESSORS
 
+    vrpn_bool isAvailable(void) const;
+    ///< True from when release() is called or we receive a release
+    ///< message from another process until request() is called or we
+    ///< grant the lock to another process in response to its request
+    ///< message.
+    vrpn_bool isHeldLocally(void) const;
+    ///< True from when RequestGranted callbacks are triggered until
+    ///< release() is called.
+    vrpn_bool isHeldRemotely(void) const;
+    ///< True from when we grant the lock to another process in response
+    ///< to its request message until we receive a release message from
+    ///< another process.
 
-    vrpn_bool isAvailable (void) const;
-      ///< True from when release() is called or we receive a release
-      ///< message from another process until request() is called or we
-      ///< grant the lock to another process in response to its request
-      ///< message.
-    vrpn_bool isHeldLocally (void) const;
-      ///< True from when RequestGranted callbacks are triggered until
-      ///< release() is called.
-    vrpn_bool isHeldRemotely (void) const;
-      ///< True from when we grant the lock to another process in response
-      ///< to its request message until we receive a release message from
-      ///< another process.
-
-    int numPeers (void) const;
-
+    int numPeers(void) const;
 
     // MANIPULATORS
 
+    void mainloop(void);
 
-    void mainloop (void);
+    void request(void);
+    ///< Request the distributed lock.  Does not request the lock
+    ///< if !isAvailable(), instead automatically triggering DeniedCallbacks.
 
-    void request (void);
-      ///< Request the distributed lock.  Does not request the lock
-      ///< if !isAvailable(), instead automatically triggering DeniedCallbacks.
+    void release(void);
+    ///< Release the distributed lock.  Does nothing if !isHeldLocally()
+    ///< and there isn't a request pending.
 
-    void release (void);
-      ///< Release the distributed lock.  Does nothing if !isHeldLocally()
-      ///< and there isn't a request pending.
+    void addPeer(const char *stationName);
+    ///< Takes a VRPN station name of the form "<host>:<port>".
 
+    void addRequestGrantedCallback(void *userdata, int (*)(void *));
+    ///< These callbacks are triggered when OUR request is granted.
+    void addRequestDeniedCallback(void *userdata, int (*)(void *));
+    ///< These callbacks are triggered when OUR request is denied.
+    void addTakeCallback(void *userdata, int (*)(void *));
+    ///< These callbacks are triggered when ANY peer gets the mutex.
+    ///< (If several peers are competing for the mutex, and the
+    ///<  implementation issues multiple "grants", these callbacks will
+    ///<  only be triggered once between triggerings of ReleaseCallbacks.)
+    void addReleaseCallback(void *userdata, int (*)(void *));
+    ///< These callbacks are triggered when ANY peer releases the
+    ///< mutex.
 
-    void addPeer (const char * stationName);
-      ///< Takes a VRPN station name of the form "<host>:<port>".
+protected:
+    enum state { OURS, REQUESTING, AVAILABLE, HELD_REMOTELY };
 
-
-    void addRequestGrantedCallback (void * userdata, int (*) (void *));
-      ///< These callbacks are triggered when OUR request is granted.
-    void addRequestDeniedCallback (void * userdata, int (*) (void *));
-      ///< These callbacks are triggered when OUR request is denied.
-    void addTakeCallback (void * userdata, int (*) (void *));
-      ///< These callbacks are triggered when ANY peer gets the mutex.
-      ///< (If several peers are competing for the mutex, and the
-      ///<  implementation issues multiple "grants", these callbacks will
-      ///<  only be triggered once between triggerings of ReleaseCallbacks.)
-    void addReleaseCallback (void * userdata, int (*) (void *));
-      ///< These callbacks are triggered when ANY peer releases the
-      ///< mutex.
-
-
-
-  protected:
-
-
-    enum state { OURS, REQUESTING, AVAILABLE, HELD_REMOTELY};
-
-    char * d_mutexName;
+    char *d_mutexName;
 
     state d_state;
 
     int d_numPeersGrantingLock;
-      ///< Counts the number of "grants" we've received after issuing
-      ///< a request;  when this reaches d_numPeers, the lock is ours.
+    ///< Counts the number of "grants" we've received after issuing
+    ///< a request;  when this reaches d_numPeers, the lock is ours.
 
-    vrpn_Connection * d_server;
-      ///< Receive on this connection.
-    vrpn_Connection ** d_peer;
-      ///< Send on these connections to other Mutex's well-known-ports.
+    vrpn_Connection *d_server;
+    ///< Receive on this connection.
+    vrpn_Connection **d_peer;
+    ///< Send on these connections to other Mutex's well-known-ports.
 
     int d_numPeers;
     int d_numConnectionsAllocated;
-      ///< Dynamic array size for d_peer and d_peerGrantedLock.
+    ///< Dynamic array size for d_peer and d_peerGrantedLock.
 
     vrpn_uint32 d_myIP;
     vrpn_uint32 d_myPort;
@@ -306,60 +277,57 @@ class VRPN_API vrpn_PeerMutex {
     vrpn_int32 d_release_type;
     vrpn_int32 d_grantRequest_type;
     vrpn_int32 d_denyRequest_type;
-    //vrpn_int32 d_losePeer_type;
+    // vrpn_int32 d_losePeer_type;
 
-    static int VRPN_CALLBACK handle_request (void *, vrpn_HANDLERPARAM);
-    static int VRPN_CALLBACK handle_release (void *, vrpn_HANDLERPARAM);
-    static int VRPN_CALLBACK handle_grantRequest (void *, vrpn_HANDLERPARAM);
-    static int VRPN_CALLBACK handle_denyRequest (void *, vrpn_HANDLERPARAM);
+    static int VRPN_CALLBACK handle_request(void *, vrpn_HANDLERPARAM);
+    static int VRPN_CALLBACK handle_release(void *, vrpn_HANDLERPARAM);
+    static int VRPN_CALLBACK handle_grantRequest(void *, vrpn_HANDLERPARAM);
+    static int VRPN_CALLBACK handle_denyRequest(void *, vrpn_HANDLERPARAM);
 
-    static int VRPN_CALLBACK handle_losePeer (void *, vrpn_HANDLERPARAM);
+    static int VRPN_CALLBACK handle_losePeer(void *, vrpn_HANDLERPARAM);
 
-    void sendRequest (vrpn_Connection *);
-    void sendRelease (vrpn_Connection *);
-    void sendGrantRequest (vrpn_Connection *, vrpn_uint32 IPnumber,
-                           vrpn_uint32 PortNumber);
-    void sendDenyRequest (vrpn_Connection *, vrpn_uint32 IPnumber,
+    void sendRequest(vrpn_Connection *);
+    void sendRelease(vrpn_Connection *);
+    void sendGrantRequest(vrpn_Connection *, vrpn_uint32 IPnumber,
                           vrpn_uint32 PortNumber);
+    void sendDenyRequest(vrpn_Connection *, vrpn_uint32 IPnumber,
+                         vrpn_uint32 PortNumber);
 
-    void triggerGrantCallbacks (void);
-    void triggerDenyCallbacks (void);
-    void triggerTakeCallbacks (void);
-    void triggerReleaseCallbacks (void);
+    void triggerGrantCallbacks(void);
+    void triggerDenyCallbacks(void);
+    void triggerTakeCallbacks(void);
+    void triggerReleaseCallbacks(void);
 
-    void checkGrantMutex (void);
+    void checkGrantMutex(void);
 
-    void init (const char * name);
+    void init(const char *name);
 
     struct mutexCallback {
-      int (* f) (void *);
-      void * userdata;
-      mutexCallback * next;
+        int (*f)(void *);
+        void *userdata;
+        mutexCallback *next;
     };
 
-    mutexCallback * d_reqGrantedCB;
-    mutexCallback * d_reqDeniedCB;
-    mutexCallback * d_takeCB;
-    mutexCallback * d_releaseCB;
+    mutexCallback *d_reqGrantedCB;
+    mutexCallback *d_reqDeniedCB;
+    mutexCallback *d_takeCB;
+    mutexCallback *d_releaseCB;
 
     struct peerData {
-      vrpn_uint32 IPaddress;
-      vrpn_uint32 port;
-      vrpn_bool grantedLock;
+        vrpn_uint32 IPaddress;
+        vrpn_uint32 port;
+        vrpn_bool grantedLock;
     };
 
-    peerData * d_peerData;
-      ///< Needed only to clean up when a peer shuts down (mid-request).
-      ///< It isn't currently feasible to have all this data, so instead
-      ///< we abort requests that were interrupted by a shutdown.
+    peerData *d_peerData;
+    ///< Needed only to clean up when a peer shuts down (mid-request).
+    ///< It isn't currently feasible to have all this data, so instead
+    ///< we abort requests that were interrupted by a shutdown.
 
-    vrpn_PeerMutex (const char * name, vrpn_Connection * c);
-      ///< This constructor reuses a SERVER connection for the mutex.
-      ///< BUG BUG BUG - do not use this constructor;  it does not reliably
-      ///< resolve race conditions.
+    vrpn_PeerMutex(const char *name, vrpn_Connection *c);
+    ///< This constructor reuses a SERVER connection for the mutex.
+    ///< BUG BUG BUG - do not use this constructor;  it does not reliably
+    ///< resolve race conditions.
 };
 
-
-#endif  // VRPN_MUTEX_H
-
-
+#endif // VRPN_MUTEX_H

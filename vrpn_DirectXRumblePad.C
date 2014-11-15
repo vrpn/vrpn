@@ -87,6 +87,8 @@ vrpn_DirectXRumblePad::vrpn_DirectXRumblePad(const char *name, vrpn_Connection *
   , _effect(NULL)
   , _gamepad(NULL)
 {
+	last_error = time(NULL);
+
 	vrpn_Analog::num_channel = 12;
 	vrpn_Button::num_buttons = min(128, vrpn_BUTTON_MAX_BUTTONS);
 	vrpn_Analog_Output::o_num_channel = 1;
@@ -358,7 +360,6 @@ BOOL CALLBACK vrpn_DirectXRumblePad::axis_enum_cb(LPCDIDEVICEOBJECTINSTANCE lpdd
 // VRPN main loop
 // Poll the joystick, update the axes, and let the VRPN change notifications fire
 void vrpn_DirectXRumblePad::mainloop() {
-	static time_t last_error = time(NULL);
 	DIJOYSTATE2 js;
 
 	server_mainloop();

@@ -112,6 +112,7 @@ protected:
     int	    status;
     int     lastL, lastM, lastR;  //used in 3 button emulator
     vrpn_MOUSETYPE mousetype;
+    bool    printed_error;
 
     void read(void);
 };

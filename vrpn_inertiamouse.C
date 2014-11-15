@@ -22,7 +22,7 @@ namespace {
         
         MAX_TIME_INTERVAL = 2000000 // max time between reports (usec)
     };
-}
+} // namespace
 vrpn_inertiamouse::vrpn_inertiamouse (const char* name, 
                                       vrpn_Connection * c,
                                       const char* port, 
@@ -158,6 +158,13 @@ int vrpn_inertiamouse::get_report(void)
             packet |= (buffer_[++nextchar] & 0xf0) >> 4;
 
             int chnl = (packet >> 10) & 7;
+            if (chnl > Channels) {
+               status_ = STATUS_SYNCING;
+               send_text_message("vrpn_inertiamouse: Too-large channel value", 
+		  timestamp, 
+		  vrpn_TEXT_ERROR);
+               return 0;
+            }
             int acc = packet & 0x3ff; // 10 bits
             
             // normalize to interval [-1,1]

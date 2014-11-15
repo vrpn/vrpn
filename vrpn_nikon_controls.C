@@ -33,6 +33,9 @@ vrpn_Nikon_Controls::vrpn_Nikon_Controls(const char *device_name, vrpn_Connectio
   num_channel = 1;	// Focus control
   o_num_channel = 1;	// Focus control
 
+  last_poll.tv_sec = 0;
+  last_poll.tv_usec = 0;
+
   // Set the mode to reset
   _status = STATUS_RESETTING;
 
@@ -474,7 +477,6 @@ void	vrpn_Nikon_Controls::mainloop()
 	    struct timeval current_time;
 	    vrpn_gettimeofday(&current_time, NULL);
 	    if ( vrpn_TimevalDuration(current_time,timestamp) > POLL_INTERVAL) {
-	      static struct timeval last_poll = {0, 0};
 
 	      if (vrpn_TimevalDuration(current_time, last_poll) > TIMEOUT_TIME_INTERVAL) {
 		// Ask the unit for its current focus location, which will cause it to respond.

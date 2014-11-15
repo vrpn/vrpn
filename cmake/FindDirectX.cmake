@@ -4,8 +4,8 @@
 #  DIRECTX_INCLUDE_DIR
 #
 # Variables you should use in your CMakeLists.txt:
-#  DIRECTX_DXGUID_LIBRARY
-#  DIRECTX_DXERR_LIBRARY
+#  DIRECTX_DXGUID_LIBRARY - deprecated, see below
+#  DIRECTX_DXERR_LIBRARY - deprecated, see http://blogs.msdn.com/b/chuckw/archive/2012/04/24/where-s-dxerr-lib.aspx
 #  DIRECTX_DINPUT_LIBRARY
 #  DIRECTX_DINPUT_INCLUDE_DIR
 #  DIRECTX_D3D9_LIBRARY
@@ -188,7 +188,7 @@ find_library(DIRECTX_D3DX9_LIBRARY_DEBUG
 
 find_library(DIRECTX_XINPUT_LIBRARY
 	NAMES
-    Xinput9_1_0
+	Xinput9_1_0
 	Xinput
 	PATHS
 	${DXSDK_DIRS}
@@ -219,6 +219,7 @@ if(DIRECTX_INCLUDE_DIR)
 			int main(int argc, char * argv[]) {
 				return 0;
 			}
+			#endif
 			"
 			DIRECTX_SDK_SUPPORTS_COMPILER)
 		set(DIRECTX_EXTRA_CHECK DIRECTX_SDK_SUPPORTS_COMPILER)
@@ -231,14 +232,12 @@ find_package_handle_standard_args(DirectX
 	DEFAULT_MSG
 	DIRECTX_DXGUID_LIBRARY
 	DIRECTX_DINPUT_LIBRARY
-	DIRECTX_DXERR_LIBRARY
 	DIRECTX_INCLUDE_DIR
 	${DIRECTX_EXTRA_CHECK})
 
 if(DIRECTX_FOUND)
 	set(DIRECTX_LIBRARIES
 		"${DIRECTX_DXGUID_LIBRARY}"
-		"${DIRECTX_DXERR_LIBRARY}"
 		"${DIRECTX_DINPUT_LIBRARY}")
 
 	set(DIRECTX_INCLUDE_DIRS "${DIRECTX_INCLUDE_DIR}")

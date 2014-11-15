@@ -23,12 +23,14 @@ typedef struct input_devinfo {
 
 // USB vendor and product IDs for the models we support
 static const vrpn_uint16 vrpn_3DCONNEXION_VENDOR = 0x046d; //1133;	// 3Dconnexion is made by Logitech
+static const vrpn_uint16 vrpn_SPACEMOUSEWIRELESS_VENDOR = 9583; 	// Made by a different vendor...
 static const vrpn_uint16 vrpn_3DCONNEXION_TRAVELER = 50723;
 static const vrpn_uint16 vrpn_3DCONNEXION_NAVIGATOR = 50726;
 static const vrpn_uint16 vrpn_3DCONNEXION_NAVIGATOR_FOR_NOTEBOOKS = 0xc628;	// 50728;
 static const vrpn_uint16 vrpn_3DCONNEXION_SPACEEXPLORER = 0xc627;   // 50727
 static const vrpn_uint16 vrpn_3DCONNEXION_SPACEMOUSE = 50691;
 static const vrpn_uint16 vrpn_3DCONNEXION_SPACEMOUSEPRO = 50731;
+static const vrpn_uint16 vrpn_3DCONNEXION_SPACEMOUSEWIRELESS = 50735;
 static const vrpn_uint16 vrpn_3DCONNEXION_SPACEBALL5000 = 0xc621;   // 50721;
 static const vrpn_uint16 vrpn_3DCONNEXION_SPACEPILOT =  0xc625;
 
@@ -212,8 +214,12 @@ void vrpn_3DConnexion::decodePacket(size_t bytes, vrpn_uint8 *buffer)
   // so we get through the report loop once.  XXX Problem: this is skipping 7 bytes per report
   // regardless of how many bytes were in the report.  This is going to get us into trouble for
   // multi-report packets.  Instead, we should go until we've parsed all characters and add the
-  // number characters parsed each time rather than a constant 7 reports.
-  if(bytes<7) bytes=7; 
+  // number of characters parsed each time rather than a constant 7 reports.
+  if(bytes<7) bytes=7;
+  if (bytes > 7) {
+	  fprintf(stderr, "vrpn_3DConnexion::decodePacket(): Long packet (%d bytes), may mis-parse\n",
+		  static_cast<int>(bytes));
+  }
   // Decode all full reports.
   // Full reports for all of the pro devices are 7 bytes long (the first
   // byte is the report type, because this device has multiple ones the
@@ -266,7 +272,7 @@ void vrpn_3DConnexion::decodePacket(size_t bytes, vrpn_uint8 *buffer)
         // Button reports are encoded as bits in the first 2 bytes
         // after the type.  There can be more than one byte if there
         // are more than 8 buttons such as on SpaceExplorer or SpaceBall5000.
-        // If 8 or less, we don't look at 2nd byte. No known devices with >15 buttons.
+        // If 8 or less, we don't look at 2nd byte.
         // SpaceExplorer buttons are (for example):
         // Name           Number
         // 1              0
@@ -327,6 +333,11 @@ vrpn_3DConnexion_SpaceMouse::vrpn_3DConnexion_SpaceMouse(const char *name, vrpn_
 vrpn_3DConnexion_SpaceMousePro::vrpn_3DConnexion_SpaceMousePro(const char *name, vrpn_Connection *c)
 : vrpn_3DConnexion(_filter = new vrpn_HidProductAcceptor(vrpn_3DCONNEXION_VENDOR, vrpn_3DCONNEXION_SPACEMOUSEPRO), 27, name, c)
 {	// 15 physical buttons are numbered: 0-2, 4-5, 8, 12-15, 22-26
+}
+
+vrpn_3DConnexion_SpaceMouseWireless::vrpn_3DConnexion_SpaceMouseWireless(const char *name, vrpn_Connection *c)
+	: vrpn_3DConnexion(_filter = new vrpn_HidProductAcceptor(vrpn_SPACEMOUSEWIRELESS_VENDOR, vrpn_3DCONNEXION_SPACEMOUSEWIRELESS), 2, name, c)
+{
 }
 
 vrpn_3DConnexion_SpaceExplorer::vrpn_3DConnexion_SpaceExplorer(const char *name, vrpn_Connection *c)

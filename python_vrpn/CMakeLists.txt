@@ -64,7 +64,7 @@ if(SWIG_FOUND AND PYTHONLIBS_FOUND AND VRPN_BUILD_PYTHON)
 			${module}.i
 			${clientlib_fullsrc}
 			${quatlib_fullsrc})
-		swig_link_libraries(${module} ${PYTHON_LIBRARIES} ${LIBS})
+		swig_link_libraries(${module} ${PYTHON_LIBRARIES} ${LIBS} ${SERVER_EXTRA_LIBS})
 		set_target_properties(_${module} PROPERTIES FOLDER "Python Bindings")
 		install(FILES
 			"${CMAKE_CURRENT_BINARY_DIR}/${module}.py"

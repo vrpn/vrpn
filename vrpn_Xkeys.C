@@ -5,6 +5,8 @@
 
 #include "vrpn_Xkeys.h"
 
+VRPN_SUPPRESS_EMPTY_OBJECT_WARNING()
+
 #if defined(VRPN_USE_HID)
 
 // USB vendor and product IDs for the models we support

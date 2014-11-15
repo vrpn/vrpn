@@ -89,10 +89,7 @@ void vrpn_Tracker_JsonNet::mainloop() {
 	 * Thus a 1 sec timeout here causes latency and jerky movements in Dtrack 
 	 */
 	const int timeout_us = 10 * 1000;
-
-	//int received_length = _network_receive(_network_buffer, _NETWORK_BUFFER_SIZE, 1*1000*1000);
 	int received_length = _network_receive(_network_buffer, _NETWORK_BUFFER_SIZE, timeout_us);
-
 
 	if (received_length < 0) {
 		//fprintf(stderr, "vrpn_Tracker_JsonNet : receive error %d\n", received_length);
@@ -401,10 +398,8 @@ int vrpn_Tracker_JsonNet::_network_receive(void *buffer, int maxlen, int tout_us
 	tout.tv_sec = tout_us / 1000000;
 	tout.tv_usec = tout_us % 1000000;
 
-	static int received = 0;
 	switch((err = select(FD_SETSIZE, &set, NULL, NULL, &tout))){
 		case 1:
-			//fprintf(stderr, "received %d\n", ++received);
 			break;        // data available
 		case 0:
 			//fprintf(stderr, "net_receive: select timeout (err = 0)\n");
@@ -417,7 +412,6 @@ int vrpn_Tracker_JsonNet::_network_receive(void *buffer, int maxlen, int tout_us
 	}
 
 	// receiving packet:
-
 	while(1){
 
 		// receive one packet:
@@ -457,3 +451,4 @@ void vrpn_Tracker_JsonNet::_network_release() {
 }
 
 #endif // defined VRPN_USE_JSONNET
+

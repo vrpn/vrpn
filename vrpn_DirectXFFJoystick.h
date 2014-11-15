@@ -41,10 +41,14 @@ protected:
     int	  _numforceaxes;  // How many force-feedback channels we have
 
     struct timeval _timestamp;	// Time of the last report from the device
+    struct timeval _forcetime;	// Last time we sent a force.
+    struct timeval _last_report;// Last time we sent a report.
     double _read_rate;		// How many times per second to read the device
     double _force_rate;		// How many times per second to update forces
 
     double _fX, _fY;		// Force to display in X and Y
+    double _fx_1, _fy_1;	// Force applied last time
+    double _fx_2, _fy_2;	// Force applied two times ago
 
     virtual int get_report(void);	// Try to read a report from the device
     void	clear_values(void);	// Clear the Analog and Button values

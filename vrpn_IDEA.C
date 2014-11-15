@@ -74,6 +74,9 @@ vrpn_IDEA::vrpn_IDEA (const char * name, vrpn_Connection * c,const char * port
         , d_fractional_c_a(fractional_c_a)
         , d_reset_location(reset_location)
 {
+  d_last_poll.tv_sec = 0;
+  d_last_poll.tv_usec = 0;
+
   vrpn_Analog::num_channel = 1;
   vrpn_Analog_Output::o_num_channel = 1;
   vrpn_Button::num_buttons = 4;
@@ -996,16 +999,15 @@ void	vrpn_IDEA::mainloop()
 	    struct timeval current_time;
 	    vrpn_gettimeofday(&current_time, NULL);
 	    if ( vrpn_TimevalDuration(current_time,d_timestamp) > POLL_INTERVAL) {
-	      static struct timeval last_poll = {0, 0};
 
-              if (vrpn_TimevalDuration(current_time, last_poll) > TIMEOUT_TIME_INTERVAL) {
+              if (vrpn_TimevalDuration(current_time, d_last_poll) > TIMEOUT_TIME_INTERVAL) {
 		// Send another request to the unit, in case we've somehow
                 // dropped a request.
                 if (!send_command("l")) {
                   VRPN_MSG_ERROR("Could not request position");
                   status = STATUS_RESETTING;
                 }
-	        vrpn_gettimeofday(&last_poll, NULL);
+	        vrpn_gettimeofday(&d_last_poll, NULL);
 	      } else {
 		return;
 	      }

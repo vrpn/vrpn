@@ -6,13 +6,15 @@
 
 #include "vrpn_Logitech_Controller_Raw.h"
 
+VRPN_SUPPRESS_EMPTY_OBJECT_WARNING()
+
 #if defined(VRPN_USE_HID)
 
 // USB vendor and product IDs for the models we support
 static const vrpn_uint16 LOGITECH_VENDOR = 0x046d;	// 3Dconnexion is made by Logitech
 static const vrpn_uint16 EXTREME_3D_PRO = 0xc215;
 
-static double POLL_INTERVAL = 1e+6 / 30.0;		// If we have not heard, ask.
+static const double POLL_INTERVAL = 1e+6 / 30.0;		// If we have not heard, ask.
 
 #define GAMEPAD_TRIGGER_THRESHOLD 30
 

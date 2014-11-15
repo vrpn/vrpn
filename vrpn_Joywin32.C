@@ -33,6 +33,9 @@ vrpn_Joywin32::vrpn_Joywin32 (const char * name, vrpn_Connection * c, vrpn_uint8
 		_numbuttons((std::min)(128,vrpn_BUTTON_MAX_BUTTONS)),     // Maximum available
 		_mode(mode)
 {
+	last_error_report.tv_sec = 0;
+	last_error_report.tv_usec = 0;
+
 	if (deadzone >100 || deadzone<0) {
 		fprintf(stderr,"invalid deadzone, (should be a percentage between 0 and 100).\n");
 		_status = STATUS_BROKEN;
@@ -362,12 +365,11 @@ void	vrpn_Joywin32::mainloop()
   switch(_status) {
     case STATUS_BROKEN:
 	{
-	  static  struct  timeval last_report = {0,0};
 	  struct  timeval now;
 	  vrpn_gettimeofday(&now, NULL);
-	  if (vrpn_TimevalDuration(now, last_report) > MAX_TIME_INTERVAL) {
+	  if (vrpn_TimevalDuration(now, last_error_report) > MAX_TIME_INTERVAL) {
 	    send_text_message("Cannot talk to joystick, trying resetting it", now, vrpn_TEXT_ERROR);
-	    last_report = now;
+	    last_error_report = now;
 
         init_joystick();
 	  }

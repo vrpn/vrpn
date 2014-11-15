@@ -58,6 +58,7 @@ class VRPN_API vrpn_Tracker_Isotrak: public vrpn_Tracker_Serial {
   int	do_filter;		//< Should we turn on filtering for pos/orient?
   int	num_stations;		//< How many stations maximum on this Isotrak?
 
+  int   num_resets;		//< How many resets have we tried this time around?
   char	add_reset_cmd[2048];	//< Additional reset commands to be sent
   
   int	set_sensor_output_format(int sensor);

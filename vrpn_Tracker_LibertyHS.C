@@ -17,6 +17,8 @@
 #include "vrpn_Tracker_LibertyHS.h"
 #include "vrpn_MessageMacros.h"         // for VRPN_MSG_INFO, VRPN_MSG_WARNING, VRPN_MSG_ERROR
 
+VRPN_SUPPRESS_EMPTY_OBJECT_WARNING()
+
 #if defined(VRPN_USE_LIBUSB_1_0)
 
 #include <libusb.h>                     // for libusb_bulk_transfer, etc
@@ -33,6 +35,7 @@ vrpn_Tracker_LibertyHS::vrpn_Tracker_LibertyHS(const char *name, vrpn_Connection
     do_filter(enable_filtering),
     num_stations(numstations>vrpn_LIBERTYHS_MAX_STATIONS ? vrpn_LIBERTYHS_MAX_STATIONS : numstations),
     receptor_index(receptoridx),
+    num_resets(0),
     whoami_len(whoamilen>vrpn_LIBERTYHS_MAX_WHOAMI_LEN ? vrpn_LIBERTYHS_MAX_WHOAMI_LEN : whoamilen),
     sync_index(-1), read_len(0)
 {
@@ -175,7 +178,6 @@ void vrpn_Tracker_LibertyHS::flush_usb_data()
 
 void vrpn_Tracker_LibertyHS::reset()
 {
-   static int numResets = 0;	// How many resets have we tried?
    int i,resetLen,ret;
    char reset[10];
    char errmsg[512];
@@ -197,22 +199,22 @@ void vrpn_Tracker_LibertyHS::reset()
    // end, we're doing them all.
    if (DEBUG) fprintf(stderr,"[DEBUG] Beginning Reset");
    resetLen = 0;
-   numResets++;		  	// We're trying another reset
+   num_resets++;		  	// We're trying another reset
 
-   if (numResets > 0) {	// Try to get it out of a query loop if its in one
+   if (num_resets > 0) {	// Try to get it out of a query loop if its in one
 	reset[resetLen++] = 'F';
 	reset[resetLen++] = '0';
  	reset[resetLen++] = (char) (13); // Return key -> get ready
    }
 
-   if (numResets > 2) {
+   if (num_resets > 2) {
        reset[resetLen++] = (char) (25); // Ctrl + Y -> reset the tracker
        reset[resetLen++] = (char) (13); // Return Key
    }
 
    reset[resetLen++] = 'P'; // Put it into polled (not continuous) mode
 
-   sprintf(errmsg, "Resetting the tracker (attempt %d)", numResets);
+   sprintf(errmsg, "Resetting the tracker (attempt %d)", num_resets);
    VRPN_MSG_WARNING(errmsg);
    for (i = 0; i < resetLen; i++) {
          if (write_usb_data(&reset[i],1) == 1) {
@@ -225,7 +227,7 @@ void vrpn_Tracker_LibertyHS::reset()
          }
    }
 
-   if (numResets > 2) {
+   if (num_resets > 2) {
        vrpn_SleepMsecs(1000.0*20);	// Sleep to let the reset happen, if we're doing ^Y
    }
 
@@ -290,7 +292,7 @@ void vrpn_Tracker_LibertyHS::reset()
      return;
    } else {
      VRPN_MSG_WARNING("LibertyHS gives status (this is good)");
-     numResets = 0; 	// Success, use simple reset next time
+     num_resets = 0; 	// Success, use simple reset next time
    }
 
    //--------------------------------------------------------------------

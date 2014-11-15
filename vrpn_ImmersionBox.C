@@ -18,9 +18,6 @@
 
 #undef VERBOSE
 
-// static char	offset = 0x21;	// Offset added to some characters to avoid ctl chars
-// static double	REV_PER_TICK = 1.0/4096;	// How many revolutions per encoder tick?
-
 // low-level stuff
 static const unsigned char CMD_BASIC = static_cast<unsigned char>(0xC0);   // mask for command
 static const unsigned char CMD_HOMEREF = static_cast<unsigned char>(0xC1);
@@ -265,7 +262,7 @@ int    vrpn_ImmersionBox::reset(void)
    
 int vrpn_ImmersionBox::get_report(void)
 {
-    static unsigned char responseString[MAX_IBOX_STRING];
+    unsigned char responseString[MAX_IBOX_STRING];
     int i;
     unsigned int buttonBits = 0;
 

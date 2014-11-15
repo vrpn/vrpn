@@ -6,9 +6,11 @@
 
 #include "vrpn_Microsoft_Controller_Raw.h"
 
+VRPN_SUPPRESS_EMPTY_OBJECT_WARNING()
+
 #if defined(VRPN_USE_HID)
 
-static double POLL_INTERVAL = 1e+6 / 30.0;		// If we have not heard, ask.
+static const double POLL_INTERVAL = 1e+6 / 30.0;		// If we have not heard, ask.
 
 #define MS_GAMEPAD_LEFT_THUMB_DEADZONE 7849
 #define MS_GAMEPAD_RIGHT_THUMB_DEADZONE 8689
@@ -509,36 +511,17 @@ void vrpn_Microsoft_Controller_Raw_Xbox_S::decodePacket(size_t bytes, vrpn_uint8
 	// XXX Check to see that this works with HIDAPI, there may be two smaller reports.
 	if (bytes == 40) {
 		if (buffer[0] == 1) {
-//			static bool set = false;
-//			static vrpn_uint8 initials[14];
-//			if (!set)
-//			{
-//				set = true;
-//				for (size_t i = 0; i < 14; i++)
-//				{
-//					initials[i] = buffer[4 + i];
-//				}
-//			}
 
 			// Report joystick axes as analogs
 			vrpn_uint16 x, y;
 			vrpn_uint8 *bufptr;
 #ifdef OLD_DATA
-//			const float scale = 2.0f / 65450.0f;
 			//	left joy left/right: Left 27, center (normal) 81 (calc 7e), right D5
-//			vrpn_uint16 current, initial;
 			bufptr = &buffer[32];
-//			current = vrpn_unbuffer<vrpn_int16>(bufptr);
 			x = vrpn_unbuffer<vrpn_int16>(bufptr);
-//			bufptr = &initials[0];
-//			initial = vrpn_unbuffer<vrpn_int16>(bufptr);
-//			channel[0] = (static_cast<float>(current) - static_cast<float>(initial)) * scale;
 			//	left joy up/down: Up 34, center (normal) 81 (calc 81), down CF
 			bufptr = &buffer[34];
 			y = vrpn_unbuffer<vrpn_int16>(bufptr);
-//			current = *((vrpn_uint16*) &buffer[34]);
-//			initial = 0;// *((vrpn_uint16*) &initials[2]);
-//			channel[1] = (static_cast<float>(current - initial)) * scale;
 			normalize_axes(x, y, MS_GAMEPAD_LEFT_THUMB_DEADZONE, 1.0f, channel[0], channel[1]);
 			//	right joy up/down: Up 32, (center calc 7f), down CC
 			bufptr = &buffer[36];

@@ -375,7 +375,13 @@ vrpn_WiiMote::vrpn_WiiMote(const char *name, vrpn_Connection *c, unsigned which,
 	sharedData(0),
 	connectThread(0),
 #endif
-	wiimote(new vrpn_Wiimote_Device) {
+	wiimote(new vrpn_Wiimote_Device)
+{
+#ifdef vrpn_THREADS_AVAILABLE
+	last_reconnect_attempt.tv_sec = 0;
+	last_reconnect_attempt.tv_usec = 0;
+#endif
+
 	int i;
 
 	vrpn_Analog::num_channel = min(96, vrpn_CHANNEL_MAX);
@@ -484,9 +490,6 @@ vrpn_WiiMote::~vrpn_WiiMote() {
 // VRPN main loop
 // Poll the device and let the VRPN change notifications fire
 void vrpn_WiiMote::mainloop() {
-#ifndef vrpn_THREADS_AVAILABLE
-	static timeval last_reconnect_attempt;
-#endif
 
 	vrpn_gettimeofday(&_timestamp, NULL);
 

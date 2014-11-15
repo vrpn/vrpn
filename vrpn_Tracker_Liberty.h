@@ -57,8 +57,10 @@ class VRPN_API vrpn_Tracker_Liberty: public vrpn_Tracker_Serial {
   struct timeval reset_time;
   int	do_filter;		//< Should we turn on filtering for pos/orient?
   int	num_stations;		//< How many stations maximum on this Liberty?
+  int   num_resets;		//< How many resets we've tried this time.
   char	add_reset_cmd[2048];	//< Additional reset commands to be sent
-  int whoami_len;
+  int   whoami_len;
+  int   got_single_sync_char;
 
   struct timeval liberty_zerotime;    //< When the liberty time counter was zeroed
   struct timeval liberty_timestamp; //< The time returned from the Liberty System

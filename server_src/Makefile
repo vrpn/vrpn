@@ -301,7 +301,7 @@ $(OBJ_DIR)/%.o:	%.cpp
 	@[ -d $(OBJ_DIR) ] || mkdir -p $(OBJ_DIR)
 	$(CC) $(CXXFLAGS) -o $@ -c $<
 
-INSTALL_APPS := vrpn_server test_vrpn wiimote_head_tracker
+INSTALL_APPS := vrpn_server test_vrpn
 APPS := $(INSTALL_APPS) client_and_server test_mutexServer test_peerMutex \
 test_radamec_spi test_analogfly testimager_server test_auxiliary_logger \
 test_logging testSharedObjectServer
@@ -360,9 +360,6 @@ last_of_sequence:	$(OBJ_DIR)/last_of_sequence
 
 .PHONY:	testSharedObjectServer
 testSharedObjectServer:	$(OBJ_DIR)/testSharedObjectServer
-
-.PHONY:	wiimote_head_tracker
-wiimote_head_tracker:	$(OBJ_DIR)/wiimote_head_tracker
 
 $(OBJ_DIR)/InstantBuzzEffect.o: ghostEffects/InstantBuzzEffect.cpp
 	$(CC) $(CXXFLAGS) -o $@ -c $<
@@ -479,12 +476,6 @@ $(OBJ_DIR)/testSharedObjectServer:	$(OBJ_DIR)/testSharedObjectServer.o \
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/testSharedObjectServer \
 		$(OBJ_DIR)/testSharedObjectServer.o \
 		$(VRPN_LIBS) $(SYSLIBS) -lm
-
-$(OBJ_DIR)/wiimote_head_tracker:	$(OBJ_DIR)/wiimote_head_tracker.o \
-			$(LIB_DIR)/libvrpnserver.a
-	$(CC) $(LFLAGS) -o $(OBJ_DIR)/wiimote_head_tracker \
-		$(OBJ_DIR)/wiimote_head_tracker.o \
-		$(VRPN_LIBS) -lquat $(SYSLIBS) -lm
 
 install: all
 	-mkdir -p $(BIN_DIR)

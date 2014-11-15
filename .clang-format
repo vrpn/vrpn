@@ -1,0 +1,15 @@
+---
+Language:        Cpp
+BasedOnStyle:  LLVM
+Standard:        Auto
+IndentWidth:     4
+TabWidth:        4
+UseTab:          Never
+AccessModifierOffset: -4
+AllowShortIfStatementsOnASingleLine: true
+BreakBeforeBraces: Stroustrup
+BreakConstructorInitializersBeforeComma: true
+NamespaceIndentation: All
+DerivePointerBinding: true
+...
+

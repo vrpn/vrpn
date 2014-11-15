@@ -82,7 +82,6 @@ public:
   vrpn_3DConnexion_Navigator(const char *name, vrpn_Connection *c = 0);
   virtual ~vrpn_3DConnexion_Navigator() {};
 
-
 protected:
 };
 
@@ -90,7 +89,6 @@ class VRPN_API vrpn_3DConnexion_Navigator_for_Notebooks: public vrpn_3DConnexion
 public:
   vrpn_3DConnexion_Navigator_for_Notebooks(const char *name, vrpn_Connection *c = 0);
   virtual ~vrpn_3DConnexion_Navigator_for_Notebooks() {};
-
 
 protected:
 };
@@ -138,7 +136,15 @@ public:
 protected:
 };
 
-class VRPN_API vrpn_3DConnexion_SpaceExplorer: public vrpn_3DConnexion {
+class VRPN_API vrpn_3DConnexion_SpaceMouseWireless : public vrpn_3DConnexion {
+public:
+	vrpn_3DConnexion_SpaceMouseWireless(const char *name, vrpn_Connection *c = 0);
+	virtual ~vrpn_3DConnexion_SpaceMouseWireless() {};
+
+protected:
+};
+
+class VRPN_API vrpn_3DConnexion_SpaceExplorer : public vrpn_3DConnexion {
 public:
   vrpn_3DConnexion_SpaceExplorer(const char *name, vrpn_Connection *c = 0);
   virtual ~vrpn_3DConnexion_SpaceExplorer() {};
