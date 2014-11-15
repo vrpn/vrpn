@@ -377,7 +377,7 @@ vrpn_WiiMote::vrpn_WiiMote(const char *name, vrpn_Connection *c, unsigned which,
 #endif
 	wiimote(new vrpn_Wiimote_Device)
 {
-#ifdef vrpn_THREADS_AVAILABLE
+#ifndef vrpn_THREADS_AVAILABLE
 	last_reconnect_attempt.tv_sec = 0;
 	last_reconnect_attempt.tv_usec = 0;
 #endif
