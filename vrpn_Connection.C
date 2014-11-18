@@ -5594,11 +5594,13 @@ void vrpn_Connection_IP::server_check_for_incoming_connections(
         struct sockaddr_in from;
         int fromlen = sizeof(from);
 
-        if (recvfrom(listen_udp_sock, msg, sizeof(msg), 0,
+        if (recvfrom(listen_udp_sock, msg, sizeof(msg) - 1, 0,
                      (struct sockaddr *)&from, GSN_CAST & fromlen) == -1) {
             fprintf(stderr,
                     "vrpn: Error on recvfrom: Bad connection attempt\n");
             return;
+        } else {
+            msg[200] = '\0';
         }
 
         // Because we sometimes use multiple NICs, we are ignoring the IP from
