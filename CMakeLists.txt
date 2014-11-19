@@ -562,7 +562,7 @@ if(VRPN_USE_LIBNIFALCON)
 endif()
 
 ###
-# DirectInput
+# DirectInput and XInput
 ###
 if(WIN32)
 	find_package(DirectX)
@@ -585,32 +585,34 @@ if(WIN32)
 			list(APPEND SERVER_LINK_FLAGS "/DELAYLOAD:dinput8.dll")
 			list(APPEND SERVER_EXTRA_LIBS "delayimp.lib")
 		endif()
+	endif()
 
-		# XInput - enhanced API for XBOX 360 controllers and more.
-		find_directx_include(DIRECTX_XINPUT_INCLUDE_DIR
-			xinput.h)
-		if(DIRECTX_XINPUT_INCLUDE_DIR AND DIRECTX_XINPUT_LIBRARY)
-			list(APPEND
-				SERVER_EXTRA_LIBS
-				${DIRECTX_XINPUT_LIBRARY})
-			mark_as_advanced(DIRECTX_XINPUT_INCLUDE_DIR)
-			set(VRPN_USE_WINDOWS_XINPUT TRUE)
+	# XInput - enhanced API for XBOX 360 controllers and more.
+	find_directx_include(DIRECTX_XINPUT_INCLUDE_DIR
+		xinput.h)
+	option_requires(VRPN_USE_WINDOWS_XINPUT
+		"Build with Microsoft XInput support"
+		${DEFAULT_OFF_IF_SUBPROJECT}
+		DIRECTX_XINPUT_INCLUDE_DIR
+		DIRECTX_XINPUT_LIBRARY)
+	if(VRPN_USE_WINDOWS_XINPUT)
+		list(APPEND
+			SERVER_EXTRA_LIBS
+			${DIRECTX_XINPUT_LIBRARY})
+		mark_as_advanced(DIRECTX_XINPUT_INCLUDE_DIR)
 
-			# Get name of DLL to delay-load.
-			include(GetDefineString)
-			get_define_string(NAME XINPUT_DLL
-				INCLUDES windows.h xinput.h
-				DEFINES "-D_WIN32_WINNT=${WIN_MIN_VER}"
-				INCLUDE_DIRS ${DIRECTX_DINPUT_INCLUDE_DIR} ${DIRECTX_XINPUT_INCLUDE_DIR}
-				RESULT VRPN_XINPUT_DLL)
-			if(VRPN_XINPUT_DLL AND MSVC)
-				# Delay-load XInput DLL
-				# TODO how to do this with MinGW? Can we? Do we need to?
-				list(APPEND SERVER_LINK_FLAGS "/DELAYLOAD:${VRPN_XINPUT_DLL}")
-				list(APPEND SERVER_EXTRA_LIBS "delayimp.lib")
-			endif()
-		else()
-			set(VRPN_USE_WINDOWS_XINPUT FALSE)
+		# Get name of DLL to delay-load.
+		include(GetDefineString)
+		get_define_string(NAME XINPUT_DLL
+			INCLUDES windows.h xinput.h
+			DEFINES "-D_WIN32_WINNT=${WIN_MIN_VER}"
+			INCLUDE_DIRS ${DIRECTX_DINPUT_INCLUDE_DIR} ${DIRECTX_XINPUT_INCLUDE_DIR}
+			RESULT VRPN_XINPUT_DLL)
+		if(VRPN_XINPUT_DLL AND MSVC)
+			# Delay-load XInput DLL
+			# TODO how to do this with MinGW? Can we? Do we need to?
+			list(APPEND SERVER_LINK_FLAGS "/DELAYLOAD:${VRPN_XINPUT_DLL}")
+			list(APPEND SERVER_EXTRA_LIBS "delayimp.lib")
 		endif()
 	endif()
 

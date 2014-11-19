@@ -281,28 +281,28 @@ if(DIRECTX_FOUND)
 	set(DIRECTX_INCLUDE_DIRS "${DIRECTX_INCLUDE_DIR}")
 
 	mark_as_advanced(DIRECTX_ROOT_DIR)
-	macro(find_directx_library)
-		find_library(${ARGN}
-			PATHS
-			${DXSDK_DIRS}
-			HINTS
-			${DXLIB_HINTS}
-			"${DIRECTX_ROOT_DIR}"
-			PATH_SUFFIXES
-			${_dx_lib_suffixes})
-	endmacro()
-	macro(find_directx_include)
-		find_path(${ARGN}
-			PATHS
-			${DXSDK_DIRS}
-			HINTS
-			${DIRECTX_INCLUDE_DIR}
-			"${DIRECTX_ROOT_DIR}"
-			PATH_SUFFIXES
-			include)
-	endmacro()
-
 endif()
+
+macro(find_directx_library)
+	find_library(${ARGN}
+		PATHS
+		${DXSDK_DIRS}
+		HINTS
+		${DXLIB_HINTS}
+		"${DIRECTX_ROOT_DIR}"
+		PATH_SUFFIXES
+		${_dx_lib_suffixes})
+endmacro()
+macro(find_directx_include)
+	find_path(${ARGN}
+		PATHS
+		${DXSDK_DIRS}
+		HINTS
+		${DIRECTX_INCLUDE_DIR}
+		"${DIRECTX_ROOT_DIR}"
+		PATH_SUFFIXES
+		include)
+endmacro()
 
 mark_as_advanced(DIRECTX_DINPUT_LIBRARY
 	DIRECTX_DXGUID_LIBRARY

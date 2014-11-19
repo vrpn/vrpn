@@ -3,7 +3,7 @@
 
 #include "vrpn_Configure.h"   // IWYU pragma: keep
 
-#if defined(_WIN32) && defined(VRPN_USE_DIRECTINPUT) && defined(VRPN_USE_WINDOWS_XINPUT)
+#if defined(_WIN32) && defined(VRPN_USE_WINDOWS_XINPUT)
 
 #include "vrpn_Analog.h"
 #include "vrpn_Analog_Output.h"
