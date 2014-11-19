@@ -120,6 +120,8 @@ else()
 		"${CMAKE_CXX_FLAGS} ${CMAKE_SHARED_LIBRARY_CXX_FLAGS}")
 endif()
 
+set(SERVER_EXTRA_LIBS)
+
 # Set up correct defines for Windows header compilation:
 # This theoretically sets the lower-bound on operating system compatibility
 # http://msdn.microsoft.com/en-us/library/windows/desktop/aa383745(v=vs.85).aspx
@@ -551,23 +553,6 @@ if(VRPN_USE_LIBNIFALCON)
 endif()
 
 ###
-# DirectShow
-###
-# Note that header removal makes this harder for VS10 and later - you need an earlier
-# version of MSVC also installed or an older Windows/Platform SDK with qedit.h in it.
-if(MSVC)
-	find_package(DirectShow)
-	option_requires(VRPN_USE_DIRECTSHOW
-		"Build with Microsoft DirectShow support"
-		${DEFAULT_OFF_IF_SUBPROJECT}
-		DIRECTSHOW_FOUND)
-	option_requires(VRPN_BUILD_DIRECTSHOW_VIDEO_SERVER
-		"Enable to build DirectShow Video Server (Windows)"
-		${DEFAULT_OFF_IF_SUBPROJECT}
-		DIRECTSHOW_FOUND)
-endif()
-
-###
 # DirectInput
 ###
 if(WIN32)
@@ -583,10 +568,8 @@ if(WIN32)
 			SERVER_EXTRA_LIBS
 			${DIRECTX_DXGUID_LIBRARY}
 			${DIRECTX_DINPUT_LIBRARY})
-		find_path(DIRECTX_XINPUT_INCLUDE_DIR
-			xinput.h
-			HINTS
-			${DIRECTX_INCLUDE_DIRS})
+		find_directx_include(DIRECTX_XINPUT_INCLUDE_DIR
+			xinput.h)
 		if(DIRECTX_XINPUT_INCLUDE_DIR AND DIRECTX_XINPUT_LIBRARY)
 			list(APPEND
 				SERVER_EXTRA_LIBS
@@ -600,6 +583,24 @@ if(WIN32)
 
 	include(CheckIncludeFileCXX)
 	check_include_file_cxx(atlbase.h VRPN_HAVE_ATLBASE)
+endif()
+
+
+###
+# DirectShow
+###
+# Note that header removal makes this harder for VS10 and later - you need an earlier
+# version of MSVC also installed or an older Windows/Platform SDK with qedit.h in it.
+if(MSVC)
+	find_package(DirectShow)
+	option_requires(VRPN_USE_DIRECTSHOW
+		"Build with Microsoft DirectShow support"
+		${DEFAULT_OFF_IF_SUBPROJECT}
+		DIRECTSHOW_FOUND)
+	option_requires(VRPN_BUILD_DIRECTSHOW_VIDEO_SERVER
+		"Enable to build DirectShow Video Server (Windows)"
+		${DEFAULT_OFF_IF_SUBPROJECT}
+		DIRECTSHOW_FOUND)
 endif()
 
 ###
