@@ -165,7 +165,8 @@ if(NOT SUBPROJECT)
 	option(VRPN_BUILD_SERVERS "Build VRPN servers" ON)
 
 	# Development tools
-	if(MSVC)
+	if(MSVC_IDE AND MSVC_VERSION LESS 1600)
+		# VS 2012 Express and newer has folder support...
 		option(VRPN_BUILD_WITH_PROJECT_FOLDERS
 			"Use project folders in build system - not compatible with Visual C++ Express editions!"
 			OFF)
