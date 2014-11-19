@@ -132,7 +132,8 @@ set(SERVER_LINK_FLAGS)
 # WS2003SP1/WinXPSP2 	0x0502
 # Vista 0x0600
 # Win7  0x0601
-# Win8  0x0601
+# Win8  0x0602
+# Win8.1 0x0603 (though some docs say 0x0602 with NTDDI_VERSION 0x06030000)
 if(WIN32)
 	set(WIN_MIN_VER 0x0500) # Default to Windows 2000
 	if(MSVC AND MSVC_VERSION GREATER 1699)
