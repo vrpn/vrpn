@@ -616,6 +616,8 @@ if(WIN32)
 		endif()
 	endif()
 
+	# ATL is used for the vrpn_Tracker_zSight (which is based on DirectInput)
+	# to provide a smart pointer, but ATL isn't always available.
 	include(CheckIncludeFileCXX)
 	check_include_file_cxx(atlbase.h VRPN_HAVE_ATLBASE)
 endif()
