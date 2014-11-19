@@ -325,20 +325,26 @@ if(PYTHONLIBS_FOUND)
 	endif()
 endif()
 
+# If MSVC, and we don't have a debug lib, default to off, or the default (debug runtime) build is broken.
+if(MSVC AND NOT PYTHON_LIBRARY_DEBUG)
+	set(PYTHON_DEFAULT_OFF OFF_BY_DEFAULT)
+else()
+	set(PYTHON_DEFAULT_OFF ${DEFAULT_OFF_IF_SUBPROJECT})
+endif()
 option_requires(VRPN_BUILD_PYTHON
 	"Build VRPN Python 2.x SWIG-based bindings"
-	${DEFAULT_OFF_IF_SUBPROJECT}
+	${PYTHON_DEFAULT_OFF}
 	SWIG_FOUND
 	PYTHON2_FOUND)
 
 option_requires(VRPN_BUILD_PYTHON_HANDCODED_2X
 	"Build VRPN Python handcoded bindings for Python 2.x"
-	${DEFAULT_OFF_IF_SUBPROJECT}
+	${PYTHON_DEFAULT_OFF}
 	PYTHON2_FOUND)
 
 option_requires(VRPN_BUILD_PYTHON_HANDCODED_3X
 	"Build VRPN Python handcoded bindings for Python 3.x"
-	${DEFAULT_OFF_IF_SUBPROJECT}
+	${PYTHON_DEFAULT_OFF}
 	PYTHON3_FOUND)
 
 ###
