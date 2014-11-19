@@ -82,11 +82,14 @@ if(MSVC_VERSION GREATER 1310) # Newer than VS .NET/VS Toolkit 2003
 				message(STATUS "FindWindowsSDK: Detected Visual Studio 2012 or newer, not using the _xp toolset variant: including SDK versions that drop XP support in search!")
 			endif()
 			# These versions have no XP (and possibly Vista pre-SP1) support
-			set(_winsdk_vistaonly
-				# Windows Software Development Kit (SDK) for Windows 8.1
-				# http://msdn.microsoft.com/en-gb/windows/desktop/bg162891
-				v8.1
-
+			set(_winsdk_vistaonly)
+			if(NOT MSVC_VERSION LESS 1800)
+				list(APPEND _winsdk_vistaonly
+					# Windows Software Development Kit (SDK) for Windows 8.1
+					# http://msdn.microsoft.com/en-gb/windows/desktop/bg162891
+					v8.1)
+			endif()
+			list(APPEND _winsdk_vistaonly
 				# Included in Visual Studio 2012
 				v8.0A
 
