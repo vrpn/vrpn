@@ -14,6 +14,9 @@
 #  DIRECTX_INCLUDE_DIRS
 #  DIRECTX_FOUND - if this is not true, do not attempt to use this library
 #
+# Defines these macros:
+#  find_directx_include - wrapper for find_path that provides PATHS, HINTS, and PATH_SUFFIXES.
+#  find_directx_library - wrapper for find_library that provides PATHS, HINTS, and PATH_SUFFIXES.
 # Requires these CMake modules:
 #  FindPackageHandleStandardArgs (known included with CMake >=2.6.2)
 #  SelectLibraryConfigurations
@@ -42,10 +45,22 @@ if(MSVC)
 		set(_PROG_FILES "${_PROG_FILES_X86}")
 	endif()
 	if(CMAKE_SIZEOF_VOID_P EQUAL 8)
-		set(_lib_suffixes lib/x64 lib)
+		set(_dx_lib_suffixes lib/x64 lib)
 	else()
-		set(_lib_suffixes lib/x86 lib)
+		set(_dx_lib_suffixes lib/x86 lib)
 	endif()
+	set(DXSDK_DIRS)
+
+	find_package(WindowsSDK)
+	if(WINDOWSSDK_FOUND)
+		foreach(_dir ${WINDOWSSDK_DIRS})
+			get_windowssdk_include_dirs(${_dir} _include_dirs)
+			if(_include_dirs)
+				list(APPEND DXSDK_DIRS ${_include_dirs})
+			endif()
+		endforeach()
+	endif()
+
 	macro(_append_dxsdk_in_inclusive_range _low _high)
 		if((NOT MSVC_VERSION LESS ${_low}) AND (NOT MSVC_VERSION GREATER ${_high}))
 			list(APPEND DXSDK_DIRS ${ARGN})
@@ -78,7 +93,7 @@ if(MSVC)
 		list(APPEND DXSDK_DIRS ${ENV_DXSDK_DIR})
 	endif()
 else()
-	set(_lib_suffixes lib)
+	set(_dx_lib_suffixes lib)
 	set(DXSDK_DIRS /mingw)
 endif()
 
@@ -103,18 +118,41 @@ find_path(DIRECTX_DINPUT_INCLUDE_DIR
 	PATH_SUFFIXES
 	include)
 
+set(DXLIB_HINTS)
+if(WINDOWSSDK_FOUND AND DIRECTX_INCLUDE_DIR)
+	get_windowssdk_from_component("${DIRECTX_INCLUDE_DIR}" _winsdk)
+	if(_winsdk)
+		get_windowssdk_library_dirs("${_winsdk}" _libdirs)
+		if(_libdirs)
+			list(APPEND DXLIB_HINTS ${_libdirs})
+		endif()
+	endif()
+endif()
+
+if(WINDOWSSDK_FOUND AND DIRECTX_DINPUT_INCLUDE_DIR)
+	get_windowssdk_from_component("${DIRECTX_DINPUT_INCLUDE_DIR}" _winsdk)
+	if(_winsdk)
+		get_windowssdk_library_dirs("${_winsdk}" _includes)
+		if(_includes)
+			list(APPEND DXLIB_HINTS ${_includes})
+		endif()
+	endif()
+endif()
+
 find_library(DIRECTX_DXGUID_LIBRARY
 	NAMES
 	dxguid
 	PATHS
+	${DXLIB_HINTS}
 	${DXSDK_DIRS}
 	HINTS
 	"${DIRECTX_ROOT_DIR}"
 	PATH_SUFFIXES
-	${_lib_suffixes})
+	${_dx_lib_suffixes})
 
 if(DIRECTX_DXGUID_LIBRARY)
 	get_filename_component(_dxsdk_lib_dir ${DIRECTX_DXGUID_LIBRARY} PATH)
+	list(APPEND DXLIB_HINTS "${_dxsdk_lib_dir}")
 endif()
 
 find_library(DIRECTX_DINPUT_LIBRARY
@@ -124,10 +162,10 @@ find_library(DIRECTX_DINPUT_LIBRARY
 	PATHS
 	${DXSDK_DIRS}
 	HINTS
-	"${_dxsdk_lib_dir}"
+	${DXLIB_HINTS}
 	"${DIRECTX_ROOT_DIR}"
 	PATH_SUFFIXES
-	${_lib_suffixes})
+	${_dx_lib_suffixes})
 
 find_library(DIRECTX_DXERR_LIBRARY
 	NAMES
@@ -137,10 +175,10 @@ find_library(DIRECTX_DXERR_LIBRARY
 	PATHS
 	${DXSDK_DIRS}
 	HINTS
-	"${_dxsdk_lib_dir}"
+	${DXLIB_HINTS}
 	"${DIRECTX_ROOT_DIR}"
 	PATH_SUFFIXES
-	${_lib_suffixes})
+	${_dx_lib_suffixes})
 
 find_library(DIRECTX_D3D9_LIBRARY
 	NAMES
@@ -148,10 +186,10 @@ find_library(DIRECTX_D3D9_LIBRARY
 	PATHS
 	${DXSDK_DIRS}
 	HINTS
-	"${_dxsdk_lib_dir}"
+	${DXLIB_HINTS}
 	"${DIRECTX_ROOT_DIR}"
 	PATH_SUFFIXES
-	${_lib_suffixes})
+	${_dx_lib_suffixes})
 
 find_library(DIRECTX_D3DXOF_LIBRARY
 	NAMES
@@ -159,10 +197,10 @@ find_library(DIRECTX_D3DXOF_LIBRARY
 	PATHS
 	${DXSDK_DIRS}
 	HINTS
-	"${_dxsdk_lib_dir}"
+	${DXLIB_HINTS}
 	"${DIRECTX_ROOT_DIR}"
 	PATH_SUFFIXES
-	${_lib_suffixes})
+	${_dx_lib_suffixes})
 
 find_library(DIRECTX_D3DX9_LIBRARY_RELEASE
 	NAMES
@@ -170,10 +208,10 @@ find_library(DIRECTX_D3DX9_LIBRARY_RELEASE
 	PATHS
 	${DXSDK_DIRS}
 	HINTS
-	"${_dxsdk_lib_dir}"
+	${DXLIB_HINTS}
 	"${DIRECTX_ROOT_DIR}"
 	PATH_SUFFIXES
-	${_lib_suffixes})
+	${_dx_lib_suffixes})
 
 find_library(DIRECTX_D3DX9_LIBRARY_DEBUG
 	NAMES
@@ -181,10 +219,10 @@ find_library(DIRECTX_D3DX9_LIBRARY_DEBUG
 	PATHS
 	${DXSDK_DIRS}
 	HINTS
-	"${_dxsdk_lib_dir}"
+	${DXLIB_HINTS}
 	"${DIRECTX_ROOT_DIR}"
 	PATH_SUFFIXES
-	${_lib_suffixes})
+	${_dx_lib_suffixes})
 
 find_library(DIRECTX_XINPUT_LIBRARY
 	NAMES
@@ -193,10 +231,10 @@ find_library(DIRECTX_XINPUT_LIBRARY
 	PATHS
 	${DXSDK_DIRS}
 	HINTS
-	"${_dxsdk_lib_dir}"
+	${DXLIB_HINTS}
 	"${DIRECTX_ROOT_DIR}"
 	PATH_SUFFIXES
-	${_lib_suffixes})
+	${_dx_lib_suffixes})
 
 include(SelectLibraryConfigurations)
 select_library_configurations(DIRECTX_D3DX9)
@@ -243,6 +281,27 @@ if(DIRECTX_FOUND)
 	set(DIRECTX_INCLUDE_DIRS "${DIRECTX_INCLUDE_DIR}")
 
 	mark_as_advanced(DIRECTX_ROOT_DIR)
+	macro(find_directx_library)
+		find_library(${ARGN}
+			PATHS
+			${DXSDK_DIRS}
+			HINTS
+			${DXLIB_HINTS}
+			"${DIRECTX_ROOT_DIR}"
+			PATH_SUFFIXES
+			${_dx_lib_suffixes})
+	endmacro()
+	macro(find_directx_include)
+		find_path(${ARGN}
+			PATHS
+			${DXSDK_DIRS}
+			HINTS
+			${DIRECTX_INCLUDE_DIR}
+			"${DIRECTX_ROOT_DIR}"
+			PATH_SUFFIXES
+			include)
+	endmacro()
+
 endif()
 
 mark_as_advanced(DIRECTX_DINPUT_LIBRARY
