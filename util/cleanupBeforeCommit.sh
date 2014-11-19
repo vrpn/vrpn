@@ -91,12 +91,12 @@ StartProcessingFile() {
 
 RemoveDosEndlines() {
     StatusMessage "Removing DOS endlines with ${DOS2UNIX}"
-    ${DOS2UNIX} ${FILETOPROCESS}
+    ${DOS2UNIX} ${FILETOPROCESS} > /dev/null
 }
 
 AddDosEndlines() {
     StatusMessage "Adding DOS endlines with ${UNIX2DOS}"
-    ${UNIX2DOS} ${FILETOPROCESS}
+    ${UNIX2DOS} ${FILETOPROCESS} > /dev/null
 }
 
 TrimTrailingWhitespace() {
@@ -150,11 +150,15 @@ FindFilesNamedCaseInsensitive() {
 (
     cd ${VRPN}
 
-    # Clean up this script first!
-    StartProcessingFile ${SCRIPT}
-    RemoveDosEndlines
-    TrimTrailingWhitespace
-    AddExecutablePrivilege
+    # Clean up this script first, but only if we're not on Windows
+    if uname | grep "_NT-" >/dev/null; then
+        StatusMessage "Skipping script self-clean because Windows was detected"
+    else
+        StartProcessingFile ${SCRIPT}
+        RemoveDosEndlines
+        TrimTrailingWhitespace
+        AddExecutablePrivilege
+    fi
 
     # Git config file
     StartProcessingFile .gitmodules
@@ -232,14 +236,6 @@ FindFilesNamedCaseInsensitive() {
         StartProcessingFile ${fn}
         RemoveDosEndlines
         RemoveExecutablePrivilege
-    done
-
-    #########################################################################
-    # Clean up all .patch and .sh files. Only change to DOS.
-
-    for fn in $(FindFilesNamed \*.patch) $(FindFilesNamed \*.sh); do
-        StartProcessingFile ${fn}
-        RemoveDosEndlines
     done
 
     #########################################################################
