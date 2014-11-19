@@ -121,6 +121,7 @@ else()
 endif()
 
 set(SERVER_EXTRA_LIBS)
+set(SERVER_LINK_FLAGS)
 
 # Set up correct defines for Windows header compilation:
 # This theoretically sets the lower-bound on operating system compatibility
@@ -575,6 +576,15 @@ if(WIN32)
 			SERVER_EXTRA_LIBS
 			${DIRECTX_DXGUID_LIBRARY}
 			${DIRECTX_DINPUT_LIBRARY})
+		if(MSVC)
+			# Delay-load DirectInput DLL
+			# TODO is this always the right name
+			# TODO how to do this with MinGW? Can we? Do we need to?
+			list(APPEND SERVER_LINK_FLAGS "/DELAYLOAD:dinput8.dll")
+			list(APPEND SERVER_EXTRA_LIBS "delayimp.lib")
+		endif()
+
+		# XInput - enhanced API for XBOX 360 controllers and more.
 		find_directx_include(DIRECTX_XINPUT_INCLUDE_DIR
 			xinput.h)
 		if(DIRECTX_XINPUT_INCLUDE_DIR AND DIRECTX_XINPUT_LIBRARY)
@@ -583,6 +593,20 @@ if(WIN32)
 				${DIRECTX_XINPUT_LIBRARY})
 			mark_as_advanced(DIRECTX_XINPUT_INCLUDE_DIR)
 			set(VRPN_USE_WINDOWS_XINPUT TRUE)
+
+			# Get name of DLL to delay-load.
+			include(GetDefineString)
+			get_define_string(NAME XINPUT_DLL
+				INCLUDES windows.h xinput.h
+				DEFINES "-D_WIN32_WINNT=${WIN_MIN_VER}"
+				INCLUDE_DIRS ${DIRECTX_DINPUT_INCLUDE_DIR} ${DIRECTX_XINPUT_INCLUDE_DIR}
+				RESULT VRPN_XINPUT_DLL)
+			if(VRPN_XINPUT_DLL AND MSVC)
+				# Delay-load XInput DLL
+				# TODO how to do this with MinGW? Can we? Do we need to?
+				list(APPEND SERVER_LINK_FLAGS "/DELAYLOAD:${VRPN_XINPUT_DLL}")
+				list(APPEND SERVER_EXTRA_LIBS "delayimp.lib")
+			endif()
 		else()
 			set(VRPN_USE_WINDOWS_XINPUT FALSE)
 		endif()
@@ -599,14 +623,20 @@ endif()
 # Note that header removal makes this harder for VS10 and later - you need an earlier
 # version of MSVC also installed or an older Windows/Platform SDK with qedit.h in it.
 if(MSVC)
+	if(MSVC_VERSION GREATER 1500)
+		set(DIRECTSHOW_OFF_BY_DEFAULT OFF_BY_DEFAULT)
+	else()
+		set(DIRECTSHOW_OFF_BY_DEFAULT)
+	endif()
 	find_package(DirectShow)
 	option_requires(VRPN_USE_DIRECTSHOW
 		"Build with Microsoft DirectShow support"
-		${DEFAULT_OFF_IF_SUBPROJECT}
+		${DIRECTSHOW_OFF_BY_DEFAULT}
 		DIRECTSHOW_FOUND)
 	option_requires(VRPN_BUILD_DIRECTSHOW_VIDEO_SERVER
 		"Enable to build DirectShow Video Server (Windows)"
 		${DEFAULT_OFF_IF_SUBPROJECT}
+		VRPN_BUILD_DIRECTSHOW_VIDEO_SERVER
 		DIRECTSHOW_FOUND)
 endif()
 
@@ -1193,6 +1223,11 @@ if(VRPN_BUILD_SERVER_LIBRARY)
 		PROPERTY
 		FOLDER
 		"Library")
+	set_property(TARGET
+		vrpnserver
+		PROPERTY
+		LINK_FLAGS
+		${SERVER_LINK_FLAGS})
 
 	if(UNIX)
 		add_subdirectory(atmellib)
@@ -1274,6 +1309,7 @@ set(VRPN_DEFINITIONS "-DVRPN_USING_CMAKE=\"${CMAKE_CURRENT_BINARY_DIR}/vrpn_Conf
 	CACHE INTERNAL "Definition to add if using as a subproject" FORCE)
 set(VRPN_CLIENT_LIBRARY ${VRPN_CLIENT_LIBRARY} CACHE INTERNAL "" FORCE)
 set(VRPN_SERVER_LIBRARY ${VRPN_SERVER_LIBRARY} CACHE INTERNAL "" FORCE)
+set(VRPN_SERVER_LINK_FLAGS ${SERVER_LINK_FLAGS} CACHE INTERNAL "" FORCE)
 set(VRPN_INCLUDE_DIRS
 	"${CMAKE_CURRENT_BINARY_DIR}"
 	"${VRPN_SOURCE_DIR}"

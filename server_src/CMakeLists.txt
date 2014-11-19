@@ -108,6 +108,11 @@ set_property(TARGET
 	PROJECT_LABEL
 	"vrpn_server")
 set_target_properties(vrpn_server PROPERTIES FOLDER "Main Server")
+set_property(TARGET
+	vrpn_server
+	PROPERTY
+	LINK_FLAGS
+	${SERVER_LINK_FLAGS})
 
 if(VRPN_INSTALL)
 	install(TARGETS vrpn_server
