@@ -23,10 +23,12 @@ set_target_properties(directshow_video_server
 	FOLDER
 	Servers)
 
-install(TARGETS
-	directshow_video_server
-	RUNTIME
-	DESTINATION
-	bin
-	COMPONENT
-	servers)
+if(VRPN_INSTALL)
+	install(TARGETS
+		directshow_video_server
+		RUNTIME
+		DESTINATION
+		bin
+		COMPONENT
+		servers)
+endif()

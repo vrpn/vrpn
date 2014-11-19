@@ -21,16 +21,17 @@ set_property(TARGET
 	PROPERTY
 	FOLDER
 	"Library")
-
-install(TARGETS
-	vrpn_atmel
-	ARCHIVE
-	DESTINATION
-	lib
-	COMPONENT
-	serversdk
-	PUBLIC_HEADER
-	DESTINATION
-	include
-	COMPONENT
-	serversdk)
+if(VRPN_INSTALL)
+	install(TARGETS
+		vrpn_atmel
+		ARCHIVE
+		DESTINATION
+		lib
+		COMPONENT
+		serversdk
+		PUBLIC_HEADER
+		DESTINATION
+		include
+		COMPONENT
+		serversdk)
+endif()

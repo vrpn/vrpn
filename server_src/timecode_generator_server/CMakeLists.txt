@@ -22,15 +22,17 @@ set_target_properties(vrpn_timecode_generator
 	FOLDER
 	"Main Server")
 
-install(TARGETS
-	vrpn_timecode_generator
-	ARCHIVE
-	DESTINATION
-	lib
-	COMPONENT
-	serversdk
-	PUBLIC_HEADER
-	DESTINATION
-	include
-	COMPONENT
-	serversdk)
+if(VRPN_INSTALL)
+	install(TARGETS
+		vrpn_timecode_generator
+		ARCHIVE
+		DESTINATION
+		lib
+		COMPONENT
+		serversdk
+		PUBLIC_HEADER
+		DESTINATION
+		include
+		COMPONENT
+		serversdk)
+endif()

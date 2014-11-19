@@ -22,15 +22,17 @@ set_property(TARGET
 	${GPSNMEALIB_PUBLIC_HEADERS})
 set_property(TARGET gpsnmea PROPERTY FOLDER "Library")
 
-install(TARGETS
-	gpsnmea
-	ARCHIVE
-	DESTINATION
-	lib
-	COMPONENT
-	serversdk
-	PUBLIC_HEADER
-	DESTINATION
-	include
-	COMPONENT
-	serversdk)
+if(VRPN_INSTALL)
+	install(TARGETS
+		gpsnmea
+		ARCHIVE
+		DESTINATION
+		lib
+		COMPONENT
+		serversdk
+		PUBLIC_HEADER
+		DESTINATION
+		include
+		COMPONENT
+		serversdk)
+endif()

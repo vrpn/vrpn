@@ -35,29 +35,31 @@ set(QUATLIB_HEADER quat.h)
 add_library(quat ${QUATLIB_SOURCES} ${QUATLIB_HEADER})
 set_property(TARGET quat PROPERTY PUBLIC_HEADER ${QUATLIB_HEADER})
 set_target_properties(quat PROPERTIES FOLDER Library)
-install(TARGETS
-	quat
-	ARCHIVE
-	DESTINATION
-	lib
-	COMPONENT
-	serversdk
-	PUBLIC_HEADER
-	DESTINATION
-	include
-	COMPONENT
-	serversdk)
-install(TARGETS
-	quat
-	ARCHIVE
-	DESTINATION
-	lib
-	COMPONENT
-	clientsdk
-	PUBLIC_HEADER
-	DESTINATION
-	include
-	COMPONENT
-	clientsdk)
+if(VRPN_INSTALL)
+	install(TARGETS
+		quat
+		ARCHIVE
+		DESTINATION
+		lib
+		COMPONENT
+		serversdk
+		PUBLIC_HEADER
+		DESTINATION
+		include
+		COMPONENT
+		serversdk)
+	install(TARGETS
+		quat
+		ARCHIVE
+		DESTINATION
+		lib
+		COMPONENT
+		clientsdk
+		PUBLIC_HEADER
+		DESTINATION
+		include
+		COMPONENT
+		clientsdk)
+endif()
 
 add_subdirectory(testapps)
