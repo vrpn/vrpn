@@ -5561,7 +5561,6 @@ void vrpn_Connection_IP::server_check_for_incoming_connections(
 {
     vrpn_Endpoint_IP *endpoint; // shorthand for d_endpoints[which_end]
     int request;
-    char msg[200]; // Message received on the request channel
     timeval timeout;
     int which_end = d_numEndpoints;
     int retval;
@@ -5596,6 +5595,7 @@ void vrpn_Connection_IP::server_check_for_incoming_connections(
         struct sockaddr_in from;
         int fromlen = sizeof(from);
 
+        char msg[200]; // Message received on the request channel
         if (recvfrom(listen_udp_sock, msg, sizeof(msg) - 1, 0,
                      (struct sockaddr *)&from, GSN_CAST & fromlen) == -1) {
             fprintf(stderr,
@@ -5603,7 +5603,8 @@ void vrpn_Connection_IP::server_check_for_incoming_connections(
             return;
         }
         else {
-            msg[200] = '\0';
+            // Force null termination
+            msg[sizeof(msg) - 1] = '\0';
         }
 
         // Because we sometimes use multiple NICs, we are ignoring the IP from
