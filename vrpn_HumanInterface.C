@@ -143,10 +143,6 @@ void vrpn_HidInterface::update()
 
     // Maximum packet size for USB is 512 characters.
     vrpn_uint8 inbuf[512];
-    if (inbuf == NULL) {
-        fprintf(stderr, "vrpn_HidInterface::update(): Out of memory\n");
-        return;
-    }
 
     // Continue reading until we eat up all of the reports.  If we only handle
     // one report per loop cycle, we can accumulate latency.
