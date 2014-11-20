@@ -4482,7 +4482,7 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(
 
             // copy for strtok work
             strncpy(scrap, line, LINESIZE - 1);
-            scrap[sizeof(scrap)-1] = '\0';
+            scrap[sizeof(scrap) - 1] = '\0';
 // Figure out the device from the name and handle appropriately
 
 // WARNING: SUBSTRINGS WILL MATCH THE EARLIER STRING, SO
