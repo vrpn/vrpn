@@ -93,7 +93,7 @@ if(VRPN_USE_LOCAL_HIDAPI)
 				"ERROR: Can't use local HIDAPI - can't find the source file!  Perhaps an unknown upstream version?")
 			set(HIDAPI_FOUND FALSE)
 		endif()
-		set(HIDAPI_LIBRARIES ${WINHID_LIBRARIES} setupapi)
+		set(HIDAPI_LIBRARIES setupapi)
 
 	elseif(VRPN_HIDAPI_USE_LIBUSB)
 		if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/hidapi/libusb/hid.c")
