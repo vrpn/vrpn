@@ -57,6 +57,7 @@ if(SWIG_FOUND AND PYTHONLIBS_FOUND AND VRPN_BUILD_PYTHON)
 		vrpn_Poser
 		vrpn_Text
 		vrpn_Tracker)
+
 	foreach(module ${MODULES})
 		set_source_files_properties(${module}.i PROPERTIES CPLUSPLUS ON)
 		swig_add_module(${module}
@@ -66,24 +67,27 @@ if(SWIG_FOUND AND PYTHONLIBS_FOUND AND VRPN_BUILD_PYTHON)
 			${quatlib_fullsrc})
 		swig_link_libraries(${module} ${PYTHON_LIBRARIES} ${LIBS} ${SERVER_EXTRA_LIBS})
 		set_target_properties(_${module} PROPERTIES FOLDER "Python Bindings")
-		install(FILES
-			"${CMAKE_CURRENT_BINARY_DIR}/${module}.py"
-			DESTINATION
-			lib/${PYTHONVERSIONDIR}dist-packages/
-			COMPONENT
-			python)
-		install(TARGETS
-			${SWIG_MODULE_${module}_REAL_NAME}
-			RUNTIME
-			DESTINATION
-			lib/${PYTHONVERSIONDIR}dist-packages/
-			COMPONENT
-			python
-			LIBRARY
-			DESTINATION
-			lib/${PYTHONVERSIONDIR}dist-packages/
-			COMPONENT
-			python)
+
+		if(VRPN_INSTALL)
+			install(FILES
+				"${CMAKE_CURRENT_BINARY_DIR}/${module}.py"
+				DESTINATION
+				lib/${PYTHONVERSIONDIR}dist-packages/
+				COMPONENT
+				python)
+			install(TARGETS
+				${SWIG_MODULE_${module}_REAL_NAME}
+				RUNTIME
+				DESTINATION
+				lib/${PYTHONVERSIONDIR}dist-packages/
+				COMPONENT
+				python
+				LIBRARY
+				DESTINATION
+				lib/${PYTHONVERSIONDIR}dist-packages/
+				COMPONENT
+				python)
+		endif()
 	endforeach()
 
 endif()

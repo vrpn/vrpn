@@ -4482,7 +4482,7 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(
 
             // copy for strtok work
             strncpy(scrap, line, LINESIZE - 1);
-            scrap[sizeof(scrap)-1] = '\0';
+            scrap[sizeof(scrap) - 1] = '\0';
 // Figure out the device from the name and handle appropriately
 
 // WARNING: SUBSTRINGS WILL MATCH THE EARLIER STRING, SO
@@ -4647,7 +4647,7 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(
                 found_it_yet = false;
             }
 
-            if (!found_it_yet)
+            if (!found_it_yet) {
                 if (VRPN_ISIT("vrpn_XInputGamepad")) {
                     VRPN_CHECK(setup_XInputPad);
                 }
@@ -4913,6 +4913,7 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(
                         continue; // Skip this line
                     }
                 }
+            }
         }
     }
 

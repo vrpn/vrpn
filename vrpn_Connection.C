@@ -1793,7 +1793,8 @@ int vrpn_noint_block_write(SOCKET outsock, char *buffer, size_t length)
     size_t sofar = 0;
     do {
         /* Try to write the remaining data */
-        nwritten = send(outsock, buffer + sofar, static_cast<int>(length - sofar), 0);
+        nwritten =
+            send(outsock, buffer + sofar, static_cast<int>(length - sofar), 0);
 
         if (nwritten == SOCKET_ERROR) {
             return -1;
@@ -1820,7 +1821,8 @@ int vrpn_noint_block_read(SOCKET insock, char *buffer, size_t length)
 
     do {
         /* Try to read all remaining data */
-        nread = recv(insock, buffer + sofar, static_cast<int>(length - sofar), 0);
+        nread =
+            recv(insock, buffer + sofar, static_cast<int>(length - sofar), 0);
 
         if (nread == SOCKET_ERROR) {
             return -1;
@@ -1907,8 +1909,8 @@ int vrpn_noint_block_read_timeout(int infile, char buffer[], size_t length,
         }
         if (!FD_ISSET(infile, &readfds)) { /* No characters */
             if ((timeout != NULL) && (timeout->tv_sec == 0) &&
-                (timeout->tv_usec == 0)) { /* Quick poll */
-                return static_cast<int>(sofar);              /* Timeout! */
+                (timeout->tv_usec == 0)) {      /* Quick poll */
+                return static_cast<int>(sofar); /* Timeout! */
             }
         }
 
@@ -5559,7 +5561,6 @@ void vrpn_Connection_IP::server_check_for_incoming_connections(
 {
     vrpn_Endpoint_IP *endpoint; // shorthand for d_endpoints[which_end]
     int request;
-    char msg[200]; // Message received on the request channel
     timeval timeout;
     int which_end = d_numEndpoints;
     int retval;
@@ -5594,11 +5595,16 @@ void vrpn_Connection_IP::server_check_for_incoming_connections(
         struct sockaddr_in from;
         int fromlen = sizeof(from);
 
-        if (recvfrom(listen_udp_sock, msg, sizeof(msg), 0,
+        char msg[200]; // Message received on the request channel
+        if (recvfrom(listen_udp_sock, msg, sizeof(msg) - 1, 0,
                      (struct sockaddr *)&from, GSN_CAST & fromlen) == -1) {
             fprintf(stderr,
                     "vrpn: Error on recvfrom: Bad connection attempt\n");
             return;
+        }
+        else {
+            // Force null termination
+            msg[sizeof(msg) - 1] = '\0';
         }
 
         // Because we sometimes use multiple NICs, we are ignoring the IP from

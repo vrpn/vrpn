@@ -17,6 +17,15 @@
 #  windowssdk_name_lookup(<directory> <output variable>) - Find the name corresponding with the SDK directory you pass in, or
 #     NOTFOUND if not recognized. Your directory must be one of WINDOWSSDK_DIRS for this to work.
 #
+#  get_windowssdk_from_component(<file or dir> <output variable>) - Given a library or include dir,
+#     find the Windows SDK root dir corresponding to it, or NOTFOUND if unrecognized.
+#
+#  get_windowssdk_library_dirs(<directory> <output variable>) - Find the architecture-appropriate
+#     library directories corresponding to the SDK directory you pass in (or NOTFOUND if none)
+#
+#  get_windowssdk_include_dirs(<directory> <output variable>) - Find the
+#     include directories corresponding to the SDK directory you pass in (or NOTFOUND if none)
+#
 # Requires these CMake modules:
 #  FindPackageHandleStandardArgs (known included with CMake >=2.6.2)
 #
@@ -69,13 +78,18 @@ if(MSVC_VERSION GREATER 1310) # Newer than VS .NET/VS Toolkit 2003
 		elseif("${CMAKE_VS_PLATFORM_TOOLSET}" STREQUAL "v100")
 			# This is the VS2010 toolset
 		else()
-			message(STATUS "FindWindowsSDK: Detected Visual Studio 2012 or newer, not using the _xp toolset variant: including SDK versions that drop XP support in search!")
+			if(NOT WINDOWSSDK_FOUND AND NOT WindowsSDK_FIND_QUIETLY)
+				message(STATUS "FindWindowsSDK: Detected Visual Studio 2012 or newer, not using the _xp toolset variant: including SDK versions that drop XP support in search!")
+			endif()
 			# These versions have no XP (and possibly Vista pre-SP1) support
-			set(_winsdk_vistaonly
-				# Windows Software Development Kit (SDK) for Windows 8.1
-				# http://msdn.microsoft.com/en-gb/windows/desktop/bg162891
-				v8.1
-
+			set(_winsdk_vistaonly)
+			if(NOT MSVC_VERSION LESS 1800)
+				list(APPEND _winsdk_vistaonly
+					# Windows Software Development Kit (SDK) for Windows 8.1
+					# http://msdn.microsoft.com/en-gb/windows/desktop/bg162891
+					v8.1)
+			endif()
+			list(APPEND _winsdk_vistaonly
 				# Included in Visual Studio 2012
 				v8.0A
 
@@ -223,4 +237,86 @@ if(WINDOWSSDK_FOUND)
 			endforeach()
 		endif()
 	endif()
+
+	# Internal: Architecture-appropriate library directory names.
+	if("${CMAKE_VS_PLATFORM_NAME}" STREQUAL "ARM")
+		set(_winsdk_archbare /arm) # what the architecture used to be called in oldest SDKs
+		set(_winsdk_arch arm) # what the architecture used to be called
+		set(_winsdk_arch8 arm) # what the WDK for Win8+ calls this architecture
+	else()
+		if(CMAKE_SIZEOF_VOID_P MATCHES "8")
+			set(_winsdk_archbare /x64) # what the architecture used to be called in oldest SDKs
+			set(_winsdk_arch amd64) # what the architecture used to be called
+			set(_winsdk_arch8 x64) # what the WDK for Win8+ calls this architecture
+		else()
+			set(_winsdk_archbare ) # what the architecture used to be called in oldest SDKs
+			set(_winsdk_arch i386) # what the architecture used to be called
+			set(_winsdk_arch8 x86) # what the WDK for Win8+ calls this architecture
+		endif()
+	endif()
+
+	function(get_windowssdk_from_component _component _var)
+		get_filename_component(_component "${_component}" ABSOLUTE)
+		file(TO_CMAKE_PATH "${_component}" _component)
+		foreach(_sdkdir ${WINDOWSSDK_DIRS})
+			get_filename_component(_sdkdir "${_sdkdir}" ABSOLUTE)
+			string(LENGTH "${_sdkdir}" _sdklen)
+			file(RELATIVE_PATH _rel "${_sdkdir}" "${_component}")
+			# If we don't have any "parent directory" items...
+			if(NOT "${_rel}" MATCHES "[.][.]")
+				set(${_var} "${_sdkdir}" PARENT_SCOPE)
+				return()
+			endif()
+		endforeach()
+		# Fail.
+		set(${_var} "NOTFOUND" PARENT_SCOPE)
+	endfunction()
+	function(get_windowssdk_library_dirs _winsdk_dir _var)
+		set(_result)
+		foreach(_suffix
+			"lib${_winsdk_archbare}" # SDKs like 7.1A
+			"lib/w2k/${_winsdk_arch}" # Win2k min requirement
+			"lib/wxp/${_winsdk_arch}" # WinXP min requirement
+			"lib/wnet/${_winsdk_arch}" # Win Server 2003 min requirement
+			"lib/wlh/${_winsdk_arch}" # Win Vista ("Long Horn") min requirement
+			"lib/wlh/um/${_winsdk_arch8}" # Win Vista ("Long Horn") min requirement
+			"lib/win7/${_winsdk_arch}" # Win 7 min requirement
+			"lib/win7/um/${_winsdk_arch8}" # Win 7 min requirement
+			"lib/win8/um/${_winsdk_arch8}" # Win 8 min requirement
+			"lib/win8/km/${_winsdk_arch8}" # Win 8 min requirement
+			"lib/winv6.3/km/${_winsdk_arch8}" # Win 8.1 min requirement
+			"lib/winv6.3/um/${_winsdk_arch8}" # Win 8.1 min requirement
+		)
+			# Check to see if a library actually exists here.
+			file(GLOB _libs "${_winsdk_dir}/${_suffix}/*.lib")
+			if(_libs)
+				list(APPEND _result "${_winsdk_dir}/${_suffix}")
+			endif()
+		endforeach()
+		if(NOT _result)
+			set(_result NOTFOUND)
+		endif()
+		set(${_var} ${_result} PARENT_SCOPE)
+	endfunction()
+	function(get_windowssdk_include_dirs _winsdk_dir _var)
+		set(_result)
+		foreach(_suffix
+			"Include"
+			"Include/shared"
+			"Include/um"
+			"Include/winrt"
+			"Include/km"
+			"Include/wdf"
+		)
+			# Check to see if a header file actually exists here.
+			file(GLOB _headers "${_winsdk_dir}/${_suffix}/*.h")
+			if(_headers)
+				list(APPEND _result "${_winsdk_dir}/${_suffix}")
+			endif()
+		endforeach()
+		if(NOT _result)
+			set(_result NOTFOUND)
+		endif()
+		set(${_var} ${_result} PARENT_SCOPE)
+	endfunction()
 endif()

@@ -22,10 +22,12 @@ include(CreateDashboardScripts)
 include(CheckIncludeFileCXX)
 
 if((NOT CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR) OR VRPN_SUBPROJECT_BUILD)
+	# If you're using this as a subproject and want things installed, set VRPN_INSTALL TRUE.
 	set(SUBPROJECT TRUE)
 	set(DEFAULT_OFF_IF_SUBPROJECT OFF_BY_DEFAULT)
 	set(TRUE_UNLESS_SUBPROJECT FALSE)
 else()
+	set(VRPN_INSTALL TRUE)
 	set(SUBPROJECT FALSE)
 	set(DEFAULT_OFF_IF_SUBPROJECT)
 	set(TRUE_UNLESS_SUBPROJECT TRUE)
@@ -118,6 +120,9 @@ else()
 		"${CMAKE_CXX_FLAGS} ${CMAKE_SHARED_LIBRARY_CXX_FLAGS}")
 endif()
 
+set(SERVER_EXTRA_LIBS)
+set(SERVER_LINK_FLAGS)
+
 # Set up correct defines for Windows header compilation:
 # This theoretically sets the lower-bound on operating system compatibility
 # http://msdn.microsoft.com/en-us/library/windows/desktop/aa383745(v=vs.85).aspx
@@ -127,7 +132,8 @@ endif()
 # WS2003SP1/WinXPSP2 	0x0502
 # Vista 0x0600
 # Win7  0x0601
-# Win8  0x0601
+# Win8  0x0602
+# Win8.1 0x0603 (though some docs say 0x0602 with NTDDI_VERSION 0x06030000)
 if(WIN32)
 	set(WIN_MIN_VER 0x0500) # Default to Windows 2000
 	if(MSVC AND MSVC_VERSION GREATER 1699)
@@ -159,7 +165,8 @@ if(NOT SUBPROJECT)
 	option(VRPN_BUILD_SERVERS "Build VRPN servers" ON)
 
 	# Development tools
-	if(MSVC)
+	if(MSVC_IDE AND MSVC_VERSION LESS 1600)
+		# VS 2012 Express and newer has folder support...
 		option(VRPN_BUILD_WITH_PROJECT_FOLDERS
 			"Use project folders in build system - not compatible with Visual C++ Express editions!"
 			OFF)
@@ -321,20 +328,26 @@ if(PYTHONLIBS_FOUND)
 	endif()
 endif()
 
+# If MSVC, and we don't have a debug lib, default to off, or the default (debug runtime) build is broken.
+if(MSVC AND NOT PYTHON_LIBRARY_DEBUG)
+	set(PYTHON_DEFAULT_OFF OFF_BY_DEFAULT)
+else()
+	set(PYTHON_DEFAULT_OFF ${DEFAULT_OFF_IF_SUBPROJECT})
+endif()
 option_requires(VRPN_BUILD_PYTHON
 	"Build VRPN Python 2.x SWIG-based bindings"
-	${DEFAULT_OFF_IF_SUBPROJECT}
+	${PYTHON_DEFAULT_OFF}
 	SWIG_FOUND
 	PYTHON2_FOUND)
 
 option_requires(VRPN_BUILD_PYTHON_HANDCODED_2X
 	"Build VRPN Python handcoded bindings for Python 2.x"
-	${DEFAULT_OFF_IF_SUBPROJECT}
+	${PYTHON_DEFAULT_OFF}
 	PYTHON2_FOUND)
 
 option_requires(VRPN_BUILD_PYTHON_HANDCODED_3X
 	"Build VRPN Python handcoded bindings for Python 3.x"
-	${DEFAULT_OFF_IF_SUBPROJECT}
+	${PYTHON_DEFAULT_OFF}
 	PYTHON3_FOUND)
 
 ###
@@ -549,31 +562,15 @@ if(VRPN_USE_LIBNIFALCON)
 endif()
 
 ###
-# DirectShow
-###
-# Note that header removal makes this harder for VS10 and later - you need an earlier
-# version of MSVC also installed or an older Windows/Platform SDK with qedit.h in it.
-if(MSVC)
-	find_package(DirectShow)
-	option_requires(VRPN_USE_DIRECTSHOW
-		"Build with Microsoft DirectShow support"
-		${DEFAULT_OFF_IF_SUBPROJECT}
-		DIRECTSHOW_FOUND)
-	option_requires(VRPN_BUILD_DIRECTSHOW_VIDEO_SERVER
-		"Enable to build DirectShow Video Server (Windows)"
-		${DEFAULT_OFF_IF_SUBPROJECT}
-		DIRECTSHOW_FOUND)
-endif()
-
-###
-# DirectInput
+# DirectInput and XInput
 ###
 if(WIN32)
 	find_package(DirectX)
 	option_requires(VRPN_USE_DIRECTINPUT
 		"Build with Microsoft DirectInput support"
 		${DEFAULT_OFF_IF_SUBPROJECT}
-		DIRECTX_FOUND
+		DIRECTX_DXGUID_LIBRARY
+		DIRECTX_DINPUT_LIBRARY
 		DIRECTX_DINPUT_INCLUDE_DIR)
 	if(VRPN_USE_DIRECTINPUT)
 		include_directories(${DIRECTX_INCLUDE_DIRS})
@@ -581,23 +578,72 @@ if(WIN32)
 			SERVER_EXTRA_LIBS
 			${DIRECTX_DXGUID_LIBRARY}
 			${DIRECTX_DINPUT_LIBRARY})
-		find_path(DIRECTX_XINPUT_INCLUDE_DIR
-			xinput.h
-			HINTS
-			${DIRECTX_INCLUDE_DIRS})
-		if(DIRECTX_XINPUT_INCLUDE_DIR AND DIRECTX_XINPUT_LIBRARY)
-			list(APPEND
-				SERVER_EXTRA_LIBS
-				${DIRECTX_XINPUT_LIBRARY})
-			mark_as_advanced(DIRECTX_XINPUT_INCLUDE_DIR)
-			set(VRPN_USE_WINDOWS_XINPUT TRUE)
-		else()
-			set(VRPN_USE_WINDOWS_XINPUT FALSE)
+		if(MSVC)
+			# Delay-load DirectInput DLL
+			# TODO is this always the right name
+			# TODO how to do this with MinGW? Can we? Do we need to?
+			list(APPEND SERVER_LINK_FLAGS "/DELAYLOAD:dinput8.dll")
+			list(APPEND SERVER_EXTRA_LIBS "delayimp.lib")
 		endif()
 	endif()
 
+	# XInput - enhanced API for XBOX 360 controllers and more.
+	find_directx_include(DIRECTX_XINPUT_INCLUDE_DIR
+		xinput.h)
+	option_requires(VRPN_USE_WINDOWS_XINPUT
+		"Build with Microsoft XInput support"
+		${DEFAULT_OFF_IF_SUBPROJECT}
+		DIRECTX_XINPUT_INCLUDE_DIR
+		DIRECTX_XINPUT_LIBRARY)
+	if(VRPN_USE_WINDOWS_XINPUT)
+		list(APPEND
+			SERVER_EXTRA_LIBS
+			${DIRECTX_XINPUT_LIBRARY})
+		mark_as_advanced(DIRECTX_XINPUT_INCLUDE_DIR)
+
+		# Get name of DLL to delay-load.
+		include(GetDefineString)
+		get_define_string(NAME XINPUT_DLL
+			INCLUDES windows.h xinput.h
+			DEFINES "-D_WIN32_WINNT=${WIN_MIN_VER}"
+			INCLUDE_DIRS ${DIRECTX_DINPUT_INCLUDE_DIR} ${DIRECTX_XINPUT_INCLUDE_DIR}
+			RESULT VRPN_XINPUT_DLL)
+		if(VRPN_XINPUT_DLL AND MSVC)
+			# Delay-load XInput DLL
+			# TODO how to do this with MinGW? Can we? Do we need to?
+			list(APPEND SERVER_LINK_FLAGS "/DELAYLOAD:${VRPN_XINPUT_DLL}")
+			list(APPEND SERVER_EXTRA_LIBS "delayimp.lib")
+		endif()
+	endif()
+
+	# ATL is used for the vrpn_Tracker_zSight (which is based on DirectInput)
+	# to provide a smart pointer, but ATL isn't always available.
 	include(CheckIncludeFileCXX)
 	check_include_file_cxx(atlbase.h VRPN_HAVE_ATLBASE)
+endif()
+
+
+###
+# DirectShow
+###
+# Note that header removal makes this harder for VS10 and later - you need an earlier
+# version of MSVC also installed or an older Windows/Platform SDK with qedit.h in it.
+if(MSVC)
+	if(MSVC_VERSION GREATER 1500)
+		set(DIRECTSHOW_OFF_BY_DEFAULT OFF_BY_DEFAULT)
+	else()
+		set(DIRECTSHOW_OFF_BY_DEFAULT)
+	endif()
+	find_package(DirectShow)
+	option_requires(VRPN_USE_DIRECTSHOW
+		"Build with Microsoft DirectShow support"
+		${DIRECTSHOW_OFF_BY_DEFAULT}
+		DIRECTSHOW_FOUND)
+	option_requires(VRPN_BUILD_DIRECTSHOW_VIDEO_SERVER
+		"Enable to build DirectShow Video Server (Windows)"
+		${DEFAULT_OFF_IF_SUBPROJECT}
+		VRPN_BUILD_DIRECTSHOW_VIDEO_SERVER
+		DIRECTSHOW_FOUND)
 endif()
 
 ###
@@ -1183,6 +1229,11 @@ if(VRPN_BUILD_SERVER_LIBRARY)
 		PROPERTY
 		FOLDER
 		"Library")
+	set_property(TARGET
+		vrpnserver
+		PROPERTY
+		LINK_FLAGS
+		${SERVER_LINK_FLAGS})
 
 	if(UNIX)
 		add_subdirectory(atmellib)
@@ -1191,20 +1242,20 @@ if(VRPN_BUILD_SERVER_LIBRARY)
 
 	add_subdirectory(gpsnmealib)
 	target_link_libraries(vrpnserver gpsnmea)
-
-	install(TARGETS
-		vrpnserver
-		ARCHIVE
-		DESTINATION
-		lib
-		COMPONENT
-		serversdk
-		PUBLIC_HEADER
-		DESTINATION
-		include
-		COMPONENT
-		serversdk)
-
+	if(VRPN_INSTALL)
+		install(TARGETS
+			vrpnserver
+			ARCHIVE
+			DESTINATION
+			lib
+			COMPONENT
+			serversdk
+			PUBLIC_HEADER
+			DESTINATION
+			include
+			COMPONENT
+			serversdk)
+	endif()
 	add_cppcheck(vrpnserver STYLE UNUSED_FUNCTIONS)
 endif()
 
@@ -1238,19 +1289,20 @@ if(VRPN_BUILD_CLIENT_LIBRARY)
 		FOLDER
 		"Library")
 
-	install(TARGETS
-		vrpn
-		ARCHIVE
-		DESTINATION
-		lib
-		COMPONENT
-		clientsdk
-		PUBLIC_HEADER
-		DESTINATION
-		include
-		COMPONENT
-		clientsdk)
-
+	if(VRPN_INSTALL)
+		install(TARGETS
+			vrpn
+			ARCHIVE
+			DESTINATION
+			lib
+			COMPONENT
+			clientsdk
+			PUBLIC_HEADER
+			DESTINATION
+			include
+			COMPONENT
+			clientsdk)
+	endif()
 	add_cppcheck(vrpn STYLE UNUSED_FUNCTIONS)
 endif()
 
@@ -1263,6 +1315,7 @@ set(VRPN_DEFINITIONS "-DVRPN_USING_CMAKE=\"${CMAKE_CURRENT_BINARY_DIR}/vrpn_Conf
 	CACHE INTERNAL "Definition to add if using as a subproject" FORCE)
 set(VRPN_CLIENT_LIBRARY ${VRPN_CLIENT_LIBRARY} CACHE INTERNAL "" FORCE)
 set(VRPN_SERVER_LIBRARY ${VRPN_SERVER_LIBRARY} CACHE INTERNAL "" FORCE)
+set(VRPN_SERVER_LINK_FLAGS ${SERVER_LINK_FLAGS} CACHE INTERNAL "" FORCE)
 set(VRPN_INCLUDE_DIRS
 	"${CMAKE_CURRENT_BINARY_DIR}"
 	"${VRPN_SOURCE_DIR}"
@@ -1318,7 +1371,9 @@ if(VRPN_BUILD_SERVERS AND VRPN_BUILD_SERVER_LIBRARY AND BUILD_TESTING AND WIN32)
 		add_executable(${APP} ${SOURCE})
 		target_link_libraries(${APP} vrpnserver)
 		set_target_properties(${APP} PROPERTIES FOLDER Tests)
-		install(TARGETS ${APP} RUNTIME DESTINATION bin COMPONENT tests)
+		if(VRPN_INSTALL)
+			install(TARGETS ${APP} RUNTIME DESTINATION bin COMPONENT tests)
+		endif()
 	endforeach()
 endif()
 
@@ -1413,19 +1468,21 @@ create_dashboard_scripts("${CMAKE_CURRENT_SOURCE_DIR}/DashboardBuildInitialCache
 
 #-----------------------------------------------------------------------------
 # If we succeeded, we can go on and include packaging!
-include(CPack)
-cpack_add_component(serversdk
-	DISPLAY_NAME
-	"VRPN Server Library and C++ Headers")
-cpack_add_component(clientsdk
-	DISPLAY_NAME
-	"VRPN Client Library and C++ Headers")
-cpack_add_component(tests DISPLAY_NAME "Test applications")
-cpack_add_component(clients DISPLAY_NAME "Client applications")
-cpack_add_component(servers DISPLAY_NAME "Server applications")
-cpack_add_component(mainserver
-	DISPLAY_NAME
-	"VRPN main server application")
-cpack_add_component(python DISPLAY_NAME "Python bindings")
-cpack_add_component(java DISPLAY_NAME "Java bindings")
-cpack_add_component(doc DISPLAY_NAME "C++ API Documentation")
+if(VRPN_INSTALL)
+	include(CPack)
+	cpack_add_component(serversdk
+		DISPLAY_NAME
+		"VRPN Server Library and C++ Headers")
+	cpack_add_component(clientsdk
+		DISPLAY_NAME
+		"VRPN Client Library and C++ Headers")
+	cpack_add_component(tests DISPLAY_NAME "Test applications")
+	cpack_add_component(clients DISPLAY_NAME "Client applications")
+	cpack_add_component(servers DISPLAY_NAME "Server applications")
+	cpack_add_component(mainserver
+		DISPLAY_NAME
+		"VRPN main server application")
+	cpack_add_component(python DISPLAY_NAME "Python bindings")
+	cpack_add_component(java DISPLAY_NAME "Java bindings")
+	cpack_add_component(doc DISPLAY_NAME "C++ API Documentation")
+endif()

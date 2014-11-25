@@ -39,12 +39,12 @@ vrpn_Tracker_ButtonFly::vrpn_Tracker_ButtonFly
   }
 
   //--------------------------------------------------------------------
-  // Open the scale analogs if they have non-NULL names.
+  // Open the scale analogs if they have non-NULL, non-empty names.
   // If the name starts with the "*" character, use tracker
   //      connection rather than getting a new connection for it.
   // Set up a callback for each to set the scale factor.
 
-  if (params->vel_scale_name != NULL) {
+  if (params->vel_scale_name[0] != '\0') {
 
     // Copy the parameters into our member variables
     d_vel_scale_channel = params->vel_scale_channel;
@@ -72,7 +72,7 @@ vrpn_Tracker_ButtonFly::vrpn_Tracker_ButtonFly
     }
   }
 
-  if (params->rot_scale_name != NULL) {
+  if (params->rot_scale_name[0] != '\0') {
 
     // Copy the parameters into our member variables
     d_rot_scale_channel = params->rot_scale_channel;
