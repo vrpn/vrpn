@@ -25,6 +25,7 @@ vrpn_Tracker_SpacePoint::vrpn_Tracker_SpacePoint(const char * name, vrpn_Connect
     d_quat[3] = 1.0;
 
     vrpn_Button::num_buttons = 2;
+    vrpn_gettimeofday(&_timestamp, NULL);
 }
 
 void vrpn_Tracker_SpacePoint::on_data_received(size_t bytes, vrpn_uint8 *buffer)

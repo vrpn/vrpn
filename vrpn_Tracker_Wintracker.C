@@ -31,8 +31,6 @@ vrpn_Tracker_Wintracker::vrpn_Tracker_Wintracker(const char * name, vrpn_Connect
     _name = name;
     _con = trackercon;
 
-
-
     memset(d_quat, 0, 4 * sizeof(float));
     memset(pos, 0, 3 * sizeof(float));
 
@@ -70,6 +68,8 @@ vrpn_Tracker_Wintracker::vrpn_Tracker_Wintracker(const char * name, vrpn_Connect
     else{
     	cout << "Range Extender : Not Activated" << endl;
     }
+
+    vrpn_gettimeofday(&_timestamp, NULL);
 }
 
 

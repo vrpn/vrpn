@@ -19,6 +19,7 @@ vrpn_DreamCheeky::vrpn_DreamCheeky(vrpn_HidAcceptor *filter, const char *name, v
   , vrpn_BaseClass(name, c)
   , _filter(filter)
 {
+  vrpn_gettimeofday(&_timestamp, NULL);
 }
 
 vrpn_DreamCheeky::~vrpn_DreamCheeky()
