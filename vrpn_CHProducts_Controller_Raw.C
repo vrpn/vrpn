@@ -76,9 +76,9 @@ static vrpn_float64 normalize_trigger(unsigned int trigger)
 // Common base class
 //////////////////////////////////////////////////////////////////////////
 vrpn_CHProducts_Controller_Raw::vrpn_CHProducts_Controller_Raw(vrpn_HidAcceptor *filter, const char *name, vrpn_Connection *c) :
-	_filter(filter)
-	, vrpn_HidInterface(filter)
+	vrpn_HidInterface(filter)
 	, vrpn_BaseClass(name, c)
+	, _filter(filter)
 {
 	init_hid();
 }
