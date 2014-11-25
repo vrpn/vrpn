@@ -348,8 +348,6 @@ Java_vrpn_ForceDeviceRemote_sendForceField_1native___3F_3F_3_3FF( JNIEnv* env, j
   if( env->GetArrayLength( jforce ) != 3 )
     return false;
   env->GetFloatArrayRegion( jforce, 0, 3, force );
-  if( force == NULL )
-    return false;
   
   if( env->GetArrayLength( jjacobian ) != 3 )
     return false;

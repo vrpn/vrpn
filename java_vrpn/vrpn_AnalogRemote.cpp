@@ -109,12 +109,6 @@ void VRPN_CALLBACK handle_analog_change( void* userdata, const vrpn_ANALOGCB inf
     return;
   }
 
-  // fill in the array
-  if( info.channel == NULL )
-  {
-    printf( "Error:  vrpn AnalogRemote native library:  we were handed a bad update from vrpn.\n" );
-    return;
-  }
   env->SetDoubleArrayRegion( jchannels, 0, info.num_channel, (double*) info.channel );
 
 
