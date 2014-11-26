@@ -2837,8 +2837,6 @@ int vrpn_Endpoint_IP::mainloop(timeval *timeout)
 #ifdef VERBOSE3
             if (udp_messages_read != 0)
                 printf("udp message read = %d\n", udp_messages_read);
-#else
-            udp_messages_read = udp_messages_read; // Avoid compiler warning
 #endif
         }
 
@@ -2858,8 +2856,6 @@ int vrpn_Endpoint_IP::mainloop(timeval *timeout)
                     printf("tcp_message_read %d bytes\n", tcp_messages_read);
                 }
             }
-#else
-            tcp_messages_read = tcp_messages_read; // Avoid compiler warning
 #endif
         }
         break;
