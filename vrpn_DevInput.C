@@ -29,7 +29,10 @@ VRPN_SUPPRESS_EMPTY_OBJECT_WARNING()
 
 #define	REPORT_ERROR(msg) { send_text_message(msg, timestamp, vrpn_TEXT_ERROR); }
 
-static const std::string &getDeviceNodes(const std::string &device_name) {
+static const std::string EMPTY_STRING("");
+
+static const std::string &getDeviceNodes(const std::string &device_name)
+{
   std::map<std::string, std::string> s_devicesNodes;
 
   bool permission_missing = false;
@@ -62,7 +65,7 @@ static const std::string &getDeviceNodes(const std::string &device_name) {
     return node_name->second;
   }
 
-  return "";
+  return EMPTY_STRING;
 }
 
 ///////////////////////////////////////////////////////////////////////////
