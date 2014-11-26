@@ -44,13 +44,13 @@ static const unsigned char PORT_ACK = (1 << 6);
 static const unsigned char PORT_BUSY = (1 << 7);
 static const unsigned char BIT_MASK =
     PORT_ERROR | PORT_SLCT | PORT_PE | PORT_ACK | PORT_BUSY;
-#endif
 
 // message constants for the PinchGolve code.
 const unsigned char PG_START_BYTE_DATA(0x80);
 const unsigned char PG_START_BYTE_DATA_TIME(0x81);
 const unsigned char PG_START_BYTE_TEXT(0x82);
 const unsigned char PG_END_BYTE(0x8F);
+#endif
 
 static int VRPN_CALLBACK
 client_msg_handler(void *userdata, vrpn_HANDLERPARAM p);
