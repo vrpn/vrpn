@@ -44,9 +44,9 @@ static const char *default_tracker_cfg_file_name = "vrpn_Tracker.cfg";
 vrpn_Tracker::vrpn_Tracker(const char *name, vrpn_Connection *c,
                            const char *tracker_cfg_file_name)
     : vrpn_BaseClass(name, c)
-    , num_unit2sensors(0)
     , unit2sensor(NULL)
     , unit2sensor_quat(NULL)
+    , num_unit2sensors(0)
 {
     FILE *config_file;
     vrpn_BaseClass::init();
@@ -1154,8 +1154,8 @@ void vrpn_Tracker_USB::mainloop()
 
 vrpn_Tracker_Remote::vrpn_Tracker_Remote(const char *name, vrpn_Connection *cn)
     : vrpn_Tracker(name, cn)
-    , num_sensor_callbacks(0)
     , sensor_callbacks(NULL)
+    , num_sensor_callbacks(0)
 {
     // Make sure that we have a valid connection
     if (d_connection == NULL) {
