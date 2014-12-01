@@ -36,8 +36,8 @@ vrpn_Tracker_Fastrak::vrpn_Tracker_Fastrak(const char *name, vrpn_Connection *c,
     vrpn_Tracker_Serial(name,c,port,baud),
     do_filter(enable_filtering),
     num_stations(numstations>vrpn_FASTRAK_MAX_STATIONS ? vrpn_FASTRAK_MAX_STATIONS : numstations),
-    do_is900_timestamps(is900_timestamps),
-    num_resets(0)
+    num_resets(0),
+    do_is900_timestamps(is900_timestamps)
 {
 	int i;
 

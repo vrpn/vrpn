@@ -30,7 +30,7 @@ class VRPN_API vrpn_Connection;
 vrpn_Tracker_Dyna::vrpn_Tracker_Dyna(
 		      char *name, vrpn_Connection *c, int cSensors,
 		      const char *port, long baud ) :
-vrpn_Tracker_Serial(name,c,port,baud), cSensors(cSensors), cResets(0)
+vrpn_Tracker_Serial(name,c,port,baud), cResets(0), cSensors(cSensors)
 {
     if (cSensors>VRPN_DYNA_MAX_SENSORS) {
       fprintf(stderr, "\nvrpn_Tracker_Dyna: too many sensors requested ... only %d allowed (%d specified)", VRPN_DYNA_MAX_SENSORS, cSensors );

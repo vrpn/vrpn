@@ -37,7 +37,7 @@ vrpn_Tracker_LibertyHS::vrpn_Tracker_LibertyHS(const char *name, vrpn_Connection
     receptor_index(receptoridx),
     num_resets(0),
     whoami_len(whoamilen>vrpn_LIBERTYHS_MAX_WHOAMI_LEN ? vrpn_LIBERTYHS_MAX_WHOAMI_LEN : whoamilen),
-    sync_index(-1), read_len(0)
+    read_len(0), sync_index(-1)
 {
 	if (additional_reset_commands == NULL) {
 		sprintf(add_reset_cmd, "");

@@ -53,10 +53,10 @@ vrpn_Magellan::vrpn_Magellan (const char * name, vrpn_Connection * c,
 			const char * port, int baud, bool altreset):
 		vrpn_Serial_Analog(name, c, port, baud),
 		vrpn_Button_Filter(name, c),
+		_altreset(altreset),
 		_numbuttons(9),
 		_numchannels(6),
-		_null_radius(8),
-		_altreset(altreset)
+		_null_radius(8)
 {
 	// Set the parameters in the parent classes
 	vrpn_Button::num_buttons = _numbuttons;

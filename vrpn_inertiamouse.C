@@ -31,9 +31,9 @@ vrpn_inertiamouse::vrpn_inertiamouse (const char* name,
     , vrpn_Button_Filter (name, c)
     , numbuttons_ (Buttons)
     , numchannels_ (Channels)
-    , null_radius_ (0)
-    , bufcount_ (0)
     , expected_chars_ (1)
+    , bufcount_ (0)
+    , null_radius_ (0)
     , dcb_ ()
     , lp_ ()
 {

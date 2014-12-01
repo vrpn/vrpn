@@ -64,9 +64,9 @@ vrpn_Analog_USDigital_A2::vrpn_Analog_USDigital_A2 (const char * name,
                                                     vrpn_int32 reportOnChangeOnly) :
 vrpn_Analog (name, c),
 _SEIopened(vrpn_false),
-_numDevices(0),
 _devAddr(NULL),
-_reportChange(reportOnChangeOnly!=0)
+_reportChange(reportOnChangeOnly!=0),
+_numDevices(0)
 {
 #ifdef VRPN_USE_USDIGITAL
     this->_devAddr = new long[vrpn_Analog_USDigital_A2::vrpn_Analog_USDigital_A2_CHANNEL_MAX] ;

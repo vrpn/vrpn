@@ -16,16 +16,16 @@ vrpn_Tracker_AnalogFly::vrpn_Tracker_AnalogFly
           bool absolute, bool reportChanges,
           bool worldFrame) :
 	vrpn_Tracker (name, trackercon),
+	d_update_interval (update_rate ? (1/update_rate) : 1.0),
+	d_absolute (absolute),
+	d_reportChanges (reportChanges),
+	d_worldFrame (worldFrame),
 	d_reset_button(NULL),
 	d_which_button (params->reset_which),
 	d_clutch_button(NULL),
 	d_clutch_which (params->clutch_which),
 	d_clutch_engaged(false),
-	d_clutch_was_off(false),
-	d_update_interval (update_rate ? (1/update_rate) : 1.0),
-	d_absolute (absolute),
-	d_reportChanges (reportChanges),
-	d_worldFrame (worldFrame)
+	d_clutch_was_off(false)
 {
 	int i;
 
