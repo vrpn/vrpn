@@ -33,6 +33,9 @@ set(QUATLIB_HEADER quat.h)
 
 # Build the library itself and declare what bits need to be installed
 add_library(quat ${QUATLIB_SOURCES} ${QUATLIB_HEADER})
+if(UNIX)
+    target_link_libraries(quat -lm)
+endif()
 set_property(TARGET quat PROPERTY PUBLIC_HEADER ${QUATLIB_HEADER})
 set_target_properties(quat PROPERTIES FOLDER Library)
 if(VRPN_INSTALL)
