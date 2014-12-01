@@ -218,7 +218,7 @@ vrpn_File_Connection::~vrpn_File_Connection(void)
     while (d_logHead) {
         np = d_logHead->next;
         if (d_logHead->data.buffer) {
-            delete[](char *)d_logHead -> data.buffer;
+            delete[]d_logHead -> data.buffer;
         }
         delete d_logHead;
         d_logHead = np;
@@ -850,7 +850,7 @@ vrpn_File_Connection::vrpn_FileBookmark::~vrpn_FileBookmark()
 {
     if (oldCurrentLogEntryCopy == NULL) return;
     if (oldCurrentLogEntryCopy->data.buffer != NULL)
-        delete[](char *)(oldCurrentLogEntryCopy->data.buffer);
+        delete[](oldCurrentLogEntryCopy->data.buffer);
     delete oldCurrentLogEntryCopy;
 }
 
@@ -876,8 +876,7 @@ bool vrpn_File_Connection::store_stream_bookmark()
         {
             if (d_bookmark.oldCurrentLogEntryCopy != NULL) {
                 if (d_bookmark.oldCurrentLogEntryCopy->data.buffer != NULL)
-                    delete[](
-                        char *)(d_bookmark.oldCurrentLogEntryCopy->data.buffer);
+                    delete[](d_bookmark.oldCurrentLogEntryCopy->data.buffer);
                 delete d_bookmark.oldCurrentLogEntryCopy;
             }
             d_bookmark.oldCurrentLogEntryCopy = NULL;
@@ -907,7 +906,7 @@ bool vrpn_File_Connection::store_stream_bookmark()
             d_bookmark.oldCurrentLogEntryCopy->data.payload_len =
                 d_currentLogEntry->data.payload_len;
             if (d_bookmark.oldCurrentLogEntryCopy->data.buffer != NULL) {
-                delete[](char *)d_bookmark.oldCurrentLogEntryCopy->data.buffer;
+                delete[]d_bookmark.oldCurrentLogEntryCopy->data.buffer;
             }
             d_bookmark.oldCurrentLogEntryCopy->data.buffer =
                 new char[d_currentLogEntry->data.payload_len];
@@ -970,7 +969,7 @@ bool vrpn_File_Connection::return_to_bookmark()
                 d_bookmark.oldCurrentLogEntryCopy->data.msg_time;
             d_currentLogEntry->data.payload_len =
                 d_bookmark.oldCurrentLogEntryCopy->data.payload_len;
-            char *temp = (char *)d_currentLogEntry->data.buffer;
+            const char *temp = d_currentLogEntry->data.buffer;
             d_currentLogEntry->data.buffer = newBuffer;
             memcpy(const_cast<char *>(d_currentLogEntry->data.buffer),
                    d_bookmark.oldCurrentLogEntryCopy->data.buffer,
@@ -1143,7 +1142,7 @@ int vrpn_File_Connection::read_entry(void)
         // to the same message.
         if (d_logTail) {
             if (d_logTail->data.buffer) {
-                delete[](char *)d_logTail -> data.buffer;
+                delete[]d_logTail -> data.buffer;
             }
             delete d_logTail;
         }

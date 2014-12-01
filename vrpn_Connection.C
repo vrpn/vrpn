@@ -681,7 +681,7 @@ int vrpn_Log::saveLogSoFar(void)
     while (d_logTail) {
         lp = d_logTail->next;
         if (d_logTail->data.buffer) {
-            delete[](char *)d_logTail -> data.buffer; // ugly cast
+            delete[]d_logTail -> data.buffer; // ugly cast
         }
         delete d_logTail;
         d_logTail = lp;

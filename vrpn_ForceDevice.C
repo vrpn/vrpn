@@ -2742,8 +2742,7 @@ void vrpn_ForceDevice_Remote::send(const char *msgbuf, vrpn_int32 len,
         }
     }
 
-    // HP compiler won't let you delete a const argument.
-    delete[](char *)msgbuf;
+    delete[]msgbuf;
 }
 
 #ifdef FD_SPRINGS_AS_FIELDS
