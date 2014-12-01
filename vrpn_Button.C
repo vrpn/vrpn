@@ -903,7 +903,7 @@ void vrpn_Button_PinchGlove::report_no_timestamp()
     // read until correct reply is received
     do {
         vrpn_flush_input_buffer(serial_fd);
-        vrpn_write_characters(serial_fd, (unsigned char *)"T0", 2);
+        vrpn_write_characters(serial_fd, (const unsigned char *)"T0", 2);
         vrpn_drain_output_buffer(serial_fd);
         timeout_to_pass.tv_sec = timeout.tv_sec;
         timeout_to_pass.tv_usec = timeout.tv_usec;

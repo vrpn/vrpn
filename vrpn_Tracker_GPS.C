@@ -53,7 +53,7 @@ vrpn_Tracker_Serial(name,c,port,baud)
     }
     useUTM = utmFlag;
     if (strlen(startSentence) > 0) {
-        nmeaParser.setStartSentence((char*)startSentence);
+        nmeaParser.setStartSentence(startSentence);
     }
 	
   // Set the hardware flow-control on the serial line in case

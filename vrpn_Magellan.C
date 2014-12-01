@@ -122,7 +122,7 @@ int	vrpn_Magellan::reset(void)
 	// Read back the response and make sure it matches what we expect.
 	// Give it a reasonable amount of time to finish, then timeout
 	vrpn_flush_input_buffer(serial_fd);
-	vrpn_write_slowly(serial_fd, (unsigned char *)reset_str, strlen(reset_str), 5);
+	vrpn_write_slowly(serial_fd, (const unsigned char *)reset_str, strlen(reset_str), 5);
 	timeout.tv_sec = 1;
 	timeout.tv_usec = 0;
 	ret = vrpn_read_available_characters(serial_fd, inbuf, strlen(expect_back), &timeout);

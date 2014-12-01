@@ -156,7 +156,7 @@ vrpn_5dt::reset (void)
     return 0;
   }
   vrpn_flush_input_buffer (serial_fd);
-  send_command ((unsigned char *) "A", 1); // Command to init the glove
+  send_command ((const unsigned char *) "A", 1); // Command to init the glove
   vrpn_SleepMsecs (100);  //Give it time to respond
   l_timeout.tv_sec = 2;
   l_timeout.tv_usec = 0;
@@ -172,7 +172,7 @@ vrpn_5dt::reset (void)
     return -1;
   } else {
     vrpn_flush_input_buffer (serial_fd);
-    send_command ( (unsigned char *) "G", 1); //Command to Query informations from the glove
+    send_command ( (const unsigned char *) "G", 1); //Command to Query informations from the glove
     vrpn_SleepMsecs (100);  //Give it time to respond
     l_timeout.tv_sec = 2;
     l_timeout.tv_usec = 0;
@@ -204,7 +204,7 @@ vrpn_5dt::reset (void)
 
   // If we're in continuous mode, request continuous sends
   if (_mode == 2) {
-    send_command ( (unsigned char *) "D", 1); // Command to query streaming data from the glove
+    send_command ( (const unsigned char *) "D", 1); // Command to query streaming data from the glove
   }
 
   // We're now entering the syncing mode which send the read command to the glove
@@ -254,7 +254,7 @@ void vrpn_5dt::syncing (void)
   switch (_mode)
     {
     case 1:
-      send_command ((unsigned char *) "C", 1);  // Command to query data from the glove
+      send_command ((const unsigned char *) "C", 1);  // Command to query data from the glove
       break;
     case 2:
       // Nothing to be done here -- continuous mode was requested in the reset.

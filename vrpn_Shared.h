@@ -199,7 +199,7 @@ extern VRPN_API vrpn_float64 ntohd(vrpn_float64 d);
 
 static const int vrpn_int_data_for_endian_test = 1;
 static const char *vrpn_char_data_for_endian_test =
-    (char *)(void *)(&vrpn_int_data_for_endian_test);
+    (const char *)(const void *)(&vrpn_int_data_for_endian_test);
 static const bool vrpn_big_endian = (vrpn_char_data_for_endian_test[0] != 1);
 
 // Read and write strings (not single items).

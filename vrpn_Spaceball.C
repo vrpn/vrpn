@@ -150,7 +150,7 @@ int	vrpn_Spaceball::reset(void) {
 
 	// Send commands to the device to cause it to reset and beep.
 	vrpn_flush_input_buffer(serial_fd);
-	vrpn_write_slowly(serial_fd, (unsigned char *)reset_str, strlen(reset_str), 5);
+	vrpn_write_slowly(serial_fd, (const unsigned char *)reset_str, strlen(reset_str), 5);
 
 	// We're now waiting for a response from the box
 	status = STATUS_SYNCING;

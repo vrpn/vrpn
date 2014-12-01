@@ -222,9 +222,9 @@ pid_t wait3(int *statusp, int options, struct rusage *rusage);
  * If the VRPN_RSH environment variable is set, that will be used as the full
  * path instead.  */
 #ifdef linux
-#define RSH (char *) "/usr/local/bin/ssh"
+#define RSH "/usr/local/bin/ssh"
 #else
-#define RSH (char *) "/usr/local/bin/rsh"
+#define RSH "/usr/local/bin/rsh"
 #endif
 
 /* How long to wait for a UDP packet to cause a callback connection,
@@ -2387,7 +2387,7 @@ static int vrpn_start_server(const char *machine, char *server_name, char *args,
         int num_descriptors; /* Number of available file descr */
         char myIPchar[100];  /* Host name of this host */
         char command[600];   /* Command passed to system() call */
-        char *rsh_to_use;    /* Full path to Rsh command. */
+        const char *rsh_to_use;    /* Full path to Rsh command. */
 
         if (vrpn_getmyIP(myIPchar, sizeof(myIPchar), IPaddress, server_sock)) {
             fprintf(stderr, "vrpn_start_server: Error finding my IP\n");
@@ -4276,7 +4276,7 @@ int vrpn_Endpoint::handle_type_message(void *userdata, vrpn_HANDLERPARAM p)
 
     // Use the exact length packed into the start of the buffer
     // to figure out where to put the trailing '\0'
-    i = ntohl(*((vrpn_int32 *)p.buffer));
+    i = ntohl(*((const vrpn_int32 *)p.buffer));
     type_name[i] = '\0';
 
 #ifdef VERBOSE
@@ -4348,7 +4348,7 @@ int vrpn_Endpoint::handle_sender_message(void *userdata, vrpn_HANDLERPARAM p)
 
     // Use the exact length packed into the start of the buffer
     // to figure out where to put the trailing '\0'
-    i = ntohl(*((vrpn_int32 *)p.buffer));
+    i = ntohl(*((const vrpn_int32 *)p.buffer));
     sender_name[i] = '\0';
 
 #ifdef VERBOSE

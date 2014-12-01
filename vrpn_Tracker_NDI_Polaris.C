@@ -178,8 +178,8 @@ void vrpn_Tracker_NDI_Polaris::send_report(void) // called from get_report()
 // WITHOUT CRC checksums
 
 void vrpn_Tracker_NDI_Polaris::sendCommand(const char* commandString ){
-	vrpn_write_characters(serialFd,(unsigned char* )commandString,strlen(commandString));
-	vrpn_write_characters(serialFd,(unsigned char* )"\r",1); //send the CR
+	vrpn_write_characters(serialFd,(const unsigned char* )commandString,strlen(commandString));
+	vrpn_write_characters(serialFd,(const unsigned char* )"\r",1); //send the CR
 	vrpn_flush_output_buffer(serialFd);
 }
 

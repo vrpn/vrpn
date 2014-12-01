@@ -1234,8 +1234,8 @@ int vrpn_File_Connection::handle_play_to_time(void *userdata,
     vrpn_File_Connection *me = (vrpn_File_Connection *)userdata;
     timeval newtime;
 
-    newtime.tv_sec = ((vrpn_int32 *)(p.buffer))[0];
-    newtime.tv_usec = ((vrpn_int32 *)(p.buffer))[1];
+    newtime.tv_sec = ((const vrpn_int32 *)(p.buffer))[0];
+    newtime.tv_usec = ((const vrpn_int32 *)(p.buffer))[1];
 
     return me->play_to_time(newtime);
 }

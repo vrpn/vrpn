@@ -3492,7 +3492,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_NDI_Polaris(char *&pch,
     char trackerName[LINESIZE];
     char device[LINESIZE];
     int numRigidBodies;
-    char *rigidBodyFileNames[VRPN_GSO_MAX_NDI_POLARIS_RIGIDBODIES];
+    const char *rigidBodyFileNames[VRPN_GSO_MAX_NDI_POLARIS_RIGIDBODIES];
 
     // get tracker name and device
     if (sscanf(line, "vrpn_Tracker_NDI_Polaris %s %s %d", trackerName, device,

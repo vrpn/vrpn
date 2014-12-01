@@ -458,7 +458,7 @@ int vrpn_ImmersionBox::syncBaudrate (double seconds) {
 
     int loggedOn = 0;
     unsigned char responseString[8];
-    unsigned char * matchString = (unsigned char *) S_INITIALIZE ;  // IMMC
+    const unsigned char * matchString = (unsigned char *) S_INITIALIZE ;  // IMMC
     int index, numRead;
 
     if (serial_fd < 0)
@@ -506,7 +506,7 @@ int vrpn_ImmersionBox::syncBaudrate (double seconds) {
 	return 0;
 
     // now begin the session && ensure that its an ibox we're talking to
-    matchString = (unsigned char *) "IBOX";
+    matchString = (const unsigned char *) "IBOX";
     vrpn_write_characters(serial_fd, (const unsigned char *)"BEGIN", 5);
     numRead = vrpn_read_available_characters(serial_fd, responseString, 4, &miniDelay);
 
