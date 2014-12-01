@@ -778,7 +778,7 @@ int vrpn_Log::logMessage(vrpn_int32 payloadLen, struct timeval time,
         }
 
         // need to explicitly override the const
-        memcpy((char *)lp->data.buffer, buffer, payloadLen);
+        memcpy(const_cast<char *>(lp->data.buffer), buffer, payloadLen);
     }
 
     // Insert the new message into the log

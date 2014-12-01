@@ -194,7 +194,7 @@ int vrpn_RedundantTransmission::pack_message(
                 "Out of memory;  can't queue message for retransmission.\n");
         return ret;
     }
-    memcpy((char *)qm->p.buffer, buffer, len);
+    memcpy(const_cast<char *>(qm->p.buffer), buffer, len);
 
     qm->remainingTransmissions = numTransmissions;
     qm->transmissionInterval = *transmissionInterval;
