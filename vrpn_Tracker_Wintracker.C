@@ -22,7 +22,6 @@ const unsigned PRODUCT_ID = 0x64df;
 using namespace std;
 
 //WintrackerIII Data length + 1 Byte for HID Report ID (0x0 as the device has no report IDs)
-static const int SET_SENSORS_LEN = 25;
 
 
 
@@ -31,8 +30,6 @@ vrpn_Tracker_Wintracker::vrpn_Tracker_Wintracker(const char * name, vrpn_Connect
                     vrpn_Tracker(name, trackercon), vrpn_HidInterface(new vrpn_HidProductAcceptor(VENDOR_ID, PRODUCT_ID)){
     _name = name;
     _con = trackercon;
-
-
 
     memset(d_quat, 0, 4 * sizeof(float));
     memset(pos, 0, 3 * sizeof(float));
@@ -45,7 +42,7 @@ vrpn_Tracker_Wintracker::vrpn_Tracker_Wintracker(const char * name, vrpn_Connect
     const vrpn_uint8 sensor2 = s2;
     const vrpn_uint8 set_sensors_cmd[] = {0x0,'S','A',sensor0,sensor1,sensor2,'\n'};
     //Send sensors activation data to the WintrackerIII device
-    send_data(SET_SENSORS_LEN,set_sensors_cmd);
+    send_data(sizeof(set_sensors_cmd),set_sensors_cmd);
 	
     cout << "WintrackerIII Vrpn Server up and running..." << endl;
     cout << "Sensors activation state : " << endl;
@@ -56,7 +53,7 @@ vrpn_Tracker_Wintracker::vrpn_Tracker_Wintracker(const char * name, vrpn_Connect
     if(hemisphere=='Z'){
     	cout << "Hemisphere of operation : Upper(Z<0)" << endl;
 	const vrpn_uint8 set_hemi[] = {0x0,'S','H','U','\n'};
-	send_data(SET_SENSORS_LEN,set_hemi);
+	send_data(sizeof(set_hemi),set_hemi);
     }
     else{
     	cout << "Hemisphere of operation : Front(X>0)" << endl;
@@ -66,11 +63,13 @@ vrpn_Tracker_Wintracker::vrpn_Tracker_Wintracker(const char * name, vrpn_Connect
     if(ext=='1'){
     	cout << "Range Extender : Activated" << endl;
 	const vrpn_uint8 set_extender_cmd[] = {0x0,'S','L','\n'};
-    	send_data(SET_SENSORS_LEN,set_extender_cmd);
+    	send_data(sizeof(set_extender_cmd),set_extender_cmd);
     }
     else{
     	cout << "Range Extender : Not Activated" << endl;
     }
+
+    vrpn_gettimeofday(&_timestamp, NULL);
 }
 
 

@@ -114,7 +114,7 @@ Java_vrpn_VRPNDevice_getElapsedTimeSecs_1native( JNIEnv* env, jobject jobj )
 {
 	vrpn_BaseClass* device 
 		= (vrpn_BaseClass*) env->GetLongField( jobj, jfid_vrpn_VRPNDevice_native_device );
-	if( device <= 0 )
+	if( device == 0 )
 	{
 	    printf( "Error in native method \"getElapsedTimeSecs\":  "
 				"the device is uninitialized or has been shut down.\n" );
@@ -143,7 +143,7 @@ Java_vrpn_VRPNDevice_getTime_1native( JNIEnv* env, jobject jobj, jobject jdate )
 {
 	vrpn_BaseClass* device 
 		= (vrpn_BaseClass*) env->GetLongField( jobj, jfid_vrpn_VRPNDevice_native_device );
-	if( device <= 0 )
+	if( device == 0 )
 	{
 	    printf( "Error in native method \"getTime\":  "
 				"the device is uninitialized or has been shut down.\n" );
@@ -181,7 +181,7 @@ Java_vrpn_VRPNDevice_isConnected_1native( JNIEnv* env, jobject jobj )
 {
 	vrpn_BaseClass* device 
 		= (vrpn_BaseClass*) env->GetLongField( jobj, jfid_vrpn_VRPNDevice_native_device );
-	if( device <= 0 )
+	if( device == 0 )
 	{
 	    printf( "Error in native method \"isConnected\":  "
 				"the device is uninitialized or has been shut down.\n" );
@@ -208,7 +208,7 @@ Java_vrpn_VRPNDevice_isLive_1native( JNIEnv* env, jobject jobj )
 {
 	vrpn_BaseClass* device 
 		= (vrpn_BaseClass*) env->GetLongField( jobj, jfid_vrpn_VRPNDevice_native_device );
-	if( device <= 0 )
+	if( device == 0 )
 	{
 	    printf( "Error in native method \"isLive\":  "
 				"the device is uninitialized or has been shut down.\n" );
@@ -235,7 +235,7 @@ Java_vrpn_VRPNDevice_playToElapsedTime_1native( JNIEnv* env, jobject jobj, jlong
 {
 	vrpn_BaseClass* device 
 		= (vrpn_BaseClass*) env->GetLongField( jobj, jfid_vrpn_VRPNDevice_native_device );
-	if( device <= 0 )
+	if( device == 0 )
 	{
 	    printf( "Error in native method \"playToElapsedTime\":  "
 				"the device is uninitialized or has been shut down.\n" );
@@ -271,7 +271,7 @@ Java_vrpn_VRPNDevice_getEarliestTime_1native( JNIEnv* env, jobject jobj, jobject
 {
 	vrpn_BaseClass* device 
 		= (vrpn_BaseClass*) env->GetLongField( jobj, jfid_vrpn_VRPNDevice_native_device );
-	if( device <= 0 )
+	if( device == 0 )
 	{
 	    printf( "Error in native method \"getEarliestTime\":  "
 				"the device is uninitialized or has been shut down.\n" );
@@ -315,7 +315,7 @@ Java_vrpn_VRPNDevice_getLatestTime_1native( JNIEnv* env, jobject jobj, jobject j
 {
 	vrpn_BaseClass* device 
 		= (vrpn_BaseClass*) env->GetLongField( jobj, jfid_vrpn_VRPNDevice_native_device );
-	if( device <= 0 )
+	if( device == 0 )
 	{
 	    printf( "Error in native method \"getLatestTime\":  "
 				"the device is uninitialized or has been shut down.\n" );
@@ -359,7 +359,7 @@ Java_vrpn_VRPNDevice_eof_1native( JNIEnv* env, jobject jobj )
 {
 	vrpn_BaseClass* device 
 		= (vrpn_BaseClass*) env->GetLongField( jobj, jfid_vrpn_VRPNDevice_native_device );
-	if( device <= 0 )
+	if( device == 0 )
 	{
 	    printf( "Error in native method \"eof\":  "
 				"the device is uninitialized or has been shut down.\n" );
@@ -393,7 +393,7 @@ Java_vrpn_VRPNDevice_getLengthSecs_1native( JNIEnv* env, jobject jobj )
 {
 	vrpn_BaseClass* device 
 		= (vrpn_BaseClass*) env->GetLongField( jobj, jfid_vrpn_VRPNDevice_native_device );
-	if( device <= 0 )
+	if( device == 0 )
 	{
 	    printf( "Error in native method \"getLengthSecs\":  "
 				"the device is uninitialized or has been shut down.\n" );
@@ -427,7 +427,7 @@ Java_vrpn_VRPNDevice_setReplayRate_1native( JNIEnv* env, jobject jobj, jfloat jr
 {
 	vrpn_BaseClass* device 
 		= (vrpn_BaseClass*) env->GetLongField( jobj, jfid_vrpn_VRPNDevice_native_device );
-	if( device <= 0 )
+	if( device == 0 )
 	{
 	    printf( "Error in native method \"setReplayRate\":  "
 				"the device is uninitialized or has been shut down.\n" );
@@ -461,7 +461,7 @@ Java_vrpn_VRPNDevice_getReplayRate_1native( JNIEnv* env, jobject jobj )
 {
 	vrpn_BaseClass* device 
 		= (vrpn_BaseClass*) env->GetLongField( jobj, jfid_vrpn_VRPNDevice_native_device );
-	if( device <= 0 )
+	if( device == 0 )
 	{
 	    printf( "Error in native method \"setReplayRate\":  "
 				"the device is uninitialized or has been shut down.\n" );
@@ -496,7 +496,7 @@ Java_vrpn_VRPNDevice_reset_1native( JNIEnv* env, jobject jobj )
 {
 	vrpn_BaseClass* device 
 		= (vrpn_BaseClass*) env->GetLongField( jobj, jfid_vrpn_VRPNDevice_native_device );
-	if( device <= 0 )
+	if( device == 0 )
 	{
 	    printf( "Error in native method \"reset\":  "
 				"the device is uninitialized or has been shut down.\n" );
@@ -530,7 +530,7 @@ Java_vrpn_VRPNDevice_playToWallTime_1native( JNIEnv* env, jobject jobj, jobject 
 {
 	vrpn_BaseClass* device 
 		= (vrpn_BaseClass*) env->GetLongField( jobj, jfid_vrpn_VRPNDevice_native_device );
-	if( device <= 0 )
+	if( device == 0 )
 	{
 	    printf( "Error in native method \"playToElapsedTime\":  "
 				"the device is uninitialized or has been shut down.\n" );

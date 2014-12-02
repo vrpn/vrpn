@@ -36,9 +36,9 @@ static void normalize_axes(const unsigned int x, const unsigned int y, const sho
 }
 
 vrpn_Contour::vrpn_Contour(vrpn_HidAcceptor *filter, const char *name, vrpn_Connection *c)
-  : _filter(filter)
-  , vrpn_HidInterface(filter)
+  : vrpn_HidInterface(filter)
   , vrpn_BaseClass(name, c)
+  , _filter(filter)
 {
 	init_hid();
 }

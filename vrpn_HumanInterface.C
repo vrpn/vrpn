@@ -92,6 +92,8 @@ bool vrpn_HidInterface::reconnect()
     }
     if (!found) {
         fprintf(stderr, "vrpn_HidInterface::reconnect(): Device not found\n");
+        hid_free_enumeration(devs);
+        devs = NULL;
         return false;
     }
 
@@ -104,6 +106,8 @@ bool vrpn_HidInterface::reconnect()
 #ifdef linux
         fprintf(stderr, "   (Did you remember to run as root?)\n");
 #endif
+        hid_free_enumeration(devs);
+        devs = NULL;
         return false;
     }
 
