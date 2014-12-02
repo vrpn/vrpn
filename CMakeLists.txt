@@ -827,12 +827,21 @@ if(VRPN_USE_FREESPACE)
 endif()
 
 ###
+# MotionNode tracker support. Loads shared library dynamically if available
+###
+option(VRPN_USE_MOTIONNODE
+	"Build with MotionNode tracker support"
+	OFF)
+if(VRPN_USE_MOTIONNODE)
+	list(APPEND SERVER_EXTRA_LIBS ${CMAKE_DL_LIBS})
+endif()
+
+###
 # XXX Other libraries needing detection and handling (TODO)
 ###
 # National Instruments Nidaq traditional
 # US Digital SEI/A2
 # microscribe3D library
-# GLI Interactive LLC MotionNode library
 #
 # All include paths should be moved out of at least vrpn_Configure.h.cmake_in
 # as well as all #pragma comment (lib, "" ) lines, since cmake replaces
@@ -852,9 +861,6 @@ option(VRPN_USE_USDIGITAL
 	OFF)
 option(VRPN_USE_MICROSCRIBE
 	"Build with MicroScribe3D library support"
-	OFF)
-option(VRPN_USE_MOTIONNODE
-	"Build with GLI Interactive LLC MotionNode library support"
 	OFF)
 option(VRPN_USE_TRIVISIOCOLIBRI
 	"Build with support for TrivisioColibri tracker"
