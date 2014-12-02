@@ -17,7 +17,7 @@ public:
 		@param port serial port to connect to
 		@param baud Baud rate - 115200 is default.
 		@param calibrate_gyros_on_setup - true to cause this to happen
-		@param tare_on_setup - true to cause this to happen
+		@param tare_on_setup - true to cause this to happen (usually manufacturing-time operation!)
 		@param frames_per_second - How many frames/second to read
 		@param red_LED_color - brightness of LED (0-1)
 		@param green_LED_color - brightness of LED (0-1)
