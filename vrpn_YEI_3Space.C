@@ -291,7 +291,7 @@ void vrpn_YEI_3Space_Sensor::get_report (void)
   l_ret = vrpn_read_available_characters (serial_fd, &d_buffer [d_characters_read],
                                           d_expected_characters - d_characters_read);
   if (l_ret == -1) {
-      VRPN_MSG_ERROR ("vrpn_YEI_3Space_Sensor::get_report(): Error reading the glove");
+      VRPN_MSG_ERROR ("vrpn_YEI_3Space_Sensor::get_report(): Error reading the sensor, resetting");
       d_status = STATUS_RESETTING;
       return;
   }
