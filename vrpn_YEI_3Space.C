@@ -249,7 +249,13 @@ int vrpn_YEI_3Space_Sensor::reset (void)
   // orientiation as a quaternion, the tared orientation as a quaternion,
   // all corrected sensor data, the temperature in Celsius, and the
   // confidence factor.
-  unsigned char set_streaming_slots[9] = { 0x50, 0x06,0x00,0x25,0x2B,0x2D,0xFF,0xFF,0xFF };
+  unsigned char set_streaming_slots[9] = { 0x50,
+    0x06, // untared quat
+    0x00, // tared quat
+    0x25, // all corrected sensor data (3D vectors: rate gyro in rad/s, accel in g, and compass in gauss)
+    0x2B, // temperature C
+    0x2D, // confidence factor
+    0xFF, 0xFF, 0xFF }; // follwed by empty streaming spots.
   if (!send_command (set_streaming_slots, sizeof(set_streaming_slots))) {
     VRPN_MSG_ERROR ("vrpn_YEI_3Space_Sensor::reset: Unable to send set-streaming-slots command\n");
     return -1;
