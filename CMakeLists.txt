@@ -978,6 +978,7 @@ set(VRPN_CLIENT_PUBLIC_HEADERS
 	"${PROJECT_BINARY_DIR}/vrpn_Configure.h"
 	vrpn_Analog.h
 	vrpn_Analog_Output.h
+	vrpn_AnnotationMacros.h
 	vrpn_Auxiliary_Logger.h
 	vrpn_BaseClass.h
 	vrpn_Button.h

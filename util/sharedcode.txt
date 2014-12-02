@@ -6,6 +6,7 @@ server_src/vrpn
 server_src/vrpn_Generic_server_object
 vrpn_Analog
 vrpn_Analog_Output
+vrpn_AnnotationMacros
 vrpn_Auxiliary_Logger
 vrpn_BaseClass
 vrpn_Button
