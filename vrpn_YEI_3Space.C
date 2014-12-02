@@ -223,6 +223,13 @@ int vrpn_YEI_3Space_Sensor::reset (void)
     return -1;
   }
 
+  // Flip the z axis (only the fourth bit on) to turn into a right-handed coordinate system
+  unsigned char set_rh_system[] = {0x74, 1 << 3};
+  if (!send_command(set_rh_system, sizeof(set_rh_system))) {
+      VRPN_MSG_ERROR("vrpn_YEI_3Space_Sensor::reset: Unable to send coordinate system selection command\n");
+      return -1;
+  }
+
   // Configure streaming speed based on the requested frames/second value.
   unsigned char set_streaming_timing[13] = { 0x52, 0,0,0,0,0,0,0,0,0,0,0,0 };
   vrpn_uint32 interval;
