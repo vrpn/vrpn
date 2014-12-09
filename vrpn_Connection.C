@@ -1971,13 +1971,12 @@ int vrpn_noint_block_read_timeout(int infile, char buffer[], size_t length,
 static SOCKET open_socket(int type, unsigned short *portno,
                           const char *IPaddress)
 {
-    SOCKET sock;
     struct sockaddr_in name;
     struct hostent *phe; /* pointer to host information entry   */
     int namelen;
 
     // create an Internet socket of the appropriate type
-    sock = socket(AF_INET, type, 0);
+    SOCKET sock = socket(AF_INET, type, 0);
     if (sock == INVALID_SOCKET) {
         fprintf(stderr, "open_socket: can't open socket.\n");
 #ifndef _WIN32_WCE
@@ -3813,14 +3812,9 @@ void vrpn_Endpoint_IP::poll_for_cookie(const timeval *pTimeout)
 
 int vrpn_Endpoint_IP::finish_new_connection_setup(void)
 {
-    char *recvbuf = NULL;
-    vrpn_int32 sendlen;
-    long received_logmode;
-    unsigned short udp_portnum;
-    int i;
 
-    sendlen = static_cast<vrpn_int32>(vrpn_cookie_size());
-    recvbuf = new char[sendlen];
+    vrpn_int32 sendlen = static_cast<vrpn_int32>(vrpn_cookie_size());
+    char *recvbuf = new char[sendlen];
     if (recvbuf == NULL) {
         fprintf(stderr, "vrpn_Endpoint_IP::finish_new_connection_setup(): Out "
                         "of memory when allocating receiver buffer\n");
@@ -3853,7 +3847,7 @@ int vrpn_Endpoint_IP::finish_new_connection_setup(void)
     // we're logging outgoing messages.  If it's nonzero, the
     // filename to use should come in a log_description message later.
 
-    received_logmode = recvbuf[vrpn_MAGICLEN + 2] - '0';
+    long received_logmode = recvbuf[vrpn_MAGICLEN + 2] - '0';
     if ((received_logmode < 0) ||
         (received_logmode > (vrpn_LOG_INCOMING | vrpn_LOG_OUTGOING))) {
         fprintf(stderr, "vrpn_Endpoint::finish_new_connection_setup:  "
@@ -3889,7 +3883,8 @@ int vrpn_Endpoint_IP::finish_new_connection_setup(void)
 
         if (d_udpInboundSocket == INVALID_SOCKET) {
             // Open the UDP port to accept time-critical messages on.
-            udp_portnum = (unsigned short)INADDR_ANY;
+
+            unsigned short udp_portnum = static_cast<unsigned short>(INADDR_ANY);
             d_udpInboundSocket = ::open_udp_socket(&udp_portnum, d_NICaddress);
             if (d_udpInboundSocket == INVALID_SOCKET) {
                 fprintf(stderr, "vrpn_Endpoint::finish_new_connection_setup:  "
@@ -3918,10 +3913,10 @@ int vrpn_Endpoint_IP::finish_new_connection_setup(void)
     // Pack messages that describe the types of messages and sender
     // ID mappings that have been described to this connection.  These
     // messages use special IDs (negative ones).
-    for (i = 0; i < d_dispatcher->numSenders(); i++) {
+    for (int i = 0; i < d_dispatcher->numSenders(); i++) {
         pack_sender_description(i);
     }
-    for (i = 0; i < d_dispatcher->numTypes(); i++) {
+    for (int i = 0; i < d_dispatcher->numTypes(); i++) {
         pack_type_description(i);
     }
 
