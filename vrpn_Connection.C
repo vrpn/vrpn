@@ -1978,12 +1978,12 @@ static SOCKET open_socket(int type, unsigned short *portno,
 
     // create an Internet socket of the appropriate type
     sock = socket(AF_INET, type, 0);
-    if (sock == -1) {
+    if (sock == INVALID_SOCKET) {
         fprintf(stderr, "open_socket: can't open socket.\n");
 #ifndef _WIN32_WCE
         fprintf(stderr, "  -- errno %d (%s).\n", errno, strerror(errno));
 #endif
-        return (SOCKET)-1;
+        return INVALID_SOCKET;
     }
 
 // Added by Eric Boren to address socket reconnectivity on the Android
@@ -2019,7 +2019,7 @@ static SOCKET open_socket(int type, unsigned short *portno,
         else {
             fprintf(stderr, "open_socket:  can't get %s host entry\n",
                     IPaddress);
-            return (SOCKET)-1;
+            return INVALID_SOCKET;
         }
     }
 
@@ -2042,13 +2042,13 @@ static SOCKET open_socket(int type, unsigned short *portno,
 #endif
         fprintf(stderr, "  (This probably means that another application has "
                         "the port open already)\n");
-        return (SOCKET)-1;
+        return INVALID_SOCKET;
     }
 
     // Find out which port was actually bound
     if (getsockname(sock, (struct sockaddr *)&name, GSN_CAST & namelen)) {
         fprintf(stderr, "vrpn: open_socket: cannot get socket name.\n");
-        return (SOCKET)-1;
+        return INVALID_SOCKET;
     }
     if (portno) {
         *portno = ntohs(name.sin_port);
@@ -2133,7 +2133,7 @@ static SOCKET vrpn_connect_udp_port(const char *machineName, int remotePort,
             fprintf(stderr,
                     "vrpn_connect_udp_port: error finding host by name (%s).\n",
                     machineName);
-            return (SOCKET)(-1);
+            return INVALID_SOCKET;
         }
     }
 #ifndef VRPN_USE_WINSOCK_SOCKETS
@@ -2145,7 +2145,7 @@ static SOCKET vrpn_connect_udp_port(const char *machineName, int remotePort,
     if (connect(udp_socket, (struct sockaddr *)&udp_name, udp_namelen)) {
         fprintf(stderr, "vrpn_connect_udp_port: can't bind udp socket.\n");
         vrpn_closeSocket(udp_socket);
-        return (SOCKET)(-1);
+        return INVALID_SOCKET;
     }
 
     // Find out which port was actually bound
@@ -2154,7 +2154,7 @@ static SOCKET vrpn_connect_udp_port(const char *machineName, int remotePort,
                     GSN_CAST & udp_namelen)) {
         fprintf(stderr, "vrpn_connect_udp_port: cannot get socket name.\n");
         vrpn_closeSocket(udp_socket);
-        return (SOCKET)-1;
+        return INVALID_SOCKET;
     }
 
 #ifdef VERBOSE3
@@ -3890,7 +3890,7 @@ int vrpn_Endpoint_IP::finish_new_connection_setup(void)
             // Open the UDP port to accept time-critical messages on.
             udp_portnum = (unsigned short)INADDR_ANY;
             d_udpInboundSocket = ::open_udp_socket(&udp_portnum, d_NICaddress);
-            if (d_udpInboundSocket == -1) {
+            if (d_udpInboundSocket == INVALID_SOCKET) {
                 fprintf(stderr, "vrpn_Endpoint::finish_new_connection_setup:  "
                                 "can't open UDP socket\n");
                 status = BROKEN;
