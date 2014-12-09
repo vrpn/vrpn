@@ -2884,8 +2884,7 @@ int vrpn_Endpoint_IP::mainloop(timeval *timeout)
         }
 
         // If we are a TCP-only connection, then we retry to establish the
-        // connection
-        // whenever it is time to try again.  Otherwise, we're done.
+        // connection whenever it is time to try again.  Otherwise, we're done.
         if (d_tcp_only) {
             if (time_to_try_again) {
                 status = TRYING_TO_CONNECT;
