@@ -3833,6 +3833,7 @@ int vrpn_Endpoint_IP::finish_new_connection_setup(void)
     if (ret != sendlen) {
         perror("vrpn_Endpoint::finish_new_connection_setup: Can't read cookie");
         status = BROKEN;
+        delete[] recvbuf;
         return -1;
     }
 
