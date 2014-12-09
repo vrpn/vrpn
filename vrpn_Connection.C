@@ -2016,6 +2016,7 @@ static SOCKET open_socket(int type, unsigned short *portno,
                    phe->h_length);
         }
         else {
+            vrpn_closeSocket(sock);
             fprintf(stderr, "open_socket:  can't get %s host entry\n",
                     IPaddress);
             return INVALID_SOCKET;
@@ -2041,12 +2042,14 @@ static SOCKET open_socket(int type, unsigned short *portno,
 #endif
         fprintf(stderr, "  (This probably means that another application has "
                         "the port open already)\n");
+        vrpn_closeSocket(sock);
         return INVALID_SOCKET;
     }
 
     // Find out which port was actually bound
     if (getsockname(sock, (struct sockaddr *)&name, GSN_CAST & namelen)) {
         fprintf(stderr, "vrpn: open_socket: cannot get socket name.\n");
+        vrpn_closeSocket(sock);
         return INVALID_SOCKET;
     }
     if (portno) {
