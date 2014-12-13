@@ -2173,6 +2173,42 @@ static SOCKET vrpn_connect_udp_port(const char *machineName, int remotePort,
 }
 
 /**
+ * Retrieves the IP address or hostname of the local interface used to connect
+ * to the specified remote host.
+ *
+ * @param local_host A buffer of size max_length that will contain the name of the local interface.
+ * @param max_length The maximum length of the local_host buffer.
+ * @param remote_host The name of the remote host.
+ *
+ * @return Returns -1 on getsockname() error, or the output of snprintf
+ * building the local_host string.
+ */
+static int get_local_socket_name(char local_host[], size_t max_length, const char* remote_host)
+{
+    const int remote_port = 0;
+
+    SOCKET udp_socket = vrpn_connect_udp_port(remote_host, remote_port, NULL);
+
+    struct sockaddr_in udp_name;
+    int udp_namelen = sizeof(udp_name);
+    if (getsockname(udp_socket, (struct sockaddr *)&udp_name, GSN_CAST & udp_namelen)) {
+        fprintf(stderr, "get_local_socket_name: cannot get socket name.\n");
+        vrpn_closeSocket(udp_socket);
+        return -1;
+    }
+
+    // NOTE NIC will be 0.0.0.0 if we listen on all NICs.
+    char str[64];
+    return snprintf(local_host, max_length, "%d.%d.%d.%d",
+        ntohl(udp_name.sin_addr.s_addr) >> 24,
+        (ntohl(udp_name.sin_addr.s_addr) >> 16) & 0xff,
+        (ntohl(udp_name.sin_addr.s_addr) >> 8) & 0xff,
+        ntohl(udp_name.sin_addr.s_addr) & 0xff);
+}
+
+
+
+/**
  * This section deals with implementing a method of connection termed a
  * UDP request.  This works by having the client open a TCP socket that
  * it listens on. It then lobs datagrams to the server asking to be
@@ -6022,10 +6058,16 @@ vrpn_Connection_IP::vrpn_Connection_IP(
 #ifdef VERBOSE
         printf("vrpn_Connection_IP: Getting the TCP port to listen on\n");
 #endif
+        // Determine which IP address we should listen on.
+        // By listening on a single IP address (as opposed to all interfaces,
+        // i.e., 0.0.0.0), we can avoid complaints from the Windows firewall.
+        char local_host[64];
+        get_local_socket_name(local_host, sizeof(local_host), endpoint->d_remote_machine_name);
+
         // Set up the connection that we will listen on.
         if (vrpn_get_a_TCP_socket(&endpoint->d_tcpListenSocket,
                                   &endpoint->d_tcpListenPort,
-                                  NIC_IPaddress) == -1) {
+                                  local_host) == -1) {
             fprintf(stderr, "vrpn_Connection_IP: Can't create listen socket\n");
             endpoint->status = BROKEN;
             endpoint->d_tcpListenSocket = INVALID_SOCKET;
