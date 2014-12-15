@@ -393,6 +393,11 @@
 // makes the GPL apply to the server!
 #cmakedefine VRPN_USE_JOYLIN
 
+//-------------------------
+// Instructs VRPN to compile cocde to use the Oculus SDK for
+// Oculus Rift support.
+#cmakedefine VRPN_USE_OVR
+
 //------------------------
 // Instructs VRPN to compile code to use the Polhemus Developer
 // (PDI) library to enable opening several of their trackers using
