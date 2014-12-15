@@ -871,6 +871,19 @@ option_requires(VRPN_USE_COLIBRIAPI
 if(VRPN_USE_COLIBRIAPI)
 	include_directories(${COLIBRIAPI_INCLUDE_DIR})
 	list(APPEND SERVER_EXTRA_LIBS ${COLIBRIAPI_LIBRARIES})
+
+###
+# Oculus VR SDK for Oculus Rift DK1 and Dk2
+###
+find_package(OVR)
+option_requires(VRPN_USE_OVR
+	"Build with Oculus VR's SDK for Oculus Rift support"
+	${DEFAULT_OFF_IF_SUBPROJECT}
+	OVR_FOUND)
+
+if(VRPN_USE_OVR)
+	include_directories(${OVR_INCLUDE_DIRS})
+	list(APPEND SERVER_EXTRA_LIBS ${OVR_LIBRARIES})
 endif()
 
 ###
@@ -1138,6 +1151,7 @@ set(VRPN_SERVER_SOURCES
 	vrpn_Tracker_NovintFalcon.C
 	vrpn_Tracker_OSVRHackerDevKit.C
 	vrpn_Tracker_PDI.C
+	vrpn_Tracker_OculusRift.C
 	vrpn_Tracker_PhaseSpace.C
 	vrpn_Tracker_RazerHydra.C
 	vrpn_Tracker_ThalmicLabsMyo.C
@@ -1251,6 +1265,7 @@ set(VRPN_SERVER_PUBLIC_HEADERS
 	vrpn_Tracker_NovintFalcon.h
 	vrpn_Tracker_OSVRHackerDevKit.h
 	vrpn_Tracker_PDI.h
+	vrpn_Tracker_OculusRift.h
 	vrpn_Tracker_PhaseSpace.h
 	vrpn_Tracker_RazerHydra.h
 	vrpn_Tracker_ThalmicLabsMyo.h
