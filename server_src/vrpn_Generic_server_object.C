@@ -85,6 +85,7 @@
 #include "vrpn_Tracker_NovintFalcon.h"
 #include "vrpn_Tracker_OSVRHackerDevKit.h" // for vrpn_Tracker_OSVRHackerDevKit
 #include "vrpn_Tracker_PDI.h"
+#include "vrpn_Tracker_OculusRift.h"      // for vrpn_Tracker_OculusRift
 #include "vrpn_Tracker_PhaseSpace.h"
 #include "vrpn_Tracker_RazerHydra.h"      // for vrpn_Tracker_RazerHydra
 #include "vrpn_Tracker_Filter.h"          // for vrpn_Tracker_FilterOneEuro
@@ -3612,6 +3613,39 @@ int vrpn_Generic_Server_Object::setup_Tracker_NDI_Polaris(char *&,
     return (0); // success
 }
 
+int vrpn_Generic_Server_Object::setup_Tracker_OculusRift(char *&pch, char *line,
+                                                         FILE *config_file)
+{
+    char s2[LINESIZE];
+    int hmd_index = 0;
+
+    VRPN_CONFIG_NEXT();
+
+    // Get the arguments (hmd name, hmd index)
+    int numParams = sscanf(pch, "%511s %u", s2, &hmd_index);
+    fprintf(stderr, "Number of parameters: %d: [%s] [%d]\n", numParams, s2, hmd_index);
+    if (numParams < 2) {
+        hmd_index = 0;
+    } else if (numParams < 1 || numParams > 2) {
+        fprintf(stderr, "Bad Oculus Rift line: %s\n", line);
+        return -1;
+    }
+
+    // Open the Oculus Rift
+    if (verbose) {
+        printf("Opening vrpn_Tracker_OculusRift\n");
+    }
+
+#ifdef VRPN_USE_OVR
+    // Open the tracker
+    _devices->add(new vrpn_Tracker_OculusRift(s2, connection, hmd_index));
+#else
+    fprintf(stderr,
+            "Oculus Rift driver works only if the Oculus SDK is installed!\n");
+#endif
+    return 0; // successful completion
+}
+
 int vrpn_Generic_Server_Object::setup_Logger(char *&pch, char *line,
                                              FILE * /*config_file*/)
 {
@@ -5305,6 +5339,9 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(
                 }
                 else if (VRPN_ISIT("vrpn_Tracker_RazerHydra")) {
                     VRPN_CHECK(setup_Tracker_RazerHydra);
+                }
+                else if (VRPN_ISIT("vrpn_Tracker_OculusRift")) {
+                    VRPN_CHECK(setup_Tracker_OculusRift);
                 }
                 else if (VRPN_ISIT ("vrpn_Tracker_ThalmicLabsMyo")) {
                     VRPN_CHECK(setup_Tracker_ThalmicLabsMyo);
