@@ -2176,14 +2176,14 @@ static SOCKET vrpn_connect_udp_port(const char *machineName, int remotePort,
  * Retrieves the IP address or hostname of the local interface used to connect
  * to the specified remote host.
  *
- * @param local_host A buffer of size max_length that will contain the name of the local interface.
+ * @param local_host A buffer of size 64 that will contain the name of the local interface.
  * @param max_length The maximum length of the local_host buffer.
  * @param remote_host The name of the remote host.
  *
  * @return Returns -1 on getsockname() error, or the output of snprintf
  * building the local_host string.
  */
-static int get_local_socket_name(char local_host[], size_t max_length, const char* remote_host)
+static int get_local_socket_name(char *local_host, size_t max_length, const char* remote_host)
 {
     const int remote_port = 0;
 
@@ -2198,15 +2198,12 @@ static int get_local_socket_name(char local_host[], size_t max_length, const cha
     }
 
     // NOTE NIC will be 0.0.0.0 if we listen on all NICs.
-    char str[64];
-    return snprintf(local_host, max_length, "%d.%d.%d.%d",
+    return sprintf(local_host, "%d.%d.%d.%d",
         ntohl(udp_name.sin_addr.s_addr) >> 24,
         (ntohl(udp_name.sin_addr.s_addr) >> 16) & 0xff,
         (ntohl(udp_name.sin_addr.s_addr) >> 8) & 0xff,
         ntohl(udp_name.sin_addr.s_addr) & 0xff);
 }
-
-
 
 /**
  * This section deals with implementing a method of connection termed a
@@ -6059,7 +6056,7 @@ vrpn_Connection_IP::vrpn_Connection_IP(
         printf("vrpn_Connection_IP: Getting the TCP port to listen on\n");
 #endif
         // Determine which IP address we should listen on.
-        // By listening on a single IP address (as opposed to all interfaces,
+        // By listening on only localhost (as opposed to all interfaces,
         // i.e., 0.0.0.0), we can avoid complaints from the Windows firewall.
         char local_host[64];
         get_local_socket_name(local_host, sizeof(local_host), endpoint->d_remote_machine_name);
