@@ -1,6 +1,7 @@
 #include <stdlib.h>                 // for strtol, atoi, strtod
 #include <string.h>                 // for strcmp, strlen, strtok, etc
 #include "vrpn_MainloopContainer.h" // for vrpn_MainloopContainer
+#include <locale>                   // To enable setting parsing for .cfg file
 
 #include "timecode_generator_server/vrpn_timecode_generator.h"
 #include "vrpn_3DConnexion.h" // for vrpn_3DConnexion_Navigator, etc
@@ -4419,6 +4420,17 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(
     /// @todo warning: unused parameter 'port' [-Wunused-parameter]
     FILE *config_file;
 
+    // Store the locale that was set before we came in here.
+    // The global locale is obtained by using the default
+    // constructor.
+    std::locale const orig_locale = std::locale();
+
+    // Set the global locale to be "C", the classic one, so that
+    // when we parse the configuration file it will use dots for
+    // decimal points even if the local standard is commas.
+    // putting them into the global locale.
+    std::locale::global(std::locale("C"));
+
     // Open the configuration file
     if (verbose) {
         printf("Reading from config file %s\n", config_file_name);
@@ -4919,6 +4931,10 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(
 
 #undef VRPN_ISIT
 #undef VRPN_CHECK
+
+    // Restore the original settings into the global locale by
+    // putting them into the global locale.
+    std::locale::global(orig_locale);
 
     // Close the configuration file
     fclose(config_file);
