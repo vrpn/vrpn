@@ -2198,11 +2198,21 @@ static int get_local_socket_name(char *local_host, size_t max_length, const char
     }
 
     // NOTE NIC will be 0.0.0.0 if we listen on all NICs.
-    return sprintf(local_host, "%d.%d.%d.%d",
+    char myIPstring[100];
+    int ret = sprintf(myIPstring, "%d.%d.%d.%d",
         ntohl(udp_name.sin_addr.s_addr) >> 24,
         (ntohl(udp_name.sin_addr.s_addr) >> 16) & 0xff,
         (ntohl(udp_name.sin_addr.s_addr) >> 8) & 0xff,
         ntohl(udp_name.sin_addr.s_addr) & 0xff);
+
+    // Copy this to the output
+    if ((unsigned)strlen(myIPstring) > max_length) {
+        fprintf(stderr, "get_local_socket_name: Name too long to return\n");
+        return -1;
+    }
+
+    strcpy(local_host, myIPstring);
+    return ret;
 }
 
 /**
