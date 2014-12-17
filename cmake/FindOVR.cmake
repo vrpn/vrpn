@@ -26,15 +26,79 @@ set(OVR_ROOT_DIR
 	PATH
     "Directory to search for Oculus SDK")
 
+# The OVR library is built in a directory tree that varies based on platform,
+# architecture, and compiler.
+#
+# The libraries live in one of the following locations:
+#
+# Lib/Win32/VS2012/libovrd.lib
+# Lib/Win32/VS2012/libovr.lib
+# Lib/Win32/VS2013/libovrd.lib
+# Lib/Win32/VS2013/libovr.lib
+# Lib/Win32/VS2010/libovrd.lib
+# Lib/Win32/VS2010/libovr.lib
+# Lib/x64/VS2012/libovr64d.lib
+# Lib/x64/VS2012/libovr64.lib
+# Lib/x64/VS2013/libovr64d.lib
+# Lib/x64/VS2013/libovr64.lib
+# Lib/x64/VS2010/libovr64d.lib
+# Lib/x64/VS2010/libovr64.lib
+# Lib/Linux/Release/x86_64/libovr.a
+# Lib/Linux/Debug/x86_64/libovr.a
+# Lib/Linux/Release/i386/libovr.a
+# Lib/Linux/Debug/i386/libovr.a
+# Lib/Mac/Release/libovr.a
+# Lib/Mac/Debug/libovr.a
+
+set(OVR_LIBRARY_PATH_SUFFIX "Lib")
+
+# Test compiler
+if(MSVC10) # Microsoft Visual Studio 2010
+	set(_ovr_library_compiler "VS2010")
+elseif(MSVC11) # Microsoft Visual Studio 2012
+	set(_ovr_library_compiler "VS2012")
+elseif(MSVC12) # Microsoft Visual Studio 2013
+	set(_ovr_library_compiler "VS2013")
+endif()
+
+
+# Test 32/64 bits
+if("${CMAKE_SIZEOF_VOID_P}" EQUAL "8")
+	set(_ovr_library_arch "x86_64")
+	if (WIN32)
+		set(_ovr_library_arch "x64")
+	endif(WIN32)
+else()
+	set(_ovr_library_arch "i386")
+	if (WIN32)
+		set(_ovr_library_arch "Win32")
+	endif(WIN32)
+endif()
+
+# Test build type
+if((${CMAKE_BUILD_TYPE} MATCHES "Debug") OR (${CMAKE_BUILD_TYPE} MATCHES "RelWithDebugInfo"))
+	set(_ovr_library_build_type "Debug")
+else()
+	set(_ovr_library_build_type "Release")
+endif()
+
+# Test platform
+if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+	set(OVR_LIBRARY_PATH_SUFFIX "Lib/Linux/${_ovr_library_build_type}/${_ovr_library_arch}")
+elseif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+	set(OVR_LIBRARY_PATH_SUFFIX "Lib/Mac/${_ovr_library_build_type}")
+elseif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+	set(OVR_LIBRARY_PATH_SUFFIX "Lib/${_ovr_library_arch}/${_ovr_library_compiler}")
+endif()
+
 find_library(OVR_LIBRARY
 	NAMES
 	ovr
+	libovr
 	PATHS
-	"${OVR_ROOT_DIR}"
+	${OVR_ROOT_DIR}
 	PATH_SUFFIXES
-	lib
-	Lib/Linux/Release/i386
-	Lib/Linux/Release/x86_64
+	${OVR_LIBRARY_PATH_SUFFIX}
 	)
 
 get_filename_component(_libdir "${OVR_LIBRARY}" PATH)
@@ -64,6 +128,10 @@ find_path(OVR_SOURCE_DIR
 	Src
 	)
 
+message("OVR_LIBRARY = ${OVR_LIBRARY}")
+message("OVR_INCLUDE_DIR = ${OVR_INCLUDE_DIR}")
+message("OVR_SOURCE_DIR = ${OVR_SOURCE_DIR}")
+
 # Dependencies
 
 set(_ovr_dependency_libraries "")
@@ -73,31 +141,36 @@ if(NOT OPENGL_FOUND)
 	find_package(OpenGL)
 	list(APPEND _ovr_dependency_libraries ${OPENGL_LIBRARIES})
 	list(APPEND _ovr_dependency_includes ${OPENGL_INCLUDE_DIR})
+	list(APPEND _ovr_dependencies OPENGL_FOUND)
 endif()
 
 if(NOT THREADS_FOUND)
 	find_package(Threads)
 	list(APPEND _ovr_dependency_libraries ${CMAKE_THREAD_LIBS_INIT})
+	list(APPEND _ovr_dependencies THREADS_FOUND)
 endif()
 
 # Linux-only dependencies
-IF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 	if(NOT X11_FOUND)
 		find_package(X11)
 		list(APPEND _ovr_dependency_libraries ${X11_LIBRARIES})
 		list(APPEND _ovr_dependency_includes ${X11_INCLUDE_DIR})
+		list(APPEND _ovr_dependencies X11_FOUND)
 	endif()
 
 	if(NOT XRANDR_FOUND)
 		find_package(Xrandr)
 		list(APPEND _ovr_dependency_libraries ${XRANDR_LIBRARIES})
 		list(APPEND _ovr_dependency_includes ${XRANDR_INCLUDE_DIR})
+		list(APPEND _ovr_dependencies XRANDR_FOUND)
 	endif()
 
 	if(NOT UDEV_FOUND)
 		find_package(udev)
 		list(APPEND _ovr_dependency_libraries ${UDEV_LIBRARIES})
 		list(APPEND _ovr_dependency_includes ${UDEV_INCLUDE_DIR})
+		list(APPEND _ovr_dependencies UDEV_FOUND)
 	endif()
 endif()
 
@@ -107,11 +180,7 @@ find_package_handle_standard_args(OVR
 	OVR_LIBRARY
 	OVR_INCLUDE_DIR
 	OVR_SOURCE_DIR
-	OPENGL_FOUND
-	THREADS_FOUND
-	X11_FOUND
-	XRANDR_FOUND
-	UDEV_FOUND
+	${_ovr_dependencies}
 	)
 
 if(OVR_FOUND)
@@ -119,6 +188,9 @@ if(OVR_FOUND)
 	list(APPEND OVR_INCLUDE_DIRS ${OVR_INCLUDE_DIR} ${OVR_SOURCE_DIR} ${_ovr_dependency_includes})
 	mark_as_advanced(OVR_ROOT_DIR)
 endif()
+
+message("OVR_LIBRARIES = ${OVR_LIBRARIES}")
+message("OVR_INCLUDE_DIRS = ${OVR_INCLUDE_DIRS}")
 
 mark_as_advanced(OVR_INCLUDE_DIR
 	OVR_SOURCE_DIR
