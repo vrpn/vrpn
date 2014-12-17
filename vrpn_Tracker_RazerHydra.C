@@ -461,10 +461,13 @@ void vrpn_Tracker_RazerHydra::_report_for_sensor(int sensorNum, vrpn_uint8 * dat
     pos[1] = vrpn_unbuffer_from_little_endian<vrpn_int16>(data) * MM_PER_METER;
     pos[2] = vrpn_unbuffer_from_little_endian<vrpn_int16>(data) * MM_PER_METER;
 
+    // Switch handedness when we read the Quaternion values.
+    // We do this by inverting the Y and Z axes; it is equivalent
+    // to invert the X and W axes.
     d_quat[Q_W] = vrpn_unbuffer_from_little_endian<vrpn_int16>(data) * SCALE_INT16_TO_FLOAT_PLUSMINUS_1;
     d_quat[Q_X] = vrpn_unbuffer_from_little_endian<vrpn_int16>(data) * SCALE_INT16_TO_FLOAT_PLUSMINUS_1;
-    d_quat[Q_Y] = vrpn_unbuffer_from_little_endian<vrpn_int16>(data) * SCALE_INT16_TO_FLOAT_PLUSMINUS_1;
-    d_quat[Q_Z] = vrpn_unbuffer_from_little_endian<vrpn_int16>(data) * SCALE_INT16_TO_FLOAT_PLUSMINUS_1;
+    d_quat[Q_Y] = -vrpn_unbuffer_from_little_endian<vrpn_int16>(data) * SCALE_INT16_TO_FLOAT_PLUSMINUS_1;
+    d_quat[Q_Z] = -vrpn_unbuffer_from_little_endian<vrpn_int16>(data) * SCALE_INT16_TO_FLOAT_PLUSMINUS_1;
 
     q_normalize(d_quat, d_quat);
 
@@ -475,7 +478,8 @@ void vrpn_Tracker_RazerHydra::_report_for_sensor(int sensorNum, vrpn_uint8 * dat
         _calibration_done[sensorNum] = true;
 
         // store the base quaternion to fix up any bizarre rotations - ensures that we start x-right, y-front, z-up
-        q_conjugate(_calibration_pose_conj[sensorNum], d_quat);
+        // We invert the quaternion to undo its transformation.
+        q_invert(_calibration_pose_conj[sensorNum], d_quat);
 
         // initialize hemisphere tracking
         // coordinate sanity check - sensor 0 (left): -x, -y, -z
@@ -503,8 +507,10 @@ void vrpn_Tracker_RazerHydra::_report_for_sensor(int sensorNum, vrpn_uint8 * dat
 
     if (_calibration_done[sensorNum])
     {
-        // apply orientation calibration
-        q_mult(d_quat, _calibration_pose_conj[sensorNum], d_quat);
+        // apply orientation calibration, undoing the original
+        // rotation and then doing the current rotation using the
+        // calibration data.
+        q_mult(d_quat, d_quat, _calibration_pose_conj[sensorNum]);
 
         // apply sign correction (left/right-handed)
         pos[0] *= _sign_x[sensorNum];
