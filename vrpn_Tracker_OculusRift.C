@@ -19,7 +19,6 @@ VRPN_SUPPRESS_EMPTY_OBJECT_WARNING()
 
 // Library/third-party includes
 #include <OVR.h>
-#include <boost/lexical_cast.hpp>
 
 // Standard includes
 #include <sstream>                      // for operator<<, basic_ostream, etc
