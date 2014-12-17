@@ -835,9 +835,14 @@ option_requires(VRPN_USE_OVR
 	${DEFAULT_OFF_IF_SUBPROJECT}
 	OVR_FOUND)
 
+message("OVR_FOUND = ${OVR_FOUND}")
+message("VRPN_USE_OVR = ${VRPN_USE_OVR}")
+
 if(VRPN_USE_OVR)
 	include_directories(${OVR_INCLUDE_DIRS})
 	list(APPEND SERVER_EXTRA_LIBS ${OVR_LIBRARIES})
+	message("OVR_INCLUDE_DIRS = ${OVR_INCLUDE_DIRS}")
+	message("SERVER_EXTRA_LIBS = ${SERVER_EXTRA_LIBS}")
 endif()
 
 ###
