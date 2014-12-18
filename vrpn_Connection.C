@@ -3780,6 +3780,9 @@ int vrpn_Endpoint_IP::setup_new_connection(void)
     sendlen = static_cast<vrpn_int32>(vrpn_cookie_size());
 
     // Write the magic cookie header to the server
+    // NOTE: Valgrind will complain about this because we didn't fill in all of the
+    // characters we're writing.  But we don't care about the characters that are
+    // beyond the terminating NULL character in the string.
     if (vrpn_noint_block_write(d_tcpSocket, sendbuf, sendlen) != sendlen) {
         fprintf(stderr, "vrpn_Endpoint::setup_new_connection:  "
                         "Can't write cookie.\n");

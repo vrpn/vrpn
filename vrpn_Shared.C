@@ -1226,10 +1226,10 @@ void vrpn_Semaphore::allocArena()
 }
 #endif
 
-vrpn_Thread::vrpn_Thread(void (*pfThread)(vrpn_ThreadData &ThreadData),
-                         vrpn_ThreadData td)
-    : pfThread(pfThread)
-    , td(td)
+vrpn_Thread::vrpn_Thread(void (*pfThreadparm)(vrpn_ThreadData &ThreadData),
+                         vrpn_ThreadData tdparm)
+    : pfThread(pfThreadparm)
+    , td(tdparm)
     , threadID(0)
 {
 }
@@ -1285,7 +1285,12 @@ bool vrpn_Thread::kill()
 #endif
 #else
     if (threadID) {
-        // Posix by default
+        // Posix by default.  Detach so that the thread's resources will be
+        // freed automatically when it is killed.
+        if (pthread_detach(threadID) != 0) {
+            perror("vrpn_Thread::kill:pthread_detach: ");
+            return false;
+        }
         if (pthread_kill(threadID, SIGKILL) != 0) {
             perror("vrpn_Thread::kill:pthread_kill: ");
             return false;
@@ -1322,6 +1327,12 @@ void vrpn_Thread::threadFuncShell(void *pvThread)
     vrpn_Thread *pth = static_cast<vrpn_Thread *>(pvThread);
     pth->pfThread(pth->td);
     // thread has stopped running
+#if !defined(sgi) && !defined(_WIN32)
+    // Pthreads; need to detach the thread so its resources will be freed.
+    if (pthread_detach(pth->threadID) != 0) {
+        perror("vrpn_Thread::threadFuncShell:pthread_detach: ");
+    }
+#endif
     pth->threadID = 0;
 }
 
@@ -1512,8 +1523,7 @@ bool vrpn_test_threads_and_semaphores(void)
         }
 
         // Time out after three seconds if we haven't had the thread run to
-        // reset
-        // the semaphore.
+        // reset the semaphore.
         vrpn_gettimeofday(&now, NULL);
         struct timeval diff = vrpn_TimevalDiff(now, start);
         if (diff.tv_sec >= 3) {
