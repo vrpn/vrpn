@@ -992,6 +992,7 @@ bool vrpn_Semaphore::destroy()
                 "vrpn_Semaphore::destroy: error destroying semaphore.\n");
         return false;
     }
+    delete semaphore;
 #endif
     semaphore = NULL;
 #endif
