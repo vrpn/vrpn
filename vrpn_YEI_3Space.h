@@ -76,9 +76,6 @@ public:
     /// send report whether or not changed
     virtual void report
                    (vrpn_uint32 class_of_service = vrpn_CONNECTION_LOW_LATENCY);
-
-    /// quaternion to rotate into standard coordinate system.
-    q_type d_fixQuat;
 };
 
 #endif

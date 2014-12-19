@@ -40,7 +40,6 @@ vrpn_YEI_3Space_Sensor::vrpn_YEI_3Space_Sensor (const char * p_name
 {
   // Set the parameters in the parent classes
   vrpn_Analog::num_channel = 11;
-  q_from_euler(d_fixQuat, Q_DEG_TO_RAD(-90), Q_DEG_TO_RAD(90), 0);
 
   // Configure LED mode.
   unsigned char set_LED_mode[2] = { 0xC4, 0 };
@@ -224,7 +223,7 @@ int vrpn_YEI_3Space_Sensor::reset (void)
     return -1;
   }
 
-  // Change into the x-right, z-up right handed CS we want - not fully successful but correctable.
+  // Change into the x-right, z-up right handed CS we want
   unsigned char set_rh_system[] = { 0x74, 0x01 };
   if (!send_command(set_rh_system, sizeof(set_rh_system))) {
       VRPN_MSG_ERROR("vrpn_YEI_3Space_Sensor::reset: Unable to send coordinate system selection command\n");
@@ -352,7 +351,6 @@ void vrpn_YEI_3Space_Sensor::get_report (void)
     quat[Q_Z] = value;
     vrpn_unbuffer(&bufptr, &value);
     quat[Q_W] = value;
-    q_mult(quat, d_fixQuat, quat);
     if (0 != report_pose(i, timestamp, pos, quat)) {
         VRPN_MSG_ERROR ("vrpn_YEI_3Space_Sensor::get_report(): Error sending sensor report");
         d_sensor = STATUS_RESETTING;
