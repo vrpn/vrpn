@@ -340,8 +340,7 @@ void vrpn_YEI_3Space_Sensor::get_report (void)
   unsigned char *bufptr = d_buffer;
 
   // Read the two orientations and report them
-  q_vec_type  pos;
-  pos[Q_X] = pos[Q_Y] = pos[Q_Z] = 0;
+  q_vec_type  pos = {0};
   q_type  quat;
 
   for (int i = 0; i < 2; i++) {
