@@ -2180,21 +2180,26 @@ static SOCKET vrpn_connect_udp_port(const char *machineName, int remotePort,
  * @param max_length The maximum length of the local_host buffer.
  * @param remote_host The name of the remote host.
  *
- * @return Returns -1 on getsockname() error, or the output of snprintf
+ * @return Returns -1 on getsockname() error, or the output of sprintf
  * building the local_host string.
  */
 static int get_local_socket_name(char *local_host, size_t max_length, const char* remote_host)
 {
     const int remote_port = 0;
-
-    SOCKET udp_socket = vrpn_connect_udp_port(remote_host, remote_port, NULL);
-
     struct sockaddr_in udp_name;
     int udp_namelen = sizeof(udp_name);
-    if (getsockname(udp_socket, (struct sockaddr *)&udp_name, GSN_CAST & udp_namelen)) {
-        fprintf(stderr, "get_local_socket_name: cannot get socket name.\n");
-        vrpn_closeSocket(udp_socket);
-        return -1;
+
+    SOCKET udp_socket = vrpn_connect_udp_port(remote_host, remote_port, NULL);
+    if (udp_socket == INVALID_SOCKET) {
+      fprintf(stderr, "get_local_socket_name: cannot connect_udp_port to %s.\n", remote_host);
+      fprintf(stderr, " (returning 0.0.0.0 so we listen on all ports).\n");
+      udp_name.sin_addr.s_addr = 0;
+    } else {
+      if (getsockname(udp_socket, (struct sockaddr *)&udp_name, GSN_CAST & udp_namelen)) {
+          fprintf(stderr, "get_local_socket_name: cannot get socket name.\n");
+          vrpn_closeSocket(udp_socket);
+          return -1;
+      }
     }
 
     // NOTE NIC will be 0.0.0.0 if we listen on all NICs.
