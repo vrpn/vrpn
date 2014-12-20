@@ -31,11 +31,60 @@ VRPN_SUPPRESS_EMPTY_OBJECT_WARNING()
 #include <cctype>                       // for tolower
 #include <cstdlib>                      // for exit, EXIT_FAILURE
 
+/**
+ * Returns the readable name of the HMD type.
+ *
+ * @param hmd_type HMD type from ovrHmdType enum.
+ *
+ * @returns String of HMD type name.
+ */
+static std::string vrpn_get_hmd_type_name(ovrHmdType hmd_type)
+{
+    switch (hmd_type) {
+    case ovrHmd_None:
+        return "none";
+    case ovrHmd_DK1:
+        return "Oculus Rift DK1";
+    case ovrHmd_DKHD:
+        return "Oculus Rift DKHD";
+    case ovrHmd_DK2:
+        return "Oculus Rift DK2";
+    case ovrHmd_Other:
+        return "other/unknown";
+    default:
+        return "unknown enum value";
+    }
+}
+
+/**
+ * Returns the enum value of the HMD type.
+ *
+ * @param hmd_type The type of HMD. Acceptable values are: DK1, DK2, and
+ * Debug.
+ *
+ * @return The enum valuie of the hmd_type.
+ */
+static ovrHmdType vrpn_get_hmd_type(std::string hmd_type)
+{
+    // Convert HMD type name to lowercase
+    for (int i = 0; i < hmd_type.size(); ++i)
+        hmd_type[i] = std::tolower(hmd_type[i]);
+
+    if ("dk1" == hmd_type) {
+        return ovrHmd_DK1;
+    } else if ("dk2" == hmd_type) {
+        return ovrHmd_DK2;
+    } else if ("debug" == hmd_type) {
+        return ovrHmd_None;
+    } else {
+        return ovrHmd_None;
+    }
+}
+
 vrpn_Tracker_OculusRift::vrpn_Tracker_OculusRift(const char* name, vrpn_Connection* conn, int hmd_index, const char* hmd_type)
     : vrpn_Analog(name, conn)
     , vrpn_Tracker(name, conn)
     , _hmd(NULL)
-    , _hmdType(_get_hmd_type(hmd_type))
 {
     ovrBool initialized = ovr_Initialize();
     if (!initialized) {
@@ -65,13 +114,14 @@ vrpn_Tracker_OculusRift::vrpn_Tracker_OculusRift(const char* name, vrpn_Connecti
     }
 
     // Get more information about the HMD
-    if (_hmdType != _hmd->Type) {
-        std::string detected_hmd_type = _get_hmd_type_name(_hmd->Type);
-        std::string requested_hmd_type = _get_hmd_type_name(_hmdType);
+    const ovrHmdType requested_hmd_type = vrpn_get_hmd_type(hmd_type);
+    if (requested_hmd_type != _hmd->Type) {
+        std::string detected_hmd_type_name = vrpn_get_hmd_type_name(_hmd->Type);
+        std::string requested_hmd_type_name = vrpn_get_hmd_type_name(requested_hmd_type);
 
         send_text_message(vrpn_TEXT_ERROR)
-            << "HMD type mismatch: Detected " << detected_hmd_type
-            << " but wanted " << requested_hmd_type << ".";
+            << "HMD type mismatch: Detected " << detected_hmd_type_name
+            << " but wanted " << requested_hmd_type_name << ".";
         std::exit(EXIT_FAILURE);
     }
 
@@ -101,41 +151,6 @@ vrpn_Tracker_OculusRift::vrpn_Tracker_OculusRift(const char* name, vrpn_Connecti
     // Set up sensor counts
     vrpn_Analog::num_channel = ANALOG_CHANNELS;
     vrpn_Tracker::num_sensors = POSE_CHANNELS;
-}
-
-std::string vrpn_Tracker_OculusRift::_get_hmd_type_name(ovrHmdType hmd_type) const
-{
-    switch (hmd_type) {
-    case ovrHmd_None:
-        return "none";
-    case ovrHmd_DK1:
-        return "Oculus Rift DK1";
-    case ovrHmd_DKHD:
-        return "Oculus Rift DKHD";
-    case ovrHmd_DK2:
-        return "Oculus Rift DK2";
-    case ovrHmd_Other:
-        return "other/unknown";
-    default:
-        return "unknown enum value";
-    }
-}
-
-ovrHmdType vrpn_Tracker_OculusRift::_get_hmd_type(std::string hmd_type) const
-{
-    // Convert HMD type name to lowercase
-    for (int i = 0; i < hmd_type.size(); ++i)
-        hmd_type[i] = std::tolower(hmd_type[i]);
-
-    if ("dk1" == hmd_type) {
-        return ovrHmd_DK1;
-    } else if ("dk2" == hmd_type) {
-        return ovrHmd_DK2;
-    } else if ("debug" == hmd_type) {
-        return ovrHmd_None;
-    } else {
-        return ovrHmd_None;
-    }
 }
 
 void vrpn_Tracker_OculusRift::_get_tracking_state()
