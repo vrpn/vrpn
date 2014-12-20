@@ -11,6 +11,8 @@
 
 // Internal Includes
 #include "vrpn_Tracker_OculusRift.h"
+#include "quat.h"
+
 VRPN_SUPPRESS_EMPTY_OBJECT_WARNING()
 
 #ifdef VRPN_USE_OVR
@@ -26,18 +28,20 @@ VRPN_SUPPRESS_EMPTY_OBJECT_WARNING()
 #include <cstddef>                      // for size_t
 #include <cstdio>                       // for fprintf, NULL, stderr
 #include <cstring>                      // for memset
+#include <cctype>                       // for tolower
+#include <cstdlib>                      // for exit, EXIT_FAILURE
 
-
-vrpn_Tracker_OculusRift::vrpn_Tracker_OculusRift(const char* name, vrpn_Connection* conn, int hmd_index)
+vrpn_Tracker_OculusRift::vrpn_Tracker_OculusRift(const char* name, vrpn_Connection* conn, int hmd_index, const char* hmd_type)
     : vrpn_Analog(name, conn)
     , vrpn_Tracker(name, conn)
+    , _hmd(NULL)
+    , _hmdType(_get_hmd_type(hmd_type))
 {
     ovrBool initialized = ovr_Initialize();
     if (!initialized) {
-        // TODO report error and do something else (set global state? try again
-        // later?)
-        //fprintf(stderr, "Error initializing Oculus Rift API.");
+        fprintf(stderr, "Error initializing Oculus Rift API.");
         send_text_message(vrpn_TEXT_ERROR) << "Error initializing Oculus Rift API.";
+        std::exit(EXIT_FAILURE);
     }
 
     int num_hmds = ovrHmd_Detect();
@@ -54,29 +58,34 @@ vrpn_Tracker_OculusRift::vrpn_Tracker_OculusRift(const char* name, vrpn_Connecti
                 << "]. Creating debug HMD to use instead.";
         } else {
             send_text_message(vrpn_TEXT_WARNING)
-                << "No HMDs are currently attached. Creating debug HMD.";
+                << "No HMDs are currently attached.";
         }
-        _hmd = ovrHmd_CreateDebug(ovrHmd_DK2);
+        _hmd = NULL;
+        std::exit(EXIT_FAILURE);
     }
 
     // Get more information about the HMD
-    ovrHmdType hmd_type = _hmd->Type;
-    //typedef enum
-    //{
-    //    ovrHmd_None             = 0,
-    //    ovrHmd_DK1              = 3,
-    //    ovrHmd_DKHD             = 4,
-    //    ovrHmd_DK2              = 6,
-    //    ovrHmd_Other             // Some HMD other then the one in the enumeration.
-    //} ovrHmdType;
+    if (_hmdType != _hmd->Type) {
+        std::string detected_hmd_type = _get_hmd_type_name(_hmd->Type);
+        std::string requested_hmd_type = _get_hmd_type_name(_hmdType);
+
+        send_text_message(vrpn_TEXT_ERROR)
+            << "HMD type mismatch: Detected " << detected_hmd_type
+            << " but wanted " << requested_hmd_type << ".";
+        std::exit(EXIT_FAILURE);
+    }
 
     // Send along some information about the HMD we're connected to
     send_text_message(vrpn_TEXT_NORMAL)
         << "Connected to " << _hmd->ProductName;
+
+    // Serial number
     if (strlen(_hmd->SerialNumber) > 0)
         send_text_message(vrpn_TEXT_NORMAL)
             << "Serial: "
             << _hmd->SerialNumber;
+
+    // Firmware
     if (_hmd->FirmwareMajor >= 0)
         send_text_message(vrpn_TEXT_NORMAL)
             << "Firmware version: "
@@ -94,27 +103,56 @@ vrpn_Tracker_OculusRift::vrpn_Tracker_OculusRift(const char* name, vrpn_Connecti
     vrpn_Tracker::num_sensors = POSE_CHANNELS;
 }
 
+std::string vrpn_Tracker_OculusRift::_get_hmd_type_name(ovrHmdType hmd_type) const
+{
+    switch (hmd_type) {
+    case ovrHmd_None:
+        return "none";
+    case ovrHmd_DK1:
+        return "Oculus Rift DK1";
+    case ovrHmd_DKHD:
+        return "Oculus Rift DKHD";
+    case ovrHmd_DK2:
+        return "Oculus Rift DK2";
+    case ovrHmd_Other:
+        return "other/unknown";
+    default:
+        return "unknown enum value";
+    }
+}
+
+ovrHmdType vrpn_Tracker_OculusRift::_get_hmd_type(std::string hmd_type) const
+{
+    // Convert HMD type name to lowercase
+    for (int i = 0; i < hmd_type.size(); ++i)
+        hmd_type[i] = std::tolower(hmd_type[i]);
+
+    if ("dk1" == hmd_type) {
+        return ovrHmd_DK1;
+    } else if ("dk2" == hmd_type) {
+        return ovrHmd_DK2;
+    } else if ("debug" == hmd_type) {
+        return ovrHmd_None;
+    } else {
+        return ovrHmd_None;
+    }
+}
+
 void vrpn_Tracker_OculusRift::_get_tracking_state()
 {
+    // FIXME only report data that we detect
+
     // Poll tracking data
     const ovrTrackingState ts = ovrHmd_GetTrackingState(_hmd, ovr_GetTimeInSeconds());
     if (ts.StatusFlags & (ovrStatus_OrientationTracked | ovrStatus_PositionTracked)) {
-        const ovrPoseStatef head_state = ts.HeadPose;              // head pose + ang/lin velocity + ang/lin accel
-        const ovrPosef camera_pose = ts.CameraPose;                // camera position and orientation
-        const ovrPosef leveled_camera_pose = ts.LeveledCameraPose; // same as camera pose but with roll and pitch zeroed out
+        // Sensor 0: HMD pose
+        //
+        // Predicted head pose (and derivatives).
+        d_sensor = 0;
 
-        const ovrSensorData sensor_data = ts.RawSensorData;
-        const ovrVector3f accelerator = sensor_data.Accelerometer; // acceleration reading in m/s^2
-        const ovrVector3f gyro = sensor_data.Gyro;                 // rotation rate in rad/s
-        const ovrVector3f magnetometer = sensor_data.Magnetometer; // magnetic field in Gauss
-        const float temperature = sensor_data.Temperature;         // degrees Celsius
-
-        // Deconstruct head pose
+        const ovrPoseStatef head_state = ts.HeadPose;
         const ovrPosef head_pose = head_state.ThePose;
-        const ovrVector3f angular_velocity = head_state.AngularVelocity;
-        // etc.
 
-        // Poses
         pos[0] = head_pose.Position.x;
         pos[1] = head_pose.Position.y;
         pos[2] = head_pose.Position.z;
@@ -128,22 +166,108 @@ void vrpn_Tracker_OculusRift::_get_tracking_state()
         vel[1] = head_state.LinearVelocity.y;
         vel[2] = head_state.LinearVelocity.z;
 
+        q_type quat;
+        q_from_euler(quat, head_state.AngularVelocity.y, head_state.AngularVelocity.x, head_state.AngularVelocity.z);
+        vel_quat[Q_W] = quat[Q_W];
+        vel_quat[Q_X] = quat[Q_X];
+        vel_quat[Q_Y] = quat[Q_Y];
+        vel_quat[Q_Z] = quat[Q_Z];
+
         acc[0] = head_state.LinearAcceleration.x;
         acc[1] = head_state.LinearAcceleration.y;
         acc[2] = head_state.LinearAcceleration.z;
 
-        //vrpn_float64 vel[3], vel_quat[4]; // Cur velocity and dQuat/vel_quat_dt
-        //vrpn_float64 vel_quat_dt;         // delta time (in secs) for vel_quat
-        //vrpn_float64 acc[3], acc_quat[4]; // Cur accel and d2Quat/acc_quat_dt2
-        //vrpn_float64 acc_quat_dt;         // delta time (in secs) for acc_quat
-        //struct timeval timestamp;         // Current timestamp
+        q_from_euler(quat, head_state.AngularAcceleration.y, head_state.AngularAcceleration.x, head_state.AngularAcceleration.z);
+        acc_quat[Q_W] = quat[Q_W];
+        acc_quat[Q_X] = quat[Q_X];
+        acc_quat[Q_Y] = quat[Q_Y];
+        acc_quat[Q_Z] = quat[Q_Z];
+
+        // TODO timestamp
 
         char msgbuf[512];
         int len = vrpn_Tracker::encode_to(msgbuf);
-        if (d_connection->pack_message(len, vrpn_Tracker::timestamp, position_m_id, d_sender_id, msgbuf, vrpn_CONNECTION_LOW_LATENCY))
-        {
+        if (d_connection->pack_message(len, vrpn_Tracker::timestamp, position_m_id, d_sender_id, msgbuf, vrpn_CONNECTION_LOW_LATENCY)) {
             fprintf(stderr, "vrpn_Tracker_OculusRift: cannot write message: tossing\n");
         }
+
+        // Sensor 1: Camera pose
+        //
+        // Current pose of the external camera (if present).  This pose includes
+        // camera tilt (roll and pitch). For a leveled coordinate system use
+        // LeveledCameraPose.
+        d_sensor = 1;
+
+        const ovrPosef camera_pose = ts.CameraPose;
+        pos[0] = camera_pose.Position.x;
+        pos[1] = camera_pose.Position.y;
+        pos[2] = camera_pose.Position.z;
+
+        d_quat[Q_W] = camera_pose.Orientation.w;
+        d_quat[Q_X] = camera_pose.Orientation.x;
+        d_quat[Q_Y] = camera_pose.Orientation.y;
+        d_quat[Q_Z] = camera_pose.Orientation.z;
+
+        len = vrpn_Tracker::encode_to(msgbuf);
+        if (d_connection->pack_message(len, vrpn_Tracker::timestamp, position_m_id, d_sender_id, msgbuf, vrpn_CONNECTION_LOW_LATENCY)) {
+            fprintf(stderr, "vrpn_Tracker_OculusRift: cannot write message: tossing\n");
+        }
+
+        // Sensor 2: Leveled camera pose
+        //
+        // Camera frame aligned with gravity.  This value includes position and
+        // yaw of the camera, but not roll and pitch.  It can be used as a
+        // reference point to render real-world objects in the correct location.
+        d_sensor = 2;
+
+        const ovrPosef leveled_camera_pose = ts.LeveledCameraPose;
+        pos[0] = leveled_camera_pose.Position.x;
+        pos[1] = leveled_camera_pose.Position.y;
+        pos[2] = leveled_camera_pose.Position.z;
+
+        d_quat[Q_W] = leveled_camera_pose.Orientation.w;
+        d_quat[Q_X] = leveled_camera_pose.Orientation.x;
+        d_quat[Q_Y] = leveled_camera_pose.Orientation.y;
+        d_quat[Q_Z] = leveled_camera_pose.Orientation.z;
+
+        len = vrpn_Tracker::encode_to(msgbuf);
+        if (d_connection->pack_message(len, vrpn_Tracker::timestamp, position_m_id, d_sender_id, msgbuf, vrpn_CONNECTION_LOW_LATENCY)) {
+            fprintf(stderr, "vrpn_Tracker_OculusRift: cannot write message: tossing\n");
+        }
+
+        // VRPN analogs, multiple channels.
+        // * accelerometer reading in m/s^2
+        // * gyro rotation rate in rad/s.
+        // * magnetometer in Gauss
+        // * temperature of sensor in degrees Celsius
+
+        const ovrSensorData sensor_data = ts.RawSensorData;
+
+        // Acceleration reading (x, y, z) in m/s^2
+        const ovrVector3f accelerator = sensor_data.Accelerometer;
+        channel[0] = accelerator.x;
+        channel[1] = accelerator.y;
+        channel[2] = accelerator.z;
+
+        // Rotation rate (x, y, z) in rad/s
+        const ovrVector3f gyro = sensor_data.Gyro;
+        channel[3] = gyro.x;
+        channel[4] = gyro.y;
+        channel[5] = gyro.z;
+
+        // Magnetic field (x, y, z) in Gauss
+        const ovrVector3f magnetometer = sensor_data.Magnetometer;
+        channel[6] = magnetometer.x;
+        channel[7] = magnetometer.y;
+        channel[8] = magnetometer.z;
+
+        // Temperature of sensor in degrees Celsius
+        const float temperature = sensor_data.Temperature;
+        vrpn_Analog::channel[9] = temperature;
+
+        //vrpn_Analog::timestamp = ...; // FIXME
+        vrpn_Analog::report(vrpn_CONNECTION_LOW_LATENCY);
+
     } else {
         send_text_message(vrpn_TEXT_WARNING) << "Orientation and position tracking is not supported on this HMD.";
     }
@@ -152,7 +276,8 @@ void vrpn_Tracker_OculusRift::_get_tracking_state()
 
 vrpn_Tracker_OculusRift::~vrpn_Tracker_OculusRift()
 {
-    ovrHmd_Destroy(_hmd);
+    if (_hmd)
+        ovrHmd_Destroy(_hmd);
     ovr_Shutdown();
 }
 
