@@ -17,12 +17,20 @@
 #include "vrpn_Tracker.h"               // for vrpn_Tracker
 
 // Library/third-party includes
-#include <OVR.h>
+// - none
 
 // Standard includes
 #include <string>
 
 #ifdef VRPN_USE_OVR
+
+/** \name Forward declarations */
+//@{
+
+typedef struct ovrHmdDesc_ ovrHmdDesc;
+typedef const ovrHmdDesc* ovrHmd;
+
+//@}
 
 /** @brief Device supporting the Oculus Rift DK1 and DK2.
  *
@@ -46,28 +54,7 @@ private:
 
     void _get_tracking_state();
 
-    /**
-     * Returns the readable name of the HMD type.
-     *
-     * @param hmd_type HMD type from ovrHmdType enum.
-     *
-     * @returns String of HMD type name.
-     */
-    std::string _get_hmd_type_name(ovrHmdType hmd_type) const;
-
-    /**
-     * Returns the enum value of the HMD type.
-     *
-     * @param hmd_type The type of HMD. Acceptable values are: DK1, DK2, and
-     * Debug.
-     *
-     * @return The enum valuie of the hmd_type.
-     */
-    ovrHmdType _get_hmd_type(std::string hmd_type) const;
-
-    ovrHmd _hmd;                        //< HMD device handle
-    ovrHmdType _hmdType;                //< requested HMD type
-
+    ovrHmd _hmd;              //< HMD device handle
 
     q_xyz_quat_type _headPose;          //< head pose
     q_xyz_quat_type _cameraPose;        //< camera pose
