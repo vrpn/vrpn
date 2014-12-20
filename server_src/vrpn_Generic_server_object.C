@@ -3618,15 +3618,14 @@ int vrpn_Generic_Server_Object::setup_Tracker_OculusRift(char *&pch, char *line,
 {
     char s2[LINESIZE];
     int hmd_index = 0;
+    char hmd_type[LINESIZE];
 
     VRPN_CONFIG_NEXT();
 
     // Get the arguments (hmd name, hmd index)
-    int numParams = sscanf(pch, "%511s %u", s2, &hmd_index);
-    fprintf(stderr, "Number of parameters: %d: [%s] [%d]\n", numParams, s2, hmd_index);
-    if (numParams < 2) {
-        hmd_index = 0;
-    } else if (numParams < 1 || numParams > 2) {
+    int numParams = sscanf(pch, "%511s %u %511s", s2, &hmd_index, hmd_type);
+    //fprintf(stderr, "Number of parameters: %d: [%s] [%d] [%s]\n", numParams, s2, hmd_index, hmd_type);
+    if (numParams < 1 || numParams > 3) {
         fprintf(stderr, "Bad Oculus Rift line: %s\n", line);
         return -1;
     }
@@ -3638,7 +3637,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_OculusRift(char *&pch, char *line,
 
 #ifdef VRPN_USE_OVR
     // Open the tracker
-    _devices->add(new vrpn_Tracker_OculusRift(s2, connection, hmd_index));
+    _devices->add(new vrpn_Tracker_OculusRift(s2, connection, hmd_index, hmd_type));
 #else
     fprintf(stderr,
             "Oculus Rift driver works only if the Oculus SDK is installed!\n");
