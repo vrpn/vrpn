@@ -86,6 +86,11 @@ vrpn_Tracker_OculusRift::vrpn_Tracker_OculusRift(const char* name, vrpn_Connecti
     , vrpn_Tracker(name, conn)
     , _hmd(NULL)
 {
+
+    // Capture the system time nearly simultaneously with the initialization of
+    // the OVR API. This local timestamp will correspond to t = 0 for the OVR
+    // API.
+    vrpn_gettimeofday(&_startTime, NULL);
     ovrBool initialized = ovr_Initialize();
     if (!initialized) {
         fprintf(stderr, "Error initializing Oculus Rift API.");
@@ -198,7 +203,7 @@ void vrpn_Tracker_OculusRift::_get_tracking_state()
         acc_quat[Q_Y] = quat[Q_Y];
         acc_quat[Q_Z] = quat[Q_Z];
 
-        // TODO timestamp
+        vrpn_Tracker::timestamp = vrpn_TimevalSum(_startTime, head_state.TimeInSeconds);
 
         char msgbuf[512];
         int len = vrpn_Tracker::encode_to(msgbuf);
@@ -280,7 +285,7 @@ void vrpn_Tracker_OculusRift::_get_tracking_state()
         const float temperature = sensor_data.Temperature;
         vrpn_Analog::channel[9] = temperature;
 
-        //vrpn_Analog::timestamp = ...; // FIXME
+        vrpn_Analog::timestamp = vrpn_TimevalSum(_startTime, sensor_data.TimeInSeconds);
         vrpn_Analog::report(vrpn_CONNECTION_LOW_LATENCY);
 
     } else {
