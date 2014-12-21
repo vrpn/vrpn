@@ -157,6 +157,8 @@ extern VRPN_API struct timeval vrpn_TimevalNormalize(const struct timeval &tv);
 
 extern VRPN_API struct timeval vrpn_TimevalSum(const struct timeval &tv1,
                                                const struct timeval &tv2);
+extern VRPN_API struct timeval vrpn_TimevalSum(const struct timeval &tv1,
+                                               const double seconds);
 extern VRPN_API struct timeval vrpn_TimevalDiff(const struct timeval &tv1,
                                                 const struct timeval &tv2);
 extern VRPN_API struct timeval vrpn_TimevalScale(const struct timeval &tv,
