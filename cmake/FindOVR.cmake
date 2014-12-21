@@ -128,10 +128,6 @@ find_path(OVR_SOURCE_DIR
 	Src
 	)
 
-message("OVR_LIBRARY = ${OVR_LIBRARY}")
-message("OVR_INCLUDE_DIR = ${OVR_INCLUDE_DIR}")
-message("OVR_SOURCE_DIR = ${OVR_SOURCE_DIR}")
-
 # Dependencies
 
 set(_ovr_dependency_libraries "")
@@ -188,9 +184,6 @@ if(OVR_FOUND)
 	list(APPEND OVR_INCLUDE_DIRS ${OVR_INCLUDE_DIR} ${OVR_SOURCE_DIR} ${_ovr_dependency_includes})
 	mark_as_advanced(OVR_ROOT_DIR)
 endif()
-
-message("OVR_LIBRARIES = ${OVR_LIBRARIES}")
-message("OVR_INCLUDE_DIRS = ${OVR_INCLUDE_DIRS}")
 
 mark_as_advanced(OVR_INCLUDE_DIR
 	OVR_SOURCE_DIR
