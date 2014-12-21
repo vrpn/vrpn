@@ -9,6 +9,7 @@
 #endif
 
 #include "vrpn_Shared.h"
+#include "vrpn_Math.h"
 
 #if defined(__APPLE__) || defined(__ANDROID__)
 #include <unistd.h>
@@ -84,6 +85,19 @@ timeval vrpn_TimevalSum(const timeval &tv1, const timeval &tv2)
     }
 
     return tvSum;
+}
+
+// Calcs the sum of tv1 and seconds.  Returns the sum in a timeval struct.
+// Calcs negative times properly, with the appropriate sign on both tv_sec
+// and tv_usec (these signs will match unless one of them is 0).
+// NOTE: both abs(tv_usec)'s must be < 1000000 (ie, normal timeval format)
+timeval vrpn_TimevalSum(const timeval &tv1, const double seconds)
+{
+    struct timeval tmp;
+    tmp.tv_sec = static_cast<time_t>(trunc(seconds));
+    tmp.tv_usec = static_cast<suseconds_t>((seconds - tmp.tv_sec) * 1000000);
+
+    return vrpn_TimevalSum(tv1, tmp);
 }
 
 // Calcs the diff between tv1 and tv2.  Returns the diff in a timeval struct.
