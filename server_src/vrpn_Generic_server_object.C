@@ -4919,6 +4919,9 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(
                 else if (VRPN_ISIT("vrpn_Tracker_FilterOneEuro")) {
                     VRPN_CHECK(setup_Tracker_FilterOneEuro);
                 }
+                else if (VRPN_ISIT("vrpn_Tracker_OSVRHackerDevKit")) {
+                    VRPN_CHECK(setup_Tracker_OSVRHackerDevKit);
+                }
                 else if (VRPN_ISIT("vrpn_Tracker_RazerHydra")) {
                     VRPN_CHECK(setup_Tracker_RazerHydra);
                 }
