@@ -410,6 +410,7 @@ int vrpn_Generic_Server_Object::get_AFline(char *line, vrpn_TAF_axis *axis)
     }
 
     if (strcmp(name, "NULL") == 0) {
+        delete [] name;
         axis->name = NULL;
     }
     else {
@@ -553,6 +554,12 @@ int vrpn_Generic_Server_Object::setup_Tracker_AnalogFly(char *&pch, char *line,
 
     _devices->add(new vrpn_Tracker_AnalogFly(s2, connection, &p, f1, absolute,
                                              false, worldFrame));
+    if (p.x.name != NULL) { delete [] p.x.name; }
+    if (p.y.name != NULL) { delete [] p.y.name; }
+    if (p.z.name != NULL) { delete [] p.z.name; }
+    if (p.sx.name != NULL) { delete [] p.sx.name; }
+    if (p.sy.name != NULL) { delete [] p.sy.name; }
+    if (p.sz.name != NULL) { delete [] p.sz.name; }
 
     return 0;
 }
@@ -2932,6 +2939,8 @@ int vrpn_Generic_Server_Object::get_poser_axis_line(FILE *config_file,
         axis->channel = channel;
         axis->offset = offset;
         axis->scale = scale;
+    } else {
+        delete [] name;
     }
 
     return 0;
@@ -2991,6 +3000,12 @@ int vrpn_Generic_Server_Object::setup_Poser_Analog(char *&pch, char *line,
     }
 
     _devices->add(new vrpn_Poser_Analog(s2, connection, &p, i1 != 0));
+    if (p.x.ana_name != NULL) { delete [] p.x.ana_name; }
+    if (p.y.ana_name != NULL) { delete [] p.y.ana_name; }
+    if (p.z.ana_name != NULL) { delete [] p.z.ana_name; }
+    if (p.rx.ana_name != NULL) { delete [] p.rx.ana_name; }
+    if (p.ry.ana_name != NULL) { delete [] p.ry.ana_name; }
+    if (p.rz.ana_name != NULL) { delete [] p.rz.ana_name; }
 
     return 0;
 }
@@ -3532,7 +3547,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_NDI_Polaris(char *&pch,
 
     // free the .rom filename strings
     for (rbNum = 0; rbNum < numRigidBodies; rbNum++) {
-        delete (rigidBodyFileNames[rbNum]);
+        delete [] (rigidBodyFileNames[rbNum]);
     }
     return (0); // success
 }
