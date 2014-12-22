@@ -2901,7 +2901,7 @@ int vrpn_Generic_Server_Object::get_poser_axis_line(FILE *config_file,
 {
     char line[LINESIZE];
     char _axis_name[LINESIZE];
-    char name[LINESIZE]; // We need this to stay around for the param
+    char *name = new char[LINESIZE]; // We need this to stay around for the param
     int channel;
     float offset, scale;
 
