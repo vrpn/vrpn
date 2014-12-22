@@ -11,7 +11,7 @@
 #ifndef VRPN_TRACKER_OSVR_HACKER_DEV_KIT_H_
 #define VRPN_TRACKER_OSVR_HACKER_DEV_KIT_H_
 
-#include <stddef.h>                     // for size_t
+#include <cstddef>                      // for size_t
 #include <string>                       // for string
 
 #include "vrpn_Tracker.h"               // for vrpn_Tracker
@@ -64,7 +64,7 @@ public:
      * @param name Name of tracker.
      * @param c Optional vrpn_Connection.
      */
-    vrpn_Tracker_OSVRHackerDevKit(vrpn_HidAcceptor *filter, const char *name, vrpn_Connection *c = NULL);
+    vrpn_Tracker_OSVRHackerDevKit(const char *name, vrpn_Connection *c = NULL);
 
     /**
      * @brief Destructor.
@@ -79,28 +79,18 @@ public:
 protected:
 
     /// Extracts the sensor values from each report.
-    void on_data_received(size_t bytes, vrpn_uint8 *buffer);
+    void on_data_received(std::size_t bytes, vrpn_uint8 *buffer);
 
     /// Timestamp updated during mainloop()
     struct timeval _timestamp;
-
-    /// The raw values extracted from the report: which ones we use to set
-    /// analog channels varies based on the kind of device this is.
-    double _rawVals[16];
 
     /// Flag indicating whether we were connected last time through the mainloop.
     /// Used to send a "normal"-severity message when we connect with info on the
     /// device.
     bool _wasConnected;
-
-    /// Send report iff changed
-    void report_changes(vrpn_uint32 class_of_service = vrpn_CONNECTION_LOW_LATENCY);
-
-    /// Send report whether or not changed
-    void report(vrpn_uint32 class_of_service = vrpn_CONNECTION_LOW_LATENCY);
 };
 
-#endif // end of ifdef VRPN_USE_HID
+#endif // VRPN_USE_HID
 
 #endif // VRPN_TRACKER_OSVR_HACKER_DEV_KIT_H_
 

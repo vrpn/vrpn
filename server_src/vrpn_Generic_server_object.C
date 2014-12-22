@@ -83,6 +83,7 @@
 #include "vrpn_Tracker_MotionNode.h"
 #include "vrpn_Tracker_NDI_Polaris.h" // for vrpn_Tracker_NDI_Polaris
 #include "vrpn_Tracker_NovintFalcon.h"
+#include "vrpn_Tracker_OSVRHackerDevKit.h" // for vrpn_Tracker_OSVRHackerDevKit
 #include "vrpn_Tracker_PDI.h"
 #include "vrpn_Tracker_PhaseSpace.h"
 #include "vrpn_Tracker_RazerHydra.h"      // for vrpn_Tracker_RazerHydra
@@ -3334,6 +3335,34 @@ int vrpn_Generic_Server_Object::setup_Button_NI_DIO24(char *&pch, char *line,
 #endif
 
 } //  setup_Button_NI_DIO24
+
+int vrpn_Generic_Server_Object::setup_Tracker_OSVRHackerDevKit(char *&pch, char
+                                                               *line, FILE
+                                                               *config_file)
+{
+    char s2[LINESIZE];
+
+    VRPN_CONFIG_NEXT();
+    int ret = sscanf(pch, "%511s", s2);
+    if (ret != 1) {
+        fprintf(stderr, "Bad OSVR Hacker Dev Kit line: %s\n", line);
+        return -1;
+    }
+
+    // Open the Razer Hydra
+    if (verbose) {
+        printf("Opening vrpn_Tracker_OSVRHackerDevKit\n");
+    }
+
+#ifdef VRPN_USE_HID
+    // Open the tracker
+    _devices->add(new vrpn_Tracker_OSVRHackerDevKit(s2, connection));
+#else
+    fprintf(stderr,
+            "OSVRHackerDevKit driver works only with VRPN_USE_HID defined!\n");
+#endif
+    return 0; // successful completion
+}
 
 int vrpn_Generic_Server_Object::setup_Tracker_PhaseSpace(char *&pch, char *line,
                                                          FILE *config_file)
