@@ -16,6 +16,8 @@
 //#include <boost/type_traits/is_integral.hpp> // for is_integral
 #include <cmath>                             // for floor, ceil
 
+namespace vrpn {
+
 /**
  * Computes the nearest integer not greater in magnitude than x.
  *
@@ -40,6 +42,8 @@ trunc(T x)
     return trunc(static_cast<double>(x));
 }
 */
+
+} // end namespace vrpn
 
 #endif // VRPN_MATH_H_
 
