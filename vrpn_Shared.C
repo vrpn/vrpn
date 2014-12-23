@@ -95,7 +95,7 @@ timeval vrpn_TimevalSum(const timeval &tv1, const double seconds)
 {
     struct timeval tmp;
     tmp.tv_sec = static_cast<time_t>(trunc(seconds));
-    tmp.tv_usec = static_cast<suseconds_t>((seconds - tmp.tv_sec) * 1000000);
+    tmp.tv_usec = static_cast<long>((seconds - tmp.tv_sec) * 1000000);
 
     return vrpn_TimevalSum(tv1, tmp);
 }
