@@ -12,7 +12,7 @@
 #define	STATUS_RESETTING	(-1)	// Resetting the device
 #define	STATUS_READING		(0)	// Looking for the a report
 
-static const int REPORT_LENGTH = 16 + 16 + 36 + 4 + 4;
+static const int REPORT_LENGTH = 16 + 16 + 12 + 36 + 4 + 4;
 #define MAX_TIME_INTERVAL       (2000000) // max time between reports (usec)
 
 
@@ -259,10 +259,11 @@ int vrpn_YEI_3Space_Sensor::reset (void)
   unsigned char set_streaming_slots[9] = { 0x50,
     0x06, // untared quat
     0x00, // tared quat
+    0x29, // tared corrected linear acceleration with gravity removed
     0x25, // all corrected sensor data (3D vectors: rate gyro in rad/s, accel in g, and compass in gauss)
     0x2B, // temperature C
     0x2D, // confidence factor
-    0xFF, 0xFF, 0xFF }; // follwed by empty streaming spots.
+    0xFF, 0xFF }; // followed by empty streaming spots.
   if (!send_command (set_streaming_slots, sizeof(set_streaming_slots))) {
     VRPN_MSG_ERROR ("vrpn_YEI_3Space_Sensor::reset: Unable to send set-streaming-slots command\n");
     return -1;
@@ -356,6 +357,30 @@ void vrpn_YEI_3Space_Sensor::get_report (void)
         VRPN_MSG_ERROR ("vrpn_YEI_3Space_Sensor::get_report(): Error sending sensor report");
         d_sensor = STATUS_RESETTING;
     }
+  }
+
+  // XXX Linear rate gyros into orientation change?
+
+  // XXX Why are we getting such large values for acceleration at rest?
+
+  // Read the three values for linear acceleration in tared
+  // space with gravity removed.  Convert it into units of
+  // meters/second/second.  Put it into the tared sensor.
+  q_vec_type acc;
+  q_type  acc_quat;
+  acc_quat[Q_X] = acc_quat[Q_Y] = acc_quat[Q_Z] = 0; acc_quat[Q_W] = 1;
+  vrpn_unbuffer(&bufptr, &value);
+  static const double GRAVITY = 9.80665;  // Meters/second/second
+  acc[Q_X] = value * GRAVITY;
+  vrpn_unbuffer(&bufptr, &value);
+  acc[Q_Y] = value * GRAVITY;
+  vrpn_unbuffer(&bufptr, &value);
+  acc[Q_Z] = value * GRAVITY;
+  int sensor = 1;
+  double interval = 1;
+  if (0 != report_pose_acceleration(sensor, timestamp, acc, acc_quat, interval)) {
+      VRPN_MSG_ERROR ("vrpn_YEI_3Space_Sensor::get_report(): Error sending acceleration report");
+      d_sensor = STATUS_RESETTING;
   }
 
   // Read the analog values and put them into the channels.
