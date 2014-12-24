@@ -30,6 +30,8 @@
 typedef struct ovrHmdDesc_ ovrHmdDesc;
 typedef const ovrHmdDesc* ovrHmd;
 
+typedef struct ovrTrackingState_ ovrTrackingState;
+
 //@}
 
 /** @brief Device supporting the Oculus Rift DK1 and DK2.
@@ -40,7 +42,7 @@ typedef const ovrHmdDesc* ovrHmd;
  */
 class VRPN_API vrpn_Tracker_OculusRift : public vrpn_Analog, public vrpn_Tracker {
 public:
-    vrpn_Tracker_OculusRift(const char* name, vrpn_Connection* conn, int hmd_index = 0, const char* hmd_type = "Debug");
+    vrpn_Tracker_OculusRift(const char* name, vrpn_Connection* conn, int hmd_index = 0);
     virtual ~vrpn_Tracker_OculusRift();
 
     virtual void mainloop();
@@ -51,10 +53,23 @@ private:
         POSE_CHANNELS = 3      // head, camera, leveled camera
     };
 
-    void _get_tracking_state();
+    enum RiftStatus {
+        RIFT_UNINITIALIZED,         //< API has not yet been initialized
+        RIFT_WAITING_TO_CONNECT,    //< API has been initialized successfully, not yet receiving data from the Rift
+        RIFT_REPORTING              //< receiving data from the Rift
+    };
 
-    ovrHmd _hmd;               //< HMD device handle
-    struct timeval _startTime; //< time at which OVR API was initialized
+    void _init();
+    void _connect();
+    void _update();
+    void _report_hmd_pose(const ovrTrackingState&);
+    void _report_camera_pose(const ovrTrackingState&);
+    void _report_sensor_values(const ovrTrackingState&);
+
+    int _hmdIndex;              //< index of HMD to connect to (0-indexed)
+    RiftStatus _status;         //< status of Oculus Rift driver
+    ovrHmd _hmd;                //< HMD device handle
+    struct timeval _startTime;  //< time at which OVR API was initialized
 };
 
 #else
