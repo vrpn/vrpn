@@ -43,7 +43,7 @@ vrpn_YEI_3Space_Sensor::vrpn_YEI_3Space_Sensor (const char * p_name
   const char **ptr = reset_commands;
   d_reset_commands = NULL;
   d_reset_command_count = 0;
-  while ((*ptr) != NULL) {
+  if (ptr != NULL) while ((*ptr) != NULL) {
     d_reset_command_count++;
     ptr++;
   }
