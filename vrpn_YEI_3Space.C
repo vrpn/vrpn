@@ -223,8 +223,12 @@ int vrpn_YEI_3Space_Sensor::reset (void)
     return -1;
   }
 
-  // Flip the z axis (only the fourth bit on) to turn into a right-handed coordinate system
-  unsigned char set_rh_system[] = {0x74, 1 << 3};
+  // Flip the X axis (only the sixth bit on) to turn into a right-handed
+  // coordinate system whose rotations match those expected by VRPN as
+  // tested using an OpenGL viewing app.  (We were expecting to have to
+  // flip the Z axis; maybe the manual is incorrect and the last bit is
+  // actually the Z axis?)
+  unsigned char set_rh_system[] = {0x74, (1 << 5)};
   if (!send_command(set_rh_system, sizeof(set_rh_system))) {
       VRPN_MSG_ERROR("vrpn_YEI_3Space_Sensor::reset: Unable to send coordinate system selection command\n");
       return -1;
