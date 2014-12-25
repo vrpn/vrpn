@@ -33,18 +33,46 @@ vrpn_YEI_3Space_Sensor::vrpn_YEI_3Space_Sensor (const char * p_name
                                   , double red_LED_color
                                   , double green_LED_color
                                   , double blue_LED_color
-                                  , int LED_mode)
+                                  , int LED_mode
+                                  , const char *reset_commands[])
   : vrpn_Tracker_Server (p_name, p_c, 2)
   , vrpn_Serial_Analog (p_name, p_c, p_port, p_baud, 8, vrpn_SER_PARITY_NONE)
   , d_frames_per_second(frames_per_second)
 {
+  // Count the reset commands and allocate an array to store them in.
+  const char **ptr = reset_commands;
+  d_reset_commands = NULL;
+  d_reset_command_count = 0;
+  while ((*ptr) != NULL) {
+    d_reset_command_count++;
+    ptr++;
+  }
+  if (d_reset_command_count > 0) {
+    d_reset_commands = new char *[d_reset_command_count];
+    if (d_reset_commands == NULL) {
+      fprintf(stderr,"vrpn_YEI_3Space_Sensor::vrpn_YEI_3Space_Sensor(): Out of memory, ignoring reset commands\n");
+      d_reset_command_count = 0;
+    }
+  }
+
+  // Copy any reset commands.
+  ptr = reset_commands;
+  for (int i = 0; i < d_reset_command_count; i++) {
+    d_reset_commands[i] = new char[strlen(reset_commands[i]) + 1];
+    if (d_reset_commands[i] == NULL) {
+      fprintf(stderr,"vrpn_YEI_3Space_Sensor::vrpn_YEI_3Space_Sensor(): Out of memory, giving up\n");
+      return;
+    }
+    strcpy(d_reset_commands[i], reset_commands[i]);
+  }
+
   // Set the parameters in the parent classes
   vrpn_Analog::num_channel = 11;
 
   // Configure LED mode.
   unsigned char set_LED_mode[2] = { 0xC4, 0 };
   set_LED_mode[1] = static_cast<unsigned char>(LED_mode);
-  if (!send_command (set_LED_mode, sizeof(set_LED_mode))) {
+  if (!send_binary_command (set_LED_mode, sizeof(set_LED_mode))) {
     VRPN_MSG_ERROR ("vrpn_YEI_3Space_Sensor::vrpn_YEI_3Space_Sensor: Unable to send set-LED-mode command\n");
   }
 
@@ -59,14 +87,14 @@ vrpn_YEI_3Space_Sensor::vrpn_YEI_3Space_Sensor (const char * p_name
   vrpn_buffer(&bufptr, &buflen, LEDs[0]);
   vrpn_buffer(&bufptr, &buflen, LEDs[1]);
   vrpn_buffer(&bufptr, &buflen, LEDs[2]);
-  if (!send_command (set_LED_color, sizeof(set_LED_color))) {
+  if (!send_binary_command (set_LED_color, sizeof(set_LED_color))) {
     VRPN_MSG_ERROR ("vrpn_YEI_3Space_Sensor::vrpn_YEI_3Space_Sensor: Unable to send set-LED-color command\n");
   }
 
   // If we're supposed to calibrate the gyros on startup, do so now.
   if (calibrate_gyros_on_setup) {
     unsigned char begin_gyroscope_calibration[1] = { 0xA5 };
-    if (!send_command (begin_gyroscope_calibration, sizeof(begin_gyroscope_calibration))) {
+    if (!send_binary_command (begin_gyroscope_calibration, sizeof(begin_gyroscope_calibration))) {
       VRPN_MSG_ERROR ("vrpn_YEI_3Space_Sensor::vrpn_YEI_3Space_Sensor: Unable to send set-gyroscope-calibration command\n");
     }
   }
@@ -74,7 +102,7 @@ vrpn_YEI_3Space_Sensor::vrpn_YEI_3Space_Sensor (const char * p_name
   // If we're supposed to tare on startup, do so now.
   if (tare_on_setup) {
     unsigned char tare[1] = { 0x60 };
-    if (!send_command (tare, sizeof(tare))) {
+    if (!send_binary_command (tare, sizeof(tare))) {
       VRPN_MSG_ERROR ("vrpn_YEI_3Space_Sensor::vrpn_YEI_3Space_Sensor: Unable to send tare command\n");
     }
   }
@@ -86,7 +114,26 @@ vrpn_YEI_3Space_Sensor::vrpn_YEI_3Space_Sensor (const char * p_name
 }
 
 /******************************************************************************
- * NAME      : vrpn_YEI_3Space_Sensor::send_command
+ * NAME      : vrpn_YEI_3Space_Sensor::~vrpn_YEI_3Space_Sensor
+ * ROLE      : This destroys a vrpn_YEI_3Space_Sensor and frees its memory.
+ * ARGUMENTS : 
+ * RETURN    : 
+ ******************************************************************************/
+vrpn_YEI_3Space_Sensor::~vrpn_YEI_3Space_Sensor ()
+{
+  // Free the space used to store the additional reset commands,
+  // then free the array used to store the pointers.
+  for (int i = 0; i < d_reset_command_count; i++) {
+    delete [] d_reset_commands[i];
+  }
+  if (d_reset_commands != NULL) {
+    delete [] d_reset_commands;
+    d_reset_commands = NULL;
+  }
+}
+
+/******************************************************************************
+ * NAME      : vrpn_YEI_3Space_Sensor::send_binary_command
  * ROLE      : 
  * ARGUMENTS : char *cmd : the command to be sent
  *             int   len : Length of the command to be sent
@@ -100,7 +147,7 @@ vrpn_YEI_3Space_Sensor::vrpn_YEI_3Space_Sensor (const char * p_name
 //  Command byte (command value)
 //  Command data (0 or more bytes of parameters, in big-endian format)
 //  Checksum (sum of all bytes in the packet % 256)
-bool vrpn_YEI_3Space_Sensor::send_command (const unsigned char *p_cmd, int p_len)
+bool vrpn_YEI_3Space_Sensor::send_binary_command (const unsigned char *p_cmd, int p_len)
 {
   const unsigned char START_OF_PACKET = 0xF7;
 
@@ -124,6 +171,54 @@ bool vrpn_YEI_3Space_Sensor::send_command (const unsigned char *p_cmd, int p_len
   l_ret = vrpn_write_characters (serial_fd, buffer, p_len+2);
   // Tell if this all worked.
   if (l_ret == p_len+2) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
+/******************************************************************************
+ * NAME      : vrpn_YEI_3Space_Sensor::send_ascii_command
+ * ROLE      : 
+ * ARGUMENTS : char *cmd : the command to be sent
+ * RETURN    : true on success, false on failure.
+ ******************************************************************************/
+
+// Info from YEI 3-Space Sensor User's Manual Wireless 2.0 R21 26 March2014
+// http://www.yeitechnology.com/sites/default/files/YEI_3-Space_Sensor_Users_Manual_Wireless_2.0_r21_26Mar2014.pdf
+// Ascii-mode command packet format:
+//  ':' (start of packet)
+//  Command value (decimal)
+//  ',' Command data (0 or more bytes of parameters
+//  '\n'
+bool vrpn_YEI_3Space_Sensor::send_ascii_command (const char *p_cmd)
+{
+  // Check to make sure we have a non-empty command
+  if (strlen(p_cmd) == 0) {
+    return false;
+  }
+
+  // Allocate space for the command plus padding and zero terminator
+  int buflen = strlen(p_cmd) + 3;
+  unsigned char *buffer = new unsigned char[buflen];
+  if (buffer == NULL) {
+    return false;
+  }
+
+  // Fill in the command
+  buffer[0] = ':';
+  memcpy(&buffer[1], p_cmd, strlen(p_cmd));
+  buffer[buflen-2] = '\n';
+  buffer[buflen-1] = 0;
+
+  // Send the command and see if it worked.
+  int l_ret = vrpn_write_characters (serial_fd, buffer, buflen);
+
+  // Free the buffer.
+  delete [] buffer;
+
+  // Tell if sending worked.
+  if (l_ret == buflen) {
     return true;
   } else {
     return false;
@@ -194,14 +289,14 @@ int vrpn_YEI_3Space_Sensor::reset (void)
   // Ask the device to stop streaming and then wait a little and flush the
   // input buffer and then ask it for the LED mode and make sure we get a response.
   unsigned char stop_streaming[1] = { 0x56 };
-  if (!send_command (stop_streaming, sizeof(stop_streaming))) {
+  if (!send_binary_command (stop_streaming, sizeof(stop_streaming))) {
     VRPN_MSG_ERROR ("vrpn_YEI_3Space_Sensor::reset: Unable to send stop-streaming command\n");
     return -1;
   }
   vrpn_SleepMsecs(50);
   vrpn_flush_input_buffer (serial_fd);
   unsigned char get_led_mode[1] = { 0xC8 };
-  if (!send_command (get_led_mode, sizeof(get_led_mode))) {
+  if (!send_binary_command (get_led_mode, sizeof(get_led_mode))) {
     VRPN_MSG_ERROR ("vrpn_YEI_3Space_Sensor::reset: Unable to send get-led-mode command\n");
     return -1;
   }
@@ -214,7 +309,7 @@ int vrpn_YEI_3Space_Sensor::reset (void)
 
   // Request the 3 LED colors and set our internal values to match them.
   unsigned char get_led_values[1] = { 0xEF };
-  if (!send_command (get_led_values, sizeof(get_led_values))) {
+  if (!send_binary_command (get_led_values, sizeof(get_led_values))) {
     VRPN_MSG_ERROR ("vrpn_YEI_3Space_Sensor::reset: Unable to send get-led-values command\n");
     return -1;
   }
@@ -229,7 +324,7 @@ int vrpn_YEI_3Space_Sensor::reset (void)
   // flip the Z axis; maybe the manual is incorrect and the last bit is
   // actually the Z axis?)
   unsigned char set_rh_system[] = {0x74, (1 << 5)};
-  if (!send_command(set_rh_system, sizeof(set_rh_system))) {
+  if (!send_binary_command(set_rh_system, sizeof(set_rh_system))) {
       VRPN_MSG_ERROR("vrpn_YEI_3Space_Sensor::reset: Unable to send coordinate system selection command\n");
       return -1;
   }
@@ -250,7 +345,7 @@ int vrpn_YEI_3Space_Sensor::reset (void)
   vrpn_buffer(&bufptr, &buflen, interval);
   vrpn_buffer(&bufptr, &buflen, duration);
   vrpn_buffer(&bufptr, &buflen, delay);
-  if (!send_command (set_streaming_timing, sizeof(set_streaming_timing))) {
+  if (!send_binary_command (set_streaming_timing, sizeof(set_streaming_timing))) {
     VRPN_MSG_ERROR ("vrpn_YEI_3Space_Sensor::reset: Unable to send set-streaming-timing command\n");
     return -1;
   }
@@ -268,14 +363,23 @@ int vrpn_YEI_3Space_Sensor::reset (void)
     0x2B, // temperature C
     0x2D, // confidence factor
     0xFF, 0xFF }; // followed by empty streaming spots.
-  if (!send_command (set_streaming_slots, sizeof(set_streaming_slots))) {
+  if (!send_binary_command (set_streaming_slots, sizeof(set_streaming_slots))) {
     VRPN_MSG_ERROR ("vrpn_YEI_3Space_Sensor::reset: Unable to send set-streaming-slots command\n");
     return -1;
   }
 
+  // Send any additional ACII reset commands that were passed into the
+  // constructor.
+  for (int i = 0; i < d_reset_command_count; i++) {
+    if (!send_ascii_command(d_reset_commands[i])) {
+      VRPN_MSG_ERROR ("vrpn_YEI_3Space_Sensor::reset: Unable to send additional reset command\n");
+      return -1;
+    }
+  }
+
   // Start streaming mode.
   unsigned char start_streaming[1] = { 0x55 };
-  if (!send_command (start_streaming, sizeof(start_streaming))) {
+  if (!send_binary_command (start_streaming, sizeof(start_streaming))) {
     VRPN_MSG_ERROR ("vrpn_YEI_3Space_Sensor::reset: Unable to send start-streaming command\n");
     return -1;
   }
