@@ -1,14 +1,16 @@
 #ifndef VRPN_YEI_3SPACE_H
 #define VRPN_YEI_3SPACE_H
 
-#include "vrpn_Analog.h"
 #include "vrpn_Tracker.h"
+#include "vrpn_Analog.h"
+#include "vrpn_Button.h"
 
 /** @brief Class to support reading data from serial YEI 3Space units.
 */
 class VRPN_API vrpn_YEI_3Space_Sensor
   : public vrpn_Tracker_Server
   , public vrpn_Serial_Analog
+  , public vrpn_Button_Filter
 {
 public:
   /** @brief Constructor.

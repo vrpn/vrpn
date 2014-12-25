@@ -12,7 +12,7 @@
 #define	STATUS_RESETTING	(-1)	// Resetting the device
 #define	STATUS_READING		(0)	// Looking for the a report
 
-static const int REPORT_LENGTH = 16 + 16 + 12 + 36 + 4 + 4;
+static const int REPORT_LENGTH = 16 + 16 + 12 + 36 + 4 + 4 + 1;
 #define MAX_TIME_INTERVAL       (2000000) // max time between reports (usec)
 
 
@@ -37,6 +37,7 @@ vrpn_YEI_3Space_Sensor::vrpn_YEI_3Space_Sensor (const char * p_name
                                   , const char *reset_commands[])
   : vrpn_Tracker_Server (p_name, p_c, 2)
   , vrpn_Serial_Analog (p_name, p_c, p_port, p_baud, 8, vrpn_SER_PARITY_NONE)
+  , vrpn_Button_Filter(p_name, p_c)
   , d_frames_per_second(frames_per_second)
 {
   // Count the reset commands and allocate an array to store them in.
@@ -68,6 +69,11 @@ vrpn_YEI_3Space_Sensor::vrpn_YEI_3Space_Sensor (const char * p_name
 
   // Set the parameters in the parent classes
   vrpn_Analog::num_channel = 11;
+
+  // Initialize the state of all the buttons
+  vrpn_Button::num_buttons = 8;
+  memset(buttons, 0, sizeof(buttons));
+  memset(lastbuttons, 0, sizeof(lastbuttons));
 
   // Configure LED mode.
   unsigned char set_LED_mode[2] = { 0xC4, 0 };
@@ -362,7 +368,8 @@ int vrpn_YEI_3Space_Sensor::reset (void)
     0x25, // all corrected sensor data (3D vectors: rate gyro in rad/s, accel in g, and compass in gauss)
     0x2B, // temperature C
     0x2D, // confidence factor
-    0xFF, 0xFF }; // followed by empty streaming spots.
+    0xFA, // button state
+    0xFF }; // followed by empty streaming spots.
   if (!send_binary_command (set_streaming_slots, sizeof(set_streaming_slots))) {
     VRPN_MSG_ERROR ("vrpn_YEI_3Space_Sensor::reset: Unable to send set-streaming-slots command\n");
     return -1;
@@ -469,8 +476,6 @@ void vrpn_YEI_3Space_Sensor::get_report (void)
 
   // XXX Linear rate gyros into orientation change?
 
-  // XXX Why are we getting such large values for acceleration at rest?
-
   // Read the three values for linear acceleration in tared
   // space with gravity removed.  Convert it into units of
   // meters/second/second.  Put it into the tared sensor.
@@ -497,11 +502,19 @@ void vrpn_YEI_3Space_Sensor::get_report (void)
     channel[i] = value;
   }
 
+  // Read the button values and put them into the buttons.
+  vrpn_uint8 b;
+  vrpn_unbuffer(&bufptr, &b);
+  for (int i = 0; i < 8; i++) {
+    buttons[i] = (b & (1 << i)) != 0;
+  }
+
   //--------------------------------------------------------------------
-  // Done with the decoding, send the analog reports and clear our counts
+  // Done with the decoding, send the analog and button reports and
+  // clear our counts.
   //--------------------------------------------------------------------
 
-  vrpn_Analog::report_changes();
+  report_changes();
   d_expected_characters = REPORT_LENGTH;
   d_characters_read = 0;
 }
@@ -517,6 +530,8 @@ void vrpn_YEI_3Space_Sensor::report_changes (vrpn_uint32 class_of_service)
 {
   vrpn_Analog::timestamp = timestamp;
   vrpn_Analog::report_changes(class_of_service);
+  vrpn_Button::timestamp = timestamp;
+  vrpn_Button::report_changes();
 }
 
 
@@ -528,8 +543,8 @@ void vrpn_YEI_3Space_Sensor::report_changes (vrpn_uint32 class_of_service)
  ******************************************************************************/
 void vrpn_YEI_3Space_Sensor::report (vrpn_uint32 class_of_service)
 {
-	vrpn_Analog::timestamp = timestamp;
-	vrpn_Analog::report(class_of_service);
+  vrpn_Analog::timestamp = timestamp;
+  vrpn_Analog::report(class_of_service);
 }
 
 
