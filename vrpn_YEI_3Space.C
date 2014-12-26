@@ -9,6 +9,7 @@
 #undef VERBOSE
 
 // Defines the modes in which the device can find itself.
+#define STATUS_NOT_INITIALIZED  (-2)    // Not yet initialized
 #define	STATUS_RESETTING	(-1)	// Resetting the device
 #define	STATUS_READING		(0)	// Looking for the a report
 
@@ -73,6 +74,9 @@ vrpn_YEI_3Space::vrpn_YEI_3Space (const char * p_name
   vrpn_Button::num_buttons = 8;
   memset(buttons, 0, sizeof(buttons));
   memset(lastbuttons, 0, sizeof(lastbuttons));
+
+  // We're constructed, but not yet initialized.
+  d_status = STATUS_NOT_INITIALIZED;
 }
 
 /******************************************************************************
@@ -147,9 +151,8 @@ void vrpn_YEI_3Space::init (bool calibrate_gyros_on_setup
     }
   }
 
-  vrpn_gettimeofday(&timestamp, NULL);
-
   // Set the mode to reset
+  vrpn_gettimeofday(&timestamp, NULL);
   d_status = STATUS_RESETTING;
 }
 
@@ -391,6 +394,10 @@ void vrpn_YEI_3Space::mainloop ()
 
   switch (d_status)
     {
+    case STATUS_NOT_INITIALIZED:
+      VRPN_MSG_ERROR ("vrpn_YEI_3Space: mainloop() called before init()!");
+      break;
+
     case STATUS_RESETTING:
       if (reset()== -1) {
 	  VRPN_MSG_ERROR ("vrpn_YEI_3Space: Cannot reset!");

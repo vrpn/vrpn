@@ -111,7 +111,7 @@ protected:
                  (vrpn_uint32 class_of_service = vrpn_CONNECTION_LOW_LATENCY);
 };
 
-/** @brief Class to support reading data from serial YEI 3Space units.
+/** @brief Class to support reading data from a wired YEI 3Space unit.
 */
 class VRPN_API vrpn_YEI_3Space_Sensor
   : public vrpn_YEI_3Space
@@ -177,6 +177,12 @@ protected:
   /// Returns true on success and false on failure.
   bool receive_LED_values_response(struct timeval *timeout = NULL);
 };
+
+// Consider two constructors, one that handles opening the serial port
+// and setting the state on the dongle and another that takes the
+// serial_fd and uses it to communicate.  All of them will share the
+// communications port, and each will configure their own device through
+// it.
 
 // Dongle slot command to configure a dongle to a particular slot
 //    Pan ID 16-bit number (default 1), Channel 11-26 (default 26), 
