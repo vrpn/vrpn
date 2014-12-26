@@ -5,12 +5,116 @@
 #include "vrpn_Analog.h"
 #include "vrpn_Button.h"
 
+/** @brief Base class with routines for YEI 3Space units.
+*/
+class VRPN_API vrpn_YEI_3Space
+  : public vrpn_Tracker_Server
+  , public vrpn_Analog
+  , public vrpn_Button_Filter
+{
+public:
+  /** @brief Constructor.
+	@param name Name for the device
+	@param c Connection to use.
+	@param calibrate_gyros_on_setup - true to cause this to happen
+	@param tare_on_setup - true to cause this to happen (usually manufacturing-time operation!)
+	@param frames_per_second - How many frames/second to read
+	@param red_LED_color - brightness of LED (0-1)
+	@param green_LED_color - brightness of LED (0-1)
+	@param blue_LED_color - brightness of LED (0-1)
+	@param LED_state - 0 = standard, 1 = static
+	@param reset_commands - Array of pointers to commands, NULL for end.
+                 These will be sent after other commands whenever the tracker
+                 is reset.  This will be copied; the caller is responsible for
+                 freeing any storage after calling the constructor.
+  */
+  vrpn_YEI_3Space (const char * name,
+    vrpn_Connection * c,
+    bool calibrate_gyros_on_setup = false,
+    bool tare_on_setup = false,
+    double frames_per_second = 50,
+    double red_LED_color = 0,
+    double green_LED_color = 0,
+    double blue_LED_color = 0,
+    int LED_mode = 1,
+    const char *reset_commands[] = NULL);
+
+  /// Destructor.
+  virtual ~vrpn_YEI_3Space();
+
+  /// Called once through each main loop iteration to handle updates.
+  virtual void mainloop ();
+	
+protected:
+  /// Initialization that would normally happen in the constructor, but
+  /// we need to wait for the derived classes to open a communications port
+  /// before we can do this.  Derived classes should call this at the end
+  /// of their constructors.
+  void init(bool calibrate_gyros_on_setup
+            , bool tare_on_setup
+            , double frames_per_second
+            , double red_LED_color
+            , double green_LED_color
+            , double blue_LED_color
+            , int LED_mode
+            , const char *reset_commands[]);
+
+  /// Flush any incoming characters in the communications channel.
+  virtual void flush_input(void) = 0;
+
+  // A list of ASCII commands that are sent to the device after
+  // the other reset commands have been sent, each time the device
+  // is reset.  This enables arbitrary configuration.
+  char **d_reset_commands;        //< Commands to send on reset
+  int d_reset_command_count;      //< How many reset commands
+
+  // Status and handlers for different states
+  int     d_status;               //< What are we currently up to?
+  virtual int reset(void);        //< Set device back to starting config
+  virtual void get_report(void) = 0;  //< Try to read and handle a report from the device
+  virtual void handle_report(unsigned char *report);  //< Parse and handle a complete streaming report
+
+  double  d_frames_per_second;    //< How many frames/second do we want?
+  int     d_LED_mode;             //< LED mode we read from the device.
+  vrpn_float32  d_LED_color[3];   //< LED color we read from the device.
+
+  /// Compute the CRC for the message, append it, and send message.
+  /// Returns true on success, false on failure.
+ virtual bool send_binary_command(const unsigned char *cmd, int len) = 0;
+
+  /// Put a ':' character at the front and '\n' at the end and then
+  /// send the resulting command as an ASCII command.
+  /// Returns true on success, false on failure.
+  virtual bool send_ascii_command(const char *cmd) = 0;
+
+  /// Read and parse the response to an LED-state request command.
+  /// NULL timeout pointer means wait forever.
+  /// Returns true on success and false on failure.
+  virtual bool receive_LED_mode_response(struct timeval *timeout = NULL) = 0;
+
+  /// Read and parse the response to an LED-values request command.
+  /// NULL timeout pointer means wait forever.
+  /// Returns true on success and false on failure.
+  virtual bool receive_LED_values_response(struct timeval *timeout = NULL) = 0;
+
+  unsigned char d_buffer[128];        //< Buffer to read reports into.
+  unsigned d_expected_characters;     //< How many characters we are expecting
+  unsigned d_characters_read;         //< How many characters we've read so far
+
+  struct timeval timestamp;   //< Time of the last report from the device
+
+  /// send report iff changed
+  virtual void report_changes
+                 (vrpn_uint32 class_of_service = vrpn_CONNECTION_LOW_LATENCY);
+  /// send report whether or not changed
+  virtual void report
+                 (vrpn_uint32 class_of_service = vrpn_CONNECTION_LOW_LATENCY);
+};
+
 /** @brief Class to support reading data from serial YEI 3Space units.
 */
 class VRPN_API vrpn_YEI_3Space_Sensor
-  : public vrpn_Tracker_Server
-  , public vrpn_Serial_Analog
-  , public vrpn_Button_Filter
+  : public vrpn_YEI_3Space
 {
 public:
   /** @brief Constructor.
@@ -46,25 +150,13 @@ public:
   /// Destructor.
   virtual ~vrpn_YEI_3Space_Sensor();
 
-  /// Called once through each main loop iteration to handle updates.
-  virtual void mainloop ();
-	
 protected:
-  // A list of ASCII commands that are sent to the device after
-  // the other reset commands have been sent, each time the device
-  // is reset.  This enables arbitrary configuration.
-  char **d_reset_commands;        //< Commands to send on reset
-  int d_reset_command_count;      //< How many reset commands
+  int d_serial_fd;    //< Serial port to read from.
 
-  // Status and handlers for different states
-  int     d_status;               //< What are we currently up to?
-  virtual int reset(void);        //< Set device back to starting config
+  /// Flush any incoming characters in the communications channel.
+  virtual void flush_input(void);
+
   virtual void get_report(void);  //< Try to read and handle a report from the device
-  virtual void handle_report(unsigned char *report);  //< Parse and handle a complete streaming report
-
-  double  d_frames_per_second;    //< How many frames/second do we want?
-  int     d_LED_mode;             //< LED mode we read from the device.
-  vrpn_float32  d_LED_color[3];   //< LED color we read from the device.
 
   /// Compute the CRC for the message, append it, and send message.
   /// Returns true on success, false on failure.
@@ -84,19 +176,6 @@ protected:
   /// NULL timeout pointer means wait forever.
   /// Returns true on success and false on failure.
   bool receive_LED_values_response(struct timeval *timeout = NULL);
-
-  unsigned char d_buffer[128];        //< Buffer to read reports into.
-  unsigned d_expected_characters;     //< How many characters we are expecting
-  unsigned d_characters_read;         //< How many characters we've read so far
-
-  struct timeval timestamp;   //< Time of the last report from the device
-
-  /// send report iff changed
-  virtual void report_changes
-                 (vrpn_uint32 class_of_service = vrpn_CONNECTION_LOW_LATENCY);
-  /// send report whether or not changed
-  virtual void report
-                 (vrpn_uint32 class_of_service = vrpn_CONNECTION_LOW_LATENCY);
 };
 
 // Dongle slot command to configure a dongle to a particular slot

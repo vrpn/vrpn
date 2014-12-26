@@ -19,9 +19,421 @@ static const int REPORT_LENGTH = 16 + 16 + 12 + 36 + 4 + 4 + 1;
 
 
 /******************************************************************************
+ * NAME      : vrpn_YEI_3Space::vrpn_YEI_3Space
+ * ROLE      : This creates a vrpn_YEI_3Space_Sensor and sets it to reset mode.
+ * ARGUMENTS : 
+ * RETURN    : 
+ ******************************************************************************/
+vrpn_YEI_3Space::vrpn_YEI_3Space (const char * p_name
+                                  , vrpn_Connection * p_c
+                                  , bool calibrate_gyros_on_setup
+                                  , bool tare_on_setup
+                                  , double frames_per_second
+                                  , double red_LED_color
+                                  , double green_LED_color
+                                  , double blue_LED_color
+                                  , int LED_mode
+                                  , const char *reset_commands[])
+  : vrpn_Tracker_Server (p_name, p_c, 2)
+  , vrpn_Analog (p_name, p_c)
+  , vrpn_Button_Filter(p_name, p_c)
+  , d_frames_per_second(frames_per_second)
+{
+  // Count the reset commands and allocate an array to store them in.
+  const char **ptr = reset_commands;
+  d_reset_commands = NULL;
+  d_reset_command_count = 0;
+  if (ptr != NULL) while ((*ptr) != NULL) {
+    d_reset_command_count++;
+    ptr++;
+  }
+  if (d_reset_command_count > 0) {
+    d_reset_commands = new char *[d_reset_command_count];
+    if (d_reset_commands == NULL) {
+      fprintf(stderr,"vrpn_YEI_3Space::init(): Out of memory, ignoring reset commands\n");
+      d_reset_command_count = 0;
+    }
+  }
+
+  // Copy any reset commands.
+  ptr = reset_commands;
+  for (int i = 0; i < d_reset_command_count; i++) {
+    d_reset_commands[i] = new char[strlen(reset_commands[i]) + 1];
+    if (d_reset_commands[i] == NULL) {
+      fprintf(stderr,"vrpn_YEI_3Space::init(): Out of memory, giving up\n");
+      return;
+    }
+    strcpy(d_reset_commands[i], reset_commands[i]);
+  }
+
+  // Set the parameters in the parent classes
+  vrpn_Analog::num_channel = 11;
+
+  // Initialize the state of all the buttons
+  vrpn_Button::num_buttons = 8;
+  memset(buttons, 0, sizeof(buttons));
+  memset(lastbuttons, 0, sizeof(lastbuttons));
+}
+
+/******************************************************************************
+ * NAME      : vrpn_YEI_3Space::~vrpn_YEI_3Space
+ * ROLE      : This destroys a vrpn_YEI_3Space and frees its memory.
+ * ARGUMENTS : 
+ * RETURN    : 
+ ******************************************************************************/
+vrpn_YEI_3Space::~vrpn_YEI_3Space()
+{
+  // Free the space used to store the additional reset commands,
+  // then free the array used to store the pointers.
+  for (int i = 0; i < d_reset_command_count; i++) {
+    delete [] d_reset_commands[i];
+  }
+  if (d_reset_commands != NULL) {
+    delete [] d_reset_commands;
+    d_reset_commands = NULL;
+  }
+}
+
+/******************************************************************************
+ * NAME      : vrpn_YEI_3Space::vrpn_YEI_3Space
+ * ROLE      : This creates a vrpn_YEI_3Space_Sensor and sets it to reset mode.
+ * ARGUMENTS : 
+ * RETURN    : 
+ ******************************************************************************/
+void vrpn_YEI_3Space::init (bool calibrate_gyros_on_setup
+                       , bool tare_on_setup
+                       , double frames_per_second
+                       , double red_LED_color
+                       , double green_LED_color
+                       , double blue_LED_color
+                       , int LED_mode
+                       , const char *reset_commands[])
+{
+  // Configure LED mode.
+  unsigned char set_LED_mode[2] = { 0xC4, 0 };
+  set_LED_mode[1] = static_cast<unsigned char>(LED_mode);
+  if (!send_binary_command (set_LED_mode, sizeof(set_LED_mode))) {
+    VRPN_MSG_ERROR ("vrpn_YEI_3Space::init: Unable to send set-LED-mode command\n");
+  }
+
+  // Configure LED color.
+  unsigned char set_LED_color[13] = { 0xEE, 0,0,0,0,0,0,0,0,0,0,0,0 };
+  unsigned char *bufptr = &set_LED_color[1];
+  vrpn_int32 buflen = 12;
+  vrpn_float32  LEDs[3];
+  LEDs[0] = static_cast<vrpn_float32>(red_LED_color);
+  LEDs[1] = static_cast<vrpn_float32>(green_LED_color);
+  LEDs[2] = static_cast<vrpn_float32>(blue_LED_color);
+  vrpn_buffer(&bufptr, &buflen, LEDs[0]);
+  vrpn_buffer(&bufptr, &buflen, LEDs[1]);
+  vrpn_buffer(&bufptr, &buflen, LEDs[2]);
+  if (!send_binary_command (set_LED_color, sizeof(set_LED_color))) {
+    VRPN_MSG_ERROR ("vrpn_YEI_3Space_Sensor::init: Unable to send set-LED-color command\n");
+  }
+
+  // If we're supposed to calibrate the gyros on startup, do so now.
+  if (calibrate_gyros_on_setup) {
+    unsigned char begin_gyroscope_calibration[1] = { 0xA5 };
+    if (!send_binary_command (begin_gyroscope_calibration, sizeof(begin_gyroscope_calibration))) {
+      VRPN_MSG_ERROR ("vrpn_YEI_3Space_Sensor::init: Unable to send set-gyroscope-calibration command\n");
+    }
+  }
+
+  // If we're supposed to tare on startup, do so now.
+  if (tare_on_setup) {
+    unsigned char tare[1] = { 0x60 };
+    if (!send_binary_command (tare, sizeof(tare))) {
+      VRPN_MSG_ERROR ("vrpn_YEI_3Space_Sensor::init: Unable to send tare command\n");
+    }
+  }
+
+  vrpn_gettimeofday(&timestamp, NULL);
+
+  // Set the mode to reset
+  d_status = STATUS_RESETTING;
+}
+
+/******************************************************************************
+ * NAME      : vrpn_YEI_3Space::reset
+ * ROLE      : This routine will reset the YEI_3Space
+ * ARGUMENTS : 
+ * RETURN    : 0 else -1 in case of error
+ ******************************************************************************/
+int vrpn_YEI_3Space::reset (void)
+{
+  struct timeval l_timeout;
+
+  // Ask the device to stop streaming and then wait a little and flush the
+  // input buffer and then ask it for the LED mode and make sure we get a response.
+  unsigned char stop_streaming[1] = { 0x56 };
+  if (!send_binary_command (stop_streaming, sizeof(stop_streaming))) {
+    VRPN_MSG_ERROR ("vrpn_YEI_3Space::reset: Unable to send stop-streaming command\n");
+    return -1;
+  }
+  vrpn_SleepMsecs(50);
+  flush_input();
+  unsigned char get_led_mode[1] = { 0xC8 };
+  if (!send_binary_command (get_led_mode, sizeof(get_led_mode))) {
+    VRPN_MSG_ERROR ("vrpn_YEI_3Space::reset: Unable to send get-led-mode command\n");
+    return -1;
+  }
+  l_timeout.tv_sec = 2;
+  l_timeout.tv_usec = 0;
+  if (!receive_LED_mode_response(&l_timeout)) {
+    VRPN_MSG_ERROR ("vrpn_YEI_3Space::reset: Unable to read get-led-mode response\n");
+    return -1;
+  }
+
+  // Request the 3 LED colors and set our internal values to match them.
+  unsigned char get_led_values[1] = { 0xEF };
+  if (!send_binary_command (get_led_values, sizeof(get_led_values))) {
+    VRPN_MSG_ERROR ("vrpn_YEI_3Space::reset: Unable to send get-led-values command\n");
+    return -1;
+  }
+  if (!receive_LED_values_response(&l_timeout)) {
+    VRPN_MSG_ERROR ("vrpn_YEI_3Space::reset: Unable to read get-led-mode response\n");
+    return -1;
+  }
+
+  // Flip the X axis (only the sixth bit on) to turn into a right-handed
+  // coordinate system whose rotations match those expected by VRPN as
+  // tested using an OpenGL viewing app.  (We were expecting to have to
+  // flip the Z axis; maybe the manual is incorrect and the last bit is
+  // actually the Z axis?)
+  unsigned char set_rh_system[] = {0x74, (1 << 5)};
+  if (!send_binary_command(set_rh_system, sizeof(set_rh_system))) {
+      VRPN_MSG_ERROR("vrpn_YEI_3Space::reset: Unable to send coordinate system selection command\n");
+      return -1;
+  }
+
+  // Configure streaming speed based on the requested frames/second value.
+  unsigned char set_streaming_timing[13] = { 0x52, 0,0,0,0,0,0,0,0,0,0,0,0 };
+  vrpn_uint32 interval;
+  if (d_frames_per_second <= 0) {
+    VRPN_MSG_ERROR ("vrpn_YEI_3Space::reset: Bad frames/second value, setting to maximum\n");
+    interval = 0;
+  } else {
+    interval = static_cast<vrpn_uint32>(1e6 * 1 / d_frames_per_second);
+  }
+  vrpn_uint32 duration = 0xFFFFFFFF;
+  vrpn_uint32 delay = 0;
+  unsigned char *bufptr = &set_streaming_timing[1];
+  vrpn_int32 buflen = 12;
+  vrpn_buffer(&bufptr, &buflen, interval);
+  vrpn_buffer(&bufptr, &buflen, duration);
+  vrpn_buffer(&bufptr, &buflen, delay);
+  if (!send_binary_command (set_streaming_timing, sizeof(set_streaming_timing))) {
+    VRPN_MSG_ERROR ("vrpn_YEI_3Space::reset: Unable to send set-streaming-timing command\n");
+    return -1;
+  }
+
+  // Configure the set of values we want to have streamed.
+  // The value 0xFF means "nothing."  We want to stream the untared
+  // orientiation as a quaternion, the tared orientation as a quaternion,
+  // all corrected sensor data, the temperature in Celsius, and the
+  // confidence factor.
+  unsigned char set_streaming_slots[9] = { 0x50,
+    0x06, // untared quat
+    0x00, // tared quat
+    0x29, // tared corrected linear acceleration with gravity removed
+    0x25, // all corrected sensor data (3D vectors: rate gyro in rad/s, accel in g, and compass in gauss)
+    0x2B, // temperature C
+    0x2D, // confidence factor
+    0xFA, // button state
+    0xFF }; // followed by empty streaming spots.
+  if (!send_binary_command (set_streaming_slots, sizeof(set_streaming_slots))) {
+    VRPN_MSG_ERROR ("vrpn_YEI_3Space::reset: Unable to send set-streaming-slots command\n");
+    return -1;
+  }
+
+  // Send any additional ACII reset commands that were passed into the
+  // constructor.
+  for (int i = 0; i < d_reset_command_count; i++) {
+    if (!send_ascii_command(d_reset_commands[i])) {
+      VRPN_MSG_ERROR ("vrpn_YEI_3Space::reset: Unable to send additional reset command\n");
+      return -1;
+    }
+  }
+
+  // Start streaming mode.
+  unsigned char start_streaming[1] = { 0x55 };
+  if (!send_binary_command (start_streaming, sizeof(start_streaming))) {
+    VRPN_MSG_ERROR ("vrpn_YEI_3Space::reset: Unable to send start-streaming command\n");
+    return -1;
+  }
+
+  // We're now entering the reading mode with no characters.
+  d_expected_characters = REPORT_LENGTH;
+  d_characters_read = 0;
+  d_status = STATUS_READING;
+
+  vrpn_gettimeofday (&timestamp, NULL);	// Set watchdog now
+  return 0;
+}
+
+/******************************************************************************
+ * NAME      : vrpn_YEI_3Space_Sensor::handle_report
+ * ROLE      : This function will parse  a full report, then
+ *             put that report into analog fields and call the report methods on these.   
+ * ARGUMENTS : void
+ * RETURN    : void
+ ******************************************************************************/
+void vrpn_YEI_3Space::handle_report(unsigned char *report)
+{
+  vrpn_float32 value;
+  unsigned char *bufptr = report;
+
+  // Read the two orientations and report them
+  q_vec_type  pos;
+  pos[Q_X] = pos[Q_Y] = pos[Q_Z] = 0;
+  q_type  quat;
+
+  for (int i = 0; i < 2; i++) {
+    vrpn_unbuffer(&bufptr, &value);
+    quat[Q_X] = value;
+    vrpn_unbuffer(&bufptr, &value);
+    quat[Q_Y] = value;
+    vrpn_unbuffer(&bufptr, &value);
+    quat[Q_Z] = value;
+    vrpn_unbuffer(&bufptr, &value);
+    quat[Q_W] = value;
+    if (0 != report_pose(i, timestamp, pos, quat)) {
+        VRPN_MSG_ERROR ("vrpn_YEI_3Space::handle_report(): Error sending sensor report");
+        d_sensor = STATUS_RESETTING;
+    }
+  }
+
+  // XXX Linear rate gyros into orientation change?
+
+  // Read the three values for linear acceleration in tared
+  // space with gravity removed.  Convert it into units of
+  // meters/second/second.  Put it into the tared sensor.
+  q_vec_type acc;
+  q_type  acc_quat;
+  acc_quat[Q_X] = acc_quat[Q_Y] = acc_quat[Q_Z] = 0; acc_quat[Q_W] = 1;
+  vrpn_unbuffer(&bufptr, &value);
+  static const double GRAVITY = 9.80665;  // Meters/second/second
+  acc[Q_X] = value * GRAVITY;
+  vrpn_unbuffer(&bufptr, &value);
+  acc[Q_Y] = value * GRAVITY;
+  vrpn_unbuffer(&bufptr, &value);
+  acc[Q_Z] = value * GRAVITY;
+  int sensor = 1;
+  double interval = 1;
+  if (0 != report_pose_acceleration(sensor, timestamp, acc, acc_quat, interval)) {
+      VRPN_MSG_ERROR ("vrpn_YEI_3Space::handle_report(): Error sending acceleration report");
+      d_sensor = STATUS_RESETTING;
+  }
+
+  // Read the analog values and put them into the channels.
+  for (int i = 0; i < vrpn_Analog::getNumChannels(); i++) {
+    vrpn_unbuffer(&bufptr, &value);
+    channel[i] = value;
+  }
+
+  // Read the button values and put them into the buttons.
+  vrpn_uint8 b;
+  vrpn_unbuffer(&bufptr, &b);
+  for (int i = 0; i < 8; i++) {
+    buttons[i] = (b & (1 << i)) != 0;
+  }
+
+  //--------------------------------------------------------------------
+  // Done with the decoding, send the analog and button reports.
+  //--------------------------------------------------------------------
+
+  report_changes();
+}
+
+/******************************************************************************
+ * NAME      : vrpn_YEI_3Space::report_changes
+ * ROLE      : 
+ * ARGUMENTS : 
+ * RETURN    : void
+ ******************************************************************************/
+void vrpn_YEI_3Space::report_changes (vrpn_uint32 class_of_service)
+{
+  vrpn_Analog::timestamp = timestamp;
+  vrpn_Analog::report_changes(class_of_service);
+  vrpn_Button::timestamp = timestamp;
+  vrpn_Button::report_changes();
+}
+
+
+/******************************************************************************
+ * NAME      : vrpn_YEI_3Space::report
+ * ROLE      : 
+ * ARGUMENTS : 
+ * RETURN    : void
+ ******************************************************************************/
+void vrpn_YEI_3Space::report (vrpn_uint32 class_of_service)
+{
+  vrpn_Analog::timestamp = timestamp;
+  vrpn_Analog::report(class_of_service);
+}
+
+/******************************************************************************
+ * NAME      : vrpn_YEI_3Space::mainloop
+ * ROLE      :  This routine is called each time through the server's main loop. It will
+ *              take a course of action depending on the current status of the device,
+ *              either trying to reset it or trying to get a reading from it.  It will
+ *              try to reset the device if no data has come from it for a couple of
+ *              seconds
+ * ARGUMENTS : 
+ * RETURN    : void
+ ******************************************************************************/
+void vrpn_YEI_3Space::mainloop ()
+{
+  char l_errmsg[256];
+
+  vrpn_Tracker_Server::mainloop();
+  server_mainloop();
+
+  switch (d_status)
+    {
+    case STATUS_RESETTING:
+      if (reset()== -1) {
+	  VRPN_MSG_ERROR ("vrpn_YEI_3Space: Cannot reset!");
+      }
+      break;
+
+    case STATUS_READING:
+      {
+        // It turns out to be important to get the report before checking
+        // to see if it has been too long since the last report.  This is
+        // because there is the possibility that some other device running
+        // in the same server may have taken a long time on its last pass
+        // through mainloop().  Trackers that are resetting do this.  When
+        // this happens, you can get an infinite loop -- where one tracker
+        // resets and causes the other to timeout, and then it returns the
+        // favor.  By checking for the report here, we reset the timestamp
+        // if there is a report ready (ie, if THIS device is still operating).
+        get_report();
+        struct timeval current_time;
+        vrpn_gettimeofday (&current_time, NULL);
+        if (vrpn_TimevalDuration (current_time, timestamp) > MAX_TIME_INTERVAL) {
+          sprintf (l_errmsg, "vrpn_YEI_3Space::mainloop: Timeout... current_time=%ld:%ld, timestamp=%ld:%ld",
+                   current_time.tv_sec,
+                   static_cast<long> (current_time.tv_usec),
+                   timestamp.tv_sec,
+                   static_cast<long> (timestamp.tv_usec));
+          VRPN_MSG_ERROR (l_errmsg);
+          d_status = STATUS_RESETTING;
+        }
+      }
+      break;
+
+    default:
+      VRPN_MSG_ERROR ("vrpn_YEI_3Space::mainloop: Unknown mode (internal error)");
+      break;
+    }
+}
+
+
+/******************************************************************************
  * NAME      : vrpn_YEI_3Space_Sensor::vrpn_YEI_3Space_Sensor
  * ROLE      : This creates a vrpn_YEI_3Space_Sensor and sets it to reset mode. It opens
- *             the serial device using the code in the vrpn_Serial_Analog constructor.
+ *             the serial port to use to communicate to it.
  * ARGUMENTS : 
  * RETURN    : 
  ******************************************************************************/
@@ -37,107 +449,38 @@ vrpn_YEI_3Space_Sensor::vrpn_YEI_3Space_Sensor (const char * p_name
                                   , double blue_LED_color
                                   , int LED_mode
                                   , const char *reset_commands[])
-  : vrpn_Tracker_Server (p_name, p_c, 2)
-  , vrpn_Serial_Analog (p_name, p_c, p_port, p_baud, 8, vrpn_SER_PARITY_NONE)
-  , vrpn_Button_Filter(p_name, p_c)
-  , d_frames_per_second(frames_per_second)
+  : vrpn_YEI_3Space (p_name, p_c, calibrate_gyros_on_setup
+                     , tare_on_setup, frames_per_second, red_LED_color
+                     , green_LED_color, blue_LED_color, LED_mode
+                     , reset_commands)
 {
-  // Count the reset commands and allocate an array to store them in.
-  const char **ptr = reset_commands;
-  d_reset_commands = NULL;
-  d_reset_command_count = 0;
-  if (ptr != NULL) while ((*ptr) != NULL) {
-    d_reset_command_count++;
-    ptr++;
-  }
-  if (d_reset_command_count > 0) {
-    d_reset_commands = new char *[d_reset_command_count];
-    if (d_reset_commands == NULL) {
-      fprintf(stderr,"vrpn_YEI_3Space_Sensor::vrpn_YEI_3Space_Sensor(): Out of memory, ignoring reset commands\n");
-      d_reset_command_count = 0;
-    }
+  // Open the serial port we're going to use to talk with the device.
+  if ((d_serial_fd = vrpn_open_commport(p_port, p_baud,
+    8, vrpn_SER_PARITY_NONE)) == -1) {
+      perror("vrpn_YEI_3Space_Sensor::vrpn_YEI_3Space_Sensor: Cannot open serial port");
+      fprintf(stderr," (port %s)\n", p_port);
   }
 
-  // Copy any reset commands.
-  ptr = reset_commands;
-  for (int i = 0; i < d_reset_command_count; i++) {
-    d_reset_commands[i] = new char[strlen(reset_commands[i]) + 1];
-    if (d_reset_commands[i] == NULL) {
-      fprintf(stderr,"vrpn_YEI_3Space_Sensor::vrpn_YEI_3Space_Sensor(): Out of memory, giving up\n");
-      return;
-    }
-    strcpy(d_reset_commands[i], reset_commands[i]);
-  }
-
-  // Set the parameters in the parent classes
-  vrpn_Analog::num_channel = 11;
-
-  // Initialize the state of all the buttons
-  vrpn_Button::num_buttons = 8;
-  memset(buttons, 0, sizeof(buttons));
-  memset(lastbuttons, 0, sizeof(lastbuttons));
-
-  // Configure LED mode.
-  unsigned char set_LED_mode[2] = { 0xC4, 0 };
-  set_LED_mode[1] = static_cast<unsigned char>(LED_mode);
-  if (!send_binary_command (set_LED_mode, sizeof(set_LED_mode))) {
-    VRPN_MSG_ERROR ("vrpn_YEI_3Space_Sensor::vrpn_YEI_3Space_Sensor: Unable to send set-LED-mode command\n");
-  }
-
-  // Configure LED color.
-  unsigned char set_LED_color[13] = { 0xEE, 0,0,0,0,0,0,0,0,0,0,0,0 };
-  unsigned char *bufptr = &set_LED_color[1];
-  vrpn_int32 buflen = 12;
-  vrpn_float32  LEDs[3];
-  LEDs[0] = static_cast<vrpn_float32>(red_LED_color);
-  LEDs[1] = static_cast<vrpn_float32>(green_LED_color);
-  LEDs[2] = static_cast<vrpn_float32>(blue_LED_color);
-  vrpn_buffer(&bufptr, &buflen, LEDs[0]);
-  vrpn_buffer(&bufptr, &buflen, LEDs[1]);
-  vrpn_buffer(&bufptr, &buflen, LEDs[2]);
-  if (!send_binary_command (set_LED_color, sizeof(set_LED_color))) {
-    VRPN_MSG_ERROR ("vrpn_YEI_3Space_Sensor::vrpn_YEI_3Space_Sensor: Unable to send set-LED-color command\n");
-  }
-
-  // If we're supposed to calibrate the gyros on startup, do so now.
-  if (calibrate_gyros_on_setup) {
-    unsigned char begin_gyroscope_calibration[1] = { 0xA5 };
-    if (!send_binary_command (begin_gyroscope_calibration, sizeof(begin_gyroscope_calibration))) {
-      VRPN_MSG_ERROR ("vrpn_YEI_3Space_Sensor::vrpn_YEI_3Space_Sensor: Unable to send set-gyroscope-calibration command\n");
-    }
-  }
-
-  // If we're supposed to tare on startup, do so now.
-  if (tare_on_setup) {
-    unsigned char tare[1] = { 0x60 };
-    if (!send_binary_command (tare, sizeof(tare))) {
-      VRPN_MSG_ERROR ("vrpn_YEI_3Space_Sensor::vrpn_YEI_3Space_Sensor: Unable to send tare command\n");
-    }
-  }
-
-  vrpn_gettimeofday(&timestamp, NULL);
-
-  // Set the mode to reset
-  d_status = STATUS_RESETTING;
+  // Initialize the state of the device, now that we've established a
+  // way to talk with it.
+  init(calibrate_gyros_on_setup
+       , tare_on_setup, frames_per_second, red_LED_color
+       , green_LED_color, blue_LED_color, LED_mode
+       , reset_commands);
 }
 
 /******************************************************************************
  * NAME      : vrpn_YEI_3Space_Sensor::~vrpn_YEI_3Space_Sensor
- * ROLE      : This destroys a vrpn_YEI_3Space_Sensor and frees its memory.
+ * ROLE      : This destroys a vrpn_YEI_3Space_Sensor and closes its ports.
  * ARGUMENTS : 
  * RETURN    : 
  ******************************************************************************/
 vrpn_YEI_3Space_Sensor::~vrpn_YEI_3Space_Sensor ()
 {
-  // Free the space used to store the additional reset commands,
-  // then free the array used to store the pointers.
-  for (int i = 0; i < d_reset_command_count; i++) {
-    delete [] d_reset_commands[i];
-  }
-  if (d_reset_commands != NULL) {
-    delete [] d_reset_commands;
-    d_reset_commands = NULL;
-  }
+    // Close com port when destroyed.
+    if (d_serial_fd != -1) {
+        vrpn_close_commport(d_serial_fd);
+    }
 }
 
 /******************************************************************************
@@ -176,7 +519,7 @@ bool vrpn_YEI_3Space_Sensor::send_binary_command (const unsigned char *p_cmd, in
 
   // Send the command and return whether it worked.
   int l_ret;
-  l_ret = vrpn_write_characters (serial_fd, buffer, p_len+2);
+  l_ret = vrpn_write_characters (d_serial_fd, buffer, p_len+2);
   // Tell if this all worked.
   if (l_ret == p_len+2) {
     return true;
@@ -220,7 +563,7 @@ bool vrpn_YEI_3Space_Sensor::send_ascii_command (const char *p_cmd)
   buffer[buflen-1] = 0;
 
   // Send the command and see if it worked.
-  int l_ret = vrpn_write_characters (serial_fd, buffer, buflen);
+  int l_ret = vrpn_write_characters (d_serial_fd, buffer, buflen);
 
   // Free the buffer.
   delete [] buffer;
@@ -247,7 +590,7 @@ bool vrpn_YEI_3Space_Sensor::send_ascii_command (const char *p_cmd)
 bool vrpn_YEI_3Space_Sensor::receive_LED_mode_response (struct timeval *timeout)
 {
   unsigned char value;
-  int ret = vrpn_read_available_characters (serial_fd, &value, sizeof(value), timeout);
+  int ret = vrpn_read_available_characters (d_serial_fd, &value, sizeof(value), timeout);
   if (ret != sizeof(value)) {
     return false;
   }
@@ -269,7 +612,7 @@ bool vrpn_YEI_3Space_Sensor::receive_LED_mode_response (struct timeval *timeout)
 bool vrpn_YEI_3Space_Sensor::receive_LED_values_response (struct timeval *timeout)
 {
   unsigned char buffer[3*sizeof(vrpn_float32)];
-  int ret = vrpn_read_available_characters (serial_fd, buffer, sizeof(buffer), timeout);
+  int ret = vrpn_read_available_characters (d_serial_fd, buffer, sizeof(buffer), timeout);
   if (ret != sizeof(buffer)) {
     return false;
   }
@@ -282,198 +625,6 @@ bool vrpn_YEI_3Space_Sensor::receive_LED_values_response (struct timeval *timeou
   vrpn_unbuffer(&bufptr, &value);
   d_LED_color[2] = value;
   return true;
-}
-
-/******************************************************************************
- * NAME      : vrpn_YEI_3Space_Sensor::reset
- * ROLE      : This routine will reset the YEI_3Space
- * ARGUMENTS : 
- * RETURN    : 0 else -1 in case of error
- ******************************************************************************/
-int vrpn_YEI_3Space_Sensor::reset (void)
-{
-  struct timeval l_timeout;
-
-  // Ask the device to stop streaming and then wait a little and flush the
-  // input buffer and then ask it for the LED mode and make sure we get a response.
-  unsigned char stop_streaming[1] = { 0x56 };
-  if (!send_binary_command (stop_streaming, sizeof(stop_streaming))) {
-    VRPN_MSG_ERROR ("vrpn_YEI_3Space_Sensor::reset: Unable to send stop-streaming command\n");
-    return -1;
-  }
-  vrpn_SleepMsecs(50);
-  vrpn_flush_input_buffer (serial_fd);
-  unsigned char get_led_mode[1] = { 0xC8 };
-  if (!send_binary_command (get_led_mode, sizeof(get_led_mode))) {
-    VRPN_MSG_ERROR ("vrpn_YEI_3Space_Sensor::reset: Unable to send get-led-mode command\n");
-    return -1;
-  }
-  l_timeout.tv_sec = 2;
-  l_timeout.tv_usec = 0;
-  if (!receive_LED_mode_response(&l_timeout)) {
-    VRPN_MSG_ERROR ("vrpn_YEI_3Space_Sensor::reset: Unable to read get-led-mode response\n");
-    return -1;
-  }
-
-  // Request the 3 LED colors and set our internal values to match them.
-  unsigned char get_led_values[1] = { 0xEF };
-  if (!send_binary_command (get_led_values, sizeof(get_led_values))) {
-    VRPN_MSG_ERROR ("vrpn_YEI_3Space_Sensor::reset: Unable to send get-led-values command\n");
-    return -1;
-  }
-  if (!receive_LED_values_response(&l_timeout)) {
-    VRPN_MSG_ERROR ("vrpn_YEI_3Space_Sensor::reset: Unable to read get-led-mode response\n");
-    return -1;
-  }
-
-  // Flip the X axis (only the sixth bit on) to turn into a right-handed
-  // coordinate system whose rotations match those expected by VRPN as
-  // tested using an OpenGL viewing app.  (We were expecting to have to
-  // flip the Z axis; maybe the manual is incorrect and the last bit is
-  // actually the Z axis?)
-  unsigned char set_rh_system[] = {0x74, (1 << 5)};
-  if (!send_binary_command(set_rh_system, sizeof(set_rh_system))) {
-      VRPN_MSG_ERROR("vrpn_YEI_3Space_Sensor::reset: Unable to send coordinate system selection command\n");
-      return -1;
-  }
-
-  // Configure streaming speed based on the requested frames/second value.
-  unsigned char set_streaming_timing[13] = { 0x52, 0,0,0,0,0,0,0,0,0,0,0,0 };
-  vrpn_uint32 interval;
-  if (d_frames_per_second <= 0) {
-    VRPN_MSG_ERROR ("vrpn_YEI_3Space_Sensor::reset: Bad frames/second value, setting to maximum\n");
-    interval = 0;
-  } else {
-    interval = static_cast<vrpn_uint32>(1e6 * 1 / d_frames_per_second);
-  }
-  vrpn_uint32 duration = 0xFFFFFFFF;
-  vrpn_uint32 delay = 0;
-  unsigned char *bufptr = &set_streaming_timing[1];
-  vrpn_int32 buflen = 12;
-  vrpn_buffer(&bufptr, &buflen, interval);
-  vrpn_buffer(&bufptr, &buflen, duration);
-  vrpn_buffer(&bufptr, &buflen, delay);
-  if (!send_binary_command (set_streaming_timing, sizeof(set_streaming_timing))) {
-    VRPN_MSG_ERROR ("vrpn_YEI_3Space_Sensor::reset: Unable to send set-streaming-timing command\n");
-    return -1;
-  }
-
-  // Configure the set of values we want to have streamed.
-  // The value 0xFF means "nothing."  We want to stream the untared
-  // orientiation as a quaternion, the tared orientation as a quaternion,
-  // all corrected sensor data, the temperature in Celsius, and the
-  // confidence factor.
-  unsigned char set_streaming_slots[9] = { 0x50,
-    0x06, // untared quat
-    0x00, // tared quat
-    0x29, // tared corrected linear acceleration with gravity removed
-    0x25, // all corrected sensor data (3D vectors: rate gyro in rad/s, accel in g, and compass in gauss)
-    0x2B, // temperature C
-    0x2D, // confidence factor
-    0xFA, // button state
-    0xFF }; // followed by empty streaming spots.
-  if (!send_binary_command (set_streaming_slots, sizeof(set_streaming_slots))) {
-    VRPN_MSG_ERROR ("vrpn_YEI_3Space_Sensor::reset: Unable to send set-streaming-slots command\n");
-    return -1;
-  }
-
-  // Send any additional ACII reset commands that were passed into the
-  // constructor.
-  for (int i = 0; i < d_reset_command_count; i++) {
-    if (!send_ascii_command(d_reset_commands[i])) {
-      VRPN_MSG_ERROR ("vrpn_YEI_3Space_Sensor::reset: Unable to send additional reset command\n");
-      return -1;
-    }
-  }
-
-  // Start streaming mode.
-  unsigned char start_streaming[1] = { 0x55 };
-  if (!send_binary_command (start_streaming, sizeof(start_streaming))) {
-    VRPN_MSG_ERROR ("vrpn_YEI_3Space_Sensor::reset: Unable to send start-streaming command\n");
-    return -1;
-  }
-
-  // We're now entering the reading mode with no characters.
-  d_expected_characters = REPORT_LENGTH;
-  d_characters_read = 0;
-  d_status = STATUS_READING;
-
-  vrpn_gettimeofday (&timestamp, NULL);	// Set watchdog now
-  return 0;
-}
-
-/******************************************************************************
- * NAME      : vrpn_YEI_3Space_Sensor::handle_report
- * ROLE      : This function will parse  a full report, then
- *             put that report into analog fields and call the report methods on these.   
- * ARGUMENTS : void
- * RETURN    : void
- ******************************************************************************/
-void vrpn_YEI_3Space_Sensor::handle_report(unsigned char *report)
-{
-  vrpn_float32 value;
-  unsigned char *bufptr = report;
-
-  // Read the two orientations and report them
-  q_vec_type  pos;
-  pos[Q_X] = pos[Q_Y] = pos[Q_Z] = 0;
-  q_type  quat;
-
-  for (int i = 0; i < 2; i++) {
-    vrpn_unbuffer(&bufptr, &value);
-    quat[Q_X] = value;
-    vrpn_unbuffer(&bufptr, &value);
-    quat[Q_Y] = value;
-    vrpn_unbuffer(&bufptr, &value);
-    quat[Q_Z] = value;
-    vrpn_unbuffer(&bufptr, &value);
-    quat[Q_W] = value;
-    if (0 != report_pose(i, timestamp, pos, quat)) {
-        VRPN_MSG_ERROR ("vrpn_YEI_3Space_Sensor::handle_report(): Error sending sensor report");
-        d_sensor = STATUS_RESETTING;
-    }
-  }
-
-  // XXX Linear rate gyros into orientation change?
-
-  // Read the three values for linear acceleration in tared
-  // space with gravity removed.  Convert it into units of
-  // meters/second/second.  Put it into the tared sensor.
-  q_vec_type acc;
-  q_type  acc_quat;
-  acc_quat[Q_X] = acc_quat[Q_Y] = acc_quat[Q_Z] = 0; acc_quat[Q_W] = 1;
-  vrpn_unbuffer(&bufptr, &value);
-  static const double GRAVITY = 9.80665;  // Meters/second/second
-  acc[Q_X] = value * GRAVITY;
-  vrpn_unbuffer(&bufptr, &value);
-  acc[Q_Y] = value * GRAVITY;
-  vrpn_unbuffer(&bufptr, &value);
-  acc[Q_Z] = value * GRAVITY;
-  int sensor = 1;
-  double interval = 1;
-  if (0 != report_pose_acceleration(sensor, timestamp, acc, acc_quat, interval)) {
-      VRPN_MSG_ERROR ("vrpn_YEI_3Space_Sensor::handle_report(): Error sending acceleration report");
-      d_sensor = STATUS_RESETTING;
-  }
-
-  // Read the analog values and put them into the channels.
-  for (int i = 0; i < vrpn_Analog::getNumChannels(); i++) {
-    vrpn_unbuffer(&bufptr, &value);
-    channel[i] = value;
-  }
-
-  // Read the button values and put them into the buttons.
-  vrpn_uint8 b;
-  vrpn_unbuffer(&bufptr, &b);
-  for (int i = 0; i < 8; i++) {
-    buttons[i] = (b & (1 << i)) != 0;
-  }
-
-  //--------------------------------------------------------------------
-  // Done with the decoding, send the analog and button reports.
-  //--------------------------------------------------------------------
-
-  report_changes();
 }
 
 /******************************************************************************
@@ -493,7 +644,7 @@ void vrpn_YEI_3Space_Sensor::get_report (void)
   // and only try to read the rest.
   //--------------------------------------------------------------------
 
-  l_ret = vrpn_read_available_characters (serial_fd, &d_buffer [d_characters_read],
+  l_ret = vrpn_read_available_characters (d_serial_fd, &d_buffer [d_characters_read],
                                           d_expected_characters - d_characters_read);
   if (l_ret == -1) {
       VRPN_MSG_ERROR ("vrpn_YEI_3Space_Sensor::get_report(): Error reading the sensor, resetting");
@@ -536,88 +687,7 @@ void vrpn_YEI_3Space_Sensor::get_report (void)
   d_characters_read = 0;
 }
 
-
-/******************************************************************************
- * NAME      : vrpn_YEI_3Space_Sensor::report_changes
- * ROLE      : 
- * ARGUMENTS : 
- * RETURN    : void
- ******************************************************************************/
-void vrpn_YEI_3Space_Sensor::report_changes (vrpn_uint32 class_of_service)
+void vrpn_YEI_3Space_Sensor::flush_input(void)
 {
-  vrpn_Analog::timestamp = timestamp;
-  vrpn_Analog::report_changes(class_of_service);
-  vrpn_Button::timestamp = timestamp;
-  vrpn_Button::report_changes();
-}
-
-
-/******************************************************************************
- * NAME      : vrpn_YEI_3Space_Sensor::report
- * ROLE      : 
- * ARGUMENTS : 
- * RETURN    : void
- ******************************************************************************/
-void vrpn_YEI_3Space_Sensor::report (vrpn_uint32 class_of_service)
-{
-  vrpn_Analog::timestamp = timestamp;
-  vrpn_Analog::report(class_of_service);
-}
-
-
-/******************************************************************************
- * NAME      : vrpn_YEI_3Space_Sensor::mainloop
- * ROLE      :  This routine is called each time through the server's main loop. It will
- *              take a course of action depending on the current status of the device,
- *              either trying to reset it or trying to get a reading from it.  It will
- *              try to reset the device if no data has come from it for a couple of
- *              seconds
- * ARGUMENTS : 
- * RETURN    : void
- ******************************************************************************/
-void vrpn_YEI_3Space_Sensor::mainloop ()
-{
-  char l_errmsg[256];
-
-  vrpn_Tracker_Server::mainloop();
-  server_mainloop();
-
-  switch (d_status)
-    {
-    case STATUS_RESETTING:
-      if (reset()== -1) {
-	  VRPN_MSG_ERROR ("vrpn_Analog_YEI_3Space: Cannot reset!");
-      }
-      break;
-
-    case STATUS_READING:
-      {
-        // It turns out to be important to get the report before checking
-        // to see if it has been too long since the last report.  This is
-        // because there is the possibility that some other device running
-        // in the same server may have taken a long time on its last pass
-        // through mainloop().  Trackers that are resetting do this.  When
-        // this happens, you can get an infinite loop -- where one tracker
-        // resets and causes the other to timeout, and then it returns the
-        // favor.  By checking for the report here, we reset the timestamp
-        // if there is a report ready (ie, if THIS device is still operating).
-        get_report();
-        struct timeval current_time;
-        vrpn_gettimeofday (&current_time, NULL);
-        if (vrpn_TimevalDuration (current_time, timestamp) > MAX_TIME_INTERVAL) {
-          sprintf (l_errmsg, "vrpn_YEI_3Space_Sensor::mainloop: Timeout... current_time=%ld:%ld, timestamp=%ld:%ld",
-                   current_time.tv_sec,
-                   static_cast<long> (current_time.tv_usec),
-                   timestamp.tv_sec,
-                   static_cast<long> (timestamp.tv_usec));
-          VRPN_MSG_ERROR (l_errmsg);
-          d_status = STATUS_RESETTING;
-        }
-      }
-      break;
-
-    default:
-      VRPN_MSG_ERROR ("vrpn_YEI_3Space_Sensor::mainloop: Unknown mode (internal error)");
-      break;
-    }
+    vrpn_flush_input_buffer (d_serial_fd);
 }
