@@ -12,6 +12,8 @@
 #define	STATUS_RESETTING	(-1)	// Resetting the device
 #define	STATUS_READING		(0)	// Looking for the a report
 
+// The wired USB connection can stream up to 256 bytes, but the wireless
+// can stream a maximum of 96 bytes per sensor.
 static const int REPORT_LENGTH = 16 + 16 + 12 + 36 + 4 + 4 + 1;
 #define MAX_TIME_INTERVAL       (2000000) // max time between reports (usec)
 
@@ -401,9 +403,83 @@ int vrpn_YEI_3Space_Sensor::reset (void)
 }
 
 /******************************************************************************
+ * NAME      : vrpn_YEI_3Space_Sensor::handle_report
+ * ROLE      : This function will parse  a full report, then
+ *             put that report into analog fields and call the report methods on these.   
+ * ARGUMENTS : void
+ * RETURN    : void
+ ******************************************************************************/
+void vrpn_YEI_3Space_Sensor::handle_report(unsigned char *report)
+{
+  vrpn_float32 value;
+  unsigned char *bufptr = report;
+
+  // Read the two orientations and report them
+  q_vec_type  pos;
+  pos[Q_X] = pos[Q_Y] = pos[Q_Z] = 0;
+  q_type  quat;
+
+  for (int i = 0; i < 2; i++) {
+    vrpn_unbuffer(&bufptr, &value);
+    quat[Q_X] = value;
+    vrpn_unbuffer(&bufptr, &value);
+    quat[Q_Y] = value;
+    vrpn_unbuffer(&bufptr, &value);
+    quat[Q_Z] = value;
+    vrpn_unbuffer(&bufptr, &value);
+    quat[Q_W] = value;
+    if (0 != report_pose(i, timestamp, pos, quat)) {
+        VRPN_MSG_ERROR ("vrpn_YEI_3Space_Sensor::handle_report(): Error sending sensor report");
+        d_sensor = STATUS_RESETTING;
+    }
+  }
+
+  // XXX Linear rate gyros into orientation change?
+
+  // Read the three values for linear acceleration in tared
+  // space with gravity removed.  Convert it into units of
+  // meters/second/second.  Put it into the tared sensor.
+  q_vec_type acc;
+  q_type  acc_quat;
+  acc_quat[Q_X] = acc_quat[Q_Y] = acc_quat[Q_Z] = 0; acc_quat[Q_W] = 1;
+  vrpn_unbuffer(&bufptr, &value);
+  static const double GRAVITY = 9.80665;  // Meters/second/second
+  acc[Q_X] = value * GRAVITY;
+  vrpn_unbuffer(&bufptr, &value);
+  acc[Q_Y] = value * GRAVITY;
+  vrpn_unbuffer(&bufptr, &value);
+  acc[Q_Z] = value * GRAVITY;
+  int sensor = 1;
+  double interval = 1;
+  if (0 != report_pose_acceleration(sensor, timestamp, acc, acc_quat, interval)) {
+      VRPN_MSG_ERROR ("vrpn_YEI_3Space_Sensor::handle_report(): Error sending acceleration report");
+      d_sensor = STATUS_RESETTING;
+  }
+
+  // Read the analog values and put them into the channels.
+  for (int i = 0; i < vrpn_Analog::getNumChannels(); i++) {
+    vrpn_unbuffer(&bufptr, &value);
+    channel[i] = value;
+  }
+
+  // Read the button values and put them into the buttons.
+  vrpn_uint8 b;
+  vrpn_unbuffer(&bufptr, &b);
+  for (int i = 0; i < 8; i++) {
+    buttons[i] = (b & (1 << i)) != 0;
+  }
+
+  //--------------------------------------------------------------------
+  // Done with the decoding, send the analog and button reports.
+  //--------------------------------------------------------------------
+
+  report_changes();
+}
+
+/******************************************************************************
  * NAME      : vrpn_YEI_3Space_Sensor::get_report
  * ROLE      : This function will read characters until it has a full report, then
- *             put that report into analog fields and call the report methods on these.   
+ *             call handle_report() with the report and clear the counts.   
  * ARGUMENTS : void
  * RETURN    : void
  ******************************************************************************/
@@ -451,70 +527,11 @@ void vrpn_YEI_3Space_Sensor::get_report (void)
   // We now have enough characters to make a full report.  Parse each
   // input in order and check to make sure they work, then send the results.
   //--------------------------------------------------------------------
-  vrpn_float32 value;
-  unsigned char *bufptr = d_buffer;
-
-  // Read the two orientations and report them
-  q_vec_type  pos;
-  pos[Q_X] = pos[Q_Y] = pos[Q_Z] = 0;
-  q_type  quat;
-
-  for (int i = 0; i < 2; i++) {
-    vrpn_unbuffer(&bufptr, &value);
-    quat[Q_X] = value;
-    vrpn_unbuffer(&bufptr, &value);
-    quat[Q_Y] = value;
-    vrpn_unbuffer(&bufptr, &value);
-    quat[Q_Z] = value;
-    vrpn_unbuffer(&bufptr, &value);
-    quat[Q_W] = value;
-    if (0 != report_pose(i, timestamp, pos, quat)) {
-        VRPN_MSG_ERROR ("vrpn_YEI_3Space_Sensor::get_report(): Error sending sensor report");
-        d_sensor = STATUS_RESETTING;
-    }
-  }
-
-  // XXX Linear rate gyros into orientation change?
-
-  // Read the three values for linear acceleration in tared
-  // space with gravity removed.  Convert it into units of
-  // meters/second/second.  Put it into the tared sensor.
-  q_vec_type acc;
-  q_type  acc_quat;
-  acc_quat[Q_X] = acc_quat[Q_Y] = acc_quat[Q_Z] = 0; acc_quat[Q_W] = 1;
-  vrpn_unbuffer(&bufptr, &value);
-  static const double GRAVITY = 9.80665;  // Meters/second/second
-  acc[Q_X] = value * GRAVITY;
-  vrpn_unbuffer(&bufptr, &value);
-  acc[Q_Y] = value * GRAVITY;
-  vrpn_unbuffer(&bufptr, &value);
-  acc[Q_Z] = value * GRAVITY;
-  int sensor = 1;
-  double interval = 1;
-  if (0 != report_pose_acceleration(sensor, timestamp, acc, acc_quat, interval)) {
-      VRPN_MSG_ERROR ("vrpn_YEI_3Space_Sensor::get_report(): Error sending acceleration report");
-      d_sensor = STATUS_RESETTING;
-  }
-
-  // Read the analog values and put them into the channels.
-  for (int i = 0; i < vrpn_Analog::getNumChannels(); i++) {
-    vrpn_unbuffer(&bufptr, &value);
-    channel[i] = value;
-  }
-
-  // Read the button values and put them into the buttons.
-  vrpn_uint8 b;
-  vrpn_unbuffer(&bufptr, &b);
-  for (int i = 0; i < 8; i++) {
-    buttons[i] = (b & (1 << i)) != 0;
-  }
+  handle_report(d_buffer);
 
   //--------------------------------------------------------------------
-  // Done with the decoding, send the analog and button reports and
-  // clear our counts.
+  // Clear our counts to be ready for the next report
   //--------------------------------------------------------------------
-
-  report_changes();
   d_expected_characters = REPORT_LENGTH;
   d_characters_read = 0;
 }

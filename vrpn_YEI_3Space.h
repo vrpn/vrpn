@@ -59,7 +59,8 @@ protected:
   // Status and handlers for different states
   int     d_status;               //< What are we currently up to?
   virtual int reset(void);        //< Set device back to starting config
-  virtual void get_report(void);  //< Try to read a report from the device
+  virtual void get_report(void);  //< Try to read and handle a report from the device
+  virtual void handle_report(unsigned char *report);  //< Parse and handle a complete streaming report
 
   double  d_frames_per_second;    //< How many frames/second do we want?
   int     d_LED_mode;             //< LED mode we read from the device.
@@ -97,5 +98,36 @@ protected:
   virtual void report
                  (vrpn_uint32 class_of_service = vrpn_CONNECTION_LOW_LATENCY);
 };
+
+// Dongle slot command to configure a dongle to a particular slot
+//    Pan ID 16-bit number (default 1), Channel 11-26 (default 26), 
+//    Slot/logical ID 0-14, Address (ser #)
+//    0xf1, 0xf2: Turn off mouse and joystick HID streaming
+
+// Streaming mode: 0xb0 sets it, we probably want manual-release (0).
+//    0xb4 is manual flush for a single channel, which is probably what we want
+//    0xd1 sets the serial number at a given slot on the wireless dongle.
+//    0xdb configures the wireless response header bitfield (we want it empty...)
+
+// Binary Packet:
+//   Starts with 0xF8 and then has the Logical ID address, then a
+// checksum "over all bytes except the first".
+
+// Binary Response:
+//   Starts with 0 for success or nonzero for failure).  Then the
+// logical ID.  Then a data-length byte.  Then the response itself
+// (which may be zero bytes) -- all messages get a response.
+//   In case of failure, the logical ID will end the packet.
+//   For commands without a return, we get 00 <ID> 00.
+
+// Ascii packet:
+//  >ADDRESS,Command[,Data]'\n'
+
+// Ascii response:
+//  Starts with 0 or 1 (0 on success)
+// then ',' and logical ID
+// then ',' and data length (unless there is failure)
+// then [,Data]
+// then '\n'  (Example table has \r before \n, but protocol description doesn't)
 
 #endif
