@@ -4490,17 +4490,6 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(
     /// @todo warning: unused parameter 'port' [-Wunused-parameter]
     FILE *config_file;
 
-    // Store the locale that was set before we came in here.
-    // The global locale is obtained by using the default
-    // constructor.
-    std::locale const orig_locale = std::locale();
-
-    // Set the global locale to be "C", the classic one, so that
-    // when we parse the configuration file it will use dots for
-    // decimal points even if the local standard is commas.
-    // putting them into the global locale.
-    std::locale::global(std::locale("C"));
-
     // Open the configuration file
     if (verbose) {
         printf("Reading from config file %s\n", config_file_name);
@@ -4512,6 +4501,17 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(
         d_doing_okay = false;
         return;
     }
+
+    // Store the locale that was set before we came in here.
+    // The global locale is obtained by using the default
+    // constructor.
+    std::locale const orig_locale = std::locale();
+
+    // Set the global locale to be "C", the classic one, so that
+    // when we parse the configuration file it will use dots for
+    // decimal points even if the local standard is commas.
+    // putting them into the global locale.
+    std::locale::global(std::locale("C"));
 
     // Read the configuration file, creating a device for each entry.
     // Each entry is on one line, which starts with the name of the
