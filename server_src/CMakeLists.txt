@@ -173,6 +173,7 @@ set(SRV_TEST_SOURCES
 	test_auxiliary_logger.C
 	test_freespace.C
 	test_logging.C
+	test_loopback.C
 	test_mutexServer.C
 	test_peerMutex.C
 	test_radamec_spi.C
@@ -214,6 +215,7 @@ if(BUILD_TESTING)
 				RUNTIME DESTINATION bin COMPONENT tests)
 		endif()
 	endforeach()
+	add_test(test_loopback test_loopback)
 	add_test(test_vrpn test_vrpn)
 endif()
 

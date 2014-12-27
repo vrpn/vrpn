@@ -5307,8 +5307,7 @@ vrpn_Connection *vrpn_get_connection_by_name(
         if (is_file) {
             c = new vrpn_File_Connection(cname, local_in_logfile_name,
                                          local_out_logfile_name);
-        }
-        else {
+        } else {
             int port = vrpn_get_port_number(cname);
             c = new vrpn_Connection_IP(
                 cname, port, local_in_logfile_name, local_out_logfile_name,
@@ -5340,6 +5339,8 @@ vrpn_Connection *vrpn_get_connection_by_name(
 //    machine_name_or_ip:port
 //    machine_name_or_ip
 //    :port
+// To create a loopback (networkless) server, use the name:
+//    loopback:
 // To create an MPI server, use a name like:
 //    mpi:MPI_COMM_WORLD
 //    mpi:comm_number
@@ -5366,6 +5367,7 @@ vrpn_create_server_connection(const char *cname,
     if (location == NULL) {
         return NULL;
     }
+    int is_loopback = !strncmp(cname, "loopback:", 9);
     int is_mpi = !strncmp(cname, "mpi:", 4);
     if (is_mpi) {
 #ifdef VRPN_USE_MPI
@@ -5377,9 +5379,10 @@ vrpn_create_server_connection(const char *cname,
         delete[] location;
         return NULL;
 #endif
-    }
-    else {
-        // Not an MPI port, so we presume that we are a standard VRPN UDP/TCP
+    } else if (is_loopback) {
+        c = new vrpn_Connection_Loopback(local_out_logfile_name);
+    } else {
+        // Not Loopback or MPI port, so we presume that we are a standard VRPN UDP/TCP
         // port.  Open that kind, based on the machine and port name.  If we
         // don't
         // have a machine name, then we pass NULL to the NIC address.  If we do
@@ -6291,6 +6294,29 @@ vrpn_Connection_IP::~vrpn_Connection_IP(void)
 #endif // VRPN_USE_WINSOCK_SOCKETS
 }
 
+// Set up to be a server connection, which is the only kind we can be.
+vrpn_Connection_Loopback::vrpn_Connection_Loopback(const char *local_out_logfile_name)
+    : vrpn_Connection(NULL, local_out_logfile_name, NULL, NULL)
+{
+    // We're always "connected."
+    connectionStatus = CONNECTED;
+
+    // Add this to the list of known connections.
+    vrpn_ConnectionManager::instance().addConnection(this, "Loopback");
+}
+
+vrpn_Connection_Loopback::~vrpn_Connection_Loopback(void)
+{
+    // Remove myself from the "known connections" list
+    //   (or the "anonymous connections" list).
+    vrpn_ConnectionManager::instance().deleteConnection(this);
+}
+
+int vrpn_Connection_Loopback::mainloop(const timeval * /*timeout*/)
+{
+    return 0;
+}
+
 // utility routines to parse names (<service>@<URL>)
 char *vrpn_copy_service_name(const char *fullname)
 {
@@ -6525,3 +6551,5 @@ char *vrpn_set_service_name(const char *specifier, const char *newServiceName)
     delete[] location;
     return newSpecifier;
 }
+
+

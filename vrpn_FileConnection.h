@@ -154,9 +154,12 @@ public:
     // return 1 if we got to the specified time and 0 if we didn't
     int jump_to_filetime(timeval absolute_time);
 
-    // Not very useful.
     // Limits the number of messages played out on any one call to mainloop.
     // 0 => no limit.
+    // Used to stop continuous callback-handling when messages arrive
+    // at a very high rate (such as from a vrpn_Imager) or to make sure
+    // that we are able to pause after each frame in frame-by-frame
+    // playback for tracking analysis programs.
     void limit_messages_played_back(vrpn_uint32 max_playback)
     {
         Jane_stop_this_crazy_thing(max_playback);
