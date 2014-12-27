@@ -4820,7 +4820,7 @@ int vrpn_Connection::compact_endpoints(void)
 // asked for.
 vrpn_Connection::vrpn_Connection(const char *local_in_logfile_name,
                                  const char *local_out_logfile_name,
-                                 vrpn_Endpoint_IP *(*epa)(vrpn_Connection *,
+                                 vrpn_Endpoint *(*epa)(vrpn_Connection *,
                                                           vrpn_int32 *))
     : d_numEndpoints(0)
     , d_numConnectedEndpoints(0)
@@ -4895,7 +4895,7 @@ vrpn_Connection::vrpn_Connection(const char *local_in_logfile_name,
 vrpn_Connection::vrpn_Connection(
     const char *local_in_logfile_name, const char *local_out_logfile_name,
     const char *remote_in_logfile_name, const char *remote_out_logfile_name,
-    vrpn_Endpoint_IP *(*epa)(vrpn_Connection *, vrpn_int32 *))
+    vrpn_Endpoint *(*epa)(vrpn_Connection *, vrpn_int32 *))
     : connectionStatus(BROKEN)
     , // default value if not otherwise set in ctr
     d_numEndpoints(0)
@@ -5169,7 +5169,7 @@ void vrpn_Connection::get_log_names(char **local_in_logname,
 void vrpn_Connection::updateEndpoints(void) {}
 
 // static
-vrpn_Endpoint_IP *vrpn_Connection::allocateEndpoint(vrpn_Connection *me,
+vrpn_Endpoint *vrpn_Connection::allocateEndpoint_IP(vrpn_Connection *me,
                                                     vrpn_int32 *connectedEC)
 {
     return new vrpn_Endpoint_IP(me->d_dispatcher, connectedEC);
@@ -5457,7 +5457,7 @@ int vrpn_Connection_IP::connect_to_client(const char *machine, int port)
         (*d_endpointAllocator)(this, &d_numConnectedEndpoints);
     d_endpoints[which_end]->setConnection(this);
     d_updateEndpoint = vrpn_TRUE;
-    vrpn_Endpoint_IP *endpoint = d_endpoints[which_end];
+    vrpn_Endpoint_IP *endpoint = dynamic_cast<vrpn_Endpoint_IP*>(d_endpoints[which_end]);
 
     if (!endpoint) {
         fprintf(stderr, "vrpn_Connection_IP::connect_to_client:"
@@ -5723,7 +5723,7 @@ void vrpn_Connection_IP::server_check_for_incoming_connections(
             (*d_endpointAllocator)(this, &d_numConnectedEndpoints);
         d_endpoints[which_end]->setConnection(this);
         d_updateEndpoint = vrpn_TRUE;
-        endpoint = d_endpoints[which_end];
+        endpoint = dynamic_cast<vrpn_Endpoint_IP*>(d_endpoints[which_end]);
         if (!endpoint) {
             fprintf(
                 stderr,
@@ -5804,7 +5804,7 @@ void vrpn_Connection_IP::server_check_for_incoming_connections(
             (*d_endpointAllocator)(this, &d_numConnectedEndpoints);
         d_endpoints[which_end]->setConnection(this);
         d_updateEndpoint = vrpn_TRUE;
-        endpoint = d_endpoints[which_end];
+        endpoint = dynamic_cast<vrpn_Endpoint_IP*>(d_endpoints[which_end]);
         if (!endpoint) {
             fprintf(
                 stderr,
@@ -5949,7 +5949,7 @@ int vrpn_Connection_IP::mainloop(const struct timeval *pTimeout)
 vrpn_Connection_IP::vrpn_Connection_IP(
     unsigned short listen_port_no, const char *local_in_logfile_name,
     const char *local_out_logfile_name, const char *NIC_IPaddress,
-    vrpn_Endpoint_IP *(*epa)(vrpn_Connection *, vrpn_int32 *))
+    vrpn_Endpoint *(*epa)(vrpn_Connection *, vrpn_int32 *))
     : vrpn_Connection(local_in_logfile_name, local_out_logfile_name, epa)
     , listen_udp_sock(INVALID_SOCKET)
     , listen_tcp_sock(INVALID_SOCKET)
@@ -6007,7 +6007,7 @@ vrpn_Connection_IP::vrpn_Connection_IP(
     const char *station_name, int port, const char *local_in_logfile_name,
     const char *local_out_logfile_name, const char *remote_in_logfile_name,
     const char *remote_out_logfile_name, const char *NIC_IPaddress,
-    vrpn_Endpoint_IP *(*epa)(vrpn_Connection *, vrpn_int32 *))
+    vrpn_Endpoint *(*epa)(vrpn_Connection *, vrpn_int32 *))
     : vrpn_Connection(local_in_logfile_name, local_out_logfile_name,
                       remote_in_logfile_name, remote_out_logfile_name, epa)
     , listen_udp_sock(INVALID_SOCKET)
@@ -6040,7 +6040,7 @@ vrpn_Connection_IP::vrpn_Connection_IP(
     // Initialize the things that must be for any constructor
     vrpn_Connection_IP::init();
 
-    endpoint = d_endpoints[0]; // shorthand
+    endpoint = dynamic_cast<vrpn_Endpoint_IP*>(d_endpoints[0]); // shorthand
     endpoint->setNICaddress(d_NIC_IP);
 
     // If we are not a TCP-only or remote-server-starting

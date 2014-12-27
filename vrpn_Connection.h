@@ -512,8 +512,8 @@ protected:
     /// of arbitrary type based on a name.
     vrpn_Connection(const char *local_in_logfile_name,
                     const char *local_out_logfile_name,
-                    vrpn_Endpoint_IP *(*epa)(vrpn_Connection *,
-                                             vrpn_int32 *) = allocateEndpoint);
+                    vrpn_Endpoint *(*epa)(vrpn_Connection *,
+                                             vrpn_int32 *) = allocateEndpoint_IP);
 
     /// Constructor for client connection.  This cannot be called
     /// directly because vrpn_Connection is an abstract base class.
@@ -522,8 +522,8 @@ protected:
                     const char *local_out_logfile_name,
                     const char *remote_in_logfile_name,
                     const char *remote_out_logfile_name,
-                    vrpn_Endpoint_IP *(*epa)(vrpn_Connection *,
-                                             vrpn_int32 *) = allocateEndpoint);
+                    vrpn_Endpoint *(*epa)(vrpn_Connection *,
+                                             vrpn_int32 *) = allocateEndpoint_IP);
 
 public:
     virtual ~vrpn_Connection(void);
@@ -648,7 +648,7 @@ protected:
 
     int connectionStatus; ///< Status of the connection
 
-    static vrpn_Endpoint_IP *allocateEndpoint(vrpn_Connection *,
+    static vrpn_Endpoint *allocateEndpoint_IP(vrpn_Connection *,
                                               vrpn_int32 *connectedEC);
     ///< Redefining this and passing it to constructors
     ///< allows a subclass to use a different subclass of Endpoint.
@@ -658,7 +658,7 @@ protected:
 
     /// Sockets used to talk to remote Connection(s)
     /// and other information needed on a per-connection basis
-    vrpn_Endpoint_IP *d_endpoints[vrpn_MAX_ENDPOINTS];
+    vrpn_Endpoint *d_endpoints[vrpn_MAX_ENDPOINTS];
     vrpn_int32 d_numEndpoints;
 
     vrpn_int32 d_numConnectedEndpoints;
@@ -724,7 +724,7 @@ private:
 
 public:
     /// Derived classes need access to d_dispatcher in their
-    /// allocateEndpoint() routine.  Several compilers won't give it to
+    /// allocateEndpoint_IP() routine.  Several compilers won't give it to
     /// them, even if they do inherit publicly.  Until we figure that
     /// out, d_dispatcher needs to be public.
 
@@ -747,13 +747,13 @@ protected:
     vrpn_int32 d_serverLogMode;
     char *d_serverLogName;
 
-    vrpn_Endpoint_IP *(*d_endpointAllocator)(vrpn_Connection *, vrpn_int32 *);
+    vrpn_Endpoint *(*d_endpointAllocator)(vrpn_Connection *, vrpn_int32 *);
     vrpn_bool d_updateEndpoint;
 
     virtual void updateEndpoints(void);
     ///< This function will be called on the mainloop() iteration
     ///< after *d_endpointAllocator is called, which lets subclasses
-    ///< do initialization.  (They can't do so during allocateEndpoint
+    ///< do initialization.  (They can't do so during allocateEndpoint_IP
     ///< because it's called during the Connection constructor when
     ///< their constructors haven't executed yet.)
 };
@@ -779,8 +779,8 @@ protected:
                        const char *remote_in_logfile_name = NULL,
                        const char *remote_out_logfile_name = NULL,
                        const char *NIC_IPaddress = NULL,
-                       vrpn_Endpoint_IP *(*epa)(
-                           vrpn_Connection *, vrpn_int32 *) = allocateEndpoint);
+                       vrpn_Endpoint *(*epa)(
+                           vrpn_Connection *, vrpn_int32 *) = allocateEndpoint_IP);
 
 public:
     /// Make a server that listens for client connections.
@@ -791,8 +791,8 @@ public:
         const char *local_in_logfile_name = NULL,
         const char *local_out_logfile_name = NULL,
         const char *NIC_IPaddress = NULL,
-        vrpn_Endpoint_IP *(*epa)(vrpn_Connection *,
-                                 vrpn_int32 *) = allocateEndpoint);
+        vrpn_Endpoint *(*epa)(vrpn_Connection *,
+                                 vrpn_int32 *) = allocateEndpoint_IP);
 
     virtual ~vrpn_Connection_IP(void);
 
