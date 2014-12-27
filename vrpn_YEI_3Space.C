@@ -6,7 +6,7 @@
 #include "vrpn_MessageMacros.h"         // for VRPN_MSG_INFO, VRPN_MSG_WARNING, VRPN_MSG_ERROR
 #include "quat.h"
 
-#undef VERBOSE
+//#define VERBOSE
 
 // Defines the modes in which the device can find itself.
 #define STATUS_NOT_INITIALIZED  (-2)    // Not yet initialized
@@ -21,7 +21,7 @@ static const int REPORT_LENGTH = 16 + 16 + 12 + 36 + 4 + 4 + 1;
 
 /******************************************************************************
  * NAME      : vrpn_YEI_3Space::vrpn_YEI_3Space
- * ROLE      : This creates a vrpn_YEI_3Space_Sensor and sets it to reset mode.
+ * ROLE      : This creates a vrpn_YEI_3Space and sets it to reset mode.
  * ARGUMENTS : 
  * RETURN    : 
  ******************************************************************************/
@@ -51,7 +51,7 @@ vrpn_YEI_3Space::vrpn_YEI_3Space (const char * p_name
   if (d_reset_command_count > 0) {
     d_reset_commands = new char *[d_reset_command_count];
     if (d_reset_commands == NULL) {
-      fprintf(stderr,"vrpn_YEI_3Space::init(): Out of memory, ignoring reset commands\n");
+      fprintf(stderr,"vrpn_YEI_3Space::vrpn_YEI_3Space(): Out of memory, ignoring reset commands\n");
       d_reset_command_count = 0;
     }
   }
@@ -61,7 +61,7 @@ vrpn_YEI_3Space::vrpn_YEI_3Space (const char * p_name
   for (int i = 0; i < d_reset_command_count; i++) {
     d_reset_commands[i] = new char[strlen(reset_commands[i]) + 1];
     if (d_reset_commands[i] == NULL) {
-      fprintf(stderr,"vrpn_YEI_3Space::init(): Out of memory, giving up\n");
+      fprintf(stderr,"vrpn_YEI_3Space::vrpn_YEI_3Space(): Out of memory, giving up\n");
       return;
     }
     strcpy(d_reset_commands[i], reset_commands[i]);
@@ -100,7 +100,7 @@ vrpn_YEI_3Space::~vrpn_YEI_3Space()
 
 /******************************************************************************
  * NAME      : vrpn_YEI_3Space::vrpn_YEI_3Space
- * ROLE      : This creates a vrpn_YEI_3Space_Sensor and sets it to reset mode.
+ * ROLE      : This creates a vrpn_YEI_3Space and sets it to reset mode.
  * ARGUMENTS : 
  * RETURN    : 
  ******************************************************************************/
@@ -110,15 +110,17 @@ void vrpn_YEI_3Space::init (bool calibrate_gyros_on_setup
                        , double red_LED_color
                        , double green_LED_color
                        , double blue_LED_color
-                       , int LED_mode
-                       , const char *reset_commands[])
+                       , int LED_mode)
 {
   // Configure LED mode.
   unsigned char set_LED_mode[2] = { 0xC4, 0 };
   set_LED_mode[1] = static_cast<unsigned char>(LED_mode);
-  if (!send_binary_command (set_LED_mode, sizeof(set_LED_mode))) {
+  if (!send_binary_command(set_LED_mode, sizeof(set_LED_mode))) {
     VRPN_MSG_ERROR ("vrpn_YEI_3Space::init: Unable to send set-LED-mode command\n");
   }
+#ifdef  VERBOSE
+  printf("LED mode set\n");
+#endif
 
   // Configure LED color.
   unsigned char set_LED_color[13] = { 0xEE, 0,0,0,0,0,0,0,0,0,0,0,0 };
@@ -132,14 +134,14 @@ void vrpn_YEI_3Space::init (bool calibrate_gyros_on_setup
   vrpn_buffer(&bufptr, &buflen, LEDs[1]);
   vrpn_buffer(&bufptr, &buflen, LEDs[2]);
   if (!send_binary_command (set_LED_color, sizeof(set_LED_color))) {
-    VRPN_MSG_ERROR ("vrpn_YEI_3Space_Sensor::init: Unable to send set-LED-color command\n");
+    VRPN_MSG_ERROR ("vrpn_YEI_3Space::init: Unable to send set-LED-color command\n");
   }
 
   // If we're supposed to calibrate the gyros on startup, do so now.
   if (calibrate_gyros_on_setup) {
     unsigned char begin_gyroscope_calibration[1] = { 0xA5 };
     if (!send_binary_command (begin_gyroscope_calibration, sizeof(begin_gyroscope_calibration))) {
-      VRPN_MSG_ERROR ("vrpn_YEI_3Space_Sensor::init: Unable to send set-gyroscope-calibration command\n");
+      VRPN_MSG_ERROR ("vrpn_YEI_3Space::init: Unable to send set-gyroscope-calibration command\n");
     }
   }
 
@@ -147,13 +149,16 @@ void vrpn_YEI_3Space::init (bool calibrate_gyros_on_setup
   if (tare_on_setup) {
     unsigned char tare[1] = { 0x60 };
     if (!send_binary_command (tare, sizeof(tare))) {
-      VRPN_MSG_ERROR ("vrpn_YEI_3Space_Sensor::init: Unable to send tare command\n");
+      VRPN_MSG_ERROR ("vrpn_YEI_3Space::init: Unable to send tare command\n");
     }
   }
 
   // Set the mode to reset
   vrpn_gettimeofday(&timestamp, NULL);
   d_status = STATUS_RESETTING;
+#ifdef  VERBOSE
+  printf("init() complete\n");
+#endif
 }
 
 /******************************************************************************
@@ -275,7 +280,7 @@ int vrpn_YEI_3Space::reset (void)
 }
 
 /******************************************************************************
- * NAME      : vrpn_YEI_3Space_Sensor::handle_report
+ * NAME      : vrpn_YEI_3Space::handle_report
  * ROLE      : This function will parse  a full report, then
  *             put that report into analog fields and call the report methods on these.   
  * ARGUMENTS : void
@@ -389,13 +394,11 @@ void vrpn_YEI_3Space::mainloop ()
 {
   char l_errmsg[256];
 
-  vrpn_Tracker_Server::mainloop();
   server_mainloop();
 
   switch (d_status)
     {
     case STATUS_NOT_INITIALIZED:
-      VRPN_MSG_ERROR ("vrpn_YEI_3Space: mainloop() called before init()!");
       break;
 
     case STATUS_RESETTING:
@@ -472,8 +475,7 @@ vrpn_YEI_3Space_Sensor::vrpn_YEI_3Space_Sensor (const char * p_name
   // way to talk with it.
   init(calibrate_gyros_on_setup
        , tare_on_setup, frames_per_second, red_LED_color
-       , green_LED_color, blue_LED_color, LED_mode
-       , reset_commands);
+       , green_LED_color, blue_LED_color, LED_mode);
 }
 
 /******************************************************************************
@@ -484,6 +486,12 @@ vrpn_YEI_3Space_Sensor::vrpn_YEI_3Space_Sensor (const char * p_name
  ******************************************************************************/
 vrpn_YEI_3Space_Sensor::~vrpn_YEI_3Space_Sensor ()
 {
+    // Ask the device to stop streaming.
+    unsigned char stop_streaming[1] = { 0x56 };
+    if (!send_binary_command(stop_streaming, sizeof(stop_streaming))) {
+        VRPN_MSG_ERROR ("vrpn_YEI_3Space_Sensor_Wireless::~vrpn_YEI_3Space_Sensor_Wireless: Unable to send stop-streaming command\n");
+    }
+
     // Close com port when destroyed.
     if (d_serial_fd != -1) {
         vrpn_close_commport(d_serial_fd);
@@ -697,4 +705,506 @@ void vrpn_YEI_3Space_Sensor::get_report (void)
 void vrpn_YEI_3Space_Sensor::flush_input(void)
 {
     vrpn_flush_input_buffer (d_serial_fd);
+}
+
+
+/******************************************************************************
+ * NAME      : vrpn_YEI_3Space_Sensor_Wireless::vrpn_YEI_3Space_Sensor_Wireless
+ * ROLE      : This creates a vrpn_YEI_3Space_Sensor_Wireless and sets it to
+ *             reset mode. This constructor is for the first sensor on a
+ *             given dongle, so it opens the serial port and configures the
+ *             dongle.
+ * ARGUMENTS : 
+ * RETURN    : 
+ ******************************************************************************/
+vrpn_YEI_3Space_Sensor_Wireless::vrpn_YEI_3Space_Sensor_Wireless (const char * p_name
+                                  , vrpn_Connection * p_c
+                                  , int logical_id
+                                  , int serial_number
+                                  , const char * p_port
+                                  , int p_baud
+                                  , bool calibrate_gyros_on_setup
+                                  , bool tare_on_setup
+                                  , double frames_per_second
+                                  , double red_LED_color
+                                  , double green_LED_color
+                                  , double blue_LED_color
+                                  , int LED_mode
+                                  , const char *reset_commands[])
+  : vrpn_YEI_3Space (p_name, p_c, calibrate_gyros_on_setup
+                     , tare_on_setup, frames_per_second, red_LED_color
+                     , green_LED_color, blue_LED_color, LED_mode
+                     , reset_commands)
+  , d_i_am_first(true)
+  , d_logical_id(-1)
+{
+  // Open the serial port we're going to use to talk with the device.
+  if ((d_serial_fd = vrpn_open_commport(p_port, p_baud,
+    8, vrpn_SER_PARITY_NONE)) == -1) {
+      perror("vrpn_YEI_3Space_Sensor_Wireless::vrpn_YEI_3Space_Sensor_Wireless: Cannot open serial port");
+      fprintf(stderr," (port %s)\n", p_port);
+  }
+#ifdef  VERBOSE
+  printf("Serial port opened\n");
+#endif
+
+  // Initialize the dongle state, since we are the first device to connect
+  // to it.
+  if (!configure_dongle()){
+    fprintf(stderr,"vrpn_YEI_3Space_Sensor_Wireless::vrpn_YEI_3Space_Sensor_Wireless: Could not configure dongle\n");
+    vrpn_close_commport(d_serial_fd);
+    d_serial_fd = -1;
+    return;
+  }
+#ifdef  VERBOSE
+  printf("Dongle configured\n");
+#endif
+
+  // Set our serial number in the specified logical-ID slot.
+  if (!set_logical_id(static_cast<vrpn_uint8>(logical_id), serial_number)) {
+    fprintf(stderr,"vrpn_YEI_3Space_Sensor_Wireless::vrpn_YEI_3Space_Sensor_Wireless: Could not set logical ID\n");
+    return;
+  }
+  d_logical_id = logical_id;
+
+#ifdef  VERBOSE
+  printf("Logical ID set\n");
+#endif
+  // Initialize the state of the device, now that we've established a
+  // way to talk with it.
+  init(calibrate_gyros_on_setup
+       , tare_on_setup, frames_per_second, red_LED_color
+       , green_LED_color, blue_LED_color, LED_mode);
+#ifdef  VERBOSE
+  printf("Constructor done\n");
+#endif
+}
+
+/******************************************************************************
+ * NAME      : vrpn_YEI_3Space_Sensor_Wireless::vrpn_YEI_3Space_Sensor_Wireless
+ * ROLE      : This creates a vrpn_YEI_3Space_Sensor_Wireless and sets it to
+ *             reset mode. This constructor is for not the first sensor on a
+ *             given dongle.
+ * ARGUMENTS : 
+ * RETURN    : 
+ ******************************************************************************/
+vrpn_YEI_3Space_Sensor_Wireless::vrpn_YEI_3Space_Sensor_Wireless (const char * p_name
+                                  , vrpn_Connection * p_c
+                                  , int logical_id
+                                  , int serial_number
+                                  , int serial_file_descriptor
+                                  , bool calibrate_gyros_on_setup
+                                  , bool tare_on_setup
+                                  , double frames_per_second
+                                  , double red_LED_color
+                                  , double green_LED_color
+                                  , double blue_LED_color
+                                  , int LED_mode
+                                  , const char *reset_commands[])
+  : vrpn_YEI_3Space (p_name, p_c, calibrate_gyros_on_setup
+                     , tare_on_setup, frames_per_second, red_LED_color
+                     , green_LED_color, blue_LED_color, LED_mode
+                     , reset_commands)
+  , d_i_am_first(false)
+  , d_serial_fd(serial_file_descriptor)
+  , d_logical_id(-1)
+{
+  // Set our serial number in the specified logical-ID slot.
+  if (!set_logical_id(static_cast<vrpn_uint8>(logical_id), serial_number)) {
+    fprintf(stderr,"vrpn_YEI_3Space_Sensor_Wireless::vrpn_YEI_3Space_Sensor_Wireless: Could not set logical ID\n");
+    return;
+  }
+  d_logical_id = logical_id;
+
+  // Initialize the state of the device, now that we've established a
+  // way to talk with it.
+  init(calibrate_gyros_on_setup
+       , tare_on_setup, frames_per_second, red_LED_color
+       , green_LED_color, blue_LED_color, LED_mode);
+}
+
+/******************************************************************************
+ * NAME      : vrpn_YEI_3Space_Sensor_Wireless::~vrpn_YEI_3Space_Sensor_Wireless
+ * ROLE      : This destroys a vrpn_YEI_3Space_Sensor_Wireless and closes its ports.
+ * ARGUMENTS : 
+ * RETURN    : 
+ ******************************************************************************/
+vrpn_YEI_3Space_Sensor_Wireless::~vrpn_YEI_3Space_Sensor_Wireless ()
+{
+  // Ask the device to stop streaming.
+  unsigned char stop_streaming[1] = { 0x56 };
+  if (!send_binary_command(stop_streaming, sizeof(stop_streaming))) {
+      VRPN_MSG_ERROR ("vrpn_YEI_3Space_Sensor_Wireless::~vrpn_YEI_3Space_Sensor_Wireless: Unable to send stop-streaming command\n");
+  }
+
+  // Close com port when destroyed, if I am the first device on the dongle.
+  if (d_i_am_first) if (d_serial_fd != -1) {
+      vrpn_close_commport(d_serial_fd);
+  }
+}
+
+/******************************************************************************
+ * NAME      : vrpn_YEI_3Space_Sensor_Wireless::configure_dongle
+ * ROLE      : * ARGUMENTS : 
+ * RETURN    : true on success, false on failure.
+ ******************************************************************************/
+
+bool vrpn_YEI_3Space_Sensor_Wireless::configure_dongle()
+{
+  // Configure the wireless streaming mode to manual flush.
+  unsigned char set_mode[2] = { 0xb0, 0 };
+  if (!send_binary_command_to_dongle(set_mode, sizeof(set_mode))) {
+    VRPN_MSG_ERROR ("vrpn_YEI_3Space_Sensor_Wireless::configure_dongle: Unable to send set-streaming-mode command\n");
+    return false;
+  }
+
+  return true;
+}
+
+/******************************************************************************
+ * NAME      : vrpn_YEI_3Space_Sensor_Wireless::configure_dongle
+ * ROLE      : 
+ * ARGUMENTS : 
+ * RETURN    : true on success, false on failure.
+ ******************************************************************************/
+
+bool vrpn_YEI_3Space_Sensor_Wireless::set_logical_id(vrpn_uint8 logical_id, int serial_number)
+{
+  // Configure logical ID.
+  unsigned char set_id[6] = { 0xd1, 0, 0,0,0,0 };
+  unsigned char *bufptr = &set_id[1];
+  vrpn_int32 buflen = 5;
+  vrpn_buffer(&bufptr, &buflen, logical_id);
+  vrpn_buffer(&bufptr, &buflen, serial_number);
+  if (!send_binary_command_to_dongle(set_id, sizeof(set_id))) {
+    VRPN_MSG_ERROR ("vrpn_YEI_3Space_Sensor_Wireless::set_logical_id: Unable to send set-logical-id command\n");
+    return false;
+  }
+#ifdef  VERBOSE
+  printf("... Logical id %d set to serial_number %x\n", logical_id, serial_number);
+#endif
+
+  return true;
+}
+
+/******************************************************************************
+ * NAME      : vrpn_YEI_3Space_Sensor_Wireless::send_binary_command_to_dongle
+ * ROLE      : 
+ * ARGUMENTS : char *cmd : the command to be sent
+ *             int   len : Length of the command to be sent
+ * RETURN    : true on success, false on failure.
+ ******************************************************************************/
+
+// This is the same as the send_binary_command() from the wired interface.
+bool vrpn_YEI_3Space_Sensor_Wireless::send_binary_command_to_dongle (const unsigned char *p_cmd, int p_len)
+{
+  const unsigned char START_OF_PACKET = 0xF7;
+
+  // Compute the checksum.  The description of the checksum implies that it should
+  // include the START_OF_PACKET data, but the example provided in page 28 does not
+  // include that data in the checksum, so we only include the packet data here.
+  int checksum = 0;
+  for (int i = 0; i < p_len; i++) {
+    checksum += p_cmd[i];
+  }
+  checksum %= 256;
+
+  // Pack the command into the buffer with the start-of-packet and checksum.
+  unsigned char  buffer[256];    // Large enough buffer to hold all possible commands.
+  buffer[0] = START_OF_PACKET;
+  memcpy(&(buffer[1]), p_cmd, p_len);
+  buffer[p_len + 1] = static_cast<unsigned char>(checksum);
+
+  // Send the command and return whether it worked.
+  int l_ret;
+  l_ret = vrpn_write_characters (d_serial_fd, buffer, p_len+2);
+  // Tell if this all worked.
+  if (l_ret == p_len+2) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
+/******************************************************************************
+ * NAME      : vrpn_YEI_3Space_Sensor_Wireless::send_binary_command
+ * ROLE      : 
+ * ARGUMENTS : char *cmd : the command to be sent
+ *             int   len : Length of the command to be sent
+ * RETURN    : true on success, false on failure.
+ ******************************************************************************/
+
+// Info from YEI 3-Space Sensor User's Manual Wireless 2.0 R21 26 March2014
+// http://www.yeitechnology.com/sites/default/files/YEI_3-Space_Sensor_Users_Manual_Wireless_2.0_r21_26Mar2014.pdf
+// Binary-mode wireless command packet format:
+//  0xF8 (start of packet)
+//  Logical address
+//  Command byte (command value)
+//  Command data (0 or more bytes of parameters, in big-endian format)
+//  Checksum (sum of all bytes in the packet including the address) % 256
+// NOTE: In the wireless protocol, all commands are acknowledged, so we
+// wait for the response to make sure the command was properly received.
+bool vrpn_YEI_3Space_Sensor_Wireless::send_binary_command (const unsigned char *p_cmd, int p_len)
+{
+  const unsigned char START_OF_PACKET = 0xF8;
+
+  // Pack the command into the buffer with the start-of-packet and checksum.
+  unsigned char  buffer[256];    // Large enough buffer to hold all possible commands.
+  buffer[0] = START_OF_PACKET;
+  buffer[1] = d_logical_id;
+  memcpy(&(buffer[2]), p_cmd, p_len);
+
+  // Compute the checksum.  The description of the checksum implies that it should
+  // include the START_OF_PACKET data, but the example provided in page 25 does not
+  // include that data in the checksum, so we only include the address and
+  // packet data here.
+  int checksum = 0;
+  for (int i = 0; i < p_len+1; i++) {
+    checksum += buffer[1 + i];
+  }
+  checksum %= 256;
+  buffer[p_len + 2] = static_cast<unsigned char>(checksum);
+
+  // Send the command.
+  int l_ret;
+  l_ret = vrpn_write_characters (d_serial_fd, buffer, p_len+3);
+  if (l_ret != p_len+3) {
+    fprintf(stderr, "vrpn_YEI_3Space_Sensor_Wireless::send_binary_command: Could not send command\n");
+    return false;
+  }
+#ifdef  VERBOSE
+  printf("... packet of length %d sent\n", l_ret);
+#endif
+
+  // Listen for a response telling whether the command was received.
+  // We do not listen for the data returned by the command, but only
+  // check the header on the return to make sure the command was a
+  // success.  The caller should separately look for any requested
+  // data.
+  struct timeval timeout;
+  timeout.tv_sec = 0;
+  timeout.tv_usec = 500000;
+  int ret = vrpn_read_available_characters(d_serial_fd, buffer, 3, &timeout);
+  if (ret == 2) {
+    fprintf(stderr, "vrpn_YEI_3Space_Sensor_Wireless::send_binary_command: Error (%d) from ID %d\n", buffer[0], buffer[1]);
+    return false;
+  } else if (ret != 3) {
+    fprintf(stderr, "vrpn_YEI_3Space_Sensor_Wireless::send_binary_command: Timeout waiting for command status (got %d chars)\n", ret);
+    return false;
+  }
+  if (buffer[0] != 0) {
+    fprintf(stderr, "vrpn_YEI_3Space_Sensor_Wireless::send_binary_command: Command failed\n");
+    return false;
+  }
+  if (buffer[1] != d_logical_id) {
+    fprintf(stderr, "vrpn_YEI_3Space_Sensor_Wireless::send_binary_command: Got response for incorrect logical ID\n");
+    return false;
+  }
+#ifdef  VERBOSE
+  printf("..... send succeded\n");
+#endif
+
+  return true;
+}
+
+/******************************************************************************
+ * NAME      : vrpn_YEI_3Space_Sensor_Wireless::send_ascii_command
+ * ROLE      : 
+ * ARGUMENTS : char *cmd : the command to be sent
+ * RETURN    : true on success, false on failure.
+ ******************************************************************************/
+
+// Info from YEI 3-Space Sensor User's Manual Wireless 2.0 R21 26 March2014
+// http://www.yeitechnology.com/sites/default/files/YEI_3-Space_Sensor_Users_Manual_Wireless_2.0_r21_26Mar2014.pdf
+// Ascii-mode command packet format:
+//  '>' (start of packet)
+//  ',' and then logical ID (decimal)
+//  ',' and then data Command value (decimal)
+//  ',' Command data (0 or more bytes of parameters
+//  '\n'
+// NOTE: In the wireless protocol, all commands are acknowledged, so we
+// wait for the response to make sure the command was properly received.
+bool vrpn_YEI_3Space_Sensor_Wireless::send_ascii_command (const char *p_cmd)
+{
+  // Check to make sure we have a non-empty command
+  if (strlen(p_cmd) == 0) {
+    return false;
+  }
+
+  // Allocate space for the longest command plus padding and zero terminator
+  char buffer[256];
+
+  // Fill in the command
+  sprintf(buffer, ">%d,%s\n", d_logical_id, p_cmd);
+
+  // Send the command and see if it worked.
+  int buflen = strlen(buffer) + 1;
+  unsigned char *bufptr = static_cast<unsigned char *>(
+    static_cast<void*>(buffer));
+  int l_ret = vrpn_write_characters(d_serial_fd, bufptr, buflen);
+
+  // Tell if sending worked.
+  if (l_ret != buflen) {
+    fprintf(stderr, "vrpn_YEI_3Space_Sensor_Wireless::send_ascii_command: Error sending command\n");
+    return false;
+  }
+
+  // Listen for a response telling whether the command was received.
+  // We parse the entire ASCII command response, including the \n at
+  // the end, since we aren't programmatically handling any of these
+  // in the driver but only letting the user specify them in the
+  // reset routine.
+  struct timeval timeout;
+  timeout.tv_sec = 0;
+  timeout.tv_usec = 500000;
+  int ret;
+  if ((ret = vrpn_read_available_characters(d_serial_fd, bufptr, sizeof(buffer)-1, &timeout)) <= 0) {
+    fprintf(stderr, "vrpn_YEI_3Space_Sensor_Wireless::send_ascii_command: Timeout waiting for command status\n");
+    return false;
+  }
+  buffer[ret] = '\0';
+  if (buffer[0] != '0') {
+    fprintf(stderr, "vrpn_YEI_3Space_Sensor_Wireless::send_ascii_command: Command failed: response (%s)\n", buffer);
+    return false;
+  }
+  if (buffer[strlen(buffer)-1] != '\n') {
+    fprintf(stderr, "vrpn_YEI_3Space_Sensor_Wireless::send_ascii_command: Got ill-formatted response: (%s).\n", buffer);
+    return false;
+  }
+
+  return true;
+}
+
+/******************************************************************************
+ * NAME      : vrpn_YEI_3Space_Sensor_Wireless::receive_LED_mode_response
+ * ROLE      : 
+ * ARGUMENTS : struct timeval *timeout; how long to wait, NULL for forever
+ * RETURN    : true on success, false on failure.
+ ******************************************************************************/
+
+// Info from YEI 3-Space Sensor User's Manual Wireless 2.0 R21 26 March2014
+// http://www.yeitechnology.com/sites/default/files/YEI_3-Space_Sensor_Users_Manual_Wireless_2.0_r21_26Mar2014.pdf
+// Binary-mode command packet format:
+// Single byte: value 0 or 1.
+bool vrpn_YEI_3Space_Sensor_Wireless::receive_LED_mode_response (struct timeval *timeout)
+{
+  unsigned char value;
+  int ret = vrpn_read_available_characters (d_serial_fd, &value, sizeof(value), timeout);
+  if (ret != sizeof(value)) {
+    return false;
+  }
+  d_LED_mode = value;
+  return true;
+}
+
+/******************************************************************************
+ * NAME      : vrpn_YEI_3Space_Sensor_Wireless::receive_LED_values_response
+ * ROLE      : 
+ * ARGUMENTS : struct timeval *timeout; how long to wait, NULL for forever
+ * RETURN    : true on success, false on failure.
+ ******************************************************************************/
+
+// Info from YEI 3-Space Sensor User's Manual Wireless 2.0 R21 26 March2014
+// http://www.yeitechnology.com/sites/default/files/YEI_3-Space_Sensor_Users_Manual_Wireless_2.0_r21_26Mar2014.pdf
+// Binary-mode command packet format:
+// Three four-byte float responses, each big-endian.
+bool vrpn_YEI_3Space_Sensor_Wireless::receive_LED_values_response (struct timeval *timeout)
+{
+  unsigned char buffer[3*sizeof(vrpn_float32)];
+  int ret = vrpn_read_available_characters (d_serial_fd, buffer, sizeof(buffer), timeout);
+  if (ret != sizeof(buffer)) {
+    return false;
+  }
+  vrpn_float32 value;
+  unsigned char *bufptr = buffer;
+  vrpn_unbuffer(&bufptr, &value);
+  d_LED_color[0] = value;
+  vrpn_unbuffer(&bufptr, &value);
+  d_LED_color[1] = value;
+  vrpn_unbuffer(&bufptr, &value);
+  d_LED_color[2] = value;
+  return true;
+}
+
+// XXXX Fix things below here.
+
+/******************************************************************************
+ * NAME      : vrpn_YEI_3Space_Sensor_Wireless::get_report
+ * ROLE      : This function will read characters until it has a full report, then
+ *             call handle_report() with the report and clear the counts.  For the
+ *             wireless protocol, we need to manually request release of streaming
+ *             characters from our logical ID before checking to see if there are
+ *             any.
+ * ARGUMENTS : void
+ * RETURN    : void
+ ******************************************************************************/
+void vrpn_YEI_3Space_Sensor_Wireless::get_report (void)
+{
+  int  l_ret;		// Return value from function call to be checked
+
+  // Keep asking for reports from our logical ID until no more come
+  // within 1ms of our asking.  Break out of the loop on timeout.
+  do {
+    //--------------------------------------------------------------------
+    // Request release of pending reports from our ID.
+    unsigned char release_report[2] = { 0xB4, 0 };
+    release_report[1] = d_logical_id;
+    if (!send_binary_command_to_dongle(release_report, sizeof(release_report))) {
+      VRPN_MSG_ERROR ("vrpn_YEI_3Space::get_report: Unable to send release-report command\n");
+    }
+
+    //--------------------------------------------------------------------
+    // Read a report if it is available.
+    struct timeval timeout;
+    timeout.tv_sec = 0;
+    timeout.tv_usec = 1000;
+    l_ret = vrpn_read_available_characters(d_serial_fd, d_buffer,
+                                            REPORT_LENGTH + 3,
+                                            &timeout);
+    if (l_ret == -1) {
+        VRPN_MSG_ERROR ("vrpn_YEI_3Space_Sensor_Wireless::get_report(): Error reading the sensor, resetting");
+        d_status = STATUS_RESETTING;
+        return;
+    }
+#ifdef  VERBOSE
+    if (l_ret != 0) printf("... got %d characters\n",l_ret);
+#endif
+    // If we didn't get any reports, we're done and will look again next time.
+    if (l_ret == 0) {
+      break;
+    }
+
+    // Check to be sure that the length was what we expect, we got not errors
+    // (first header byte 0) and the response is from the correct device.
+    if (l_ret != REPORT_LENGTH + 3) {
+        VRPN_MSG_ERROR ("vrpn_YEI_3Space_Sensor_Wireless::get_report(): Truncated report, resetting");
+        d_status = STATUS_RESETTING;
+    }
+    if (d_buffer[0] != 0) {
+        VRPN_MSG_ERROR ("vrpn_YEI_3Space_Sensor_Wireless::get_report(): Error reported, resetting");
+        d_status = STATUS_RESETTING;
+    }
+    if (d_buffer[1] != d_logical_id) {
+        VRPN_MSG_ERROR ("vrpn_YEI_3Space_Sensor_Wireless::get_report(): Report from wrong sensor received, resetting");
+        d_status = STATUS_RESETTING;
+    }
+
+    //--------------------------------------------------------------------
+    // Parse and handle the report.
+    vrpn_gettimeofday(&timestamp, NULL);
+    handle_report(&d_buffer[3]);
+
+    //--------------------------------------------------------------------
+    // Clear our counts to be ready for the next report
+    //--------------------------------------------------------------------
+  } while (true);
+#ifdef  VERBOSE
+    printf("No more reports this time\n");
+#endif
+
+}
+
+void vrpn_YEI_3Space_Sensor_Wireless::flush_input(void)
+{
+    vrpn_flush_input_buffer(d_serial_fd);
 }

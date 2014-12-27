@@ -4475,6 +4475,93 @@ int vrpn_Generic_Server_Object::setup_YEI_3Space_Sensor(char *&pch, char *line,
     return 0;
 }
 
+int vrpn_Generic_Server_Object::setup_YEI_3Space_Sensor_Wireless(char *&pch, char *line,
+                                                        FILE *config_file)
+{
+    char name[LINESIZE], device[LINESIZE];
+    int logical_id, serial_number, baud_rate, calibrate_gyros, tare;
+    double frames_per_second;
+    float red_LED, green_LED, blue_LED;
+    int LED_mode;
+
+    VRPN_CONFIG_NEXT();
+    // Get the arguments (class, name, port, baud, calibrate_gyros, tare,
+    // frames_per_second
+    if (sscanf(pch, "%511s%d%x%511s%d%d%d%lf%f%f%f%d", name, &logical_id,
+               &serial_number, device, &baud_rate,
+               &calibrate_gyros, &tare, &frames_per_second, &red_LED,
+               &green_LED, &blue_LED, &LED_mode) != 12) {
+        fprintf(stderr, "Bad setup_YEI_3Space_Sensor_Wireless line: %s\n", line);
+        return -1;
+    }
+
+    // Allocate space to store pointers to reset commands.  Initialize
+    // all of them to NULL pointers, indicating no commands.
+    const int MAX_RESET_COMMANDS = 1024;
+    int num_reset_commands = 0;
+    const char *reset_commands[MAX_RESET_COMMANDS+1];
+    for (int i = 0; i < MAX_RESET_COMMANDS; i++) {
+      reset_commands[i] = NULL;
+    }
+    
+    // If the last character in the line is a backslash, '\', then
+    // the following line is an additional command to send to the
+    // YEI at reset time. So long as we find lines with backslashes
+    // at the ends, we add them to the command list to send. Note
+    // that there is a newline at the end of the line, following the
+    // backslash.
+    while (line[strlen(line) - 2] == '\\') {
+        // Read the VRPN_CONFIG_NEXT line
+        if (fgets(line, LINESIZE, config_file) == NULL) {
+            fprintf(
+                stderr,
+                "Ran past end of config file in YEI description\n");
+            return -1;
+        }
+
+        // Copy the first string from the line into a new character
+        // array and then store this into the reset_commands list
+        // if we haven't run out of room for them.
+        if (num_reset_commands < MAX_RESET_COMMANDS) {
+          char command[LINESIZE];
+          sscanf(line, "%s", command);
+          char *command_copy = new char[strlen(command)+1];
+          if (command_copy == NULL) {
+            fprintf(stderr, "Out of memory in YEI description\n");
+            return -1;
+          }
+          strcpy(command_copy, command);
+          reset_commands[num_reset_commands++] = command_copy;
+        }
+    }
+
+    // Open the device
+    if (verbose) {
+        printf("Opening setup_YEI_3Space_Sensor_Wireless: %s on port %s, baud %d\n", name,
+               device, baud_rate);
+        if (num_reset_commands > 0) {
+          printf("... additional reset commands follow:\n");
+          for (int i = 0; i < num_reset_commands; i++) {
+            printf("  %s\n", reset_commands[i]);
+          }
+        }
+    }
+    _devices->add(new vrpn_YEI_3Space_Sensor_Wireless(name, connection,
+        logical_id, serial_number, device, baud_rate, calibrate_gyros != 0, tare != 0,
+        frames_per_second, red_LED, green_LED, blue_LED, LED_mode,
+        reset_commands));
+
+    // Free up any additional-reset command data.
+    for (int i = 0; i < MAX_RESET_COMMANDS; i++) {
+      if (reset_commands[i] != NULL) {
+        delete [] reset_commands[i];
+        reset_commands[i] = NULL;
+      }
+    }
+
+    return 0;
+}
+
 #undef VRPN_CONFIG_NEXT
 
 vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(
@@ -4983,6 +5070,9 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(
                 }
                 else if (VRPN_ISIT("vrpn_YEI_3Space_Sensor")) {
                     VRPN_CHECK(setup_YEI_3Space_Sensor);
+                }
+                else if (VRPN_ISIT("vrpn_YEI_3Space_Sensor_Wireless")) {
+                    VRPN_CHECK(setup_YEI_3Space_Sensor_Wireless);
                 }
                 else {                         // Never heard of it
                     sscanf(line, "%511s", s1); // Find out the class name
