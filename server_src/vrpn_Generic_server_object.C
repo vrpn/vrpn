@@ -4546,10 +4546,12 @@ int vrpn_Generic_Server_Object::setup_YEI_3Space_Sensor_Wireless(char *&pch, cha
           }
         }
     }
-    _devices->add(new vrpn_YEI_3Space_Sensor_Wireless(name, connection,
+    vrpn_YEI_3Space_Sensor_Wireless *dev = new vrpn_YEI_3Space_Sensor_Wireless(
+        name, connection,
         logical_id, serial_number, device, baud_rate, calibrate_gyros != 0, tare != 0,
         frames_per_second, red_LED, green_LED, blue_LED, LED_mode,
-        reset_commands));
+        reset_commands);
+    _devices->add(dev);
 
     // Free up any additional-reset command data.
     for (int i = 0; i < MAX_RESET_COMMANDS; i++) {
@@ -4558,6 +4560,91 @@ int vrpn_Generic_Server_Object::setup_YEI_3Space_Sensor_Wireless(char *&pch, cha
         reset_commands[i] = NULL;
       }
     }
+
+    // If the last character in the line is a slash, '/', then
+    // the following line is an additional sensor description. Note
+    // that there is a newline at the end of the line, following the
+    // backslash.  Re-parse the whole thing, using the second-sensor
+    // description format and the serial port descriptor from the first
+    // device.
+    int serial_fd = dev->get_serial_file_descriptor();
+    while (line[strlen(line) - 2] == '/') {
+      // Read the VRPN_CONFIG_NEXT line
+      if (fgets(line, LINESIZE, config_file) == NULL) {
+          fprintf(
+              stderr,
+              "Ran past end of config file in YEI description\n");
+          return -1;
+      }
+
+      // Get the arguments (class, name, port, baud, calibrate_gyros, tare,
+      // frames_per_second.
+      char classname[LINESIZE]; // We need to read the class, since we've not pre-parsed
+      if (sscanf(line, "%511s%511s%d%x%d%d%lf%f%f%f%d", classname, name, &logical_id,
+                 &serial_number,
+                 &calibrate_gyros, &tare, &frames_per_second, &red_LED,
+                 &green_LED, &blue_LED, &LED_mode) != 11) {
+          fprintf(stderr, "Bad setup_YEI_3Space_Sensor_Wireless line: %s\n", line);
+          return -1;
+      }
+
+      // If the last character in the line is a backslash, '\', then
+      // the following line is an additional command to send to the
+      // YEI at reset time. So long as we find lines with backslashes
+      // at the ends, we add them to the command list to send. Note
+      // that there is a newline at the end of the line, following the
+      // backslash.
+      num_reset_commands = 0;
+      while (line[strlen(line) - 2] == '\\') {
+          // Read the VRPN_CONFIG_NEXT line
+          if (fgets(line, LINESIZE, config_file) == NULL) {
+              fprintf(
+                  stderr,
+                  "Ran past end of config file in YEI description\n");
+              return -1;
+          }
+
+          // Copy the first string from the line into a new character
+          // array and then store this into the reset_commands list
+          // if we haven't run out of room for them.
+          if (num_reset_commands < MAX_RESET_COMMANDS) {
+            char command[LINESIZE];
+            sscanf(line, "%s", command);
+            char *command_copy = new char[strlen(command)+1];
+            if (command_copy == NULL) {
+              fprintf(stderr, "Out of memory in YEI description\n");
+              return -1;
+            }
+            strcpy(command_copy, command);
+            reset_commands[num_reset_commands++] = command_copy;
+          }
+      }
+
+      // Open the device
+      if (verbose) {
+          printf("Opening setup_YEI_3Space_Sensor_Wireless: %s on port %s, baud %d\n", name,
+                 device, baud_rate);
+          if (num_reset_commands > 0) {
+            printf("... additional reset commands follow:\n");
+            for (int i = 0; i < num_reset_commands; i++) {
+              printf("  %s\n", reset_commands[i]);
+            }
+          }
+      }
+      _devices->add(new vrpn_YEI_3Space_Sensor_Wireless(
+          name, connection,
+          logical_id, serial_number, serial_fd, calibrate_gyros != 0, tare != 0,
+          frames_per_second, red_LED, green_LED, blue_LED, LED_mode,
+          reset_commands));
+
+      // Free up any additional-reset command data.
+      for (int i = 0; i < MAX_RESET_COMMANDS; i++) {
+        if (reset_commands[i] != NULL) {
+          delete [] reset_commands[i];
+          reset_commands[i] = NULL;
+        }
+      }
+    } // End of while new devices ('/' at and of line)
 
     return 0;
 }
