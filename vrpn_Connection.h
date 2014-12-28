@@ -878,7 +878,8 @@ protected:
     /// Make a client connection.  To access this from user code,
     /// call vrpn_create_server_connection() with a service name
     /// of 'loopback:'.
-    vrpn_Connection_Loopback(const char *local_out_logfile_name = NULL);
+    /// For now, we don't enable logging on a Loopback connection.
+    vrpn_Connection_Loopback();
 public:
     virtual ~vrpn_Connection_Loopback(void);
 

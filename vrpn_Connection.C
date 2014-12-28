@@ -5380,7 +5380,7 @@ vrpn_create_server_connection(const char *cname,
         return NULL;
 #endif
     } else if (is_loopback) {
-        c = new vrpn_Connection_Loopback(local_out_logfile_name);
+        c = new vrpn_Connection_Loopback();
     } else {
         // Not Loopback or MPI port, so we presume that we are a standard VRPN UDP/TCP
         // port.  Open that kind, based on the machine and port name.  If we
@@ -6295,8 +6295,8 @@ vrpn_Connection_IP::~vrpn_Connection_IP(void)
 }
 
 // Set up to be a server connection, which is the only kind we can be.
-vrpn_Connection_Loopback::vrpn_Connection_Loopback(const char *local_out_logfile_name)
-    : vrpn_Connection(NULL, local_out_logfile_name, NULL, NULL)
+vrpn_Connection_Loopback::vrpn_Connection_Loopback()
+    : vrpn_Connection(NULL, NULL, NULL, NULL)
 {
     // We're always "connected."
     connectionStatus = CONNECTED;
