@@ -21,12 +21,10 @@ const char  *SERVER_TEXT_NAME = "Text1";
 int	CONNECTION_PORT = vrpn_DEFAULT_LISTEN_PORT_NO;	// Port for connection to listen on
 
 // The names of the files to log to.  First the ones that will be
-// open the whole time, then loopback ones, then the ones that get
-// created on request by the client connection.
-const char  *SERVER_BASE_OUTGOING_LOG = "svr_outgoing";
+// open the whole time, then the ones that get created on request
+// by the client connection.
 const char  *SERVER_BASE_INCOMING_LOG = "svr_incoming";
-
-const char  *LOOPBACK_OUTGOING_LOG = "loopback_outgoing";
+const char  *SERVER_BASE_OUTGOING_LOG = "svr_outgoing";
 
 const char *CLIENT_CLIENT_INCOMING_LOG = "cli_cli_incoming";
 const char *CLIENT_CLIENT_OUTGOING_LOG = "cli_cli_outgoing";
@@ -201,49 +199,6 @@ int main (int argc, char * argv [])
   }
 
   //---------------------------------------------------------------------
-  // explicitly open the loopback connection, telling it to log its
-  // outgoing messages even when there is not a logging client connection.
-  server_connection = vrpn_create_server_connection("loopback:",
-    NULL, LOOPBACK_OUTGOING_LOG);
-  if (server_connection == NULL) {
-    fprintf(stderr,"Cannot open loopback connection\n");
-    return -1;
-  }
-
-  //---------------------------------------------------------------------
-  // Open the server-side text sender and receivers.
-  server_text_sender = new vrpn_Text_Sender(CLIENT_TEXT_NAME, server_connection);
-  server_text_receiver = new vrpn_Text_Receiver(SERVER_TEXT_NAME, server_connection);
-  client_text_receiver = new vrpn_Text_Receiver (CLIENT_TEXT_NAME, server_connection);
-  client_text_sender = new vrpn_Text_Sender (SERVER_TEXT_NAME, server_connection);
-  if ( (server_text_sender == NULL) || (server_text_receiver == NULL) ) {
-    fprintf(stderr,"Cannot create text server or client\n");
-    return -3;
-  }
-
-  //---------------------------------------------------------------------
-  // Mainloop the loopback connection and objects to make sure we get messages.
-  printf("Servicing loopback connection\n");
-  struct timeval now, start;
-  vrpn_gettimeofday(&now, NULL);
-  start = now;
-  while ( now.tv_sec - start.tv_sec < 3 ) {
-    send_text_once_per_second();
-    server_connection->mainloop();
-    vrpn_gettimeofday(&now, NULL);
-  }
-
-  //---------------------------------------------------------------------
-  // Delete the server-side and client-side objects and get rid of the
-  // loopback connection by reducing its reference count.
-  delete server_text_receiver;
-  delete server_text_sender;
-  delete client_text_receiver;
-  delete client_text_sender;
-  server_connection->removeReference();
-
-
-  //---------------------------------------------------------------------
   // explicitly open the server connection, telling it to log its
   // incoming and outgoing messages even when there is not a logging
   // client connection.
@@ -307,6 +262,7 @@ int main (int argc, char * argv [])
   //---------------------------------------------------------------------
   // Mainloop the sever connection to make sure we close all open links
   printf("Waiting for connections to close\n");
+  struct timeval now, start;
   vrpn_gettimeofday(&now, NULL);
   start = now;
   while ( now.tv_sec - start.tv_sec < 3 ) {
@@ -386,10 +342,6 @@ int main (int argc, char * argv [])
     fprintf(stderr,"Failure when reading from server base outgoing log file\n");
     ret = -5;
   }
-  if (0 != check_for_messages_in(CLIENT_TEXT_NAME, LOOPBACK_OUTGOING_LOG)) {
-    fprintf(stderr,"Failure when reading from loopback outgoing log file\n");
-    ret = -5;
-  }
   if (0 != check_for_messages_in(CLIENT_TEXT_NAME, CLIENT_CLIENT_INCOMING_LOG)) {
     fprintf(stderr,"Failure when reading from client-side incoming log file\n");
     ret = -5;
@@ -432,7 +384,6 @@ int main (int argc, char * argv [])
   delete[] name;
 
   unlink(SERVER_BASE_OUTGOING_LOG);
-  unlink(LOOPBACK_OUTGOING_LOG);
   unlink(CLIENT_CLIENT_INCOMING_LOG);
   unlink(CLIENT_CLIENT_OUTGOING_LOG);
   unlink(CLIENT_SERVER_INCOMING_LOG);
