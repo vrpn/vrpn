@@ -205,7 +205,7 @@ int vrpn_YEI_3Space::reset (void)
 
   // Change into the x-right, z-up right handed CS we want
   unsigned char set_rh_system[] = { 0x74, 0x01 };
-  if (!send_command(set_rh_system, sizeof(set_rh_system))) {
+  if (!send_binary_command(set_rh_system, sizeof(set_rh_system))) {
       VRPN_MSG_ERROR("vrpn_YEI_3Space::reset: Unable to send coordinate system selection command\n");
       return -1;
   }
