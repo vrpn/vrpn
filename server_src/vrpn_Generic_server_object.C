@@ -410,6 +410,7 @@ int vrpn_Generic_Server_Object::get_AFline(char *line, vrpn_TAF_axis *axis)
     }
 
     if (strcmp(name, "NULL") == 0) {
+        delete [] name;
         axis->name = NULL;
     }
     else {
@@ -553,6 +554,12 @@ int vrpn_Generic_Server_Object::setup_Tracker_AnalogFly(char *&pch, char *line,
 
     _devices->add(new vrpn_Tracker_AnalogFly(s2, connection, &p, f1, absolute,
                                              false, worldFrame));
+    if (p.x.name != NULL) { delete [] p.x.name; }
+    if (p.y.name != NULL) { delete [] p.y.name; }
+    if (p.z.name != NULL) { delete [] p.z.name; }
+    if (p.sx.name != NULL) { delete [] p.sx.name; }
+    if (p.sy.name != NULL) { delete [] p.sy.name; }
+    if (p.sz.name != NULL) { delete [] p.sz.name; }
 
     return 0;
 }
@@ -2901,7 +2908,7 @@ int vrpn_Generic_Server_Object::get_poser_axis_line(FILE *config_file,
 {
     char line[LINESIZE];
     char _axis_name[LINESIZE];
-    char name[LINESIZE]; // We need this to stay around for the param
+    char *name = new char[LINESIZE]; // We need this to stay around for the param
     int channel;
     float offset, scale;
 
@@ -2932,6 +2939,8 @@ int vrpn_Generic_Server_Object::get_poser_axis_line(FILE *config_file,
         axis->channel = channel;
         axis->offset = offset;
         axis->scale = scale;
+    } else {
+        delete [] name;
     }
 
     return 0;
@@ -2991,6 +3000,12 @@ int vrpn_Generic_Server_Object::setup_Poser_Analog(char *&pch, char *line,
     }
 
     _devices->add(new vrpn_Poser_Analog(s2, connection, &p, i1 != 0));
+    if (p.x.ana_name != NULL) { delete [] p.x.ana_name; }
+    if (p.y.ana_name != NULL) { delete [] p.y.ana_name; }
+    if (p.z.ana_name != NULL) { delete [] p.z.ana_name; }
+    if (p.rx.ana_name != NULL) { delete [] p.rx.ana_name; }
+    if (p.ry.ana_name != NULL) { delete [] p.ry.ana_name; }
+    if (p.rz.ana_name != NULL) { delete [] p.rz.ana_name; }
 
     return 0;
 }
@@ -3532,7 +3547,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_NDI_Polaris(char *&pch,
 
     // free the .rom filename strings
     for (rbNum = 0; rbNum < numRigidBodies; rbNum++) {
-        delete (rigidBodyFileNames[rbNum]);
+        delete [] (rigidBodyFileNames[rbNum]);
     }
     return (0); // success
 }
@@ -4375,7 +4390,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_LibertyPDI(char *&pch, char *line,
 }
 
 int vrpn_Generic_Server_Object::setup_YEI_3Space_Sensor(char *&pch, char *line,
-                                                        FILE * /*config_file*/)
+                                                        FILE *config_file)
 {
     char name[LINESIZE], device[LINESIZE];
     int baud_rate, calibrate_gyros, tare;
@@ -4393,14 +4408,243 @@ int vrpn_Generic_Server_Object::setup_YEI_3Space_Sensor(char *&pch, char *line,
         return -1;
     }
 
+    // Allocate space to store pointers to reset commands.  Initialize
+    // all of them to NULL pointers, indicating no commands.
+    const int MAX_RESET_COMMANDS = 1024;
+    int num_reset_commands = 0;
+    const char *reset_commands[MAX_RESET_COMMANDS+1];
+    for (int i = 0; i < MAX_RESET_COMMANDS; i++) {
+      reset_commands[i] = NULL;
+    }
+    
+    // If the last character in the line is a backslash, '\', then
+    // the following line is an additional command to send to the
+    // YEI at reset time. So long as we find lines with backslashes
+    // at the ends, we add them to the command list to send. Note
+    // that there is a newline at the end of the line, following the
+    // backslash.
+    while (line[strlen(line) - 2] == '\\') {
+        // Read the VRPN_CONFIG_NEXT line
+        if (fgets(line, LINESIZE, config_file) == NULL) {
+            fprintf(
+                stderr,
+                "Ran past end of config file in YEI description\n");
+            return -1;
+        }
+
+        // Copy the first string from the line into a new character
+        // array and then store this into the reset_commands list
+        // if we haven't run out of room for them.
+        if (num_reset_commands < MAX_RESET_COMMANDS) {
+          char command[LINESIZE];
+          sscanf(line, "%s", command);
+          char *command_copy = new char[strlen(command)+1];
+          if (command_copy == NULL) {
+            fprintf(stderr, "Out of memory in YEI description\n");
+            return -1;
+          }
+          strcpy(command_copy, command);
+          reset_commands[num_reset_commands++] = command_copy;
+        }
+    }
+
     // Open the device
     if (verbose) {
         printf("Opening vrpn_YEI_3Space_Sensor: %s on port %s, baud %d\n", name,
                device, baud_rate);
+        if (num_reset_commands > 0) {
+          printf("... additional reset commands follow:\n");
+          for (int i = 0; i < num_reset_commands; i++) {
+            printf("  %s\n", reset_commands[i]);
+          }
+        }
     }
     _devices->add(new vrpn_YEI_3Space_Sensor(
         name, connection, device, baud_rate, calibrate_gyros != 0, tare != 0,
-        frames_per_second, red_LED, green_LED, blue_LED, LED_mode));
+        frames_per_second, red_LED, green_LED, blue_LED, LED_mode,
+        reset_commands));
+
+    // Free up any additional-reset command data.
+    for (int i = 0; i < MAX_RESET_COMMANDS; i++) {
+      if (reset_commands[i] != NULL) {
+        delete [] reset_commands[i];
+        reset_commands[i] = NULL;
+      }
+    }
+
+    return 0;
+}
+
+int vrpn_Generic_Server_Object::setup_YEI_3Space_Sensor_Wireless(char *&pch, char *line,
+                                                        FILE *config_file)
+{
+    char name[LINESIZE], device[LINESIZE];
+    int logical_id, serial_number, baud_rate, calibrate_gyros, tare;
+    double frames_per_second;
+    float red_LED, green_LED, blue_LED;
+    int LED_mode;
+
+    VRPN_CONFIG_NEXT();
+    // Get the arguments (class, name, port, baud, calibrate_gyros, tare,
+    // frames_per_second
+    if (sscanf(pch, "%511s%d%x%511s%d%d%d%lf%f%f%f%d", name, &logical_id,
+               &serial_number, device, &baud_rate,
+               &calibrate_gyros, &tare, &frames_per_second, &red_LED,
+               &green_LED, &blue_LED, &LED_mode) != 12) {
+        fprintf(stderr, "Bad setup_YEI_3Space_Sensor_Wireless line: %s\n", line);
+        return -1;
+    }
+
+    // Allocate space to store pointers to reset commands.  Initialize
+    // all of them to NULL pointers, indicating no commands.
+    const int MAX_RESET_COMMANDS = 1024;
+    int num_reset_commands = 0;
+    const char *reset_commands[MAX_RESET_COMMANDS+1];
+    for (int i = 0; i < MAX_RESET_COMMANDS; i++) {
+      reset_commands[i] = NULL;
+    }
+    
+    // If the last character in the line is a backslash, '\', then
+    // the following line is an additional command to send to the
+    // YEI at reset time. So long as we find lines with backslashes
+    // at the ends, we add them to the command list to send. Note
+    // that there is a newline at the end of the line, following the
+    // backslash.
+    while (line[strlen(line) - 2] == '\\') {
+        // Read the VRPN_CONFIG_NEXT line
+        if (fgets(line, LINESIZE, config_file) == NULL) {
+            fprintf(
+                stderr,
+                "Ran past end of config file in YEI description\n");
+            return -1;
+        }
+
+        // Copy the first string from the line into a new character
+        // array and then store this into the reset_commands list
+        // if we haven't run out of room for them.
+        if (num_reset_commands < MAX_RESET_COMMANDS) {
+          char command[LINESIZE];
+          sscanf(line, "%s", command);
+          char *command_copy = new char[strlen(command)+1];
+          if (command_copy == NULL) {
+            fprintf(stderr, "Out of memory in YEI description\n");
+            return -1;
+          }
+          strcpy(command_copy, command);
+          reset_commands[num_reset_commands++] = command_copy;
+        }
+    }
+
+    // Open the device
+    if (verbose) {
+        printf("Opening setup_YEI_3Space_Sensor_Wireless: %s on port %s, baud %d\n", name,
+               device, baud_rate);
+        if (num_reset_commands > 0) {
+          printf("... additional reset commands follow:\n");
+          for (int i = 0; i < num_reset_commands; i++) {
+            printf("  %s\n", reset_commands[i]);
+          }
+        }
+    }
+    vrpn_YEI_3Space_Sensor_Wireless *dev = new vrpn_YEI_3Space_Sensor_Wireless(
+        name, connection,
+        logical_id, serial_number, device, baud_rate, calibrate_gyros != 0, tare != 0,
+        frames_per_second, red_LED, green_LED, blue_LED, LED_mode,
+        reset_commands);
+    _devices->add(dev);
+
+    // Free up any additional-reset command data.
+    for (int i = 0; i < MAX_RESET_COMMANDS; i++) {
+      if (reset_commands[i] != NULL) {
+        delete [] reset_commands[i];
+        reset_commands[i] = NULL;
+      }
+    }
+
+    // If the last character in the line is a slash, '/', then
+    // the following line is an additional sensor description. Note
+    // that there is a newline at the end of the line, following the
+    // backslash.  Re-parse the whole thing, using the second-sensor
+    // description format and the serial port descriptor from the first
+    // device.
+    int serial_fd = dev->get_serial_file_descriptor();
+    while (line[strlen(line) - 2] == '/') {
+      // Read the VRPN_CONFIG_NEXT line
+      if (fgets(line, LINESIZE, config_file) == NULL) {
+          fprintf(
+              stderr,
+              "Ran past end of config file in YEI description\n");
+          return -1;
+      }
+
+      // Get the arguments (class, name, port, baud, calibrate_gyros, tare,
+      // frames_per_second.
+      char classname[LINESIZE]; // We need to read the class, since we've not pre-parsed
+      if (sscanf(line, "%511s%511s%d%x%d%d%lf%f%f%f%d", classname, name, &logical_id,
+                 &serial_number,
+                 &calibrate_gyros, &tare, &frames_per_second, &red_LED,
+                 &green_LED, &blue_LED, &LED_mode) != 11) {
+          fprintf(stderr, "Bad setup_YEI_3Space_Sensor_Wireless line: %s\n", line);
+          return -1;
+      }
+
+      // If the last character in the line is a backslash, '\', then
+      // the following line is an additional command to send to the
+      // YEI at reset time. So long as we find lines with backslashes
+      // at the ends, we add them to the command list to send. Note
+      // that there is a newline at the end of the line, following the
+      // backslash.
+      num_reset_commands = 0;
+      while (line[strlen(line) - 2] == '\\') {
+          // Read the VRPN_CONFIG_NEXT line
+          if (fgets(line, LINESIZE, config_file) == NULL) {
+              fprintf(
+                  stderr,
+                  "Ran past end of config file in YEI description\n");
+              return -1;
+          }
+
+          // Copy the first string from the line into a new character
+          // array and then store this into the reset_commands list
+          // if we haven't run out of room for them.
+          if (num_reset_commands < MAX_RESET_COMMANDS) {
+            char command[LINESIZE];
+            sscanf(line, "%s", command);
+            char *command_copy = new char[strlen(command)+1];
+            if (command_copy == NULL) {
+              fprintf(stderr, "Out of memory in YEI description\n");
+              return -1;
+            }
+            strcpy(command_copy, command);
+            reset_commands[num_reset_commands++] = command_copy;
+          }
+      }
+
+      // Open the device
+      if (verbose) {
+          printf("Opening setup_YEI_3Space_Sensor_Wireless: %s on port %s, baud %d\n", name,
+                 device, baud_rate);
+          if (num_reset_commands > 0) {
+            printf("... additional reset commands follow:\n");
+            for (int i = 0; i < num_reset_commands; i++) {
+              printf("  %s\n", reset_commands[i]);
+            }
+          }
+      }
+      _devices->add(new vrpn_YEI_3Space_Sensor_Wireless(
+          name, connection,
+          logical_id, serial_number, serial_fd, calibrate_gyros != 0, tare != 0,
+          frames_per_second, red_LED, green_LED, blue_LED, LED_mode,
+          reset_commands));
+
+      // Free up any additional-reset command data.
+      for (int i = 0; i < MAX_RESET_COMMANDS; i++) {
+        if (reset_commands[i] != NULL) {
+          delete [] reset_commands[i];
+          reset_commands[i] = NULL;
+        }
+      }
+    } // End of while new devices ('/' at and of line)
 
     return 0;
 }
@@ -4420,17 +4664,6 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(
     /// @todo warning: unused parameter 'port' [-Wunused-parameter]
     FILE *config_file;
 
-    // Store the locale that was set before we came in here.
-    // The global locale is obtained by using the default
-    // constructor.
-    std::locale const orig_locale = std::locale();
-
-    // Set the global locale to be "C", the classic one, so that
-    // when we parse the configuration file it will use dots for
-    // decimal points even if the local standard is commas.
-    // putting them into the global locale.
-    std::locale::global(std::locale("C"));
-
     // Open the configuration file
     if (verbose) {
         printf("Reading from config file %s\n", config_file_name);
@@ -4442,6 +4675,17 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(
         d_doing_okay = false;
         return;
     }
+
+    // Store the locale that was set before we came in here.
+    // The global locale is obtained by using the default
+    // constructor.
+    std::locale const orig_locale = std::locale();
+
+    // Set the global locale to be "C", the classic one, so that
+    // when we parse the configuration file it will use dots for
+    // decimal points even if the local standard is commas.
+    // putting them into the global locale.
+    std::locale::global(std::locale("C"));
 
     // Read the configuration file, creating a device for each entry.
     // Each entry is on one line, which starts with the name of the
@@ -4913,6 +5157,9 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(
                 }
                 else if (VRPN_ISIT("vrpn_YEI_3Space_Sensor")) {
                     VRPN_CHECK(setup_YEI_3Space_Sensor);
+                }
+                else if (VRPN_ISIT("vrpn_YEI_3Space_Sensor_Wireless")) {
+                    VRPN_CHECK(setup_YEI_3Space_Sensor_Wireless);
                 }
                 else {                         // Never heard of it
                     sscanf(line, "%511s", s1); // Find out the class name

@@ -36,7 +36,7 @@
     {                                                                          \
         (tr).tv_sec = (t1).tv_sec + (t2).tv_sec;                               \
         (tr).tv_usec = (t1).tv_usec + (t2).tv_usec;                            \
-        if ((tr).tv_usec >= 1000000L) {                                        \
+        while ((tr).tv_usec >= 1000000L) {                                        \
             (tr).tv_sec++;                                                     \
             (tr).tv_usec -= 1000000L;                                          \
         }                                                                      \

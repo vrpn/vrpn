@@ -528,8 +528,11 @@ protected:
 public:
     virtual ~vrpn_Connection(void);
 
-    /// Returns 1 if the connection is okay, 0 if not
+    /// Returns vrpn_true if the connection is okay, vrpn_false if not
     virtual vrpn_bool doing_okay(void) const;
+
+    /// Returns vrpn_true if the connection has been established, vrpn_false if not
+    /// (For a networkless connection, this is equivalent to doing_okay()).
     virtual vrpn_bool connected(void) const;
 
     /// This function returns the logfile names of this connection in
@@ -863,8 +866,53 @@ protected:
     char *d_NIC_IP;
 };
 
+/// @brief Constructor for a Loopback connection that will basically just
+/// pass messages between objects that are connected to it.  It offers no
+/// external connections, via IP or any other mechanism.  It is useful
+/// if you want to make the client and server in the same connection and
+/// you don't need to have anything else connect.
+
+class VRPN_API vrpn_Connection_Loopback : public vrpn_Connection {
+
+protected:
+    /// Make a client connection.  To access this from user code,
+    /// call vrpn_create_server_connection() with a service name
+    /// of 'loopback:'.
+    /// For now, we don't enable logging on a Loopback connection.
+    vrpn_Connection_Loopback();
+public:
+    virtual ~vrpn_Connection_Loopback(void);
+
+    /// Call each time through program main loop to handle receiving any
+    /// incoming messages and sending any packed messages.
+    /// Returns -1 on error, 0 otherwise.
+    /// Optional argument is TOTAL time to block on select() calls;
+    /// there may be multiple calls to select() per call to mainloop(),
+    /// and this timeout will be divided evenly between them.
+    virtual int mainloop(const struct timeval *timeout = NULL);
+
+    /// Returns vrpn_true if the connection is okay, vrpn_false if not
+    virtual vrpn_bool doing_okay(void) const { return vrpn_true; }
+
+    /// Returns vrpn_true if the connection has been established, vrpn_false if not
+    /// (For a networkless connection, this is equivalent to doing_okay()).
+    virtual vrpn_bool connected(void) const { return vrpn_true; }
+
+protected:
+    friend VRPN_API vrpn_Connection *
+    vrpn_create_server_connection(const char *cname,
+                                  const char *local_in_logfile_name,
+                                  const char *local_out_logfile_name);
+
+    /// @brief send pending report, clear the buffer.
+    ///
+    /// This function was protected, now is public, so we can use it
+    /// to send out intermediate results without calling mainloop
+    virtual int send_pending_reports(void) {return 0;}
+};
+
 /// @brief Create a client connection of arbitrary type (VRPN UDP/TCP, TCP,
-/// File, MPI).
+/// File, Loopback, MPI).
 ///
 /// WARNING:  May not be thread safe.
 /// If no IP address for the NIC to use is specified, uses the default
@@ -879,7 +927,8 @@ VRPN_API vrpn_Connection *vrpn_get_connection_by_name(
     const char *remote_out_logfile_name = NULL,
     const char *NIC_IPaddress = NULL, bool force_reopen = false);
 
-/// @brief Create a server connection of arbitrary type (VRPN UDP/TCP, MPI).
+/// @brief Create a server connection of arbitrary type (VRPN UDP/TCP,
+/// TCP, File, Loopback, MPI).
 ///
 /// Returns NULL if the name is not understood or the connection cannot
 /// be created.

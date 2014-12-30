@@ -1,4 +1,4 @@
-// test_vrpn.C
+// test_loopback.C
 //	This is a VRPN test program that has both clients and servers
 // running within the same thread. It is intended to test the sending
 // and receiving of messages for the various types of devices that VRPN
@@ -13,6 +13,8 @@
 // returns an error message.  Note that there is no multi-threading happening
 // in the actual message or other test code, just a testing of the thread
 // library itself.
+//      This code is similar to a subset of test_vrpn, but it uses a
+// Loopback connection for its tests.
 //
 // Tested device types so far include:
 //	vrpn_Analog_Server --> vrpn_Analog_Remote
@@ -42,8 +44,6 @@ const char	*ANALOG_NAME = "Analog0@localhost";
 const char	*ANALOG_OUTPUT_NAME = "AnalogOutput0@localhost";
 const char	*BUTTON_NAME = "Button0@localhost";
 const char	*POSER_NAME = "Poser0@localhost";
-int	CONNECTION_PORT = vrpn_DEFAULT_LISTEN_PORT_NO;	// Port for connection to listen on
-int MAX_CONNECTION_PORT = vrpn_DEFAULT_LISTEN_PORT_NO + 10;
 
 // The connection that is used by all of the servers and remotes
 vrpn_Connection		*connection;
@@ -366,18 +366,12 @@ int main (int argc, char * argv [])
 
 	//---------------------------------------------------------------------
 	// explicitly open the connection
-	connection = vrpn_create_server_connection(CONNECTION_PORT);
-
-	while (!connection->doing_okay() && CONNECTION_PORT < MAX_CONNECTION_PORT) {
-		CONNECTION_PORT++;
-		fprintf(stderr, "Could not open port - assuming parallel test. Increasing port number to %d and trying again\n", CONNECTION_PORT);
-		connection = vrpn_create_server_connection(CONNECTION_PORT);
-	}
+	connection = vrpn_create_server_connection("loopback:");
 
 	if (!connection->doing_okay()) {
-        fprintf(stderr, "Hit port number limit - assuming something in port opening is broken!\n");
-        return -1;
-    }
+		fprintf(stderr, "Connection not doing okay (should be impossible)!\n");
+		return -1;
+	}
 
 
 	//---------------------------------------------------------------------
@@ -498,13 +492,13 @@ int main (int argc, char * argv [])
         delete rposer;
 
         printf("Testing whether two connections to a tracker and to a button each get their own messages.\n");
-        vrpn_Tracker_Remote *t1 = new vrpn_Tracker_Remote(TRACKER_NAME);
+        vrpn_Tracker_Remote *t1 = new vrpn_Tracker_Remote(TRACKER_NAME, connection);
         t1->register_change_handler(NULL, handle_pos1);
-        vrpn_Tracker_Remote *t2 = new vrpn_Tracker_Remote(TRACKER_NAME);
+        vrpn_Tracker_Remote *t2 = new vrpn_Tracker_Remote(TRACKER_NAME, connection);
         t2->register_change_handler(NULL, handle_pos2);
-        vrpn_Button_Remote *b1 = new vrpn_Button_Remote(BUTTON_NAME);
+        vrpn_Button_Remote *b1 = new vrpn_Button_Remote(BUTTON_NAME, connection);
         b1->register_change_handler(NULL, handle_button1);
-        vrpn_Button_Remote *b2 = new vrpn_Button_Remote(BUTTON_NAME);
+        vrpn_Button_Remote *b2 = new vrpn_Button_Remote(BUTTON_NAME, connection);
         b2->register_change_handler(NULL, handle_button2);
         unsigned long secs;
         struct timeval start, now;
