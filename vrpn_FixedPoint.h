@@ -134,7 +134,7 @@ namespace vrpn {
         }
         //@}
 
-        // TODO add operators. lots and lots of operators.
+        /// @todo add operators, lots and lots of operators?
 
         /**
          * Returns a floating-point representation of this
@@ -145,11 +145,11 @@ namespace vrpn {
             return get(reinterpret_cast<TypeWrapper<T> *>(NULL));
         }
 
-        // FIXME remove these functions after debugging
         /** \name Debugging functions. */
-        //@{
+        ///@{
+        /// @todo remove these functions after debugging
         RawType value() const { return value_; }
-        //@}
+        ///@}
 
     private:
         template <typename T> struct TypeWrapper;

@@ -63,6 +63,7 @@ void vrpn_Tracker_OSVRHackerDevKit::on_data_received(std::size_t bytes,
     }
 
     vrpn_uint8 version = vrpn_unbuffer_from_little_endian<vrpn_uint8>(buffer);
+    /// @todo Verify that version is what we expect.
     vrpn_uint8 msg_seq = vrpn_unbuffer_from_little_endian<vrpn_uint8>(buffer);
 
     // Signed, 16-bit, fixed-point numbers in Q1.14 format.
