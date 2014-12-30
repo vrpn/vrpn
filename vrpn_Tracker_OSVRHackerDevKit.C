@@ -10,13 +10,12 @@
 
 #include "vrpn_Tracker_OSVRHackerDevKit.h"
 
+#include "vrpn_SendTextMessageStreamProxy.h"
 #include "vrpn_BaseClass.h"  // for ::vrpn_TEXT_NORMAL, etc
 #include "vrpn_FixedPoint.h" // for vrpn_fixed_to_float
 #include <quat.h>            // for Q_W, Q_X, etc.
 
 #include <cstring>  // for memset
-#include <iostream> // for operator<<, ostringstream, etc
-#include <sstream>
 #include <stdexcept> // for logic_error
 
 VRPN_SUPPRESS_EMPTY_OBJECT_WARNING()
@@ -53,12 +52,9 @@ void vrpn_Tracker_OSVRHackerDevKit::on_data_received(std::size_t bytes,
                                                      vrpn_uint8 *buffer)
 {
     if (bytes != 32) {
-        std::ostringstream ss;
-        ss << "Received a report " << bytes
-           << " in length, but expected it to be 32 bytes.";
-        struct timeval ts;
-        vrpn_gettimeofday(&ts, NULL);
-        send_text_message(ss.str().c_str(), ts, vrpn_TEXT_WARNING);
+        send_text_message(vrpn_TEXT_WARNING)
+            << "Received a report " << bytes
+            << " in length, but expected it to be 32 bytes. Discarding.";
         return;
     }
 
