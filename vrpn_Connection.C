@@ -2185,7 +2185,7 @@ static SOCKET vrpn_connect_udp_port(const char *machineName, int remotePort,
  */
 static int get_local_socket_name(char *local_host, size_t max_length, const char* remote_host)
 {
-    const int remote_port = 0;
+    const int remote_port = vrpn_DEFAULT_LISTEN_PORT_NO;
     struct sockaddr_in udp_name;
     int udp_namelen = sizeof(udp_name);
 
