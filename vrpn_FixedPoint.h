@@ -18,7 +18,7 @@
 // - none
 
 // Standard includes
-// - none
+#include <cstddef>  // for NULL
 
 namespace vrpn {
 

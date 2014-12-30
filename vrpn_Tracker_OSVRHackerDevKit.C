@@ -12,7 +12,7 @@
 
 #include "vrpn_SendTextMessageStreamProxy.h"
 #include "vrpn_BaseClass.h"  // for ::vrpn_TEXT_NORMAL, etc
-#include "vrpn_FixedPoint.h" // for vrpn_fixed_to_float
+#include "vrpn_FixedPoint.h" // for vrpn::FixedPoint
 #include <quat.h>            // for Q_W, Q_X, etc.
 
 #include <cstring>  // for memset
