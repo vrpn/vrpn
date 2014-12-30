@@ -67,14 +67,18 @@ void vrpn_Tracker_OSVRHackerDevKit::on_data_received(std::size_t bytes,
 
     // Signed, 16-bit, fixed-point numbers in Q1.14 format.
     typedef vrpn::FixedPoint<1, 14> FixedPointValue;
-    d_quat[Q_X] = static_cast<double>(
-        FixedPointValue(vrpn_unbuffer_from_little_endian<vrpn_int16>(buffer)));
-    d_quat[Q_Y] = static_cast<double>(
-        FixedPointValue(vrpn_unbuffer_from_little_endian<vrpn_int16>(buffer)));
-    d_quat[Q_Z] = static_cast<double>(
-        FixedPointValue(vrpn_unbuffer_from_little_endian<vrpn_int16>(buffer)));
-    d_quat[Q_W] = static_cast<double>(
-        FixedPointValue(vrpn_unbuffer_from_little_endian<vrpn_int16>(buffer)));
+    d_quat[Q_X] =
+        FixedPointValue(vrpn_unbuffer_from_little_endian<vrpn_int16>(buffer))
+            .get<vrpn_float64>();
+    d_quat[Q_Y] =
+        FixedPointValue(vrpn_unbuffer_from_little_endian<vrpn_int16>(buffer))
+            .get<vrpn_float64>();
+    d_quat[Q_Z] =
+        FixedPointValue(vrpn_unbuffer_from_little_endian<vrpn_int16>(buffer))
+            .get<vrpn_float64>();
+    d_quat[Q_W] =
+        FixedPointValue(vrpn_unbuffer_from_little_endian<vrpn_int16>(buffer))
+            .get<vrpn_float64>();
 
     vrpn_Tracker::timestamp = _timestamp;
     char msgbuf[512];

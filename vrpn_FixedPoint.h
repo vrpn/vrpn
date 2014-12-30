@@ -140,17 +140,10 @@ namespace vrpn {
          * Returns a floating-point representation of this
          * fixed-point value.
          */
-        //@{
-        operator vrpn_float32() const
+        template <typename T> T get() const
         {
-            return static_cast<vrpn_float32>(value_) / (1 << FRACTIONAL_BITS);
+            return get(reinterpret_cast<TypeWrapper<T> *>(NULL));
         }
-
-        operator vrpn_float64() const
-        {
-            return static_cast<vrpn_float64>(value_) / (1 << FRACTIONAL_BITS);
-        }
-        //@}
 
         // FIXME remove these functions after debugging
         /** \name Debugging functions. */
@@ -159,6 +152,17 @@ namespace vrpn {
         //@}
 
     private:
+        template <typename T> struct TypeWrapper;
+        vrpn_float32 get(TypeWrapper<vrpn_float32> *) const
+        {
+            return static_cast<vrpn_float32>(value_) / (1 << FRACTIONAL_BITS);
+        }
+
+        vrpn_float64 get(TypeWrapper<vrpn_float64> *) const
+        {
+            return static_cast<vrpn_float64>(value_) / (1 << FRACTIONAL_BITS);
+        }
+
         RawType value_;
     };
 
