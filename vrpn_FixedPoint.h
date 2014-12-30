@@ -100,35 +100,35 @@ namespace vrpn {
             : value_(0)
         {
         }
-        FixedPoint(vrpn_int8 x)
+        explicit FixedPoint(vrpn_int8 x)
             : value_(x)
         {
         }
-        FixedPoint(vrpn_int16 x)
+        explicit FixedPoint(vrpn_int16 x)
             : value_(x)
         {
         }
-        FixedPoint(vrpn_int32 x)
+        explicit FixedPoint(vrpn_int32 x)
             : value_(x)
         {
         }
-        FixedPoint(vrpn_uint8 x)
+        explicit FixedPoint(vrpn_uint8 x)
             : value_(x)
         {
         }
-        FixedPoint(vrpn_uint16 x)
+        explicit FixedPoint(vrpn_uint16 x)
             : value_(x)
         {
         }
-        FixedPoint(vrpn_uint32 x)
+        explicit FixedPoint(vrpn_uint32 x)
             : value_(x)
         {
         }
-        FixedPoint(double x)
+        explicit FixedPoint(double x)
             : value_(x * (1 << FRACTIONAL_BITS))
         {
         }
-        FixedPoint(float x)
+        explicit FixedPoint(float x)
             : value_(x * (1 << FRACTIONAL_BITS))
         {
         }
