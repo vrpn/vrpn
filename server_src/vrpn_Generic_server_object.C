@@ -4681,12 +4681,6 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(
     // constructor.
     std::locale const orig_locale = std::locale();
 
-    // Set the global locale to be "C", the classic one, so that
-    // when we parse the configuration file it will use dots for
-    // decimal points even if the local standard is commas.
-    // putting them into the global locale.
-    std::locale::global(std::locale("C"));
-
     // Read the configuration file, creating a device for each entry.
     // Each entry is on one line, which starts with the name of the
     //   class of the object that is to be created.
@@ -4701,6 +4695,15 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(
 
         // Read lines from the file until we run out
         while (fgets(line, LINESIZE, config_file) != NULL) {
+
+            // Set the global locale to be "C", the classic one, so that
+            // when we parse the configuration file it will use dots for
+            // decimal points even if the local standard is commas.
+            // putting them into the global locale.  We tried putting this
+            // code above, outside the parsing loop, but it did not have
+            // the desired effect when placed there.  This is the earliest
+            // we were able to put it and have it work.
+            std::locale::global(std::locale("C"));
 
             // Make sure the line wasn't too long
             if (strlen(line) >= LINESIZE - 1) {
