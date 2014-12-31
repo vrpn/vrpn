@@ -254,4 +254,29 @@ private:
     vrpn_HidAcceptor *first, *second;
 };
 
+/// Accepts devices meeting at least one of two criteria. NOT SHORT-CIRCUIT.
+/// Another demonstration of acceptor composition.
+class VRPN_API vrpn_HidBooleanOrAcceptor : public vrpn_HidAcceptor {
+public:
+    vrpn_HidBooleanOrAcceptor(vrpn_HidAcceptor *p, vrpn_HidAcceptor *q)
+        : first(p)
+        , second(q)
+    {
+    }
+    bool accept(const vrpn_HIDDEVINFO &device)
+    {
+        bool p = first->accept(device);
+        bool q = second->accept(device);
+        return p || q;
+    }
+    void reset()
+    {
+        first->reset();
+        second->reset();
+    }
+
+private:
+    vrpn_HidAcceptor *first, *second;
+};
+
 #endif // VRPN_HUMANINTERFACE_H
