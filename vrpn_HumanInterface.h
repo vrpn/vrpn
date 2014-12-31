@@ -237,12 +237,20 @@ public:
         , second(q)
     {
     }
+
+    virtual ~vrpn_HidBooleanAndAcceptor()
+    {
+        delete first;
+        delete second;
+    }
+
     bool accept(const vrpn_HIDDEVINFO &device)
     {
         bool p = first->accept(device);
         bool q = second->accept(device);
         return p && q;
     }
+
     void reset()
     {
         first->reset();
@@ -250,7 +258,8 @@ public:
     }
 
 private:
-    vrpn_HidAcceptor *first, *second;
+    vrpn_HidAcceptor *first;
+    vrpn_HidAcceptor *second;
 };
 
 /// Accepts devices meeting at least one of two criteria. NOT SHORT-CIRCUIT.
@@ -262,12 +271,20 @@ public:
         , second(q)
     {
     }
+
+    virtual ~vrpn_HidBooleanOrAcceptor()
+    {
+        delete first;
+        delete second;
+    }
+
     bool accept(const vrpn_HIDDEVINFO &device)
     {
         bool p = first->accept(device);
         bool q = second->accept(device);
         return p || q;
     }
+
     void reset()
     {
         first->reset();
@@ -275,7 +292,8 @@ public:
     }
 
 private:
-    vrpn_HidAcceptor *first, *second;
+    vrpn_HidAcceptor *first;
+    vrpn_HidAcceptor *second;
 };
 
 /// @todo Operators for these acceptors (really predicates) ?
