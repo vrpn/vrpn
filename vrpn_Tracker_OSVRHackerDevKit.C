@@ -15,7 +15,7 @@
 #include "vrpn_FixedPoint.h" // for vrpn::FixedPoint
 #include <quat.h>            // for Q_W, Q_X, etc.
 
-#include <cstring>  // for memset
+#include <cstring>   // for memset
 #include <stdexcept> // for logic_error
 
 VRPN_SUPPRESS_EMPTY_OBJECT_WARNING()
@@ -26,11 +26,18 @@ VRPN_SUPPRESS_EMPTY_OBJECT_WARNING()
 static const vrpn_uint16 vrpn_OSVR_VENDOR = 0x1532;
 static const vrpn_uint16 vrpn_OSVR_HACKER_DEV_KIT_HMD = 0x0b00;
 
+/// @todo Alternate, temporary VID/PID
+static const vrpn_uint16 vrpn_OSVR_ALT_VENDOR = 0x03EB;
+static const vrpn_uint16 vrpn_OSVR_ALT_HACKER_DEV_KIT_HMD = 0x2421;
+
 vrpn_Tracker_OSVRHackerDevKit::vrpn_Tracker_OSVRHackerDevKit(const char *name,
                                                              vrpn_Connection *c)
     : vrpn_Tracker(name, c)
-    , vrpn_HidInterface(new vrpn_HidProductAcceptor(
-          vrpn_OSVR_VENDOR, vrpn_OSVR_HACKER_DEV_KIT_HMD))
+    , vrpn_HidInterface(new vrpn_HidBooleanOrAcceptor(
+          new vrpn_HidProductAcceptor(vrpn_OSVR_VENDOR,
+                                      vrpn_OSVR_HACKER_DEV_KIT_HMD),
+          new vrpn_HidProductAcceptor(vrpn_OSVR_ALT_VENDOR,
+                                      vrpn_OSVR_ALT_HACKER_DEV_KIT_HMD)))
     , _wasConnected(false)
 {
     vrpn_Tracker::num_sensors = 1; // only orientation
