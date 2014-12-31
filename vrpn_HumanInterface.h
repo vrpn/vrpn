@@ -93,8 +93,7 @@ public:
 
 protected:
     /** @brief Derived class reimplements this callback.  It is called whenever
-       a
-        read returns some data.
+       a read returns some data.
 
         WARNING!  The data returned by this function differs when the device
         sends multiple report types and when it only has one.  When it
@@ -109,23 +108,21 @@ protected:
     void send_data(size_t bytes, const vrpn_uint8 *buffer);
 
     /// Call this to send a feature report to the device - first byte must be
-    /// Report ID
-    /// (or 0x0 for devices without numbered reports)
+    /// Report ID (or 0x0 for devices without numbered reports)
     void send_feature_report(size_t bytes, const vrpn_uint8 *buffer);
 
     /// Call this to get a feature report from the device - first byte must be
-    /// Report ID
-    /// (or 0x0 for devices without numbered reports)
+    /// Report ID (or 0x0 for devices without numbered reports)
     /// @return Number of bytes received, or -1 on error
     int get_feature_report(size_t bytes, vrpn_uint8 *buffer);
 
     /** @brief This is the HidAcceptor we use when reconnecting.
 
         We do not take ownership of the pointer; it is the user's
-       responsibility.
-        Using a stack-allocated acceptor is a really good way to get a segfault
-       when
-        calling reconnect()--there won't be an acceptor there any longer!
+       responsibility. Using a stack-allocated acceptor is a really good way to
+       get a segfault when calling reconnect()--there won't be an acceptor there
+       any longer!
+       Thus, always use "new" to make your acceptors.
     */
     vrpn_HidAcceptor *_acceptor;
 
@@ -202,9 +199,8 @@ private:
 /** @brief Accepts the Nth device matching a given acceptor.
 
     This demonstrates the composition of acceptors, allowing the user/programmer
-    to create a more specific Hid object without needing to duplicate code all
-   over
-    the place.
+   to create a more specific Hid object without needing to duplicate code all
+   over the place.
 */
 class VRPN_API vrpn_HidNthMatchAcceptor : public vrpn_HidAcceptor {
 public:
@@ -214,6 +210,9 @@ public:
         , delegate(acceptor)
     {
     }
+
+    virtual ~vrpn_HidNthMatchAcceptor() { delete delegate; }
+
     bool accept(const vrpn_HIDDEVINFO &device)
     {
         return delegate->accept(device) && (found++ == target);
@@ -278,5 +277,7 @@ public:
 private:
     vrpn_HidAcceptor *first, *second;
 };
+
+/// @todo Operators for these acceptors (really predicates) ?
 
 #endif // VRPN_HUMANINTERFACE_H
