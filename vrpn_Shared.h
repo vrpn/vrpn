@@ -186,8 +186,8 @@ extern VRPN_API void vrpn_SleepMsecs(double dMsecs);
 // definitions and functions.
 
 // xform a double to/from network order -- like htonl and htons
-extern VRPN_API vrpn_float64 htond(vrpn_float64 d);
-extern VRPN_API vrpn_float64 ntohd(vrpn_float64 d);
+extern VRPN_API vrpn_float64 vrpn_htond(vrpn_float64 d);
+extern VRPN_API vrpn_float64 vrpn_ntohd(vrpn_float64 d);
 
 // From this we get the variable "vrpn_big_endian" set to true if the machine we
 // are
@@ -195,7 +195,7 @@ extern VRPN_API vrpn_float64 ntohd(vrpn_float64 d);
 // custom packing and unpacking code to bypass the buffer and unbuffer routines
 // for cases that have to be particularly fast (like video data).  It is also
 // used
-// internally by the htond() function.
+// internally by the vrpn_htond() function.
 
 static const int vrpn_int_data_for_endian_test = 1;
 static const char *vrpn_char_data_for_endian_test =
@@ -279,11 +279,11 @@ namespace vrpn_byte_order {
     /// network to host byte order for 32-bit uints
     inline vrpn_uint32 ntoh(vrpn_uint32 netval) { return ntohl(netval); }
 
-    /// host to network byte order for 64-bit floats, using vrpn htond
-    inline vrpn_float64 hton(vrpn_float64 hostval) { return htond(hostval); }
+    /// host to network byte order for 64-bit floats, using vrpn_htond
+    inline vrpn_float64 hton(vrpn_float64 hostval) { return vrpn_htond(hostval); }
 
-    /// network to host byte order for 64-bit floats, using vrpn ntohd
-    inline vrpn_float64 ntoh(vrpn_float64 netval) { return ntohd(netval); }
+    /// network to host byte order for 64-bit floats, using vrpn_ntohd
+    inline vrpn_float64 ntoh(vrpn_float64 netval) { return vrpn_ntohd(netval); }
 
     /// Templated hton that type-puns to the same-sized uint type
     /// as a fallback for those types not explicitly defined above.
