@@ -203,12 +203,8 @@ int vrpn_YEI_3Space::reset (void)
     return -1;
   }
 
-  // Flip the X axis (only the sixth bit on) to turn into a right-handed
-  // coordinate system whose rotations match those expected by VRPN as
-  // tested using an OpenGL viewing app.  (We were expecting to have to
-  // flip the Z axis; maybe the manual is incorrect and the last bit is
-  // actually the Z axis?)
-  unsigned char set_rh_system[] = {0x74, (1 << 5)};
+  // Change into the x-right, z-up right handed CS we want
+  unsigned char set_rh_system[] = { 0x74, 0x01 };
   if (!send_binary_command(set_rh_system, sizeof(set_rh_system))) {
       VRPN_MSG_ERROR("vrpn_YEI_3Space::reset: Unable to send coordinate system selection command\n");
       return -1;
@@ -292,8 +288,7 @@ void vrpn_YEI_3Space::handle_report(unsigned char *report)
   unsigned char *bufptr = report;
 
   // Read the two orientations and report them
-  q_vec_type  pos;
-  pos[Q_X] = pos[Q_Y] = pos[Q_Z] = 0;
+  q_vec_type  pos = {0};
   q_type  quat;
 
   for (int i = 0; i < 2; i++) {

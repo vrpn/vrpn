@@ -1,6 +1,7 @@
 #ifndef VRPN_YEI_3SPACE_H
 #define VRPN_YEI_3SPACE_H
 
+#include "quat.h"
 #include "vrpn_Tracker.h"
 #include "vrpn_Analog.h"
 #include "vrpn_Button.h"

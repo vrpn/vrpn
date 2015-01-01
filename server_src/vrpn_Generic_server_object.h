@@ -151,6 +151,7 @@ protected:
     int setup_Tracker_LibertyPDI(char *&pch, char *line, FILE *config_file);
     int setup_Tracker_FastrakPDI(char *&pch, char *line, FILE *config_file);
     int setup_Tracker_JsonNet(char *&pch, char *line, FILE * /*config_file*/);
+    int setup_Tracker_OSVRHackerDevKit(char *&pch, char *line, FILE *config_file);
     int setup_Tracker_RazerHydra(char *&pch, char *line, FILE *config_file);
     int setup_YEI_3Space_Sensor(char *&pch, char *line, FILE *config_file);
     int setup_YEI_3Space_Sensor_Wireless(char *&pch, char *line, FILE *config_file);
