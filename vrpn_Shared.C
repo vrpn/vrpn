@@ -187,7 +187,7 @@ void vrpn_SleepMsecs(double dMsecs)
 #include <endian.h>
 #endif
 
-vrpn_float64 htond(vrpn_float64 d)
+vrpn_float64 vrpn_htond(vrpn_float64 d)
 {
     if (!vrpn_big_endian) {
         vrpn_float64 dSwapped;
@@ -223,7 +223,7 @@ vrpn_float64 htond(vrpn_float64 d)
 }
 
 // they are their own inverses, so ...
-vrpn_float64 ntohd(vrpn_float64 d) { return htond(d); }
+vrpn_float64 vrpn_ntohd(vrpn_float64 d) { return vrpn_htond(d); }
 
 /** Utility routine for placing a timeval struct into a buffer that
     is to be sent as a message. Handles packing into an unaligned

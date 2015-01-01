@@ -1346,7 +1346,8 @@ int vrpn_Tracker_Remote::set_update_rate(vrpn_float64 samplesPerSecond)
         return -1;
     }
 
-    ((vrpn_float64 *)msgbuf)[0] = htond(samplesPerSecond);
+	vrpn_int32 buflen = len;
+	vrpn_buffer(&msgbuf, &buflen, samplesPerSecond);
 
     vrpn_gettimeofday(&now, NULL);
     timestamp.tv_sec = now.tv_sec;
