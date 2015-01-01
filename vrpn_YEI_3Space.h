@@ -70,7 +70,7 @@ protected:
   // Status and handlers for different states
   int     d_status;               //< What are we currently up to?
   virtual int reset(void);        //< Set device back to starting config
-  virtual void get_report(void) = 0;  //< Try to read and handle a report from the device
+  virtual bool get_report(void) = 0;  //< Try to read and handle a report from the device
   virtual void handle_report(unsigned char *report);  //< Parse and handle a complete streaming report
 
   double  d_frames_per_second;    //< How many frames/second do we want?
@@ -155,7 +155,7 @@ protected:
   /// Flush any incoming characters in the communications channel.
   virtual void flush_input(void);
 
-  virtual void get_report(void);  //< Try to read and handle a report from the device
+  virtual bool get_report(void);  //< Try to read and handle a report from the device
 
   /// Compute the CRC for the message, append it, and send message.
   /// Returns true on success, false on failure.
@@ -276,7 +276,9 @@ protected:
   /// Flush any incoming characters in the communications channel.
   virtual void flush_input(void);
 
-  virtual void get_report(void);  //< Try to read and handle a report from the device
+  /// Get and handle a report from the device if one is available.  Return true
+  /// if one was available, false if not.
+  virtual bool get_report(void);
 
   /// Compute the CRC for the message, append it, and send message
   /// to the dongle directly (not a wireless command).

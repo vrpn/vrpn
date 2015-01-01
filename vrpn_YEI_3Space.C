@@ -418,7 +418,7 @@ void vrpn_YEI_3Space::mainloop ()
         // resets and causes the other to timeout, and then it returns the
         // favor.  By checking for the report here, we reset the timestamp
         // if there is a report ready (ie, if THIS device is still operating).
-        get_report();
+        while (get_report()) {}
         struct timeval current_time;
         vrpn_gettimeofday (&current_time, NULL);
         if (vrpn_TimevalDuration (current_time, timestamp) > MAX_TIME_INTERVAL) {
@@ -647,9 +647,9 @@ bool vrpn_YEI_3Space_Sensor::receive_LED_values_response (struct timeval *timeou
  * ROLE      : This function will read characters until it has a full report, then
  *             call handle_report() with the report and clear the counts.   
  * ARGUMENTS : void
- * RETURN    : void
+ * RETURN    : bool: Did I get a complete report?
  ******************************************************************************/
-void vrpn_YEI_3Space_Sensor::get_report (void)
+bool vrpn_YEI_3Space_Sensor::get_report (void)
 {
   int  l_ret;		// Return value from function call to be checked
 
@@ -664,7 +664,7 @@ void vrpn_YEI_3Space_Sensor::get_report (void)
   if (l_ret == -1) {
       VRPN_MSG_ERROR ("vrpn_YEI_3Space_Sensor::get_report(): Error reading the sensor, resetting");
       d_status = STATUS_RESETTING;
-      return;
+      return false;
   }
 #ifdef  VERBOSE
   if (l_ret != 0) printf("... got %d characters (%d total)\n",l_ret, d_characters_read);
@@ -686,7 +686,7 @@ void vrpn_YEI_3Space_Sensor::get_report (void)
 
   d_characters_read += l_ret;
   if (d_characters_read < d_expected_characters) {    // Not done -- go back for more
-      return;
+      return false;
   }
 
   //--------------------------------------------------------------------
@@ -700,6 +700,7 @@ void vrpn_YEI_3Space_Sensor::get_report (void)
   //--------------------------------------------------------------------
   d_expected_characters = REPORT_LENGTH;
   d_characters_read = 0;
+  return true;
 }
 
 void vrpn_YEI_3Space_Sensor::flush_input(void)
@@ -1136,72 +1137,65 @@ bool vrpn_YEI_3Space_Sensor_Wireless::receive_LED_values_response (struct timeva
  *             characters from our logical ID before checking to see if there are
  *             any.
  * ARGUMENTS : void
- * RETURN    : void
+ * RETURN    : bool: Did we get a complete report?
  ******************************************************************************/
-void vrpn_YEI_3Space_Sensor_Wireless::get_report (void)
+bool vrpn_YEI_3Space_Sensor_Wireless::get_report (void)
 {
   int  l_ret;		// Return value from function call to be checked
 
-  // Keep asking for reports from our logical ID until no more come
-  // within 1ms of our asking.  Break out of the loop on timeout.
-  do {
-    //--------------------------------------------------------------------
-    // Request release of pending reports from our ID.
-    unsigned char release_report[2] = { 0xB4, 0 };
-    release_report[1] = d_logical_id;
-    if (!send_binary_command_to_dongle(release_report, sizeof(release_report))) {
-      VRPN_MSG_ERROR ("vrpn_YEI_3Space::get_report: Unable to send release-report command\n");
-    }
+  //--------------------------------------------------------------------
+  // Request release of pending reports from our ID.
+  unsigned char release_report[2] = { 0xB4, 0 };
+  release_report[1] = d_logical_id;
+  if (!send_binary_command_to_dongle(release_report, sizeof(release_report))) {
+    VRPN_MSG_ERROR ("vrpn_YEI_3Space::get_report: Unable to send release-report command\n");
+    return false;
+  }
 
-    //--------------------------------------------------------------------
-    // Read a report if it is available.
-    struct timeval timeout;
-    timeout.tv_sec = 0;
-    timeout.tv_usec = 1000;
-    l_ret = vrpn_read_available_characters(d_serial_fd, d_buffer,
-                                            REPORT_LENGTH + 3,
-                                            &timeout);
-    if (l_ret == -1) {
-        VRPN_MSG_ERROR ("vrpn_YEI_3Space_Sensor_Wireless::get_report(): Error reading the sensor, resetting");
-        d_status = STATUS_RESETTING;
-        return;
-    }
+  //--------------------------------------------------------------------
+  // Read a report if it is available.
+  struct timeval timeout;
+  timeout.tv_sec = 0;
+  timeout.tv_usec = 1000;
+  l_ret = vrpn_read_available_characters(d_serial_fd, d_buffer,
+                                          REPORT_LENGTH + 3,
+                                          &timeout);
+  if (l_ret == -1) {
+      VRPN_MSG_ERROR ("vrpn_YEI_3Space_Sensor_Wireless::get_report(): Error reading the sensor, resetting");
+      d_status = STATUS_RESETTING;
+      return false;
+  }
 #ifdef  VERBOSE
-    if (l_ret != 0) printf("... got %d characters\n",l_ret);
+  if (l_ret != 0) printf("... got %d characters\n",l_ret);
 #endif
-    // If we didn't get any reports, we're done and will look again next time.
-    if (l_ret == 0) {
-      break;
-    }
+  // If we didn't get any reports, we're done and will look again next time.
+  if (l_ret == 0) {
+    return false;
+  }
 
-    // Check to be sure that the length was what we expect, we got not errors
-    // (first header byte 0) and the response is from the correct device.
-    if (l_ret != REPORT_LENGTH + 3) {
-        VRPN_MSG_ERROR ("vrpn_YEI_3Space_Sensor_Wireless::get_report(): Truncated report, resetting");
-        d_status = STATUS_RESETTING;
-    }
-    if (d_buffer[0] != 0) {
-        VRPN_MSG_ERROR ("vrpn_YEI_3Space_Sensor_Wireless::get_report(): Error reported, resetting");
-        d_status = STATUS_RESETTING;
-    }
-    if (d_buffer[1] != d_logical_id) {
-        VRPN_MSG_ERROR ("vrpn_YEI_3Space_Sensor_Wireless::get_report(): Report from wrong sensor received, resetting");
-        d_status = STATUS_RESETTING;
-    }
+  // Check to be sure that the length was what we expect, we got no errors
+  // (first header byte 0) and the response is from the correct device.
+  if (l_ret != REPORT_LENGTH + 3) {
+      VRPN_MSG_ERROR ("vrpn_YEI_3Space_Sensor_Wireless::get_report(): Truncated report, resetting");
+      d_status = STATUS_RESETTING;
+      return false;
+  }
+  if (d_buffer[0] != 0) {
+      VRPN_MSG_ERROR ("vrpn_YEI_3Space_Sensor_Wireless::get_report(): Error reported, resetting");
+      d_status = STATUS_RESETTING;
+      return false;
+  }
+  if (d_buffer[1] != d_logical_id) {
+      VRPN_MSG_ERROR ("vrpn_YEI_3Space_Sensor_Wireless::get_report(): Report from wrong sensor received, resetting");
+      d_status = STATUS_RESETTING;
+      return false;
+  }
 
-    //--------------------------------------------------------------------
-    // Parse and handle the report.
-    vrpn_gettimeofday(&timestamp, NULL);
-    handle_report(&d_buffer[3]);
-
-    //--------------------------------------------------------------------
-    // Clear our counts to be ready for the next report
-    //--------------------------------------------------------------------
-  } while (true);
-#ifdef  VERBOSE
-    printf("No more reports this time\n");
-#endif
-
+  //--------------------------------------------------------------------
+  // Parse and handle the report.
+  vrpn_gettimeofday(&timestamp, NULL);
+  handle_report(&d_buffer[3]);
+  return true;
 }
 
 void vrpn_YEI_3Space_Sensor_Wireless::flush_input(void)
