@@ -155,9 +155,18 @@ void vrpn_HidInterface::update()
         ret = hid_read(_device, inbuf, sizeof(inbuf));
         if (ret < 0) {
             fprintf(stderr, "vrpn_HidInterface::update(): Read error\n");
+#if !defined(_WIN32) && !defined(__APPLE__)
             fprintf(stderr, "  (On one version of Red Hat Linux, this was from "
                             "not having libusb-devel installed when "
                             "configuring in CMake.)\n");
+#endif
+            const wchar_t *errmsg = hid_error(_device);
+            if (errmsg) {
+                fprintf(
+                    stderr,
+                    "vrpn_HidInterface::update(): error message: %ls\n",
+                    errmsg);
+            }
             return;
         }
 
