@@ -1851,13 +1851,8 @@ int vrpn_noint_block_read(SOCKET insock, char *buffer, size_t length)
  * of characters read before timeout (in the case of a timeout).
  */
 
-#ifdef VRPN_USE_WINSOCK_SOCKETS
 int vrpn_noint_block_read_timeout(SOCKET infile, char buffer[], size_t length,
                                   struct timeval *timeout)
-#else
-int vrpn_noint_block_read_timeout(int infile, char buffer[], size_t length,
-                                  struct timeval *timeout)
-#endif
 {
     size_t sofar;     /* How many we read so far */
     register int ret; /* Return value from the read() */
@@ -2238,20 +2233,15 @@ static int get_local_socket_name(char *local_host, size_t max_length, const char
  */
 
 int vrpn_udp_request_lob_packet(
+	SOCKET udp_sock,       // Socket to use to send
     const char *machine,   // Name of the machine to call
     const int remote_port, // UDP port on remote machine
     const int local_port,  // TCP port on this machine
     const char *NIC_IP = NULL)
 {
-    SOCKET udp_sock;    /* We lob datagrams from here */
     char msg[150];      /* Message to send */
     vrpn_int32 msglen;  /* How long it is (including \0) */
     char myIPchar[100]; /* IP decription this host */
-
-    /* Create a UDP socket and connect it to the port on the remote
-     * machine. */
-
-    udp_sock = vrpn_connect_udp_port(machine, remote_port, NIC_IP);
 
     /* Fill in the request message, telling the machine and port that
      * the remote server should connect to.  These are ASCII, separated
@@ -2277,7 +2267,6 @@ int vrpn_udp_request_lob_packet(
         return -1;
     }
 
-    vrpn_closeSocket(udp_sock); // We're done with the port
     return 0;
 }
 
@@ -2663,6 +2652,7 @@ vrpn_Endpoint_IP::vrpn_Endpoint_IP(vrpn_TypeDispatcher *dispatcher,
     , d_tcpSocket(INVALID_SOCKET)
     , d_tcpListenSocket(INVALID_SOCKET)
     , d_tcpListenPort(0)
+	, d_udpLobSocket(INVALID_SOCKET)
     , d_remote_machine_name(NULL)
     , d_remote_port_number(0)
     , d_tcp_only(vrpn_FALSE)
@@ -2715,7 +2705,6 @@ vrpn_Endpoint::~vrpn_Endpoint(void)
 
 vrpn_Endpoint_IP::~vrpn_Endpoint_IP(void)
 {
-
     // Close all of the sockets that are left open
     if (d_tcpSocket != INVALID_SOCKET) {
         vrpn_closeSocket(d_tcpSocket);
@@ -2735,6 +2724,10 @@ vrpn_Endpoint_IP::~vrpn_Endpoint_IP(void)
         vrpn_closeSocket(d_tcpListenSocket);
         d_tcpListenSocket = INVALID_SOCKET;
     }
+	if (d_udpLobSocket != INVALID_SOCKET) {
+		vrpn_closeSocket(d_udpLobSocket);
+		d_udpLobSocket = INVALID_SOCKET;
+	}
 
     // Delete the buffers created in the constructor
     if (d_tcpOutbuf) {
@@ -2811,6 +2804,7 @@ void vrpn_Endpoint_IP::init(void)
     d_tcpSocket = INVALID_SOCKET;
     d_tcpListenSocket = INVALID_SOCKET;
     d_tcpListenPort = 0;
+	d_udpLobSocket = INVALID_SOCKET;
     d_udpOutboundSocket = INVALID_SOCKET;
     d_udpInboundSocket = INVALID_SOCKET;
 
@@ -2979,7 +2973,7 @@ int vrpn_Endpoint_IP::mainloop(timeval *timeout)
         // do BAD THINGS (TM).
 
         if (time_to_try_again) {
-            if (vrpn_udp_request_lob_packet(
+			if (vrpn_udp_request_lob_packet(d_udpLobSocket,
                     d_remote_machine_name, d_remote_port_number,
                     d_tcpListenPort, d_NICaddress) == -1) {
                 fprintf(stderr,
@@ -4486,11 +4480,7 @@ int vrpn_Endpoint::pack_sender_description(vrpn_int32 which)
                         vrpn_CONNECTION_RELIABLE);
 }
 
-#ifdef VRPN_USE_WINSOCK_SOCKETS
 static int flush_udp_socket(SOCKET fd)
-#else
-static int flush_udp_socket(int fd)
-#endif
 {
     timeval localTimeout;
     fd_set readfds, exceptfds;
@@ -6070,6 +6060,20 @@ vrpn_Connection_IP::vrpn_Connection_IP(
 
         endpoint->status = TRYING_TO_CONNECT;
 
+		/* Create a UDP socket and connect it to the port on the remote
+		* machine. */
+
+		endpoint->d_udpLobSocket = vrpn_connect_udp_port(endpoint->d_remote_machine_name,
+			endpoint->d_remote_port_number, d_NIC_IP);
+		if (endpoint->d_udpLobSocket == INVALID_SOCKET) {
+			fprintf(stderr,
+				"vrpn_Connection_IP: Can't Set up socket to lob UDP packets!\n");
+			connectionStatus = BROKEN;
+			// fprintf(stderr, "BROKEN -
+			// vrpn_Connection_IP::vrpn_Connection_IP.\n");
+			return;
+		}
+
 // fprintf(stderr, "TRYING_TO_CONNECT -
 // vrpn_Connection_IP::vrpn_Connection_IP.\n");
 
@@ -6096,7 +6100,7 @@ vrpn_Connection_IP::vrpn_Connection_IP(
 
         // Lob a packet asking for a connection on that port.
         vrpn_gettimeofday(&endpoint->d_last_connect_attempt, NULL);
-        if (vrpn_udp_request_lob_packet(
+		if (vrpn_udp_request_lob_packet(endpoint->d_udpLobSocket,
                 endpoint->d_remote_machine_name, endpoint->d_remote_port_number,
                 endpoint->d_tcpListenPort, NIC_IPaddress) == -1) {
             fprintf(stderr, "vrpn_Connection_IP: Can't lob UDP request\n");
