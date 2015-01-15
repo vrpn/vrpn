@@ -334,6 +334,24 @@ void vrpn_YEI_3Space::handle_report(unsigned char *report)
     channel[i] = value;
   }
 
+  // Check the temperature to make sure it is above 1.
+  // If not, there is trouble parsing the report.  Sometimes the wired
+  // unit gets the wrong number of bytes in the report, causing things
+  // to wrap around.  This catches that case.
+  if (channel[9] <= 1) {
+	  VRPN_MSG_ERROR("vrpn_YEI_3Space::handle_report(): Invalid temperature, resetting");
+	  d_sensor = STATUS_RESETTING;
+  }
+
+  // Check the confidence factor to make sure it is between 0 and 1.
+  // If not, there is trouble parsing the report.  Sometimes the wired
+  // unit gets the wrong number of bytes in the report, causing things
+  // to wrap around.  This catches that case.
+  if ((channel[10] < 0) || (channel[10] > 1)) {
+	  VRPN_MSG_ERROR("vrpn_YEI_3Space::handle_report(): Invalid confidence, resetting");
+	  d_sensor = STATUS_RESETTING;
+  }
+
   // Read the button values and put them into the buttons.
   vrpn_uint8 b;
   vrpn_unbuffer(&bufptr, &b);
