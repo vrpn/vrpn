@@ -2170,6 +2170,14 @@ static SOCKET vrpn_connect_udp_port(const char *machineName, int remotePort,
 /**
  * Retrieves the IP address or hostname of the local interface used to connect
  * to the specified remote host.
+ * XXX: This does not always work.  See the Github issue with the report from
+ * Isop W. Alexander showing that a machine with two ports (172.28.0.10 and
+ * 192.168.191.130) sent a connection request that came from the 172 IP address
+ * but that had the name of the 192 interface in the message as the host to
+ * call back.  This turned out to be unroutable, so the server failed to call
+ * back on the correct IP address.  Presumably, this happens when the gateway
+ * is configured to be a single outgoing NIC.  This was on a Linux box.  We
+ * need a more reliable way to select the outgoing NIC.
  *
  * @param local_host A buffer of size 64 that will contain the name of the local interface.
  * @param max_length The maximum length of the local_host buffer.
@@ -6073,9 +6081,6 @@ vrpn_Connection_IP::vrpn_Connection_IP(
 			// vrpn_Connection_IP::vrpn_Connection_IP.\n");
 			return;
 		}
-
-// fprintf(stderr, "TRYING_TO_CONNECT -
-// vrpn_Connection_IP::vrpn_Connection_IP.\n");
 
 #ifdef VERBOSE
         printf("vrpn_Connection_IP: Getting the TCP port to listen on\n");
