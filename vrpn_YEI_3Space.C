@@ -288,7 +288,8 @@ void vrpn_YEI_3Space::handle_report(unsigned char *report)
   unsigned char *bufptr = report;
 
   // Read the two orientations and report them
-  q_vec_type  pos = {0};
+  q_vec_type  pos;
+  pos[Q_X] = pos[Q_Y] = pos[Q_Z] = 0;
   q_type  quat;
 
   for (int i = 0; i < 2; i++) {
@@ -578,7 +579,7 @@ bool vrpn_YEI_3Space_Sensor::send_ascii_command (const char *p_cmd)
   }
 
   // Allocate space for the command plus padding and zero terminator
-  int buflen = strlen(p_cmd) + 3;
+  int buflen = static_cast<int>(strlen(p_cmd) + 3);
   unsigned char *buffer = new unsigned char[buflen];
   if (buffer == NULL) {
     return false;
@@ -1052,7 +1053,7 @@ bool vrpn_YEI_3Space_Sensor_Wireless::send_ascii_command (const char *p_cmd)
   sprintf(buffer, ">%d,%s\n", d_logical_id, p_cmd);
 
   // Send the command and see if it worked.
-  int buflen = strlen(buffer) + 1;
+  int buflen = static_cast<int>(strlen(buffer) + 1);
   unsigned char *bufptr = static_cast<unsigned char *>(
     static_cast<void*>(buffer));
   int l_ret = vrpn_write_characters(d_serial_fd, bufptr, buflen);
