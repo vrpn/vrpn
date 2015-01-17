@@ -2177,7 +2177,10 @@ static SOCKET vrpn_connect_udp_port(const char *machineName, int remotePort,
  * call back.  This turned out to be unroutable, so the server failed to call
  * back on the correct IP address.  Presumably, this happens when the gateway
  * is configured to be a single outgoing NIC.  This was on a Linux box.  We
- * need a more reliable way to select the outgoing NIC.
+ * need a more reliable way to select the outgoing NIC.  XXX Actually, the problem may be that
+ * we aren't listening on the incorrect port -- the UDP receipt code may
+ * use the IP address the message came from rather than the machine name
+ * in the message.
  *
  * @param local_host A buffer of size 64 that will contain the name of the local interface.
  * @param max_length The maximum length of the local_host buffer.
@@ -2981,6 +2984,18 @@ int vrpn_Endpoint_IP::mainloop(timeval *timeout)
         // do BAD THINGS (TM).
 
         if (time_to_try_again) {
+			//XXX On Linux, if we are talking to a machine that does not
+			// have a server running, then our connect eventually tells us
+			// that is was refused, and we can't communicate on that
+			// UDP socket anymore.  We should switch to a connectionless
+			// sendto() option instead, but this runs the way it used
+			// to, which worked, but still leaves the socket open after
+			// the send; closing it right away broke on some Windows
+			// machines.
+			vrpn_closeSocket(d_udpLobSocket);
+			d_udpLobSocket = vrpn_connect_udp_port(d_remote_machine_name,
+				d_remote_port_number, d_NICaddress);
+
 			if (vrpn_udp_request_lob_packet(d_udpLobSocket,
                     d_remote_machine_name, d_remote_port_number,
                     d_tcpListenPort, d_NICaddress) == -1) {
