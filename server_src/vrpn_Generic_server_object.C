@@ -5004,6 +5004,10 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(
                     VRPN_CHECK(templated_setup_HID_device_name_only<
                         vrpn_Retrolink_GameCube>);
                 }
+                else if (VRPN_ISIT("vrpn_Retrolink_Genesis")) {
+                    VRPN_CHECK(templated_setup_HID_device_name_only<
+                        vrpn_Retrolink_Genesis>);
+                }
                 else if (VRPN_ISIT("vrpn_Contour_ShuttleXpress")) {
                     VRPN_CHECK(templated_setup_HID_device_name_only<
                         vrpn_Contour_ShuttleXpress>);
