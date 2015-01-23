@@ -117,4 +117,5 @@ protected:
 #else
 class VRPN_API vrpn_Retrolink;
 class VRPN_API vrpn_Retrolink_GameCube;
+class VRPN_API vrpn_Retrolink_Genesis;
 #endif
