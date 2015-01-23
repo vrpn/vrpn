@@ -217,6 +217,15 @@ void vrpn_Retrolink_GameCube::decodePacket(size_t bytes, vrpn_uint8 *buffer)
 	// 6 = bit # 0 (left trigger), 1 (right trigger), 2 (Z), 5 (Start/pause)
 	// 7 = always 0x20 (maybe unconnected buttons; probably safest to ignore)
 
+	// Controls for the Nintendo 64 classic
+	// 0 = Left joystick X axis, goes from 0 (left) to 255 (right)
+	// 1 = Left joystick Y axis, goes from 0 (up) to 255 (down)
+	// 2 = Uncontrolled jibberish, must be from an unconnected channel
+	// 5 upper nybble = bit 0 (C up), 1 (C right), 2 (C down), 3 (C Left)
+	// 5 lower nybble = rocker: 255 when nothing; 0 (up), 1 (UR), 2 (right), .. 7 (UL)
+	// 6 = bit # 0 (left trigger), 1 (right trigger), 2 (A), 3 (Z), 4 (B), 5 (Start)
+	// 7 = always 0x20 (maybe unconnected buttons; probably safest to ignore)
+
 	if (bytes == 8) {
 		// Figure out the joystick axes.
 		channel[0] = normalize_axis(buffer[0]);
