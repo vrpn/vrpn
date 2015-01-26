@@ -67,11 +67,13 @@ if("${CMAKE_SIZEOF_VOID_P}" EQUAL "8")
 	set(_ovr_library_arch "x86_64")
 	if (WIN32)
 		set(_ovr_library_arch "x64")
+		set(_ovr_libname_bitsuffix "64")
 	endif(WIN32)
 else()
 	set(_ovr_library_arch "i386")
 	if (WIN32)
 		set(_ovr_library_arch "Win32")
+		set(_ovr_libname_bitsuffix "")
 	endif(WIN32)
 endif()
 
@@ -86,8 +88,8 @@ endif()
 
 find_library(OVR_LIBRARY_RELEASE
 	NAMES
-	ovr
-	libovr
+	ovr${_ovr_libname_bitsuffix}
+	libovr${_ovr_libname_bitsuffix}
 	PATHS
 	"${OVR_ROOT_DIR}"
 	"${OVR_ROOT_DIR}/LibOVR"
@@ -99,8 +101,8 @@ find_library(OVR_LIBRARY_RELEASE
 
 find_library(OVR_LIBRARY_DEBUG
 	NAMES
-	ovrd
-	libovrd
+	ovr${_ovr_libname_bitsuffix}d
+	libovr${_ovr_libname_bitsuffix}d
 	PATHS
 	"${OVR_ROOT_DIR}"
 	"${OVR_ROOT_DIR}/LibOVR"
