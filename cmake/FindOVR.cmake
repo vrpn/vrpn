@@ -190,6 +190,12 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 	endif()
 endif()
 
+if(WIN32)
+	#find_library(OVR_WINMM_LIBRARY winmm)
+	#find_library(OVR_WS2_LIBRARY ws2_32)
+	list(APPEND _ovr_dependency_libraries winmm ws2_32)#${OVR_WINMM_LIBRARY} ${OVR_WS2_LIBRARY})
+endif()
+
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(OVR
 	DEFAULT_MSG
@@ -200,12 +206,14 @@ find_package_handle_standard_args(OVR
 	)
 
 if(OVR_FOUND)
-	list(APPEND OVR_LIBRARIES ${OVR_LIBRARY} ${_ovr_dependency_libraries})
-	list(APPEND OVR_INCLUDE_DIRS ${OVR_INCLUDE_DIR} ${OVR_SOURCE_DIR} ${_ovr_dependency_includes})
+	set(OVR_LIBRARIES ${OVR_LIBRARY} ${_ovr_dependency_libraries})
+	set(OVR_INCLUDE_DIRS ${OVR_INCLUDE_DIR} ${OVR_SOURCE_DIR} ${_ovr_dependency_includes})
 	mark_as_advanced(OVR_ROOT_DIR)
 endif()
 
 mark_as_advanced(OVR_INCLUDE_DIR
 	OVR_SOURCE_DIR
-	OVR_LIBRARY)
+	OVR_LIBRARY
+	OVR_WINMM_LIBRARY
+	OVR_WS2_LIBRARY)
 
