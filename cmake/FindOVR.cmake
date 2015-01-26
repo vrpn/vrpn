@@ -24,7 +24,7 @@ set(OVR_ROOT_DIR
 	"${OVR_ROOT_DIR}"
 	CACHE
 	PATH
-    "Directory to search for Oculus SDK")
+	"Directory to search for Oculus SDK")
 
 # The OVR library is built in a directory tree that varies based on platform,
 # architecture, and compiler.
@@ -91,17 +91,34 @@ elseif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 	set(OVR_LIBRARY_PATH_SUFFIX "Lib/${_ovr_library_arch}/${_ovr_library_compiler}")
 endif()
 
-find_library(OVR_LIBRARY
+find_library(OVR_LIBRARY_RELEASE
 	NAMES
 	ovr
 	libovr
 	PATHS
-	${OVR_ROOT_DIR}
+	"${OVR_ROOT_DIR}"
+	"${OVR_ROOT_DIR}/LibOVR"
+	c:/tools/oculus-sdk.install/OculusSDK/LibOVR
 	PATH_SUFFIXES
-	${OVR_LIBRARY_PATH_SUFFIX}
-	)
+	${OVR_LIBRARY_PATH_SUFFIX})
 
-get_filename_component(_libdir "${OVR_LIBRARY}" PATH)
+find_library(OVR_LIBRARY_DEBUG
+	NAMES
+	ovrd
+	libovrd
+	PATHS
+	"${OVR_ROOT_DIR}"
+	"${OVR_ROOT_DIR}/LibOVR"
+	c:/tools/oculus-sdk.install/OculusSDK/LibOVR
+	PATH_SUFFIXES
+	${OVR_LIBRARY_PATH_SUFFIX})
+
+include(SelectLibraryConfigurations)
+select_library_configurations(OVR)
+
+if(OVR_LIBRARY_RELEASE)
+	get_filename_component(_libdir "${OVR_LIBRARY_RELEASE}" PATH)
+endif()
 
 find_path(OVR_INCLUDE_DIR
 	NAMES
@@ -109,6 +126,8 @@ find_path(OVR_INCLUDE_DIR
 	HINTS
 	"${_libdir}"
 	"${_libdir}/.."
+	"${_libdir}/../.."
+	"${_libdir}/../../.."
 	PATHS
 	"${OVR_ROOT_DIR}"
 	PATH_SUFFIXES
@@ -122,6 +141,8 @@ find_path(OVR_SOURCE_DIR
 	HINTS
 	"${_libdir}"
 	"${_libdir}/.."
+	"${_libdir}/../.."
+	"${_libdir}/../../.."
 	PATHS
 	"${OVR_ROOT_DIR}"
 	PATH_SUFFIXES
