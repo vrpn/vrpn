@@ -75,18 +75,11 @@ else()
 	endif(WIN32)
 endif()
 
-# Test build type
-if((${CMAKE_BUILD_TYPE} MATCHES "Debug") OR (${CMAKE_BUILD_TYPE} MATCHES "RelWithDebugInfo"))
-	set(_ovr_library_build_type "Debug")
-else()
-	set(_ovr_library_build_type "Release")
-endif()
-
 # Test platform
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-	set(OVR_LIBRARY_PATH_SUFFIX "Lib/Linux/${_ovr_library_build_type}/${_ovr_library_arch}")
+	set(OVR_LIBRARY_PATH_SUFFIX_START "Lib/Linux") # needs build type and arch
 elseif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-	set(OVR_LIBRARY_PATH_SUFFIX "Lib/Mac/${_ovr_library_build_type}")
+	set(OVR_LIBRARY_PATH_SUFFIX_START "Lib/Mac") # needs build type
 elseif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 	set(OVR_LIBRARY_PATH_SUFFIX "Lib/${_ovr_library_arch}/${_ovr_library_compiler}")
 endif()
@@ -100,7 +93,9 @@ find_library(OVR_LIBRARY_RELEASE
 	"${OVR_ROOT_DIR}/LibOVR"
 	c:/tools/oculus-sdk.install/OculusSDK/LibOVR
 	PATH_SUFFIXES
-	${OVR_LIBRARY_PATH_SUFFIX})
+	${OVR_LIBRARY_PATH_SUFFIX}
+	${OVR_LIBRARY_PATH_SUFFIX_START}/Release
+	${OVR_LIBRARY_PATH_SUFFIX_START}/Release/${_ovr_library_arch})
 
 find_library(OVR_LIBRARY_DEBUG
 	NAMES
@@ -111,7 +106,9 @@ find_library(OVR_LIBRARY_DEBUG
 	"${OVR_ROOT_DIR}/LibOVR"
 	c:/tools/oculus-sdk.install/OculusSDK/LibOVR
 	PATH_SUFFIXES
-	${OVR_LIBRARY_PATH_SUFFIX})
+	${OVR_LIBRARY_PATH_SUFFIX}
+	${OVR_LIBRARY_PATH_SUFFIX_START}/Debug
+	${OVR_LIBRARY_PATH_SUFFIX_START}/Debug/${_ovr_library_arch})
 
 include(SelectLibraryConfigurations)
 select_library_configurations(OVR)
