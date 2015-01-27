@@ -110,7 +110,7 @@ int vrpn_Button::register_types(void)
     states_message_id =
         d_connection->register_message_type("vrpn_Button States");
 
-    // to handle button state changes -- see Buton_Filter should register a
+    // to handle button state changes -- see Button_Filter should register a
     // handler
     // for this ID -- ideally the message will be ignored otherwise
     admin_message_id = d_connection->register_message_type("vrpn_Button Admin");
