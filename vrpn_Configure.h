@@ -328,6 +328,7 @@
 #define VRPN_USE_HID
 #endif
 #endif
+#define VRPN_USE_HID
 
 //------------------------
 // Instructs VRPN to link in the source code to a local version of
@@ -347,6 +348,7 @@
 #if !defined(__MINGW__) && !defined(__APPLE__)
 #define VRPN_USE_LOCAL_HIDAPI
 #endif
+#define VRPN_USE_LOCAL_HIDAPI
 
 //------------------------
 // Instructs VRPN to attempt to use LibUSB-1.0. This will compile and

@@ -53,7 +53,7 @@
 
   #define vrpn_closeSocket close
 
-  #define vrpn_socket_error errno;
+  #define vrpn_socket_error errno
   #define vrpn_socket_error_to_chars(x) strerror(x)
   #define vrpn_EINTR EINTR
 
