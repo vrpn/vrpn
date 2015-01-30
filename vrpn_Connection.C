@@ -7,9 +7,6 @@
 #include <mpi.h>
 #endif
 
-#ifndef _WIN32_WCE
-#include <errno.h> // for errno, EINTR
-#endif
 #include <stddef.h> // for size_t
 #include <stdio.h>  // for fprintf, stderr, NULL, etc
 #include <string.h> // for strlen, strcpy, memcpy, etc
@@ -27,20 +24,48 @@
 #include <stdlib.h> // for exit, atoi, getenv, system
 
 #include "vrpn_Connection.h"
+#include <string>
 
 #ifdef VRPN_USE_WINSOCK_SOCKETS
-// a socket in windows can not be closed like it can in unix-land
-#define vrpn_closeSocket closesocket
+
+  // A socket in Windows can not be closed like it can in unix-land
+  #define vrpn_closeSocket closesocket
+
+  // Socket errors don't set errno in Windows; they use their own
+  // custom error reporting methods.
+  #define vrpn_socket_error WSAGetLastError()
+  static std::string WSA_number_to_string(int err)
+  {
+	LPTSTR s = NULL;
+	FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+		NULL, err,
+		MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+		(LPTSTR)&s, 0, NULL);
+	std::string ret = s;
+	LocalFree(s);
+	return ret;
+  }
+  #define vrpn_socket_error_to_chars(x) (WSA_number_to_string(x)).c_str()
+  #define vrpn_EINTR WSAEINTR
+
 #else
-#define vrpn_closeSocket close
-#include <arpa/inet.h>  // for inet_addr
-#include <netinet/in.h> // for sockaddr_in, ntohl, in_addr, etc
-#include <sys/socket.h> // for getsockname, send, AF_INET, etc
-#include <unistd.h>     // for close, read, fork, etc
-#ifdef _AIX
-#define _USE_IRS
-#endif
-#include <netdb.h> // for hostent, gethostbyname, etc
+  #include <errno.h> // for errno, EINTR
+
+  #define vrpn_closeSocket close
+
+  #define vrpn_socket_error errno;
+  #define vrpn_socket_error_to_chars(x) strerror(x)
+  #define vrpn_EINTR EINTR
+
+  #include <arpa/inet.h>  // for inet_addr
+  #include <netinet/in.h> // for sockaddr_in, ntohl, in_addr, etc
+  #include <sys/socket.h> // for getsockname, send, AF_INET, etc
+  #include <unistd.h>     // for close, read, fork, etc
+  #ifdef _AIX
+    #define _USE_IRS
+  #endif
+  #include <netdb.h> // for hostent, gethostbyname, etc
+
 #endif
 
 #ifdef sparc
@@ -67,17 +92,13 @@
 
 // cast fourth argument to setsockopt()
 #ifdef VRPN_USE_WINSOCK_SOCKETS
-#define SOCK_CAST (char *)
-#ifdef _WIN32_WCE
-#define errno WSAGetLastError()
-#define EINTR WSAEINTR
-#endif
+  #define SOCK_CAST (char *)
 #else
-#ifdef sparc
-#define SOCK_CAST (const char *)
-#else
-#define SOCK_CAST
-#endif
+  #ifdef sparc
+    #define SOCK_CAST (const char *)
+  #else
+    #define SOCK_CAST
+  #endif
 #endif
 
 #if defined(_AIX) || defined(__APPLE__) || defined(ANDROID) || defined(__linux)
@@ -1668,7 +1689,7 @@ int vrpn_noint_select(int width, fd_set *readfds, fd_set *writefds,
         if (ret >= 0) { /* We are done if timeout or found some */
             done = 1;
         }
-        else if (errno != EINTR) { /* Done if non-intr error */
+		else if (vrpn_socket_error != vrpn_EINTR) { /* Done if non-intr error */
             done = 1;
         }
         else if ((timeout != NULL) &&
@@ -1730,7 +1751,7 @@ int vrpn_noint_block_write(int outfile, const char buffer[], size_t length)
         sofar += ret;
 
         /* Ignore interrupted system calls - retry */
-        if ((ret == -1) && (errno == EINTR)) {
+		if ((ret == -1) && (vrpn_socket_error == vrpn_EINTR)) {
             ret = 1;    /* So we go around the loop again */
             sofar += 1; /* Restoring it from above -1 */
         }
@@ -1773,7 +1794,7 @@ int vrpn_noint_block_read(int infile, char buffer[], size_t length)
         sofar += ret;
 
         /* Ignore interrupted system calls - retry */
-        if ((ret == -1) && (errno == EINTR)) {
+		if ((ret == -1) && (vrpn_socket_error == vrpn_EINTR)) {
             ret = 1;    /* So we go around the loop again */
             sofar += 1; /* Restoring it from above -1 */
         }
@@ -1930,7 +1951,7 @@ int vrpn_noint_block_read_timeout(SOCKET infile, char buffer[], size_t length,
         sofar += ret;
 
         /* Ignore interrupted system calls - retry */
-        if ((ret == -1) && (errno == EINTR)) {
+		if ((ret == -1) && (vrpn_socket_error == vrpn_EINTR)) {
             ret = 1;    /* So we go around the loop again */
             sofar += 1; /* Restoring it from above -1 */
         }
@@ -1975,7 +1996,7 @@ static SOCKET open_socket(int type, unsigned short *portno,
     if (sock == INVALID_SOCKET) {
         fprintf(stderr, "open_socket: can't open socket.\n");
 #ifndef _WIN32_WCE
-        fprintf(stderr, "  -- errno %d (%s).\n", errno, strerror(errno));
+		fprintf(stderr, "  -- Error %d (%s).\n", vrpn_socket_error, vrpn_socket_error_to_chars(vrpn_socket_error));
 #endif
         return INVALID_SOCKET;
     }
@@ -2033,7 +2054,7 @@ static SOCKET open_socket(int type, unsigned short *portno,
             fprintf(stderr, " %d", *portno);
         }
 #ifndef _WIN32_WCE
-        fprintf(stderr, "  --  %d  --  %s\n", errno, strerror(errno));
+		fprintf(stderr, "  --  %d  --  %s\n", vrpn_socket_error, vrpn_socket_error_to_chars(vrpn_socket_error));
 #endif
         fprintf(stderr, "  (This probably means that another application has "
                         "the port open already)\n");
@@ -2864,7 +2885,7 @@ int vrpn_Endpoint_IP::mainloop(timeval *timeout)
                               timeout) == -1) {
             fprintf(stderr, "vrpn_Endpoint::mainloop: select failed.\n");
 #ifndef _WIN32_WCE
-            fprintf(stderr, "  Errno (%d):  %s.\n", errno, strerror(errno));
+			fprintf(stderr, "  Error (%d):  %s.\n", vrpn_socket_error, vrpn_socket_error_to_chars(vrpn_socket_error));
 #endif
             status = BROKEN;
             return -1;
@@ -3179,18 +3200,7 @@ int vrpn_Endpoint_IP::send_pending_reports(void)
     if (connection) {
         fprintf(stderr, "vrpn_Endpoint::send_pending_reports():  "
                         "select() failed.\n");
-#ifdef VRPN_USE_WINSOCK_SOCKETS
-        char Message[1024];
-        FormatMessage(
-            FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS |
-                FORMAT_MESSAGE_MAX_WIDTH_MASK,
-            NULL, WSAGetLastError(), MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-            (LPSTR)Message, 1024, NULL);
-        fprintf(stderr, "Windows Sockets Error (%d):  %s.\n", WSAGetLastError(),
-                Message);
-#else
-        fprintf(stderr, "Errno (%d):  %s.\n", errno, strerror(errno));
-#endif
+		fprintf(stderr, "Error (%d):  %s.\n", vrpn_socket_error, vrpn_socket_error_to_chars(vrpn_socket_error));
         status = BROKEN;
         return -1;
     }
