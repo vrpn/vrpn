@@ -686,6 +686,7 @@ SLIB_FILES =  $(LIB_FILES) \
 	vrpn_NationalInstruments.C \
 	vrpn_nikon_controls.C \
 	vrpn_OmegaTemperature.C \
+	vrpn_Tracker_OSVRHackerDevKit.C \
 	vrpn_Poser_Analog.C \
 	vrpn_Poser_Tek4662.C \
 	vrpn_raw_sgibox.C \
@@ -773,6 +774,7 @@ SLIB_INCLUDES = $(LIB_INCLUDES) \
 	vrpn_nikon_controls.h \
 	vrpn_OneEuroFilter.h \
 	vrpn_OmegaTemperature.h \
+	vrpn_Tracker_OSVRHackerDevKit.h \
 	vrpn_Poser_Analog.h \
 	vrpn_Poser_Tek4662.h \
 	vrpn_raw_sgibox.h \
