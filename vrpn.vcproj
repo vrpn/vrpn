@@ -453,6 +453,26 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="vrpn_Tracker_OSVRHackerDevKit.C"
+				>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath="vrpn_BiosciencesTools.C"
 				>
 				<FileConfiguration
@@ -2511,6 +2531,10 @@
 			</File>
 			<File
 				RelativePath="vrpn_OmegaTemperature.h"
+				>
+			</File>
+			<File
+				RelativePath="vrpn_Tracker_OSVRHackerDevKit.h"
 				>
 			</File>
 			<File
