@@ -17,6 +17,7 @@ static const vrpn_uint16 XKEYS_PRO = 0x0291;
 static const vrpn_uint16 XKEYS_JOYSTICK = 0x0251;
 static const vrpn_uint16 XKEYS_XK3 = 0x042C;
 static const vrpn_uint16 XKEYS_JOG_AND_SHUTTLE12 = 0x0426;
+static const vrpn_uint16 XKEYS_JOYSTICK12 = 0x0429;
 
 vrpn_Xkeys::vrpn_Xkeys(vrpn_HidAcceptor *filter, const char *name, vrpn_Connection *c, bool toggle_light)
   : _filter(filter)
@@ -445,11 +446,15 @@ vrpn_Xkeys_Joystick::vrpn_Xkeys_Joystick(const char *name, vrpn_Connection *c)
   : vrpn_Xkeys(_filter = new vrpn_HidProductAcceptor(XKEYS_VENDOR, XKEYS_JOYSTICK), name, c)
   , vrpn_Button_Filter(name, c)
   , vrpn_Analog(name, c)
+  , vrpn_Dial(name, c)
 {
 	vrpn_Analog::num_channel = 2;
+	vrpn_Dial::num_dials = 1;
 	vrpn_Button::num_buttons = 59;  // Don't forget button 0
 
-	// Initialize the state of all the analogs and buttons
+	// Initialize the state of all the analogs, buttons, and dials
+	_gotDial = false;
+	_lastDial = 0;
 	memset(buttons, 0, sizeof(buttons));
 	memset(lastbuttons, 0, sizeof(lastbuttons));
 	memset(channel, 0, sizeof(channel));
@@ -465,6 +470,7 @@ void vrpn_Xkeys_Joystick::mainloop()
 
 	vrpn_Analog::server_mainloop();
 	vrpn_Button::server_mainloop();
+	vrpn_Dial::server_mainloop();
 }
 
 void vrpn_Xkeys_Joystick::report(vrpn_uint32 class_of_service) {
@@ -473,6 +479,7 @@ void vrpn_Xkeys_Joystick::report(vrpn_uint32 class_of_service) {
 
 	vrpn_Analog::report(class_of_service);
 	vrpn_Button::report_changes();
+	vrpn_Dial::report();
 }
 
 void vrpn_Xkeys_Joystick::report_changes(vrpn_uint32 class_of_service) {
@@ -481,6 +488,7 @@ void vrpn_Xkeys_Joystick::report_changes(vrpn_uint32 class_of_service) {
 
 	vrpn_Analog::report_changes(class_of_service);
 	vrpn_Button::report_changes();
+	vrpn_Dial::report_changes();
 }
 
 void vrpn_Xkeys_Joystick::decodePacket(size_t bytes, vrpn_uint8 *buffer)
@@ -495,10 +503,10 @@ void vrpn_Xkeys_Joystick::decodePacket(size_t bytes, vrpn_uint8 *buffer)
 	// length of the packet to see which it is and then parse it appropriately.
 	if (bytes == 8) {	// The first 8 bytes of a report
 
-                // Report joystick axes as analogs				
-                channel[0] = (static_cast<float>(buffer[0]) - 128) / 128.0;
-                channel[1] = (static_cast<float>(buffer[1]) - 128) / 128.0;
-                channel[2] = (static_cast<float>(buffer[2]) - 128) / 128.0;
+        // Report joystick axes as analogs				
+        channel[0] = (static_cast<float>(buffer[0]) - 128) / 128.0;
+        channel[1] = (static_cast<float>(buffer[1]) - 128) / 128.0;
+        channel[2] = (static_cast<float>(buffer[2]) - 128) / 128.0;
 
 		// Decode the other buttons in column-major order.  We skip the
 		// first three bytes, which record the joystick value or the
@@ -569,13 +577,153 @@ void vrpn_Xkeys_Joystick::decodePacket(size_t bytes, vrpn_uint8 *buffer)
 			  buttons[btn + 1] = (*offset & mask) != 0;
 		  }
 
-                  // Report joystick axes as analogs				
-                  channel[0] = (static_cast<float>(report[0]) - 128) / 128.0;
-                  channel[1] = (static_cast<float>(report[1]) - 128) / 128.0;
-                  channel[2] = (static_cast<float>(report[2]) - 128) / 128.0;
+		  // Report joystick twist as analog and dial
+		  if (!_gotDial) {
+			  _gotDial = true;
+		  }
+		  else {
+			  dials[0] = static_cast<vrpn_int8>(report[2] - _lastDial) / 256.0;
+		  }
+		  _lastDial = report[2];
+
+		  // Double cast on channels 0 and 1 ensures negative values stay negative.
+		  // Channel 2 sums the revolutions of the dial.
+		  channel[0] = static_cast<float>(static_cast<signed char>(report[6])) / 127.0;
+		  channel[1] = static_cast<float>(static_cast<signed char>(report[7])) / 127.0;
+		  channel[2] += dials[0];
+
+          // Report joystick axes as analogs				
+          channel[0] = (static_cast<float>(report[0]) - 128) / 128.0;
+          channel[1] = -(static_cast<float>(report[1]) - 128) / 128.0;
+          channel[2] += dials[0];
 	  }
 	} else {
 		fprintf(stderr,"vrpn_Xkeys_Joystick::decodePacket(): Unrecognized packet length (%u)\n", static_cast<unsigned>(bytes));
+		return;
+	}
+}
+
+vrpn_Xkeys_Joystick12::vrpn_Xkeys_Joystick12(const char *name, vrpn_Connection *c)
+	: vrpn_Xkeys(_filter = new vrpn_HidProductAcceptor(XKEYS_VENDOR, XKEYS_JOYSTICK12), name, c)
+	, vrpn_Button_Filter(name, c)
+	, vrpn_Analog(name, c)
+	, vrpn_Dial(name, c)
+{
+	vrpn_Analog::num_channel = 3;
+	vrpn_Dial::num_dials = 1;
+	vrpn_Button::num_buttons = 13;  // Don't forget button 0
+
+	// Initialize the state of all the analogs, buttons, and dials
+	_gotDial = false;
+	_lastDial = 0;
+	memset(buttons, 0, sizeof(buttons));
+	memset(lastbuttons, 0, sizeof(lastbuttons));
+	memset(channel, 0, sizeof(channel));
+	memset(last, 0, sizeof(last));
+}
+
+void vrpn_Xkeys_Joystick12::mainloop()
+{
+	update();
+	server_mainloop();
+	vrpn_gettimeofday(&_timestamp, NULL);
+	report_changes();
+
+	vrpn_Analog::server_mainloop();
+	vrpn_Button::server_mainloop();
+	vrpn_Dial::server_mainloop();
+}
+
+void vrpn_Xkeys_Joystick12::report(vrpn_uint32 class_of_service) {
+	vrpn_Analog::timestamp = _timestamp;
+	vrpn_Button::timestamp = _timestamp;
+
+	vrpn_Analog::report(class_of_service);
+	vrpn_Button::report_changes();
+	vrpn_Dial::report();
+}
+
+void vrpn_Xkeys_Joystick12::report_changes(vrpn_uint32 class_of_service) {
+	vrpn_Analog::timestamp = _timestamp;
+	vrpn_Button::timestamp = _timestamp;
+
+	vrpn_Analog::report_changes(class_of_service);
+	vrpn_Button::report_changes();
+	vrpn_Dial::report_changes();
+}
+
+void vrpn_Xkeys_Joystick12::decodePacket(size_t bytes, vrpn_uint8 *buffer)
+{
+	/*
+	// Print the report so we can figure out what is going on.
+	for (size_t i = 0; i < bytes; i++) {
+	printf("%02x ", buffer[i]);
+	}
+	printf("\n");
+	return;
+*/
+
+	// The full report is 32 bytes long.  Byte 0 is always 0, as are
+	// bytes 16-31.  Bytes 12-15 seem to be some sort of time code.
+	// Buttons: The reset button is the low-order bit in byte 1.
+	//   The first column are the 3 low-order bits in byte 2
+	//   The next three columns are the low-order bits in bytes 3-5.
+	// Joystick X axis: Byte 6 goes up to 7F to right, down to 81 to left.
+	// Joystick Y axis: Byte 7 goes to 7F when down, 81 when up.
+	// Joystick Z axis: Byte 8 goes up when spun right, down left, and
+	//   wraps around from 255 to 0.
+
+	if (bytes % 32 == 0) {
+
+		// Loop through the reports in case we got multiple.
+		size_t i;
+		for (i = 0; i < bytes / 32; i++) {
+			vrpn_uint8 *report = buffer + (i * 32);
+
+			// Check for zero in the bytes that should be.
+			if (report[0] != 0) {
+				// Garbled report; skip it
+				fprintf(stderr, "vrpn_Xkeys: Found a corrupted report; # total bytes = %u\n", static_cast<unsigned>(bytes));
+				continue;
+			}
+			for (size_t j = 16; j < 32; j++) {
+				if (report[j] != 0) {
+					// Garbled report; skip it
+					fprintf(stderr, "vrpn_Xkeys: Found a corrupted report; # total bytes = %u\n", static_cast<unsigned>(bytes));
+					continue;
+				}
+			}
+
+			// Decode the "programming switch"
+			buttons[0] = (report[1] & 0x01) != 0;
+
+			// Decode the other buttons in column-major order
+			for (int btn = 0; btn < 12; btn++) {
+				vrpn_uint8 *offset, mask;
+
+				offset = report + btn / 3 + 2;
+				mask = static_cast<vrpn_uint8>(1 << (btn % 3));
+
+				buttons[btn + 1] = (*offset & mask) != 0;
+			}
+
+			// Report joystick twist as analog and dial
+			if (!_gotDial) {
+				_gotDial = true;
+			} else {
+				dials[0] = static_cast<vrpn_int8>(report[8] - _lastDial) / 256.0;
+			}
+			_lastDial = report[8];
+
+			// Double cast on channels 0 and 1 ensures negative values stay negative.
+			// Channel 2 sums the revolutions of the dial.
+			channel[0] = static_cast<float>(static_cast<signed char>(report[6])) / 127.0;
+			channel[1] = -static_cast<float>(static_cast<signed char>(report[7])) / 127.0;
+			channel[2] += dials[0];
+		}
+	}
+	else {
+		fprintf(stderr, "vrpn_Xkeys_Joystick12::decodePacket(): Unrecognized packet length (%u)\n", static_cast<unsigned>(bytes));
 		return;
 	}
 }
