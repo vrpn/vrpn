@@ -5036,7 +5036,11 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(
                     VRPN_CHECK(templated_setup_HID_device_name_only<
                         vrpn_Xkeys_Jog_And_Shuttle>);
                 }
-                else if (VRPN_ISIT("vrpn_Xkeys_XK3")) {
+				else if (VRPN_ISIT("vrpn_Xkeys_Jog_And_Shuttle12")) {
+					VRPN_CHECK(templated_setup_HID_device_name_only<
+						vrpn_Xkeys_Jog_And_Shuttle12>);
+				}
+				else if (VRPN_ISIT("vrpn_Xkeys_XK3")) {
                     VRPN_CHECK(
                         templated_setup_HID_device_name_only<vrpn_Xkeys_XK3>);
                 }
