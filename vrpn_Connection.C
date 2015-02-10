@@ -2704,6 +2704,10 @@ vrpn_Endpoint_IP::vrpn_Endpoint_IP(vrpn_TypeDispatcher *dispatcher,
     , d_udpInbuf((char *)d_udpAlignedInbuf)
     , d_NICaddress(NULL)
 {
+    // Keep Valgrind happy.
+    memset(d_tcpOutbuf, 0, d_tcpBuflen);
+    memset(d_udpOutbuf, 0, d_udpBuflen);
+
     vrpn_Endpoint_IP::init();
 }
 
