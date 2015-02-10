@@ -864,7 +864,6 @@ int vrpn_Log::setName(const char *name, size_t len)
 
 int vrpn_Log::setCookie(const char *cookieBuffer)
 {
-
     if (d_magicCookie) {
         delete[] d_magicCookie;
     }
@@ -873,6 +872,7 @@ int vrpn_Log::setCookie(const char *cookieBuffer)
         fprintf(stderr, "vrpn_Log::setCookie:  Out of memory.\n");
         return -1;
     }
+    memset(d_magicCookie, 0, 1 + vrpn_cookie_size());
     strncpy(d_magicCookie, cookieBuffer, vrpn_cookie_size());
 
     return 0;
@@ -1741,17 +1741,16 @@ int vrpn_noint_select(int width, fd_set *readfds, fd_set *writefds,
 
 int vrpn_noint_block_write(int outfile, const char buffer[], size_t length)
 {
-    register int sofar; /* How many characters sent so far */
+    register int sofar = 0; /* How many characters sent so far */
     register int ret;   /* Return value from write() */
 
-    sofar = 0;
     do {
         /* Try to write the remaining data */
         ret = write(outfile, buffer + sofar, length - sofar);
         sofar += ret;
 
         /* Ignore interrupted system calls - retry */
-		if ((ret == -1) && (vrpn_socket_error == vrpn_EINTR)) {
+        if ((ret == -1) && (vrpn_socket_error == vrpn_EINTR)) {
             ret = 1;    /* So we go around the loop again */
             sofar += 1; /* Restoring it from above -1 */
         }
@@ -2572,7 +2571,7 @@ static int vrpn_start_server(const char *machine, char *server_name, char *args,
 
 int write_vrpn_cookie(char *buffer, size_t length, long remote_log_mode)
 {
-    if (length < vrpn_MAGICLEN + vrpn_ALIGN + 1) return -1;
+    if (length < vrpn_cookie_size() + 1) return -1;
 
     sprintf(buffer, "%s  %c", vrpn_MAGIC,
             static_cast<char>(remote_log_mode + '0'));
@@ -2658,8 +2657,11 @@ int check_vrpn_file_cookie(const char *buffer)
     return 0;
 }
 
+// NOTE: This needs to remain the same size unless we change the major version
+// number for VRPN.  It is the length that is written into the stream.
 size_t vrpn_cookie_size(void) { return vrpn_MAGICLEN + vrpn_ALIGN; }
 
+size_t vrpn_actual_cookie_size(void) { return vrpn_MAGICLEN + 3; }
 // END OF COOKIE CODE
 
 vrpn_Endpoint::vrpn_Endpoint(vrpn_TypeDispatcher *dispatcher,
@@ -3802,8 +3804,10 @@ int vrpn_Endpoint_IP::setup_new_connection(void)
     vrpn_int32 sendlen;
     int retval;
 
+    // Keep Valgrind happy
+    memset(sendbuf, 0, sizeof(sendbuf));
     retval =
-        write_vrpn_cookie(sendbuf, vrpn_cookie_size() + 1, d_remoteLogMode);
+        write_vrpn_cookie(sendbuf, sizeof(sendbuf), d_remoteLogMode);
     if (retval < 0) {
         perror("vrpn_Endpoint::setup_new_connection:  "
                "Internal error - array too small.  The code's broken.");
@@ -3812,9 +3816,6 @@ int vrpn_Endpoint_IP::setup_new_connection(void)
     sendlen = static_cast<vrpn_int32>(vrpn_cookie_size());
 
     // Write the magic cookie header to the server
-    // NOTE: Valgrind will complain about this because we didn't fill in all of the
-    // characters we're writing.  But we don't care about the characters that are
-    // beyond the terminating NULL character in the string.
     if (vrpn_noint_block_write(d_tcpSocket, sendbuf, sendlen) != sendlen) {
         fprintf(stderr, "vrpn_Endpoint::setup_new_connection:  "
                         "Can't write cookie.\n");
@@ -3892,28 +3893,22 @@ void vrpn_Endpoint_IP::poll_for_cookie(const timeval *pTimeout)
 
 int vrpn_Endpoint_IP::finish_new_connection_setup(void)
 {
-
     vrpn_int32 sendlen = static_cast<vrpn_int32>(vrpn_cookie_size());
-    char *recvbuf = new char[sendlen];
-    if (recvbuf == NULL) {
-        fprintf(stderr, "vrpn_Endpoint_IP::finish_new_connection_setup(): Out "
-                        "of memory when allocating receiver buffer\n");
-        status = BROKEN;
-        return -1;
-    }
+    char recvbuf[sendlen];
+
+    // Keep Valgrind happy
+    memset(recvbuf, 0, sizeof(recvbuf));
 
     // Try to read the magic cookie from the server.
     int ret = vrpn_noint_block_read(d_tcpSocket, recvbuf, sendlen);
     if (ret != sendlen) {
         perror("vrpn_Endpoint::finish_new_connection_setup: Can't read cookie");
         status = BROKEN;
-        delete[] recvbuf;
         return -1;
     }
 
     if (check_vrpn_cookie(recvbuf) < 0) {
         status = BROKEN;
-        delete[] recvbuf;
         return -1;
     }
 
@@ -3934,7 +3929,6 @@ int vrpn_Endpoint_IP::finish_new_connection_setup(void)
                         "Got invalid log mode %d\n",
                 static_cast<int>(received_logmode));
         status = BROKEN;
-        delete[] recvbuf;
         return -1;
     }
     if (received_logmode & vrpn_LOG_INCOMING) {
@@ -3952,7 +3946,6 @@ int vrpn_Endpoint_IP::finish_new_connection_setup(void)
         fprintf(stderr, "vrpn_Endpoint::finish_new_connection_setup:  "
                         "Can't pack remote logging instructions.\n");
         status = BROKEN;
-        delete[] recvbuf;
         return -1;
     }
 
@@ -3970,7 +3963,6 @@ int vrpn_Endpoint_IP::finish_new_connection_setup(void)
                 fprintf(stderr, "vrpn_Endpoint::finish_new_connection_setup:  "
                                 "can't open UDP socket\n");
                 status = BROKEN;
-                delete[] recvbuf;
                 return -1;
             }
 
@@ -3979,7 +3971,6 @@ int vrpn_Endpoint_IP::finish_new_connection_setup(void)
                 fprintf(stderr, "vrpn_Endpoint::finish_new_connection_setup: "
                                 "Can't pack UDP msg\n");
                 status = BROKEN;
-                delete[] recvbuf;
                 return -1;
             }
         }
@@ -4006,7 +3997,6 @@ int vrpn_Endpoint_IP::finish_new_connection_setup(void)
             stderr,
             "vrpn_Endpoint::finish_new_connection_setup: Can't send UDP msg\n");
         status = BROKEN;
-        delete[] recvbuf;
         return -1;
     }
 
@@ -4033,7 +4023,6 @@ int vrpn_Endpoint_IP::finish_new_connection_setup(void)
         (*d_connectionCounter)++;
     }
 
-    delete[] recvbuf;
     return 0;
 }
 
