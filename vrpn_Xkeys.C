@@ -475,6 +475,7 @@ void vrpn_Xkeys_Joystick::mainloop()
 
 void vrpn_Xkeys_Joystick::report(vrpn_uint32 class_of_service) {
 	vrpn_Analog::timestamp = _timestamp;
+	vrpn_Dial::timestamp = _timestamp;
 	vrpn_Button::timestamp = _timestamp;
 
 	vrpn_Analog::report(class_of_service);
@@ -484,6 +485,7 @@ void vrpn_Xkeys_Joystick::report(vrpn_uint32 class_of_service) {
 
 void vrpn_Xkeys_Joystick::report_changes(vrpn_uint32 class_of_service) {
 	vrpn_Analog::timestamp = _timestamp;
+	vrpn_Dial::timestamp = _timestamp;
 	vrpn_Button::timestamp = _timestamp;
 
 	vrpn_Analog::report_changes(class_of_service);
@@ -636,6 +638,7 @@ void vrpn_Xkeys_Joystick12::mainloop()
 
 void vrpn_Xkeys_Joystick12::report(vrpn_uint32 class_of_service) {
 	vrpn_Analog::timestamp = _timestamp;
+	vrpn_Dial::timestamp = _timestamp;
 	vrpn_Button::timestamp = _timestamp;
 
 	vrpn_Analog::report(class_of_service);
@@ -645,6 +648,7 @@ void vrpn_Xkeys_Joystick12::report(vrpn_uint32 class_of_service) {
 
 void vrpn_Xkeys_Joystick12::report_changes(vrpn_uint32 class_of_service) {
 	vrpn_Analog::timestamp = _timestamp;
+	vrpn_Dial::timestamp = _timestamp;
 	vrpn_Button::timestamp = _timestamp;
 
 	vrpn_Analog::report_changes(class_of_service);
