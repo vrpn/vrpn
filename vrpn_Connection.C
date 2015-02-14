@@ -202,6 +202,11 @@ const char *vrpn_MAGIC = (const char *)"vrpn: ver. 07.34";
 const char *vrpn_FILE_MAGIC = (const char *)"vrpn: ver. 04.00";
 const int vrpn_MAGICLEN = 16; // Must be a multiple of vrpn_ALIGN bytes!
 
+// NOTE: This needs to remain the same size unless we change the major version
+// number for VRPN.  It is the length that is written into the stream.
+const size_t vrpn_COOKIE_SIZE = vrpn_MAGICLEN + vrpn_ALIGN;
+size_t vrpn_cookie_size(void) { return vrpn_COOKIE_SIZE; }
+
 const char *vrpn_got_first_connection = "VRPN_Connection_Got_First_Connection";
 const char *vrpn_got_connection = "VRPN_Connection_Got_Connection";
 const char *vrpn_dropped_connection = "VRPN_Connection_Dropped_Connection";
@@ -2657,13 +2662,6 @@ int check_vrpn_file_cookie(const char *buffer)
     return 0;
 }
 
-// NOTE: This needs to remain the same size unless we change the major version
-// number for VRPN.  It is the length that is written into the stream.
-size_t vrpn_cookie_size(void) { return vrpn_MAGICLEN + vrpn_ALIGN; }
-
-size_t vrpn_actual_cookie_size(void) { return vrpn_MAGICLEN + 3; }
-// END OF COOKIE CODE
-
 vrpn_Endpoint::vrpn_Endpoint(vrpn_TypeDispatcher *dispatcher,
                              vrpn_int32 *connectedEndpointCounter)
     : status(BROKEN)
@@ -3897,8 +3895,8 @@ void vrpn_Endpoint_IP::poll_for_cookie(const timeval *pTimeout)
 
 int vrpn_Endpoint_IP::finish_new_connection_setup(void)
 {
-    vrpn_int32 sendlen = static_cast<vrpn_int32>(vrpn_cookie_size());
-    char recvbuf[sendlen];
+	const vrpn_int32 sendlen = static_cast<vrpn_int32>(vrpn_COOKIE_SIZE);
+	char recvbuf[vrpn_COOKIE_SIZE];
 
     // Keep Valgrind happy
     memset(recvbuf, 0, sizeof(recvbuf));
