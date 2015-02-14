@@ -153,7 +153,7 @@ void vrpn_Joylin::mainloop(void)
 
 #else 
 
-vrpn_Joylin::vrpn_Joylin(char * name, 
+vrpn_Joylin::vrpn_Joylin(const char * name, 
 			 vrpn_Connection * c,
 			 char *):
   vrpn_Analog(name, c), vrpn_Button_Filter(name, c)
