@@ -40,7 +40,7 @@ vrpn_Tracker_LibertyHS::vrpn_Tracker_LibertyHS(const char *name, vrpn_Connection
     sync_index(-1), read_len(0)
 {
 	if (additional_reset_commands == NULL) {
-		sprintf(add_reset_cmd, "");
+		add_reset_cmd[0] = '\0';
 	} else {
 		strncpy(add_reset_cmd, additional_reset_commands, sizeof(add_reset_cmd)-1);
 	}
