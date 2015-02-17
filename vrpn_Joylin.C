@@ -31,7 +31,7 @@
 
 vrpn_Joylin::vrpn_Joylin(const char * name, 
 			 vrpn_Connection * c,
-			 char *portname):
+			 const char *portname):
   vrpn_Analog(name, c), vrpn_Button_Filter(name, c)
 { 
   namelen = 128;

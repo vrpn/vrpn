@@ -2426,7 +2426,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_InterSense(char *&pch, char *line,
     // at the ends, we add them to the command string to send. Note
     // that there is a newline at the end of the line, following the
     // backslash.
-    sprintf(rcmd, "");
+    rcmd[0] = '\0';
     while (line[strlen(line) - 2] == '\\') {
         // Read the next line
         if (fgets(line, LINESIZE, config_file) == NULL) {
