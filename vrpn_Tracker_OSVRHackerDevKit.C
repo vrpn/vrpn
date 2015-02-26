@@ -107,6 +107,11 @@ void vrpn_Tracker_OSVRHackerDevKit::mainloop()
     }
     _wasConnected = connected();
 
+    if (!_wasConnected) {
+        _acceptor->reset();
+        reconnect();
+    }
+
     server_mainloop();
 }
 
