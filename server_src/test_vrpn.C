@@ -379,8 +379,60 @@ int main (int argc, char * argv [])
         return -1;
     }
 
+    //---------------------------------------------------------------------
+    // This test must be done while the connection is connected, or else it
+    // will just drop the messages on the floor.
+    // Try defining a sender and type and packing a message into the connection.
+    // Try packing two messages that should not both fit to make sure that
+    // it properly purges the first one and can pack the second.
+    // Then try packing a message that is too large to fit and make sure it
+    // does not succeed.
 
-	//---------------------------------------------------------------------
+    // Set up the type and sender.
+    vrpn_int32 my_sender = connection->register_sender("test");
+    if (my_sender < 0) {
+        fprintf(stderr, "Could not register sender\n");
+        return -1;
+    }
+    vrpn_int32 my_type = connection->register_message_type("test");
+    if (my_type < 0) {
+        fprintf(stderr, "Could not register type\n");
+        return -1;
+    }
+
+    // Get the connection connected.  We use a bogus receiver type.
+    vrpn_Tracker_Remote test_remote("test@localhost");
+    do {
+        connection->mainloop();
+        test_remote.mainloop();
+    } while (!connection->connected());
+
+    // Try packing the smaller message.
+    char test_buffer[vrpn_CONNECTION_TCP_BUFLEN + 2];
+    struct timeval test_now;
+    vrpn_gettimeofday(&test_now, NULL);
+    if (0 != connection->pack_message(vrpn_CONNECTION_TCP_BUFLEN / 2, test_now, my_type,
+            my_sender, test_buffer, vrpn_CONNECTION_RELIABLE)) {
+        fprintf(stderr, "Could not pack initial half-sized buffer\n");
+        return -1;
+    }
+
+    // Try packing the second message that should fit by itself, but
+    // not along with the first message.
+    if (0 != connection->pack_message(vrpn_CONNECTION_TCP_BUFLEN / 2 + 2, test_now, my_type,
+        my_sender, test_buffer, vrpn_CONNECTION_RELIABLE)) {
+        fprintf(stderr, "Could not pack second half-sized++ buffer\n");
+        return -1;
+    }
+
+    // Try packing the message that should not fit.  It should not work.
+    if (0 == connection->pack_message(vrpn_CONNECTION_TCP_BUFLEN + 2, test_now, my_type,
+        my_sender, test_buffer, vrpn_CONNECTION_RELIABLE)) {
+        fprintf(stderr, "Could pack too-large message.\n");
+        return -1;
+    }
+
+    //---------------------------------------------------------------------
 	// Open the tracker server, using this connection, 2 sensors, update 1 times/sec
 	stkr = new vrpn_Tracker_NULL(TRACKER_NAME, connection, 2, 1.0);
 	printf("Tracker's name is %s.\n", TRACKER_NAME);
