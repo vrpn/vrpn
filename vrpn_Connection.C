@@ -4283,7 +4283,7 @@ int vrpn_Endpoint::marshall_message(
     // len on the other side (in the same way the padding is done)
     // The reason we don't include the padding in the len is that we
     // would not be able to figure out the size of the padding on the
-    // far side)
+    // far side).
     *(vrpn_uint32 *)(void *)(&outbuf[curr_out]) = htonl(header_len + len);
     curr_out += sizeof(vrpn_uint32);
 
@@ -4303,6 +4303,9 @@ int vrpn_Endpoint::marshall_message(
     // Pack the sequence number.  If something's really screwy with
     // our sizes/types and there isn't room for the sequence number,
     // skipping for alignment below will overwrite it!
+    // Note that the sequence number is not officially part
+    // of the header.  It was added by Tom Hudson for use in his dissertation
+    // work and is used by packets sniffers if it is present.
     *(vrpn_uint32 *)(void *)(&outbuf[curr_out]) = htonl(seqNo);
     curr_out += sizeof(vrpn_uint32);
 
