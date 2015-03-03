@@ -34,6 +34,7 @@
 #include "vrpn_Text.h"                  // for vrpn_Text_Receiver, etc
 #include "vrpn_Tracker.h"               // for vrpn_Tracker_Remote, etc
 #include "vrpn_Types.h"                 // for vrpn_float64
+#include "vrpn_Tracker_DeadReckoning.h" // for vrpn_Tracker_DeadReckoning_Rotation
 
 const char	*DIAL_NAME = "Dial0@localhost";
 const char	*TRACKER_NAME = "Tracker0@localhost";
@@ -364,7 +365,7 @@ int main (int argc, char * argv [])
 		printf("Thread code passes tests (not using for the following though)\n");
 	}
 
-	//---------------------------------------------------------------------
+    //---------------------------------------------------------------------
 	// explicitly open the connection
 	connection = vrpn_create_server_connection(CONNECTION_PORT);
 
@@ -588,17 +589,24 @@ int main (int argc, char * argv [])
 	delete b1;
 	delete b2;
 
-        printf("Deleting servers and connection\n");
-        delete stkr;
-        delete sbtn;
-        delete sdial;
-        delete stext;
-        delete sana;
-        delete sanaout;
-        delete sposer;
-        connection->removeReference();
+    printf("Deleting servers and connection\n");
+    delete stkr;
+    delete sbtn;
+    delete sdial;
+    delete stext;
+    delete sana;
+    delete sanaout;
+    delete sposer;
+    connection->removeReference();
 
-        printf("Success!\n");
+    //---------------------------------------------------------------------
+    // test various system objects that have defined test methods.
+    if (vrpn_Tracker_DeadReckoning_Rotation::test() != 0) {
+        fprintf(stderr, "Test of vrpn_Tracker_DeadReckoning_Rotation failed!\n");
+        return -1;
+    }
+
+    printf("Success!\n");
 	return 0;
 
 }   /* main */

@@ -144,13 +144,26 @@ void vrpn_Tracker_DeadReckoning_Rotation::handle_tracker_report(void *userdata,
         me->d_rotationStates[info.sensor];
 
     // If we have not received any velocity reports, then we estimate
-    // the angular velocity using the last report (if any).
+    // the angular velocity using the last report (if any).  The new
+    // combined rotation T3 = T2 * T1, where T2 is the difference in
+    // rotation between the last time (T1) and now (T3).  We want to
+    // solve for T2 (so we can keep applying it going forward).  We
+    // find it by right-multiuplying both sides of the equation by
+    // T1i (inverse of T1): T3 * T1i = T2.
     if (!state.d_receivedAngularVelocityReport) {
         if (state.d_lastReportTime.tv_sec != 0) {
-            q_vec_subtract(state.d_rotationAmount,
-                info.quat, state.d_lastOrientation);
+            q_type inverted;
+            q_invert(inverted, state.d_lastOrientation);
+            q_mult(state.d_rotationAmount, info.quat, inverted);
             state.d_rotationInterval = vrpn_TimevalDurationSeconds(
                 info.msg_time, state.d_lastReportTime);
+            // If we get a zero or negative rotation interval, we're
+            // not going to be able to handle it, so we set things back
+            // to no rotation over a unit-time interval.
+            if (state.d_rotationInterval < 0) {
+                state.d_rotationInterval = 1;
+                q_make(state.d_rotationAmount, 0, 0, 0, 1);
+            }
         }
     }
 
@@ -194,9 +207,295 @@ void vrpn_Tracker_DeadReckoning_Rotation::handle_tracker_velocity_report(void *u
         info.vel_quat, info.vel_quat_dt);
 }
 
+//===============================================================================
+// Things related to the test() function go below here.
+
+#ifndef M_PI
+#define M_PI  (2*acos(0.0))
+#endif
+
+typedef struct {
+    struct timeval  time;
+    vrpn_int32  sensor;
+    q_vec_type  pos;
+    q_type      quat;
+} POSE_INFO;
+static POSE_INFO poseResponse;
+
+typedef struct {
+    struct timeval  time;
+    vrpn_int32  sensor;
+    q_vec_type  pos;
+    q_type      quat;
+    double      quat_dt;
+} VEL_INFO;
+static VEL_INFO velResponse;
+
+// Checks whether two floating-point values are close enough
+static bool isClose(double a, double b)
+{
+    return fabs(a - b) < 1e-6;
+}
+
+// Fills in the POSE_INFO structure that is passed in with the data it
+// receives.
+static void VRPN_CALLBACK handle_test_tracker_report(void *userdata,
+    const vrpn_TRACKERCB info)
+{
+    POSE_INFO *pi = static_cast<POSE_INFO *>(userdata);
+    pi->time = info.msg_time;
+    pi->sensor = info.sensor;
+    q_vec_copy(pi->pos, info.pos);
+    q_copy(pi->quat, info.quat);
+}
+
+// Fills in the VEL_INFO structure that is passed in with the data it
+// receives.
+static void VRPN_CALLBACK handle_test_tracker_velocity_report(void *userdata,
+    const vrpn_TRACKERVELCB info)
+{
+    VEL_INFO *vi = static_cast<VEL_INFO *>(userdata);
+    vi->time = info.msg_time;
+    vi->sensor = info.sensor;
+    q_vec_copy(vi->pos, info.vel);
+    q_copy(vi->quat, info.vel_quat);
+    vi->quat_dt = info.vel_quat_dt;
+}
+
 int vrpn_Tracker_DeadReckoning_Rotation::test(void)
 {
-    std::cerr << "vrpn_Tracker_DeadReckoning_Rotation::test(): Not yet implemented"
-        << std::endl;
-    return 1;
+    // Construct a loopback connection to be used by all of our objects.
+    vrpn_Connection *c = vrpn_create_server_connection("loopback:");
+
+    // Create a tracker server to be the initator and a dead-reckoning
+    // rotation tracker to use it as a base; have it predict 1 second
+    // into the future.
+    vrpn_Tracker_Server *t0 = new vrpn_Tracker_Server("Tracker0", c, 2);
+    vrpn_Tracker_DeadReckoning_Rotation *t1 =
+        new vrpn_Tracker_DeadReckoning_Rotation("Tracker1", c, "*Tracker0", 2, 1);
+
+    // Create a remote tracker to listen to t1 and set up its callbacks for
+    // position and velocity reports.  They will fill in the static structures
+    // listed above with whatever values they receive.
+    vrpn_Tracker_Remote *tr = new vrpn_Tracker_Remote("Tracker1", c);
+    tr->register_change_handler(&poseResponse, handle_test_tracker_report);
+    tr->register_change_handler(&velResponse, handle_test_tracker_velocity_report);
+
+    // Set up the values in the pose and velocity responses with incorrect values
+    // so that things will fail if the class does not perform as expected.
+    q_vec_set(poseResponse.pos, 1, 1, 1);
+    q_make(poseResponse.quat, 0, 0, 1, 0);
+    poseResponse.time.tv_sec = 0;
+    poseResponse.time.tv_usec = 0;
+    poseResponse.sensor = -1;
+
+    // Send a pose report from sensors 0 and 1 on the original tracker that places
+    // them at (1,1,1) and with the identity rotation.  We should get a response for
+    // each of them so we should end up with the sensor-1 response matching what we
+    // sent, with no change in position or orientation.
+    q_vec_type pos = { 1, 1, 1 };
+    q_type quat = { 0, 0, 0, 1 };
+    struct timeval firstSent;
+    vrpn_gettimeofday(&firstSent, NULL);
+    t0->report_pose(0, firstSent, pos, quat);
+    t0->report_pose(1, firstSent, pos, quat);
+
+    t0->mainloop();
+    t1->mainloop();
+    c->mainloop();
+    tr->mainloop();
+
+    if ( (poseResponse.time.tv_sec != firstSent.tv_sec + 1)
+        || (poseResponse.sensor != 1)
+        || (q_vec_distance(poseResponse.pos, pos) > 1e-10)
+        || (poseResponse.quat[Q_W] != 1)
+       )
+    {
+        std::cerr << "vrpn_Tracker_DeadReckoning_Rotation::test(): Got unexpected"
+            << " initial response: pos (" << poseResponse.pos[Q_X] << ", "
+            << poseResponse.pos[Q_Y] << ", " << poseResponse.pos[Q_Z] << "), quat ("
+            << poseResponse.quat[Q_X] << ", " << poseResponse.quat[Q_Y] << ", "
+            << poseResponse.quat[Q_Z] << ", " << poseResponse.quat[Q_W] << ")"
+            << " from sensor " << poseResponse.sensor
+            << " at time " << poseResponse.time.tv_sec << ":" << poseResponse.time.tv_usec
+            << std::endl;
+        delete tr;
+        delete t1;
+        delete t0;
+        c->removeReference();
+        return 1;
+    }
+    
+    // Send a second tracker report for sensor 0 coming 0.4 seconds later that has
+    // translated to position (2,1,1) and rotated by 0.4 * 90 degrees around Z.
+    // This should cause a prediction for one second later than this new pose
+    // message that has rotated by very close to 1.4 * 90 degrees.
+    q_vec_type pos2 = { 2, 1, 1 };
+    q_type quat2;
+    double angle2 = 0.4 * 90 * M_PI / 180.0;
+    q_from_axis_angle(quat2, 0, 0, 1, angle2);
+    struct timeval p4Second = { 0, 400000 };
+    struct timeval firstPlusP4 = vrpn_TimevalSum(firstSent, p4Second);
+    t0->report_pose(0, firstPlusP4, pos2, quat2);
+
+    t0->mainloop();
+    t1->mainloop();
+    c->mainloop();
+    tr->mainloop();
+
+    double x, y, z, angle;
+    q_to_axis_angle(&x, &y, &z, &angle, poseResponse.quat);
+    if ((poseResponse.time.tv_sec != firstPlusP4.tv_sec + 1)
+        || (poseResponse.sensor != 0)
+        || (q_vec_distance(poseResponse.pos, pos2) > 1e-10)
+        || !isClose(x, 0) || !isClose(y, 0) || !isClose(z, 1)
+        || !isClose(angle, 1.4 * 90 * M_PI / 180.0)
+       )
+    {
+        std::cerr << "vrpn_Tracker_DeadReckoning_Rotation::test(): Got unexpected"
+            << " predicted pose response: pos (" << poseResponse.pos[Q_X] << ", "
+            << poseResponse.pos[Q_Y] << ", " << poseResponse.pos[Q_Z] << "), quat ("
+            << poseResponse.quat[Q_X] << ", " << poseResponse.quat[Q_Y] << ", "
+            << poseResponse.quat[Q_Z] << ", " << poseResponse.quat[Q_W] << ")"
+            << " from sensor " << poseResponse.sensor
+            << std::endl;
+        delete tr;
+        delete t1;
+        delete t0;
+        c->removeReference();
+        return 2;
+    }
+
+    // Send a velocity report for sensor 1 that has has translation by (1,0,0)
+    // and rotating by 0.4 * 90 degrees per 0.4 of a second around Z.
+    // This should cause a prediction for one second later than the first
+    // report that has rotated by very close to 90 degrees.  The translation
+    // should be ignored, so the position should be the original position.
+    q_vec_type vel = { 0, 0, 0 };
+    t0->report_pose_velocity(1, firstPlusP4, vel, quat2, 0.4);
+
+    t0->mainloop();
+    t1->mainloop();
+    c->mainloop();
+    tr->mainloop();
+
+    q_to_axis_angle(&x, &y, &z, &angle, poseResponse.quat);
+    if ((poseResponse.time.tv_sec != firstSent.tv_sec + 1)
+        || (poseResponse.sensor != 1)
+        || (q_vec_distance(poseResponse.pos, pos) > 1e-10)
+        || !isClose(x, 0) || !isClose(y, 0) || !isClose(z, 1)
+        || !isClose(angle, 90 * M_PI / 180.0)
+        )
+    {
+        std::cerr << "vrpn_Tracker_DeadReckoning_Rotation::test(): Got unexpected"
+            << " predicted velocity response: pos (" << poseResponse.pos[Q_X] << ", "
+            << poseResponse.pos[Q_Y] << ", " << poseResponse.pos[Q_Z] << "), quat ("
+            << poseResponse.quat[Q_X] << ", " << poseResponse.quat[Q_Y] << ", "
+            << poseResponse.quat[Q_Z] << ", " << poseResponse.quat[Q_W] << ")"
+            << " from sensor " << poseResponse.sensor
+            << std::endl;
+        delete tr;
+        delete t1;
+        delete t0;
+        c->removeReference();
+        return 3;
+    }
+
+    // To test the behavior of the prediction code when we're moving around more
+    // than one axis, and when we're starting from a non-identity orientation,
+    // set sensor 1 to be rotated 180 degrees around X.  Then send a velocity
+    // report that will produce a rotation of 180 degrees around Z.  The result
+    // should match a prediction of 180 degrees around Y (plus or minus 180, plus
+    // or minus Y axis are all equivalent).
+    struct timeval oneSecond = { 1, 0 };
+    struct timeval firstPlusOne = vrpn_TimevalSum(firstSent, oneSecond);
+    q_type quat3;
+    q_from_axis_angle(quat3, 1, 0, 0, M_PI);
+    t0->report_pose(1, firstPlusOne, pos, quat3);
+    q_type quat4;
+    q_from_axis_angle(quat4, 0, 0, 1, M_PI);
+    t0->report_pose_velocity(1, firstPlusOne, vel, quat4, 1.0);
+
+    t0->mainloop();
+    t1->mainloop();
+    c->mainloop();
+    tr->mainloop();
+
+    q_to_axis_angle(&x, &y, &z, &angle, poseResponse.quat);
+    if ((poseResponse.time.tv_sec != firstPlusOne.tv_sec + 1)
+        || (poseResponse.sensor != 1)
+        || (q_vec_distance(poseResponse.pos, pos) > 1e-10)
+        || !isClose(x, 0) || !isClose(fabs(y), 1) || !isClose(z, 0)
+        || !isClose(fabs(angle), M_PI)
+        )
+    {
+        std::cerr << "vrpn_Tracker_DeadReckoning_Rotation::test(): Got unexpected"
+            << " predicted pose + velocity response: pos (" << poseResponse.pos[Q_X] << ", "
+            << poseResponse.pos[Q_Y] << ", " << poseResponse.pos[Q_Z] << "), quat ("
+            << poseResponse.quat[Q_X] << ", " << poseResponse.quat[Q_Y] << ", "
+            << poseResponse.quat[Q_Z] << ", " << poseResponse.quat[Q_W] << ")"
+            << " from sensor " << poseResponse.sensor
+            << std::endl;
+        delete tr;
+        delete t1;
+        delete t0;
+        c->removeReference();
+        return 4;
+    }
+
+    // To test the behavior of the prediction code when we're moving around more
+    // than one axis, and when we're starting from a non-identity orientation,
+    // set sensor 0 to start out at identity.  Then in one second it will be
+    // rotated 180 degrees around X.  Then in another second it will be rotated
+    // additionally by 90 degrees around Z; the prediction should be another
+    // 90 degrees around Z, which should turn out to compose to +/-180 degrees
+    // around +/- Y, as in the velocity case above.
+    // To make this work, we send a sequence of three poses, one second apart,
+    // starting at the original time.  We do this on sensor 0, which has never
+    // had a velocity report, so that it will be using the pose-only prediction.
+    struct timeval firstPlusTwo = vrpn_TimevalSum(firstPlusOne, oneSecond);
+    q_from_axis_angle(quat3, 1, 0, 0, M_PI);
+    t0->report_pose(0, firstSent, pos, quat);
+    t0->report_pose(0, firstPlusOne, pos, quat3);
+    q_from_axis_angle(quat4, 0, 0, 1, M_PI / 2);
+    q_type quat5;
+    q_mult(quat5, quat4, quat3);
+    t0->report_pose(0, firstPlusTwo, pos, quat5);
+
+    t0->mainloop();
+    t1->mainloop();
+    c->mainloop();
+    tr->mainloop();
+
+    q_to_axis_angle(&x, &y, &z, &angle, poseResponse.quat);
+    if ((poseResponse.time.tv_sec != firstPlusTwo.tv_sec + 1)
+        || (poseResponse.sensor != 0)
+        || (q_vec_distance(poseResponse.pos, pos) > 1e-10)
+        || !isClose(x, 0) || !isClose(fabs(y), 1.0) || !isClose(z, 0)
+        || !isClose(fabs(angle), M_PI)
+        )
+    {
+        std::cerr << "vrpn_Tracker_DeadReckoning_Rotation::test(): Got unexpected"
+            << " predicted pose + pose response: pos (" << poseResponse.pos[Q_X] << ", "
+            << poseResponse.pos[Q_Y] << ", " << poseResponse.pos[Q_Z] << "), quat ("
+            << poseResponse.quat[Q_X] << ", " << poseResponse.quat[Q_Y] << ", "
+            << poseResponse.quat[Q_Z] << ", " << poseResponse.quat[Q_W] << ")"
+            << " from sensor " << poseResponse.sensor
+            << "; axis = (" << x << ", " << y << ", " << z << "), angle = "
+            << angle
+            << std::endl;
+        delete tr;
+        delete t1;
+        delete t0;
+        c->removeReference();
+        return 5;
+    }
+
+    // Done; delete our objects and return 0 to indicate that
+    // everything worked.
+    delete tr;
+    delete t1;
+    delete t0;
+    c->removeReference();
+    return 0;
 }
