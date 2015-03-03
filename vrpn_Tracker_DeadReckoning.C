@@ -5,6 +5,7 @@
 #include "vrpn_SendTextMessageStreamProxy.h"
 #include <iostream>
 #include <quat.h>
+#include <math.h>
 
 vrpn_Tracker_DeadReckoning_Rotation::vrpn_Tracker_DeadReckoning_Rotation(
     std::string myName
