@@ -214,6 +214,12 @@ class vrpn_Tracker_RazerHydra::MyInterface : public vrpn_HidInterface
             d_my_interface = which_interface;
         }
 
+        void reset_acceptor()
+        {
+            if (_acceptor)
+                _acceptor->reset();
+        }
+
     protected:
         unsigned    d_my_interface;
         vrpn_Tracker_RazerHydra *d_hydra;
@@ -278,31 +284,33 @@ void vrpn_Tracker_RazerHydra::mainloop()
     // base devices because it is in the unique base class.
     server_mainloop();
 
-    if (_data->connected())
+    if (!_data->connected()) {
+        reconnect();
+        return;
+    }
+
+    // HID device update
+    _data->update();
+    _ctrl->update();
+
+    // Check/update listening state during connection/handshaking
+    switch(status)
     {
-        // HID device update
-        _data->update();
-        _ctrl->update();
+    case HYDRA_WAITING_FOR_CONNECT:
+        _waiting_for_connect();
+        break;
 
-        // Check/update listening state during connection/handshaking
-        switch(status)
-        {
-            case HYDRA_WAITING_FOR_CONNECT:
-                _waiting_for_connect();
-                break;
+    case HYDRA_LISTENING_AFTER_CONNECT:
+        _listening_after_connect();
+        break;
 
-            case HYDRA_LISTENING_AFTER_CONNECT:
-                _listening_after_connect();
-                break;
+    case HYDRA_LISTENING_AFTER_SET_FEATURE:
+        _listening_after_set_feature();
+        break;
 
-            case HYDRA_LISTENING_AFTER_SET_FEATURE:
-                _listening_after_set_feature();
-                break;
-
-            case HYDRA_REPORTING:
-            default:
-                break;
-        }
+    case HYDRA_REPORTING:
+    default:
+        break;
     }
 }
 
@@ -317,7 +325,9 @@ bool vrpn_Tracker_RazerHydra::reconnect()
         _mirror[i] = 1;
     }
 
+    _data->reset_acceptor();
     _data->reconnect();
+    _ctrl->reset_acceptor();
     return _ctrl->reconnect();
 }
 

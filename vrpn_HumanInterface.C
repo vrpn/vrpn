@@ -91,11 +91,12 @@ bool vrpn_HidInterface::reconnect()
         loop = loop->next;
     }
     if (!found) {
-        fprintf(stderr, "vrpn_HidInterface::reconnect(): Device not found\n");
+        //fprintf(stderr, "vrpn_HidInterface::reconnect(): Device not found\n");
         hid_free_enumeration(devs);
         devs = NULL;
         return false;
     }
+
 
     // Initialize the HID interface and open the device.
     _device = hid_open_path(path);
@@ -167,6 +168,7 @@ void vrpn_HidInterface::update()
                     "vrpn_HidInterface::update(): error message: %ls\n",
                     errmsg);
             }
+            _working = false;
             return;
         }
 
