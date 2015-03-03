@@ -87,10 +87,6 @@ void vrpn_Tracker_DeadReckoning_Rotation::sendNewPrediction(vrpn_int32 sensor)
     }
 
     //========================================================================
-    // Copy the position portion of the report unaltered.
-    q_vec_copy(pos, state.d_lastPosition);
-
-    //========================================================================
     // Estimate the future orientation based on the current angular velocity
     // estimate and the last reported orientation.  Predict it into the future
     // the amount we've been asked to.
@@ -114,9 +110,6 @@ void vrpn_Tracker_DeadReckoning_Rotation::sendNewPrediction(vrpn_int32 sensor)
     q_slerp(fractionRotation, identity, state.d_rotationAmount, fractionTime);
     q_mult(newOrientation, fractionRotation, newOrientation);
 
-    // Finally, copy it into the quat structure so we can send it.
-    q_copy(d_quat, newOrientation);
-
     //========================================================================
     // Find out the future time for which we will be predicting by adding the
     // prediction interval to our last report time.
@@ -129,16 +122,8 @@ void vrpn_Tracker_DeadReckoning_Rotation::sendNewPrediction(vrpn_int32 sensor)
 
     //========================================================================
     // Pack our predicted tracker report for this future time.
-    char msgbuf[1024];
-    vrpn_int32 len;
-    d_sensor = sensor;
-    // pos and quat have been filled in above.
-    len = encode_to(msgbuf);
-    if (d_connection->pack_message(len, future_time, position_m_id,
-        d_sender_id, msgbuf,
-        vrpn_CONNECTION_LOW_LATENCY)) {
-        std::cerr << "vrpn_Tracker_DeadReckoning_Rotation tracker: can't write message: tossing" << std::endl;
-    }
+    // Use the position portion of the report unaltered.
+    report_pose(sensor, future_time, state.d_lastPosition, newOrientation);
 }
 
 void vrpn_Tracker_DeadReckoning_Rotation::handle_tracker_report(void *userdata,
@@ -205,18 +190,8 @@ void vrpn_Tracker_DeadReckoning_Rotation::handle_tracker_velocity_report(void *u
     me->sendNewPrediction(info.sensor);
 
     // Pass through the velocity estimate.
-    char msgbuf[1024];
-    vrpn_int32 len;
-    me->d_sensor = info.sensor;
-    q_vec_copy(me->vel, info.vel);
-    q_copy(me->vel_quat, info.vel_quat);
-    me->vel_quat_dt = info.vel_quat_dt;
-    len = me->encode_vel_to(msgbuf);
-    if (me->d_connection->pack_message(len, info.msg_time, me->velocity_m_id,
-        me->d_sender_id, msgbuf,
-        vrpn_CONNECTION_LOW_LATENCY)) {
-        std::cerr << "vrpn_Tracker_DeadReckoning_Rotation tracker: can't write message: tossing" << std::endl;
-    }
+    me->report_pose_velocity(info.sensor, info.msg_time, info.vel,
+        info.vel_quat, info.vel_quat_dt);
 }
 
 int vrpn_Tracker_DeadReckoning_Rotation::test(void)
