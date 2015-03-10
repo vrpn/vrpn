@@ -729,7 +729,7 @@ int vrpn_gettimeofday(timeval *tp, void *voidp)
 
     return 0;
 }
-#else // defined(VRPN_WINDOWS_CLOCK_V2)
+#else // VRPN_WINDOWS_CLOCK_V2 is defined
 
 void get_time_using_GetLocalTime(unsigned long &sec, unsigned long &usec)
 {

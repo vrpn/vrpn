@@ -93,6 +93,7 @@ protected:
     int setup_GlobalHapticsOrb(char *&pch, char *line, FILE * /*config_file*/);
     int setup_ADBox(char *&pch, char *line, FILE *config_file);
     int setup_VPJoystick(char *&pch, char *line, FILE *config_file);
+    int setup_Tracker_DeadReckoning_Rotation(char *&pch, char *line, FILE *config_file);
     int setup_DTrack(char *&pch, char *line, FILE *config_file);
     int setup_Poser_Analog(char *&pch, char *line, FILE *config_file);
     int setup_nikon_controls(char *&pch, char *line, FILE * /*config_file*/);

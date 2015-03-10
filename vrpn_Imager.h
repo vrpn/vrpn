@@ -35,17 +35,20 @@ const unsigned vrpn_IMAGER_MAX_CHANNELS = 100;
 /// depending on the type you are putting in there.  Useful for senders
 /// to know how large of a chunk they can send at once.
 const unsigned vrpn_IMAGER_MAX_REGIONu8 =
-    (vrpn_CONNECTION_TCP_BUFLEN - 8 * sizeof(vrpn_int16) -
-     6 * sizeof(vrpn_int32)) /
+    (vrpn_CONNECTION_TCP_BUFLEN
+    - 8 * sizeof(vrpn_int16)        // vrpn_Imager header size
+    - 6 * sizeof(vrpn_int32)) /     // VRPN message header
     sizeof(vrpn_uint8);
 const unsigned vrpn_IMAGER_MAX_REGIONu16 =
-    (vrpn_CONNECTION_TCP_BUFLEN - 8 * sizeof(vrpn_int16) -
-     6 * sizeof(vrpn_int32)) /
+    (vrpn_CONNECTION_TCP_BUFLEN
+    - 8 * sizeof(vrpn_int16)        // vrpn_Imager header size
+    - 6 * sizeof(vrpn_int32)) /     // VRPN message header
     sizeof(vrpn_uint16);
 const unsigned vrpn_IMAGER_MAX_REGIONu12in16 = vrpn_IMAGER_MAX_REGIONu16;
 const unsigned vrpn_IMAGER_MAX_REGIONf32 =
-    (vrpn_CONNECTION_TCP_BUFLEN - 8 * sizeof(vrpn_int16) -
-     6 * sizeof(vrpn_int32)) /
+    (vrpn_CONNECTION_TCP_BUFLEN
+    - 8 * sizeof(vrpn_int16)        // vrpn_Imager header size
+    - 6 * sizeof(vrpn_int32)) /     // VRPN message header
     sizeof(vrpn_float32);
 
 /// Holds the description needed to convert from raw data to values for a

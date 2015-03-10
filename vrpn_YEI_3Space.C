@@ -339,10 +339,12 @@ void vrpn_YEI_3Space::handle_report(unsigned char *report)
   // If not, there is trouble parsing the report.  Sometimes the wired
   // unit gets the wrong number of bytes in the report, causing things
   // to wrap around.  This catches that case.
-  if (channel[9] <= 1) {
-	  VRPN_MSG_ERROR("vrpn_YEI_3Space::handle_report(): Invalid temperature, resetting");
-	  d_sensor = STATUS_RESETTING;
-  }
+  // XXX We took this out because some sensors were reporting -200C at
+  // a conference.
+//  if (channel[9] <= 1) {
+//	  VRPN_MSG_ERROR("vrpn_YEI_3Space::handle_report(): Invalid temperature, resetting");
+//	  d_sensor = STATUS_RESETTING;
+//  }
 
   // Check the confidence factor to make sure it is between 0 and 1.
   // If not, there is trouble parsing the report.  Sometimes the wired

@@ -37,7 +37,7 @@ vrpn_Tracker_Liberty::vrpn_Tracker_Liberty(const char *name, vrpn_Connection *c,
 
 	reset_time.tv_sec = reset_time.tv_usec = 0;
 	if (additional_reset_commands == NULL) {
-		sprintf(add_reset_cmd, "");
+		add_reset_cmd[0] = '\0';
 	} else {
 		strncpy(add_reset_cmd, additional_reset_commands, sizeof(add_reset_cmd)-1);
 	}
