@@ -179,7 +179,7 @@ extern VRPN_API bool vrpn_TimevalEqual(const struct timeval &tv1,
 extern VRPN_API double vrpn_TimevalMsecs(const struct timeval &tv1);
 
 extern VRPN_API struct timeval vrpn_MsecsTimeval(const double dMsecs);
-extern VRPN_API void vrpn_SleepMsecs(double dMsecs);
+extern VRPN_API void vrpn_SleepMsecs(double dMilliSecs);
 
 //--------------------------------------------------------------
 // vrpn_* buffer util functions and endian-ness related

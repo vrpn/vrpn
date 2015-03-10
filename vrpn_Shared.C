@@ -154,21 +154,21 @@ timeval vrpn_MsecsTimeval(const double dMsecs)
 // Sleep for dMsecs milliseconds, freeing up the processor while you
 // are doing so.
 
-void vrpn_SleepMsecs(double dMsecs)
+void vrpn_SleepMsecs(double dMilliSecs)
 {
 #if defined(_WIN32)
-    Sleep((DWORD)dMsecs);
+    Sleep((DWORD)dMilliSecs);
 #else
     timeval timeout;
 
     // Convert milliseconds to seconds
-    timeout.tv_sec = (int)(dMsecs / 1000.0);
+    timeout.tv_sec = (int)(dMilliSecs / 1000.0);
 
     // Subtract of whole number of seconds
-    dMsecs -= timeout.tv_sec * 1000;
+    dMilliSecs -= timeout.tv_sec * 1000;
 
     // Convert remaining milliseconds to microsec
-    timeout.tv_usec = (int)(dMsecs * 1000);
+    timeout.tv_usec = (int)(dMilliSecs * 1000);
 
     // A select() with NULL file descriptors acts like a microsecond
     // timer.
