@@ -89,6 +89,7 @@
 #include "vrpn_Tracker_RazerHydra.h"      // for vrpn_Tracker_RazerHydra
 #include "vrpn_Tracker_Filter.h"          // for vrpn_Tracker_FilterOneEuro
 #include "vrpn_Tracker_SpacePoint.h"      // for vrpn_Tracker_SpacePoint
+#include "vrpn_Tracker_ThalmicLabsMyo.h"  // for vrpn_Tracker_ThalmicLabsMyo
 #include "vrpn_Tracker_TrivisioColibri.h" // added by David Borland
 #include "vrpn_Tracker_ViewPoint.h"       // added by David Borland
 #include "vrpn_Tracker_WiimoteHead.h"     // for vrpn_Tracker_WiimoteHead
@@ -3530,6 +3531,27 @@ int vrpn_Generic_Server_Object::setup_Tracker_RazerHydra(char *&pch, char *line,
     return 0; // successful completion
 }
 
+//================================
+int vrpn_Generic_Server_Object::setup_Tracker_ThalmicLabsMyo(char * &pch, char * line, FILE *config_file)
+{
+  char s2[LINESIZE];
+  int useLockI;
+  int armSide;
+  
+  VRPN_CONFIG_NEXT();
+  int ret = sscanf (pch, "%511s %d %d", s2,&useLockI, &armSide);
+  bool useLock = useLockI > 0;
+#ifdef VRPN_INCLUDE_THALMICLABSMYO
+  // Open the Myo
+  if (verbose) {
+      printf ("Opening vrpn_Tracker_ThalmicLabsMyo %s, use lock is %n", s2,useLock);
+  }
+  // Open the tracker
+  _devices->add(new vrpn_Tracker_ThalmicLabsMyo(s2, connection,useLock,(vrpn_Tracker_ThalmicLabsMyo::ARMSIDE)armSide));
+#endif
+  return 0;  // successful completion
+}
+
 int vrpn_Generic_Server_Object::setup_Tracker_NDI_Polaris(char *&pch,
                                                           char *line,
                                                           FILE *config_file)
@@ -5171,6 +5193,9 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(
                 }
                 else if (VRPN_ISIT("vrpn_Tracker_RazerHydra")) {
                     VRPN_CHECK(setup_Tracker_RazerHydra);
+                }
+                else if (VRPN_ISIT ("vrpn_Tracker_ThalmicLabsMyo")) {
+                    VRPN_CHECK(setup_Tracker_ThalmicLabsMyo);
                 }
                 else if (VRPN_ISIT("vrpn_Tracker_zSight")) {
                     VRPN_CHECK(setup_Tracker_zSight);

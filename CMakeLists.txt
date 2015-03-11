@@ -678,6 +678,22 @@ if(VRPN_INCLUDE_INTERSENSE)
 endif()
 
 ###
+# THALMICLABSMYO
+###
+if(WIN32)
+	find_package(ThalmicLabsMyo)
+	option_requires(VRPN_INCLUDE_THALMICLABSMYO
+		"Build with Thalmic Labs' Myo support"
+		${DEFAULT_OFF_IF_SUBPROJECT}
+		THALMICLABSMYO_FOUND)
+	if(VRPN_INCLUDE_THALMICLABSMYO)
+		include_directories(${THALMICLABSMYO_INCLUDE_DIRS})
+		list(APPEND SERVER_EXTRA_LIBS ${THALMICLABSMYO_LIBRARIES})
+		add_definitions(-DVRPN_INCLUDE_THALMICLABSMYO)
+	endif()
+endif()
+
+###
 # NIDAQMX
 ###
 find_package(NIDAQmx)
@@ -1087,6 +1103,7 @@ set(VRPN_SERVER_SOURCES
 	vrpn_Tracker_PDI.C
 	vrpn_Tracker_PhaseSpace.C
 	vrpn_Tracker_RazerHydra.C
+	vrpn_Tracker_ThalmicLabsMyo.C
 	vrpn_Tracker_SpacePoint.C
 	vrpn_Tracker_Wintracker.C
 	vrpn_Tracker_TrivisioColibri.C
@@ -1191,6 +1208,7 @@ set(VRPN_SERVER_PUBLIC_HEADERS
 	vrpn_Tracker_PDI.h
 	vrpn_Tracker_PhaseSpace.h
 	vrpn_Tracker_RazerHydra.h
+	vrpn_Tracker_ThalmicLabsMyo.h
 	vrpn_Tracker_SpacePoint.h
 	vrpn_Tracker_Wintracker.h
 	vrpn_Tracker_TrivisioColibri.h
