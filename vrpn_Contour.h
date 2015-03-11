@@ -19,7 +19,6 @@
 //
 // Exposes three major VRPN device classes: Button, Analog, Dial (as appropriate).
 // All models expose Buttons for the keys on the device.
-// Button 0 is the programming switch; it is set if the switch is in the "red" position.
 //
 
 class vrpn_Contour: public vrpn_BaseClass, protected vrpn_HidInterface {
@@ -43,6 +42,13 @@ protected:
 
   // No actual types to register, derived classes will be buttons, analogs, and/or dials
   int register_types(void) { return 0; }
+
+  // Have we gotten a dial response yet?  If not, we store the value
+  // rather than reporting it.
+  bool _gotDial;
+
+  // Previous dial value, used to determine delta to send when it changes.
+  vrpn_uint8 _lastDial;
 };
 
 class vrpn_Contour_ShuttleXpress: protected vrpn_Contour, public vrpn_Analog, public vrpn_Button_Filter, public vrpn_Dial {
@@ -59,13 +65,30 @@ protected:
   void report (vrpn_uint32 class_of_service = vrpn_CONNECTION_LOW_LATENCY);
 
   void decodePacket(size_t bytes, vrpn_uint8 *buffer);
+};
 
-  // Previous dial value, used to determine delta to send when it changes.
-  vrpn_uint8 _lastDial;
+class vrpn_Contour_ShuttlePROv2 : protected vrpn_Contour, public vrpn_Analog, public vrpn_Button_Filter, public vrpn_Dial {
+public:
+	vrpn_Contour_ShuttlePROv2(const char *name, vrpn_Connection *c = 0);
+	virtual ~vrpn_Contour_ShuttlePROv2(void) {};
+
+	virtual void mainloop(void);
+
+protected:
+	// Send report iff changed
+	void report_changes(vrpn_uint32 class_of_service = vrpn_CONNECTION_LOW_LATENCY);
+	// Send report whether or not changed
+	void report(vrpn_uint32 class_of_service = vrpn_CONNECTION_LOW_LATENCY);
+
+	void decodePacket(size_t bytes, vrpn_uint8 *buffer);
+
+	// Previous dial value, used to determine delta to send when it changes.
+	vrpn_uint8 _lastDial;
 };
 
 // end of VRPN_USE_HID
 #else
 class VRPN_API vrpn_Contour;
 class VRPN_API vrpn_Contour_ShuttleXpress;
+class VRPN_API vrpn_Contour_ShuttlePROv2;
 #endif

@@ -22,16 +22,22 @@
 // All models expose Buttons for the keys on the device.
 // Button 0 is the programming switch; it is set if the switch is in the "red" position.
 //
-// For the X-Keys Jog & Shuttle:
+// For the X-Keys Jog & Shuttle (both 58-button and larger versions):
 // Analog channel 0 is the shuttle position (-1 to 1). There are 15 levels.
 // Analog channel 1 is the dial orientation (0 to 255).
-// Dial channel 0 sends deltas on the dial.
+// Dial channel 0 sends deltas on the dial (in single-tick values, XXX should be 1/10th revs).
 //
-// For the X-Keys Joystick Pro:
+// For the X-Keys Jog & Shuttle (12-button version):
+// Analog channel 0 is the shuttle position (-1 to 1). There are 15 levels.
+// Analog channel 1 is the dial orientation (total revolutions turned).
+// Dial channel 0 sends deltas on the dial (in 1/10th revolution increments).
+//      (Note that moving the dial too fast can miss updates.)
+//
+// For the X-Keys Joystick Pro and 12-button version:
 // Analog channel 0 is the joystick X axis (-1 to 1).
 // Analog channel 1 is the joystick Y axis (-1 to 1).
-// Analog channel 2 is the joystick RZ axis (-1 to 1).
-
+// Analog channel 2 is the joystick RZ axis (unbounded, since it can spin freely).
+// The Z axis of the joystick is also exported as a dial (a single tick is 1/255th revolution).
 class vrpn_Xkeys: public vrpn_BaseClass, protected vrpn_HidInterface {
 public:
   vrpn_Xkeys(vrpn_HidAcceptor *filter, const char *name, vrpn_Connection *c = 0, bool toggle_light = true);
@@ -88,7 +94,8 @@ protected:
   void decodePacket(size_t bytes, vrpn_uint8 *buffer);
 };
 
-class vrpn_Xkeys_Joystick: protected vrpn_Xkeys, public vrpn_Analog, public vrpn_Button_Filter {
+// Original unit with 58 buttons
+class vrpn_Xkeys_Joystick: protected vrpn_Xkeys, public vrpn_Analog, public vrpn_Button_Filter, public vrpn_Dial {
 public:
   vrpn_Xkeys_Joystick(const char *name, vrpn_Connection *c = 0);
   virtual ~vrpn_Xkeys_Joystick() {};
@@ -104,8 +111,36 @@ protected:
   //  values, not vrpn_Button or vrpn_Dial
 
   void decodePacket(size_t bytes, vrpn_uint8 *buffer);
+
+  // Previous dial value, used to determine delta to send when it changes.
+  bool _gotDial;
+  vrpn_uint8 _lastDial;
 };
 
+// 12-button version of the above unit.
+class vrpn_Xkeys_Joystick12 : protected vrpn_Xkeys, public vrpn_Analog, public vrpn_Button_Filter, public vrpn_Dial {
+public:
+	vrpn_Xkeys_Joystick12(const char *name, vrpn_Connection *c = 0);
+	virtual ~vrpn_Xkeys_Joystick12() {};
+
+	virtual void mainloop();
+
+protected:
+	// Send report iff changed
+	void report_changes(vrpn_uint32 class_of_service = vrpn_CONNECTION_LOW_LATENCY);
+	// Send report whether or not changed
+	void report(vrpn_uint32 class_of_service = vrpn_CONNECTION_LOW_LATENCY);
+	// NOTE:  class_of_service is only applied to vrpn_Analog
+	//  values, not vrpn_Button or vrpn_Dial
+
+	void decodePacket(size_t bytes, vrpn_uint8 *buffer);
+
+	// Previous dial value, used to determine delta to send when it changes.
+	bool _gotDial;
+	vrpn_uint8 _lastDial;
+};
+
+// Original unit with 58 buttons.
 class vrpn_Xkeys_Jog_And_Shuttle: protected vrpn_Xkeys, public vrpn_Analog, public vrpn_Button_Filter, public vrpn_Dial {
 public:
   vrpn_Xkeys_Jog_And_Shuttle(const char *name, vrpn_Connection *c = 0);
@@ -127,7 +162,29 @@ protected:
   vrpn_uint8 _lastDial;
 };
 
-class vrpn_Xkeys_XK3: protected vrpn_Xkeys, public vrpn_Button_Filter {
+// 12-button version of the above unit.
+class vrpn_Xkeys_Jog_And_Shuttle12 : protected vrpn_Xkeys, public vrpn_Analog, public vrpn_Button_Filter, public vrpn_Dial {
+public:
+	vrpn_Xkeys_Jog_And_Shuttle12(const char *name, vrpn_Connection *c = 0);
+	virtual ~vrpn_Xkeys_Jog_And_Shuttle12() {};
+
+	virtual void mainloop();
+
+protected:
+	// Send report iff changed
+	void report_changes(vrpn_uint32 class_of_service = vrpn_CONNECTION_LOW_LATENCY);
+	// Send report whether or not changed
+	void report(vrpn_uint32 class_of_service = vrpn_CONNECTION_LOW_LATENCY);
+	// NOTE:  class_of_service is only applied to vrpn_Analog
+	//  values, not vrpn_Button or vrpn_Dial
+
+	void decodePacket(size_t bytes, vrpn_uint8 *buffer);
+
+	// Previous dial value, used to determine delta to send when it changes.
+	vrpn_uint8 _lastDial;
+};
+
+class vrpn_Xkeys_XK3 : protected vrpn_Xkeys, public vrpn_Button_Filter {
 public:
   vrpn_Xkeys_XK3(const char *name, vrpn_Connection *c = 0);
   virtual ~vrpn_Xkeys_XK3() {};
@@ -149,7 +206,9 @@ class VRPN_API vrpn_Xkeys;
 class VRPN_API vrpn_Xkeys_Desktop;
 class VRPN_API vrpn_Xkeys_Pro;
 class VRPN_API vrpn_Xkeys_Joystick;
+class VRPN_API vrpn_Xkeys_Joystick12;
 class VRPN_API vrpn_Xkeys_Jog_And_Shuttle;
+class VRPN_API vrpn_Xkeys_Jog_And_Shuttle12;
 class VRPN_API vrpn_Xkeys_XK3;
 #endif
 

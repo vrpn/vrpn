@@ -60,7 +60,7 @@
 #include "vrpn_Poser.h"                 // for vrpn_Poser
 #include "vrpn_Poser_Tek4662.h"         // for vrpn_Poser_Tek4662
 #include "vrpn_raw_sgibox.h"            // for vrpn_raw_SGIBox, for access to the SGI button & dial box connected to the serial port of an linux PC
-#include "vrpn_Retrolink.h"             // for vrpn_Retolink_GameCube, etc.
+#include "vrpn_Retrolink.h"             // for vrpn_Retrolink_GameCube, etc.
 #include "vrpn_Saitek_Controller_Raw.h" // for vrpn_Saitek_ST290_Pro, etc.
 #include "vrpn_sgibox.h" //for access to the B&D box connected to an SGI via the IRIX GL drivers
 #include "vrpn_Sound.h"             // for vrpn_Sound
@@ -70,6 +70,7 @@
 #include "vrpn_Tracker_AnalogFly.h" // for vrpn_Tracker_AnalogFlyParam, etc
 #include "vrpn_Tracker_ButtonFly.h" // for vrpn_TBF_axis, etc
 #include "vrpn_Tracker_Crossbow.h"  // for vrpn_Tracker_Crossbow
+#include "vrpn_Tracker_DeadReckoning.h"    // for vrpn_Tracker_DeadReckoning_Rotation
 #include "vrpn_Tracker_DTrack.h"    // for vrpn_Tracker_DTrack
 #include "vrpn_Tracker_Fastrak.h"   // for vrpn_Tracker_Fastrak
 #include "vrpn_Tracker_GameTrak.h"  // for vrpn_Tracker_GameTrak
@@ -2427,7 +2428,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_InterSense(char *&pch, char *line,
     // at the ends, we add them to the command string to send. Note
     // that there is a newline at the end of the line, following the
     // backslash.
-    sprintf(rcmd, "");
+    rcmd[0] = '\0';
     while (line[strlen(line) - 2] == '\\') {
         // Read the next line
         if (fgets(line, LINESIZE, config_file) == NULL) {
@@ -4700,6 +4701,30 @@ int vrpn_Generic_Server_Object::setup_YEI_3Space_Sensor_Wireless(char *&pch, cha
     return 0;
 }
 
+int vrpn_Generic_Server_Object::setup_Tracker_DeadReckoning_Rotation(char *&pch, char *line,
+    FILE * /*config_file*/)
+{
+    char name[LINESIZE], origName[LINESIZE];
+    int numSensors;
+    float predictionTime;
+
+    VRPN_CONFIG_NEXT();
+    // Get the arguments (tracker_name, sensors, rate)
+    if (sscanf(pch, "%511s%511s%d%g", name, origName, &numSensors, &predictionTime) != 4) {
+        fprintf(stderr, "Bad vrpn_Tracker_DeadReckoning_Rotation line: %s\n", line);
+        return -1;
+    }
+
+    // Open the tracker
+    if (verbose)
+        printf("Opening vrpn_Tracker_DeadReckoning_Rotation: %s from %s with %d sensors, prediction time %f\n", name,
+        origName, numSensors, predictionTime);
+    _devices->add(new vrpn_Tracker_DeadReckoning_Rotation(name, connection, origName,
+        numSensors, predictionTime));
+
+    return 0;
+}
+
 #undef VRPN_CONFIG_NEXT
 
 vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(
@@ -5022,9 +5047,17 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(
                     VRPN_CHECK(templated_setup_HID_device_name_only<
                         vrpn_Contour_ShuttleXpress>);
                 }
-                else if (VRPN_ISIT("vrpn_Retrolink_GameCube")) {
+				else if (VRPN_ISIT("vrpn_Contour_ShuttlePROv2")) {
+					VRPN_CHECK(templated_setup_HID_device_name_only<
+						vrpn_Contour_ShuttlePROv2>);
+				}
+				else if (VRPN_ISIT("vrpn_Retrolink_GameCube")) {
                     VRPN_CHECK(templated_setup_HID_device_name_only<
                         vrpn_Retrolink_GameCube>);
+                }
+                else if (VRPN_ISIT("vrpn_Retrolink_Genesis")) {
+                    VRPN_CHECK(templated_setup_HID_device_name_only<
+                        vrpn_Retrolink_Genesis>);
                 }
                 else if (VRPN_ISIT("vrpn_Contour_ShuttleXpress")) {
                     VRPN_CHECK(templated_setup_HID_device_name_only<
@@ -5050,11 +5083,19 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(
                     VRPN_CHECK(templated_setup_HID_device_name_only<
                         vrpn_Xkeys_Joystick>);
                 }
-                else if (VRPN_ISIT("vrpn_Xkeys_Jog_And_Shuttle")) {
+				else if (VRPN_ISIT("vrpn_Xkeys_Joystick12")) {
+					VRPN_CHECK(templated_setup_HID_device_name_only<
+						vrpn_Xkeys_Joystick12>);
+				}
+				else if (VRPN_ISIT("vrpn_Xkeys_Jog_And_Shuttle")) {
                     VRPN_CHECK(templated_setup_HID_device_name_only<
                         vrpn_Xkeys_Jog_And_Shuttle>);
                 }
-                else if (VRPN_ISIT("vrpn_Xkeys_XK3")) {
+				else if (VRPN_ISIT("vrpn_Xkeys_Jog_And_Shuttle12")) {
+					VRPN_CHECK(templated_setup_HID_device_name_only<
+						vrpn_Xkeys_Jog_And_Shuttle12>);
+				}
+				else if (VRPN_ISIT("vrpn_Xkeys_XK3")) {
                     VRPN_CHECK(
                         templated_setup_HID_device_name_only<vrpn_Xkeys_XK3>);
                 }
@@ -5220,6 +5261,9 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(
                 }
                 else if (VRPN_ISIT("vrpn_YEI_3Space_Sensor_Wireless")) {
                     VRPN_CHECK(setup_YEI_3Space_Sensor_Wireless);
+                }
+                else if (VRPN_ISIT("vrpn_Tracker_DeadReckoning_Rotation")) {
+                    VRPN_CHECK(setup_Tracker_DeadReckoning_Rotation);
                 }
                 else {                         // Never heard of it
                     sscanf(line, "%511s", s1); // Find out the class name

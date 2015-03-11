@@ -12,7 +12,7 @@
 #include "vrpn_Types.h"                 // for vrpn_float64
 
 #ifndef M_PI
-#define M_PI  (2*asin(0.0))
+#define M_PI  (2*acos(0.0))
 #endif
 
 #define PHANTOM_SERVER "Tracker0@localhost"

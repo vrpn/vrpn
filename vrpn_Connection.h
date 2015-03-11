@@ -455,6 +455,10 @@ public:
     ///< when lobbing datagrams at the server and
     ///< waiting for it to call back.
 
+	/// Socket to use to lob UDP requests asking for the server to
+	/// call us back.
+	SOCKET d_udpLobSocket;
+
     char *d_remote_machine_name;    ///< Machine to call
     int d_remote_port_number;       ///< Port to connect to on remote machine
     timeval d_last_connect_attempt; ///< When the last UDP lob occurred
@@ -828,13 +832,8 @@ protected:
 
 /// @name Only used for a vrpn_Connection that awaits incoming connections
 /// @{
-#ifdef VRPN_USE_WINSOCK_SOCKETS
     SOCKET listen_udp_sock; ///< UDP Connect requests come here
     SOCKET listen_tcp_sock; ///< TCP Connection requests come here
-#else
-    int listen_udp_sock; ///< UDP Connect requests come here
-    int listen_tcp_sock; ///< TCP Connection requests come here
-#endif
     /// @}
 
     /// Routines that handle system messages

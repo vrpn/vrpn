@@ -258,15 +258,9 @@
 //#define VRPN_USE_GPM_MOUSE
 
 //------------------------
-// Instructs VRPN to use the GLI Interactive LLC MotionNode library to
-// interface VRPN to their tracker.  If you do this, you must edit
-// the include paths in the vrpn and vrpndll libraries to point to the
-// correct locations and the lib path in vrpn_server and any other
-// applications you build (including custom ones) to point to the right
-// location.  You also have to have Boost (www.boost.org) installed and
-// have pointed the vrpn and vrpndll project include paths to it and
-// the vrpndll and vrpn_server lib paths to it.
-// WARNING: This code does not compile under visual studio 6.0.
+// Instructs VRPN to use the Motion C API library to interface VRPN to
+// the their MotionNode tracker. Requires the shared library at run-time
+// to function. No external dependencies to build.
 //#define VRPN_USE_MOTIONNODE
 
 //------------------------
@@ -334,6 +328,7 @@
 #define VRPN_USE_HID
 #endif
 #endif
+#define VRPN_USE_HID
 
 //------------------------
 // Instructs VRPN to link in the source code to a local version of
@@ -353,6 +348,7 @@
 #if !defined(__MINGW__) && !defined(__APPLE__)
 #define VRPN_USE_LOCAL_HIDAPI
 #endif
+#define VRPN_USE_LOCAL_HIDAPI
 
 //------------------------
 // Instructs VRPN to attempt to use LibUSB-1.0. This will compile and
@@ -480,10 +476,6 @@
 #pragma comment(lib, "../../Adrienne/AEC_DLL/AEC_NTTC.lib")
 #endif
 
-#ifdef VRPN_USE_MOTIONNODE
-#pragma comment(lib, "libMotionNodeSDK.lib")
-#endif
-
 #ifdef VRPN_USE_LIBUSB_1_0
 #define VRPN_LIBUSB_PATH VRPN_SYSTEMDRIVE "/Program Files/libusb-1.0/"
 #endif
@@ -562,10 +554,6 @@
 // dxerr9.lib has also been said to work.
 #pragma comment(lib, "dxerr.lib")
 #pragma comment(lib, "dinput8.lib")
-#endif
-
-#ifdef VRPN_USE_MOTIONNODE
-#pragma comment(lib, "libMotionNodeSDK.lib")
 #endif
 
 // Load National Instruments libraries if we are using them.

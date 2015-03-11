@@ -41,13 +41,14 @@ if("${CMAKE_SIZEOF_VOID_P}" MATCHES "8")
 	file(TO_CMAKE_PATH "$ENV{ProgramW6432}" _progfiles)
 else()
 	set(_libsuffixes lib)
-	if(NOT "$ENV{ProgramFiles(x86)}" STREQUAL "")
-		# 32-bit dir: only set on win64
-		file(TO_CMAKE_PATH "$ENV{ProgramFiles(x86)}" _progfiles)
-	else()
-		# 32-bit dir on win32, useless to us on win64
-		file(TO_CMAKE_PATH "$ENV{ProgramFiles}" _progfiles)
-	endif()
+	set(_PF86 "ProgramFiles(x86)")
+		if(NOT "$ENV{${_PF86}}" STREQUAL "")
+			# 32-bit dir: only set on win64
+			file(TO_CMAKE_PATH "$ENV{${_PF86}}" _progfiles)
+		else()
+			# 32-bit dir on win32, useless to us on win64
+			file(TO_CMAKE_PATH "$ENV{ProgramFiles}" _progfiles)
+		endif()
 endif()
 
 ###

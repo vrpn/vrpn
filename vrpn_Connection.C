@@ -7,9 +7,6 @@
 #include <mpi.h>
 #endif
 
-#ifndef _WIN32_WCE
-#include <errno.h> // for errno, EINTR
-#endif
 #include <stddef.h> // for size_t
 #include <stdio.h>  // for fprintf, stderr, NULL, etc
 #include <string.h> // for strlen, strcpy, memcpy, etc
@@ -27,20 +24,48 @@
 #include <stdlib.h> // for exit, atoi, getenv, system
 
 #include "vrpn_Connection.h"
+#include <string>
 
 #ifdef VRPN_USE_WINSOCK_SOCKETS
-// a socket in windows can not be closed like it can in unix-land
-#define vrpn_closeSocket closesocket
+
+  // A socket in Windows can not be closed like it can in unix-land
+  #define vrpn_closeSocket closesocket
+
+  // Socket errors don't set errno in Windows; they use their own
+  // custom error reporting methods.
+  #define vrpn_socket_error WSAGetLastError()
+  static std::string WSA_number_to_string(int err)
+  {
+	LPTSTR s = NULL;
+	FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+		NULL, err,
+		MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+		(LPTSTR)&s, 0, NULL);
+	std::string ret = s;
+	LocalFree(s);
+	return ret;
+  }
+  #define vrpn_socket_error_to_chars(x) (WSA_number_to_string(x)).c_str()
+  #define vrpn_EINTR WSAEINTR
+
 #else
-#define vrpn_closeSocket close
-#include <arpa/inet.h>  // for inet_addr
-#include <netinet/in.h> // for sockaddr_in, ntohl, in_addr, etc
-#include <sys/socket.h> // for getsockname, send, AF_INET, etc
-#include <unistd.h>     // for close, read, fork, etc
-#ifdef _AIX
-#define _USE_IRS
-#endif
-#include <netdb.h> // for hostent, gethostbyname, etc
+  #include <errno.h> // for errno, EINTR
+
+  #define vrpn_closeSocket close
+
+  #define vrpn_socket_error errno
+  #define vrpn_socket_error_to_chars(x) strerror(x)
+  #define vrpn_EINTR EINTR
+
+  #include <arpa/inet.h>  // for inet_addr
+  #include <netinet/in.h> // for sockaddr_in, ntohl, in_addr, etc
+  #include <sys/socket.h> // for getsockname, send, AF_INET, etc
+  #include <unistd.h>     // for close, read, fork, etc
+  #ifdef _AIX
+    #define _USE_IRS
+  #endif
+  #include <netdb.h> // for hostent, gethostbyname, etc
+
 #endif
 
 #ifdef sparc
@@ -67,17 +92,13 @@
 
 // cast fourth argument to setsockopt()
 #ifdef VRPN_USE_WINSOCK_SOCKETS
-#define SOCK_CAST (char *)
-#ifdef _WIN32_WCE
-#define errno WSAGetLastError()
-#define EINTR WSAEINTR
-#endif
+  #define SOCK_CAST (char *)
 #else
-#ifdef sparc
-#define SOCK_CAST (const char *)
-#else
-#define SOCK_CAST
-#endif
+  #ifdef sparc
+    #define SOCK_CAST (const char *)
+  #else
+    #define SOCK_CAST
+  #endif
 #endif
 
 #if defined(_AIX) || defined(__APPLE__) || defined(ANDROID) || defined(__linux)
@@ -177,9 +198,14 @@ struct timeval;
 // proposed strategy handles both partial major version compatibility as well
 // as accidental partial minor version incompatibility.
 //
-const char *vrpn_MAGIC = (const char *)"vrpn: ver. 07.33";
+const char *vrpn_MAGIC = (const char *)"vrpn: ver. 07.34";
 const char *vrpn_FILE_MAGIC = (const char *)"vrpn: ver. 04.00";
 const int vrpn_MAGICLEN = 16; // Must be a multiple of vrpn_ALIGN bytes!
+
+// NOTE: This needs to remain the same size unless we change the major version
+// number for VRPN.  It is the length that is written into the stream.
+const size_t vrpn_COOKIE_SIZE = vrpn_MAGICLEN + vrpn_ALIGN;
+size_t vrpn_cookie_size(void) { return vrpn_COOKIE_SIZE; }
 
 const char *vrpn_got_first_connection = "VRPN_Connection_Got_First_Connection";
 const char *vrpn_got_connection = "VRPN_Connection_Got_Connection";
@@ -843,7 +869,6 @@ int vrpn_Log::setName(const char *name, size_t len)
 
 int vrpn_Log::setCookie(const char *cookieBuffer)
 {
-
     if (d_magicCookie) {
         delete[] d_magicCookie;
     }
@@ -852,6 +877,7 @@ int vrpn_Log::setCookie(const char *cookieBuffer)
         fprintf(stderr, "vrpn_Log::setCookie:  Out of memory.\n");
         return -1;
     }
+    memset(d_magicCookie, 0, 1 + vrpn_cookie_size());
     strncpy(d_magicCookie, cookieBuffer, vrpn_cookie_size());
 
     return 0;
@@ -1668,7 +1694,7 @@ int vrpn_noint_select(int width, fd_set *readfds, fd_set *writefds,
         if (ret >= 0) { /* We are done if timeout or found some */
             done = 1;
         }
-        else if (errno != EINTR) { /* Done if non-intr error */
+		else if (vrpn_socket_error != vrpn_EINTR) { /* Done if non-intr error */
             done = 1;
         }
         else if ((timeout != NULL) &&
@@ -1720,17 +1746,16 @@ int vrpn_noint_select(int width, fd_set *readfds, fd_set *writefds,
 
 int vrpn_noint_block_write(int outfile, const char buffer[], size_t length)
 {
-    register int sofar; /* How many characters sent so far */
+    register int sofar = 0; /* How many characters sent so far */
     register int ret;   /* Return value from write() */
 
-    sofar = 0;
     do {
         /* Try to write the remaining data */
         ret = write(outfile, buffer + sofar, length - sofar);
         sofar += ret;
 
         /* Ignore interrupted system calls - retry */
-        if ((ret == -1) && (errno == EINTR)) {
+        if ((ret == -1) && (vrpn_socket_error == vrpn_EINTR)) {
             ret = 1;    /* So we go around the loop again */
             sofar += 1; /* Restoring it from above -1 */
         }
@@ -1773,7 +1798,7 @@ int vrpn_noint_block_read(int infile, char buffer[], size_t length)
         sofar += ret;
 
         /* Ignore interrupted system calls - retry */
-        if ((ret == -1) && (errno == EINTR)) {
+		if ((ret == -1) && (vrpn_socket_error == vrpn_EINTR)) {
             ret = 1;    /* So we go around the loop again */
             sofar += 1; /* Restoring it from above -1 */
         }
@@ -1851,13 +1876,8 @@ int vrpn_noint_block_read(SOCKET insock, char *buffer, size_t length)
  * of characters read before timeout (in the case of a timeout).
  */
 
-#ifdef VRPN_USE_WINSOCK_SOCKETS
 int vrpn_noint_block_read_timeout(SOCKET infile, char buffer[], size_t length,
                                   struct timeval *timeout)
-#else
-int vrpn_noint_block_read_timeout(int infile, char buffer[], size_t length,
-                                  struct timeval *timeout)
-#endif
 {
     size_t sofar;     /* How many we read so far */
     register int ret; /* Return value from the read() */
@@ -1935,7 +1955,7 @@ int vrpn_noint_block_read_timeout(int infile, char buffer[], size_t length,
         sofar += ret;
 
         /* Ignore interrupted system calls - retry */
-        if ((ret == -1) && (errno == EINTR)) {
+		if ((ret == -1) && (vrpn_socket_error == vrpn_EINTR)) {
             ret = 1;    /* So we go around the loop again */
             sofar += 1; /* Restoring it from above -1 */
         }
@@ -1980,7 +2000,7 @@ static SOCKET open_socket(int type, unsigned short *portno,
     if (sock == INVALID_SOCKET) {
         fprintf(stderr, "open_socket: can't open socket.\n");
 #ifndef _WIN32_WCE
-        fprintf(stderr, "  -- errno %d (%s).\n", errno, strerror(errno));
+		fprintf(stderr, "  -- Error %d (%s).\n", vrpn_socket_error, vrpn_socket_error_to_chars(vrpn_socket_error));
 #endif
         return INVALID_SOCKET;
     }
@@ -2038,7 +2058,7 @@ static SOCKET open_socket(int type, unsigned short *portno,
             fprintf(stderr, " %d", *portno);
         }
 #ifndef _WIN32_WCE
-        fprintf(stderr, "  --  %d  --  %s\n", errno, strerror(errno));
+		fprintf(stderr, "  --  %d  --  %s\n", vrpn_socket_error, vrpn_socket_error_to_chars(vrpn_socket_error));
 #endif
         fprintf(stderr, "  (This probably means that another application has "
                         "the port open already)\n");
@@ -2175,6 +2195,17 @@ static SOCKET vrpn_connect_udp_port(const char *machineName, int remotePort,
 /**
  * Retrieves the IP address or hostname of the local interface used to connect
  * to the specified remote host.
+ * XXX: This does not always work.  See the Github issue with the report from
+ * Isop W. Alexander showing that a machine with two ports (172.28.0.10 and
+ * 192.168.191.130) sent a connection request that came from the 172 IP address
+ * but that had the name of the 192 interface in the message as the host to
+ * call back.  This turned out to be unroutable, so the server failed to call
+ * back on the correct IP address.  Presumably, this happens when the gateway
+ * is configured to be a single outgoing NIC.  This was on a Linux box.  We
+ * need a more reliable way to select the outgoing NIC.  XXX Actually, the problem may be that
+ * we aren't listening on the incorrect port -- the UDP receipt code may
+ * use the IP address the message came from rather than the machine name
+ * in the message.
  *
  * @param local_host A buffer of size 64 that will contain the name of the local interface.
  * @param max_length The maximum length of the local_host buffer.
@@ -2238,20 +2269,15 @@ static int get_local_socket_name(char *local_host, size_t max_length, const char
  */
 
 int vrpn_udp_request_lob_packet(
+	SOCKET udp_sock,       // Socket to use to send
     const char *machine,   // Name of the machine to call
     const int remote_port, // UDP port on remote machine
     const int local_port,  // TCP port on this machine
     const char *NIC_IP = NULL)
 {
-    SOCKET udp_sock;    /* We lob datagrams from here */
     char msg[150];      /* Message to send */
     vrpn_int32 msglen;  /* How long it is (including \0) */
     char myIPchar[100]; /* IP decription this host */
-
-    /* Create a UDP socket and connect it to the port on the remote
-     * machine. */
-
-    udp_sock = vrpn_connect_udp_port(machine, remote_port, NIC_IP);
 
     /* Fill in the request message, telling the machine and port that
      * the remote server should connect to.  These are ASCII, separated
@@ -2277,7 +2303,6 @@ int vrpn_udp_request_lob_packet(
         return -1;
     }
 
-    vrpn_closeSocket(udp_sock); // We're done with the port
     return 0;
 }
 
@@ -2551,7 +2576,7 @@ static int vrpn_start_server(const char *machine, char *server_name, char *args,
 
 int write_vrpn_cookie(char *buffer, size_t length, long remote_log_mode)
 {
-    if (length < vrpn_MAGICLEN + vrpn_ALIGN + 1) return -1;
+    if (length < vrpn_cookie_size() + 1) return -1;
 
     sprintf(buffer, "%s  %c", vrpn_MAGIC,
             static_cast<char>(remote_log_mode + '0'));
@@ -2637,10 +2662,6 @@ int check_vrpn_file_cookie(const char *buffer)
     return 0;
 }
 
-size_t vrpn_cookie_size(void) { return vrpn_MAGICLEN + vrpn_ALIGN; }
-
-// END OF COOKIE CODE
-
 vrpn_Endpoint::vrpn_Endpoint(vrpn_TypeDispatcher *dispatcher,
                              vrpn_int32 *connectedEndpointCounter)
     : status(BROKEN)
@@ -2663,6 +2684,7 @@ vrpn_Endpoint_IP::vrpn_Endpoint_IP(vrpn_TypeDispatcher *dispatcher,
     , d_tcpSocket(INVALID_SOCKET)
     , d_tcpListenSocket(INVALID_SOCKET)
     , d_tcpListenPort(0)
+	, d_udpLobSocket(INVALID_SOCKET)
     , d_remote_machine_name(NULL)
     , d_remote_port_number(0)
     , d_tcp_only(vrpn_FALSE)
@@ -2680,6 +2702,10 @@ vrpn_Endpoint_IP::vrpn_Endpoint_IP(vrpn_TypeDispatcher *dispatcher,
     , d_udpInbuf((char *)d_udpAlignedInbuf)
     , d_NICaddress(NULL)
 {
+    // Keep Valgrind happy.
+    memset(d_tcpOutbuf, 0, d_tcpBuflen);
+    memset(d_udpOutbuf, 0, d_udpBuflen);
+
     vrpn_Endpoint_IP::init();
 }
 
@@ -2715,7 +2741,6 @@ vrpn_Endpoint::~vrpn_Endpoint(void)
 
 vrpn_Endpoint_IP::~vrpn_Endpoint_IP(void)
 {
-
     // Close all of the sockets that are left open
     if (d_tcpSocket != INVALID_SOCKET) {
         vrpn_closeSocket(d_tcpSocket);
@@ -2735,6 +2760,10 @@ vrpn_Endpoint_IP::~vrpn_Endpoint_IP(void)
         vrpn_closeSocket(d_tcpListenSocket);
         d_tcpListenSocket = INVALID_SOCKET;
     }
+	if (d_udpLobSocket != INVALID_SOCKET) {
+		vrpn_closeSocket(d_udpLobSocket);
+		d_udpLobSocket = INVALID_SOCKET;
+	}
 
     // Delete the buffers created in the constructor
     if (d_tcpOutbuf) {
@@ -2811,6 +2840,7 @@ void vrpn_Endpoint_IP::init(void)
     d_tcpSocket = INVALID_SOCKET;
     d_tcpListenSocket = INVALID_SOCKET;
     d_tcpListenPort = 0;
+	d_udpLobSocket = INVALID_SOCKET;
     d_udpOutboundSocket = INVALID_SOCKET;
     d_udpInboundSocket = INVALID_SOCKET;
 
@@ -2859,7 +2889,7 @@ int vrpn_Endpoint_IP::mainloop(timeval *timeout)
                               timeout) == -1) {
             fprintf(stderr, "vrpn_Endpoint::mainloop: select failed.\n");
 #ifndef _WIN32_WCE
-            fprintf(stderr, "  Errno (%d):  %s.\n", errno, strerror(errno));
+			fprintf(stderr, "  Error (%d):  %s.\n", vrpn_socket_error, vrpn_socket_error_to_chars(vrpn_socket_error));
 #endif
             status = BROKEN;
             return -1;
@@ -2979,7 +3009,19 @@ int vrpn_Endpoint_IP::mainloop(timeval *timeout)
         // do BAD THINGS (TM).
 
         if (time_to_try_again) {
-            if (vrpn_udp_request_lob_packet(
+			//XXX On Linux, if we are talking to a machine that does not
+			// have a server running, then our connect eventually tells us
+			// that is was refused, and we can't communicate on that
+			// UDP socket anymore.  We should switch to a connectionless
+			// sendto() option instead, but this runs the way it used
+			// to, which worked, but still leaves the socket open after
+			// the send; closing it right away broke on some Windows
+			// machines.
+			vrpn_closeSocket(d_udpLobSocket);
+			d_udpLobSocket = vrpn_connect_udp_port(d_remote_machine_name,
+				d_remote_port_number, d_NICaddress);
+
+			if (vrpn_udp_request_lob_packet(d_udpLobSocket,
                     d_remote_machine_name, d_remote_port_number,
                     d_tcpListenPort, d_NICaddress) == -1) {
                 fprintf(stderr,
@@ -3162,18 +3204,7 @@ int vrpn_Endpoint_IP::send_pending_reports(void)
     if (connection) {
         fprintf(stderr, "vrpn_Endpoint::send_pending_reports():  "
                         "select() failed.\n");
-#ifdef VRPN_USE_WINSOCK_SOCKETS
-        char Message[1024];
-        FormatMessage(
-            FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS |
-                FORMAT_MESSAGE_MAX_WIDTH_MASK,
-            NULL, WSAGetLastError(), MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-            (LPSTR)Message, 1024, NULL);
-        fprintf(stderr, "Windows Sockets Error (%d):  %s.\n", WSAGetLastError(),
-                Message);
-#else
-        fprintf(stderr, "Errno (%d):  %s.\n", errno, strerror(errno));
-#endif
+		fprintf(stderr, "Error (%d):  %s.\n", vrpn_socket_error, vrpn_socket_error_to_chars(vrpn_socket_error));
         status = BROKEN;
         return -1;
     }
@@ -3775,8 +3806,10 @@ int vrpn_Endpoint_IP::setup_new_connection(void)
     vrpn_int32 sendlen;
     int retval;
 
+    // Keep Valgrind happy
+    memset(sendbuf, 0, sizeof(sendbuf));
     retval =
-        write_vrpn_cookie(sendbuf, vrpn_cookie_size() + 1, d_remoteLogMode);
+        write_vrpn_cookie(sendbuf, sizeof(sendbuf), d_remoteLogMode);
     if (retval < 0) {
         perror("vrpn_Endpoint::setup_new_connection:  "
                "Internal error - array too small.  The code's broken.");
@@ -3785,9 +3818,6 @@ int vrpn_Endpoint_IP::setup_new_connection(void)
     sendlen = static_cast<vrpn_int32>(vrpn_cookie_size());
 
     // Write the magic cookie header to the server
-    // NOTE: Valgrind will complain about this because we didn't fill in all of the
-    // characters we're writing.  But we don't care about the characters that are
-    // beyond the terminating NULL character in the string.
     if (vrpn_noint_block_write(d_tcpSocket, sendbuf, sendlen) != sendlen) {
         fprintf(stderr, "vrpn_Endpoint::setup_new_connection:  "
                         "Can't write cookie.\n");
@@ -3865,28 +3895,22 @@ void vrpn_Endpoint_IP::poll_for_cookie(const timeval *pTimeout)
 
 int vrpn_Endpoint_IP::finish_new_connection_setup(void)
 {
+	const vrpn_int32 sendlen = static_cast<vrpn_int32>(vrpn_COOKIE_SIZE);
+	char recvbuf[vrpn_COOKIE_SIZE];
 
-    vrpn_int32 sendlen = static_cast<vrpn_int32>(vrpn_cookie_size());
-    char *recvbuf = new char[sendlen];
-    if (recvbuf == NULL) {
-        fprintf(stderr, "vrpn_Endpoint_IP::finish_new_connection_setup(): Out "
-                        "of memory when allocating receiver buffer\n");
-        status = BROKEN;
-        return -1;
-    }
+    // Keep Valgrind happy
+    memset(recvbuf, 0, sizeof(recvbuf));
 
     // Try to read the magic cookie from the server.
     int ret = vrpn_noint_block_read(d_tcpSocket, recvbuf, sendlen);
     if (ret != sendlen) {
         perror("vrpn_Endpoint::finish_new_connection_setup: Can't read cookie");
         status = BROKEN;
-        delete[] recvbuf;
         return -1;
     }
 
     if (check_vrpn_cookie(recvbuf) < 0) {
         status = BROKEN;
-        delete[] recvbuf;
         return -1;
     }
 
@@ -3907,7 +3931,6 @@ int vrpn_Endpoint_IP::finish_new_connection_setup(void)
                         "Got invalid log mode %d\n",
                 static_cast<int>(received_logmode));
         status = BROKEN;
-        delete[] recvbuf;
         return -1;
     }
     if (received_logmode & vrpn_LOG_INCOMING) {
@@ -3925,7 +3948,6 @@ int vrpn_Endpoint_IP::finish_new_connection_setup(void)
         fprintf(stderr, "vrpn_Endpoint::finish_new_connection_setup:  "
                         "Can't pack remote logging instructions.\n");
         status = BROKEN;
-        delete[] recvbuf;
         return -1;
     }
 
@@ -3943,7 +3965,6 @@ int vrpn_Endpoint_IP::finish_new_connection_setup(void)
                 fprintf(stderr, "vrpn_Endpoint::finish_new_connection_setup:  "
                                 "can't open UDP socket\n");
                 status = BROKEN;
-                delete[] recvbuf;
                 return -1;
             }
 
@@ -3952,7 +3973,6 @@ int vrpn_Endpoint_IP::finish_new_connection_setup(void)
                 fprintf(stderr, "vrpn_Endpoint::finish_new_connection_setup: "
                                 "Can't pack UDP msg\n");
                 status = BROKEN;
-                delete[] recvbuf;
                 return -1;
             }
         }
@@ -3979,7 +3999,6 @@ int vrpn_Endpoint_IP::finish_new_connection_setup(void)
             stderr,
             "vrpn_Endpoint::finish_new_connection_setup: Can't send UDP msg\n");
         status = BROKEN;
-        delete[] recvbuf;
         return -1;
     }
 
@@ -4006,7 +4025,6 @@ int vrpn_Endpoint_IP::finish_new_connection_setup(void)
         (*d_connectionCounter)++;
     }
 
-    delete[] recvbuf;
     return 0;
 }
 
@@ -4265,7 +4283,7 @@ int vrpn_Endpoint::marshall_message(
     // len on the other side (in the same way the padding is done)
     // The reason we don't include the padding in the len is that we
     // would not be able to figure out the size of the padding on the
-    // far side)
+    // far side).
     *(vrpn_uint32 *)(void *)(&outbuf[curr_out]) = htonl(header_len + len);
     curr_out += sizeof(vrpn_uint32);
 
@@ -4285,6 +4303,9 @@ int vrpn_Endpoint::marshall_message(
     // Pack the sequence number.  If something's really screwy with
     // our sizes/types and there isn't room for the sequence number,
     // skipping for alignment below will overwrite it!
+    // Note that the sequence number is not officially part
+    // of the header.  It was added by Tom Hudson for use in his dissertation
+    // work and is used by packets sniffers if it is present.
     *(vrpn_uint32 *)(void *)(&outbuf[curr_out]) = htonl(seqNo);
     curr_out += sizeof(vrpn_uint32);
 
@@ -4486,11 +4507,7 @@ int vrpn_Endpoint::pack_sender_description(vrpn_int32 which)
                         vrpn_CONNECTION_RELIABLE);
 }
 
-#ifdef VRPN_USE_WINSOCK_SOCKETS
 static int flush_udp_socket(SOCKET fd)
-#else
-static int flush_udp_socket(int fd)
-#endif
 {
     timeval localTimeout;
     fd_set readfds, exceptfds;
@@ -6070,8 +6087,19 @@ vrpn_Connection_IP::vrpn_Connection_IP(
 
         endpoint->status = TRYING_TO_CONNECT;
 
-// fprintf(stderr, "TRYING_TO_CONNECT -
-// vrpn_Connection_IP::vrpn_Connection_IP.\n");
+		/* Create a UDP socket and connect it to the port on the remote
+		* machine. */
+
+		endpoint->d_udpLobSocket = vrpn_connect_udp_port(endpoint->d_remote_machine_name,
+			endpoint->d_remote_port_number, d_NIC_IP);
+		if (endpoint->d_udpLobSocket == INVALID_SOCKET) {
+			fprintf(stderr,
+				"vrpn_Connection_IP: Can't Set up socket to lob UDP packets!\n");
+			connectionStatus = BROKEN;
+			// fprintf(stderr, "BROKEN -
+			// vrpn_Connection_IP::vrpn_Connection_IP.\n");
+			return;
+		}
 
 #ifdef VERBOSE
         printf("vrpn_Connection_IP: Getting the TCP port to listen on\n");
@@ -6096,7 +6124,7 @@ vrpn_Connection_IP::vrpn_Connection_IP(
 
         // Lob a packet asking for a connection on that port.
         vrpn_gettimeofday(&endpoint->d_last_connect_attempt, NULL);
-        if (vrpn_udp_request_lob_packet(
+		if (vrpn_udp_request_lob_packet(endpoint->d_udpLobSocket,
                 endpoint->d_remote_machine_name, endpoint->d_remote_port_number,
                 endpoint->d_tcpListenPort, NIC_IPaddress) == -1) {
             fprintf(stderr, "vrpn_Connection_IP: Can't lob UDP request\n");

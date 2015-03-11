@@ -288,7 +288,8 @@ void vrpn_YEI_3Space::handle_report(unsigned char *report)
   unsigned char *bufptr = report;
 
   // Read the two orientations and report them
-  q_vec_type  pos = {0};
+  q_vec_type  pos;
+  pos[Q_X] = pos[Q_Y] = pos[Q_Z] = 0;
   q_type  quat;
 
   for (int i = 0; i < 2; i++) {
@@ -332,6 +333,26 @@ void vrpn_YEI_3Space::handle_report(unsigned char *report)
   for (int i = 0; i < vrpn_Analog::getNumChannels(); i++) {
     vrpn_unbuffer(&bufptr, &value);
     channel[i] = value;
+  }
+
+  // Check the temperature to make sure it is above 1.
+  // If not, there is trouble parsing the report.  Sometimes the wired
+  // unit gets the wrong number of bytes in the report, causing things
+  // to wrap around.  This catches that case.
+  // XXX We took this out because some sensors were reporting -200C at
+  // a conference.
+//  if (channel[9] <= 1) {
+//	  VRPN_MSG_ERROR("vrpn_YEI_3Space::handle_report(): Invalid temperature, resetting");
+//	  d_sensor = STATUS_RESETTING;
+//  }
+
+  // Check the confidence factor to make sure it is between 0 and 1.
+  // If not, there is trouble parsing the report.  Sometimes the wired
+  // unit gets the wrong number of bytes in the report, causing things
+  // to wrap around.  This catches that case.
+  if ((channel[10] < 0) || (channel[10] > 1)) {
+	  VRPN_MSG_ERROR("vrpn_YEI_3Space::handle_report(): Invalid confidence, resetting");
+	  d_sensor = STATUS_RESETTING;
   }
 
   // Read the button values and put them into the buttons.
@@ -560,7 +581,7 @@ bool vrpn_YEI_3Space_Sensor::send_ascii_command (const char *p_cmd)
   }
 
   // Allocate space for the command plus padding and zero terminator
-  int buflen = strlen(p_cmd) + 3;
+  int buflen = static_cast<int>(strlen(p_cmd) + 3);
   unsigned char *buffer = new unsigned char[buflen];
   if (buffer == NULL) {
     return false;
@@ -1034,7 +1055,7 @@ bool vrpn_YEI_3Space_Sensor_Wireless::send_ascii_command (const char *p_cmd)
   sprintf(buffer, ">%d,%s\n", d_logical_id, p_cmd);
 
   // Send the command and see if it worked.
-  int buflen = strlen(buffer) + 1;
+  int buflen = static_cast<int>(strlen(buffer) + 1);
   unsigned char *bufptr = static_cast<unsigned char *>(
     static_cast<void*>(buffer));
   int l_ret = vrpn_write_characters(d_serial_fd, bufptr, buflen);

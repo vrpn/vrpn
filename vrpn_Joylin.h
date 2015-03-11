@@ -19,7 +19,7 @@ class VRPN_API vrpn_Connection;
 
 class VRPN_API vrpn_Joylin :public vrpn_Analog, public vrpn_Button_Filter {
 public:
-  vrpn_Joylin(char * name, vrpn_Connection * c, char * portname);
+  vrpn_Joylin(const char * name, vrpn_Connection * c, const char * portname);
   ~vrpn_Joylin();
 
   void mainloop(void);
