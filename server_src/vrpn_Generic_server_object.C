@@ -4460,6 +4460,18 @@ int vrpn_Generic_Server_Object::setup_YEI_3Space_Sensor(char *&pch, char *line,
         return -1;
     }
 
+    std::string port = device;
+#ifdef _WIN32
+    // Use the Win32 device namespace for COM ports, if they aren't already.
+    // This is because devices with port numbers greater than 9 must have names
+    // like \\.\COM14. This same name type can be used for lower-numbered ports
+    // as well, so we go ahead and put it in no matter what.
+    // Have to double the backslashes because they're escape characters.
+    if (port.find('\\') == std::string::npos) {
+        port = "\\\\.\\" + port;
+    }
+#endif
+
     // Allocate space to store pointers to reset commands.  Initialize
     // all of them to NULL pointers, indicating no commands.
     const int MAX_RESET_COMMANDS = 1024;
@@ -4468,7 +4480,7 @@ int vrpn_Generic_Server_Object::setup_YEI_3Space_Sensor(char *&pch, char *line,
     for (int i = 0; i < MAX_RESET_COMMANDS; i++) {
       reset_commands[i] = NULL;
     }
-    
+
     // If the last character in the line is a backslash, '\', then
     // the following line is an additional command to send to the
     // YEI at reset time. So long as we find lines with backslashes
@@ -4503,7 +4515,7 @@ int vrpn_Generic_Server_Object::setup_YEI_3Space_Sensor(char *&pch, char *line,
     // Open the device
     if (verbose) {
         printf("Opening vrpn_YEI_3Space_Sensor: %s on port %s, baud %d\n", name,
-               device, baud_rate);
+               port.c_str(), baud_rate);
         if (num_reset_commands > 0) {
           printf("... additional reset commands follow:\n");
           for (int i = 0; i < num_reset_commands; i++) {
@@ -4512,7 +4524,7 @@ int vrpn_Generic_Server_Object::setup_YEI_3Space_Sensor(char *&pch, char *line,
         }
     }
     _devices->add(new vrpn_YEI_3Space_Sensor(
-        name, connection, device, baud_rate, calibrate_gyros != 0, tare != 0,
+        name, connection, port.c_str(), baud_rate, calibrate_gyros != 0, tare != 0,
         frames_per_second, red_LED, green_LED, blue_LED, LED_mode,
         reset_commands));
 
@@ -4546,6 +4558,18 @@ int vrpn_Generic_Server_Object::setup_YEI_3Space_Sensor_Wireless(char *&pch, cha
         fprintf(stderr, "Bad setup_YEI_3Space_Sensor_Wireless line: %s\n", line);
         return -1;
     }
+
+    std::string port = device;
+#ifdef _WIN32
+    // Use the Win32 device namespace for COM ports, if they aren't already.
+    // This is because devices with port numbers greater than 9 must have names
+    // like \\.\COM14. This same name type can be used for lower-numbered ports
+    // as well, so we go ahead and put it in no matter what.
+    // Have to double the backslashes because they're escape characters.
+    if (port.find('\\') == std::string::npos) {
+        port = "\\\\.\\" + port;
+    }
+#endif
 
     // Allocate space to store pointers to reset commands.  Initialize
     // all of them to NULL pointers, indicating no commands.
@@ -4590,7 +4614,7 @@ int vrpn_Generic_Server_Object::setup_YEI_3Space_Sensor_Wireless(char *&pch, cha
     // Open the device
     if (verbose) {
         printf("Opening setup_YEI_3Space_Sensor_Wireless: %s on port %s, baud %d\n", name,
-               device, baud_rate);
+            port.c_str(), baud_rate);
         if (num_reset_commands > 0) {
           printf("... additional reset commands follow:\n");
           for (int i = 0; i < num_reset_commands; i++) {
@@ -4600,7 +4624,7 @@ int vrpn_Generic_Server_Object::setup_YEI_3Space_Sensor_Wireless(char *&pch, cha
     }
     vrpn_YEI_3Space_Sensor_Wireless *dev = new vrpn_YEI_3Space_Sensor_Wireless(
         name, connection,
-        logical_id, serial_number, device, baud_rate, calibrate_gyros != 0, tare != 0,
+        logical_id, serial_number, port.c_str(), baud_rate, calibrate_gyros != 0, tare != 0,
         frames_per_second, red_LED, green_LED, blue_LED, LED_mode,
         reset_commands);
     _devices->add(dev);
