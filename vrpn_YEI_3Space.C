@@ -737,7 +737,6 @@ void vrpn_YEI_3Space_Sensor::flush_input(void)
 vrpn_YEI_3Space_Sensor_Wireless::vrpn_YEI_3Space_Sensor_Wireless (const char * p_name
                                   , vrpn_Connection * p_c
                                   , int logical_id
-                                  , int serial_number
                                   , const char * p_port
                                   , int p_baud
                                   , bool calibrate_gyros_on_setup
@@ -777,11 +776,6 @@ vrpn_YEI_3Space_Sensor_Wireless::vrpn_YEI_3Space_Sensor_Wireless (const char * p
   printf("Dongle configured\n");
 #endif
 
-  // Set our serial number in the specified logical-ID slot.
-  if (!set_logical_id(static_cast<vrpn_uint8>(logical_id), serial_number)) {
-    fprintf(stderr,"vrpn_YEI_3Space_Sensor_Wireless::vrpn_YEI_3Space_Sensor_Wireless: Could not set logical ID\n");
-    return;
-  }
   d_logical_id = logical_id;
 
 #ifdef  VERBOSE
@@ -808,7 +802,6 @@ vrpn_YEI_3Space_Sensor_Wireless::vrpn_YEI_3Space_Sensor_Wireless (const char * p
 vrpn_YEI_3Space_Sensor_Wireless::vrpn_YEI_3Space_Sensor_Wireless (const char * p_name
                                   , vrpn_Connection * p_c
                                   , int logical_id
-                                  , int serial_number
                                   , int serial_file_descriptor
                                   , bool calibrate_gyros_on_setup
                                   , bool tare_on_setup
@@ -826,11 +819,6 @@ vrpn_YEI_3Space_Sensor_Wireless::vrpn_YEI_3Space_Sensor_Wireless (const char * p
   , d_serial_fd(serial_file_descriptor)
   , d_logical_id(-1)
 {
-  // Set our serial number in the specified logical-ID slot.
-  if (!set_logical_id(static_cast<vrpn_uint8>(logical_id), serial_number)) {
-    fprintf(stderr,"vrpn_YEI_3Space_Sensor_Wireless::vrpn_YEI_3Space_Sensor_Wireless: Could not set logical ID\n");
-    return;
-  }
   d_logical_id = logical_id;
 
   // Initialize the state of the device, now that we've established a

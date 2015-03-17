@@ -192,7 +192,6 @@ public:
 	@param name Name for the device
 	@param c Connection to use.
 	@param logical_id Which logical ID to use on the wireless unit.
-	@param serial_number Serial number of this device, used to configure.
 	@param port serial port to connect to
 	@param baud Baud rate - 115200 is default.
 	@param calibrate_gyros_on_setup - true to cause this to happen
@@ -210,7 +209,6 @@ public:
   vrpn_YEI_3Space_Sensor_Wireless (const char * name,
     vrpn_Connection * c,
     int logical_id,
-    int serial_number,
     const char * port,
     int baud = 115200,
     bool calibrate_gyros_on_setup = false,
@@ -228,8 +226,7 @@ public:
 	@param name Name for the device
 	@param c Connection to use.
 	@param logical_id Which logical ID to use on the wireless unit.
-	@param serial_number Serial number of this device, used to configure.
-        @param serial_file_descriptor: Pre-opened serial descriptor to use.
+    @param serial_file_descriptor: Pre-opened serial descriptor to use.
 	@param calibrate_gyros_on_setup - true to cause this to happen
 	@param tare_on_setup - true to cause this to happen (usually manufacturing-time operation!)
 	@param frames_per_second - How many frames/second to read
@@ -245,7 +242,6 @@ public:
   vrpn_YEI_3Space_Sensor_Wireless (const char * name,
     vrpn_Connection * c,
     int logical_id,
-    int serial_number,
     int serial_file_descriptor,
     bool calibrate_gyros_on_setup = false,
     bool tare_on_setup = false,

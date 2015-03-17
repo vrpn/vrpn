@@ -4543,7 +4543,7 @@ int vrpn_Generic_Server_Object::setup_YEI_3Space_Sensor_Wireless(char *&pch, cha
                                                         FILE *config_file)
 {
     char name[LINESIZE], device[LINESIZE];
-    int logical_id, serial_number, baud_rate, calibrate_gyros, tare;
+    int logical_id, baud_rate, calibrate_gyros, tare;
     double frames_per_second;
     float red_LED, green_LED, blue_LED;
     int LED_mode;
@@ -4551,10 +4551,10 @@ int vrpn_Generic_Server_Object::setup_YEI_3Space_Sensor_Wireless(char *&pch, cha
     VRPN_CONFIG_NEXT();
     // Get the arguments (class, name, port, baud, calibrate_gyros, tare,
     // frames_per_second
-    if (sscanf(pch, "%511s%d%x%511s%d%d%d%lf%f%f%f%d", name, &logical_id,
-               &serial_number, device, &baud_rate,
+    if (sscanf(pch, "%511s%d%511s%d%d%d%lf%f%f%f%d", name, &logical_id,
+               device, &baud_rate,
                &calibrate_gyros, &tare, &frames_per_second, &red_LED,
-               &green_LED, &blue_LED, &LED_mode) != 12) {
+               &green_LED, &blue_LED, &LED_mode) != 11) {
         fprintf(stderr, "Bad setup_YEI_3Space_Sensor_Wireless line: %s\n", line);
         return -1;
     }
@@ -4624,7 +4624,7 @@ int vrpn_Generic_Server_Object::setup_YEI_3Space_Sensor_Wireless(char *&pch, cha
     }
     vrpn_YEI_3Space_Sensor_Wireless *dev = new vrpn_YEI_3Space_Sensor_Wireless(
         name, connection,
-        logical_id, serial_number, port.c_str(), baud_rate, calibrate_gyros != 0, tare != 0,
+        logical_id, port.c_str(), baud_rate, calibrate_gyros != 0, tare != 0,
         frames_per_second, red_LED, green_LED, blue_LED, LED_mode,
         reset_commands);
     _devices->add(dev);
@@ -4656,10 +4656,9 @@ int vrpn_Generic_Server_Object::setup_YEI_3Space_Sensor_Wireless(char *&pch, cha
       // Get the arguments (class, name, port, baud, calibrate_gyros, tare,
       // frames_per_second.
       char classname[LINESIZE]; // We need to read the class, since we've not pre-parsed
-      if (sscanf(line, "%511s%511s%d%x%d%d%lf%f%f%f%d", classname, name, &logical_id,
-                 &serial_number,
+      if (sscanf(line, "%511s%511s%d%d%d%lf%f%f%f%d", classname, name, &logical_id,
                  &calibrate_gyros, &tare, &frames_per_second, &red_LED,
-                 &green_LED, &blue_LED, &LED_mode) != 11) {
+                 &green_LED, &blue_LED, &LED_mode) != 10) {
           fprintf(stderr, "Bad setup_YEI_3Space_Sensor_Wireless line: %s\n", line);
           return -1;
       }
@@ -4698,8 +4697,8 @@ int vrpn_Generic_Server_Object::setup_YEI_3Space_Sensor_Wireless(char *&pch, cha
 
       // Open the device
       if (verbose) {
-          printf("Opening setup_YEI_3Space_Sensor_Wireless: %s on port %s, baud %d\n", name,
-                 device, baud_rate);
+          printf("Opening setup_YEI_3Space_Sensor_Wireless: %s on the same port, baud %d\n",
+              name, baud_rate);
           if (num_reset_commands > 0) {
             printf("... additional reset commands follow:\n");
             for (int i = 0; i < num_reset_commands; i++) {
@@ -4709,7 +4708,7 @@ int vrpn_Generic_Server_Object::setup_YEI_3Space_Sensor_Wireless(char *&pch, cha
       }
       _devices->add(new vrpn_YEI_3Space_Sensor_Wireless(
           name, connection,
-          logical_id, serial_number, serial_fd, calibrate_gyros != 0, tare != 0,
+          logical_id, serial_fd, calibrate_gyros != 0, tare != 0,
           frames_per_second, red_LED, green_LED, blue_LED, LED_mode,
           reset_commands));
 
