@@ -91,6 +91,7 @@
 #include "vrpn_Tracker_SpacePoint.h"      // for vrpn_Tracker_SpacePoint
 #include "vrpn_Tracker_ThalmicLabsMyo.h"  // for vrpn_Tracker_ThalmicLabsMyo
 #include "vrpn_Tracker_TrivisioColibri.h" // added by David Borland
+#include "vrpn_Tracker_Colibri.h"         // added by Dmitry Mastykin
 #include "vrpn_Tracker_ViewPoint.h"       // added by David Borland
 #include "vrpn_Tracker_WiimoteHead.h"     // for vrpn_Tracker_WiimoteHead
 #include "vrpn_Tracker_Wintracker.h"      // for vrpn_Tracker_Wintracker
@@ -3992,6 +3993,36 @@ int vrpn_Generic_Server_Object::setup_Tracker_TrivisioColibri(
 #endif
 }
 
+int vrpn_Generic_Server_Object::setup_Tracker_Colibri (char * & pch, char * line, FILE * /*config_file*/)
+{
+  char s2 [LINESIZE];
+  char s3 [LINESIZE];
+  int Hz;
+  int report_a_w;
+
+  VRPN_CONFIG_NEXT();
+  // Get the arguments
+  if (sscanf (pch, "%511s%511s%d%d", s2, s3, &Hz, &report_a_w) != 4) {
+    fprintf (stderr, "Bad vrpn_Tracker_Colibri line: %s\n", line);
+    return -1;
+  }
+
+#ifdef VRPN_USE_COLIBRIAPI
+  // Open the Trivisio Colibri if we can.
+  if (verbose) {
+    printf ("Opening vrpn_Tracker_Colibri: %s with %d Hz", s2, Hz);
+  }
+
+  _devices->add(new vrpn_Tracker_Colibri(s2, connection,
+                s3[0] == '*' ? NULL : s3, Hz, report_a_w));
+
+  return 0;
+#else
+  fprintf (stderr, "vrpn_server: Can't open vrpn_Tracker_Colibri: VRPN_USE_COLIBRIAPI not defined in vrpn_Configure.h!\n");
+  return -1;
+#endif
+}
+
 int vrpn_Generic_Server_Object::setup_LUDL_USBMAC6000(char *&pch, char *line,
                                                       FILE * /*config_file*/)
 {
@@ -5221,6 +5252,9 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(
                 }
                 else if (VRPN_ISIT("vrpn_Tracker_TrivisioColibri")) {
                     VRPN_CHECK(setup_Tracker_TrivisioColibri);
+                }
+                else if (VRPN_ISIT ("vrpn_Tracker_Colibri")) {
+                    VRPN_CHECK (setup_Tracker_Colibri);
                 }
                 else if (VRPN_ISIT("vrpn_Tracker_SpacePoint")) {
                     VRPN_CHECK(setup_SpacePoint);

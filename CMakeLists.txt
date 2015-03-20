@@ -853,6 +853,20 @@ if(VRPN_USE_MOTIONNODE)
 endif()
 
 ###
+# Trivisio ColibriAPI
+###
+option(VRPN_USE_COLIBRIAPI
+	"Build with Trivisio ColibriAPI support"
+	OFF)
+if(VRPN_USE_COLIBRIAPI)
+	set(TRIVISIO_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/trivisio" CACHE PATH "location of ColibriAPI headers")
+	set(TRIVISIO_LIBRARY_DIR "${CMAKE_SOURCE_DIR}/trivisio" CACHE PATH "location of ColibriAPI libraries")
+	include_directories(${TRIVISIO_INCLUDE_DIR})
+	link_directories(${TRIVISIO_LIBRARY_DIR})
+	list(APPEND SERVER_EXTRA_LIBS colibri-api)
+endif()
+
+###
 # XXX Other libraries needing detection and handling (TODO)
 ###
 # National Instruments Nidaq traditional
@@ -879,7 +893,7 @@ option(VRPN_USE_MICROSCRIBE
 	"Build with MicroScribe3D library support"
 	OFF)
 option(VRPN_USE_TRIVISIOCOLIBRI
-	"Build with support for TrivisioColibri tracker"
+	"(OBSOLETE) Build with support for TrivisioColibri tracker"
 	OFF)
 if(WIN32)
 	option(VRPN_USE_WINSOCK2
@@ -1112,6 +1126,7 @@ set(VRPN_SERVER_SOURCES
 	vrpn_Tracker_ThalmicLabsMyo.C
 	vrpn_Tracker_SpacePoint.C
 	vrpn_Tracker_Wintracker.C
+	vrpn_Tracker_Colibri.C
 	vrpn_Tracker_TrivisioColibri.C
 	vrpn_Tracker_WiimoteHead.C
 	vrpn_Tracker_zSight.C
@@ -1217,6 +1232,7 @@ set(VRPN_SERVER_PUBLIC_HEADERS
 	vrpn_Tracker_ThalmicLabsMyo.h
 	vrpn_Tracker_SpacePoint.h
 	vrpn_Tracker_Wintracker.h
+	vrpn_Tracker_Colibri.h
 	vrpn_Tracker_TrivisioColibri.h
 	vrpn_Tracker_WiimoteHead.h
 	vrpn_Tracker_zSight.h
