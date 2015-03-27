@@ -34,7 +34,7 @@
 #include "vrpn_Text.h"                  // for vrpn_Text_Receiver, etc
 #include "vrpn_Tracker.h"               // for vrpn_Tracker_Remote, etc
 #include "vrpn_Types.h"                 // for vrpn_float64
-#include "vrpn_Tracker_DeadReckoning.h" // for vrpn_Tracker_DeadReckoning_Rotation
+#include "vrpn_Tracker_Filter.h"        // for vrpn_Tracker_DeadReckoning_Rotation
 
 const char	*DIAL_NAME = "Dial0@localhost";
 const char	*TRACKER_NAME = "Tracker0@localhost";
@@ -604,6 +604,8 @@ int main (int argc, char * argv [])
     if (vrpn_Tracker_DeadReckoning_Rotation::test() != 0) {
         fprintf(stderr, "Test of vrpn_Tracker_DeadReckoning_Rotation failed!\n");
         return -1;
+    } else {
+        printf("vrpn_Tracker_DeadReckoning_Rotation::test() passes\n");
     }
 
     printf("Success!\n");

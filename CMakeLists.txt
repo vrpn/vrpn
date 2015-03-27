@@ -1093,7 +1093,6 @@ set(VRPN_SERVER_SOURCES
 	vrpn_Tracker_AnalogFly.C
 	vrpn_Tracker_ButtonFly.C
 	vrpn_Tracker_Crossbow.C
-	vrpn_Tracker_DeadReckoning.C
 	vrpn_Tracker_DTrack.C
 	vrpn_Tracker_Fastrak.C
 	vrpn_Tracker_Filter.C
@@ -1199,7 +1198,6 @@ set(VRPN_SERVER_PUBLIC_HEADERS
 	vrpn_Tracker_AnalogFly.h
 	vrpn_Tracker_ButtonFly.h
 	vrpn_Tracker_Crossbow.h
-	vrpn_Tracker_DeadReckoning.h
 	vrpn_Tracker_DTrack.h
 	vrpn_Tracker_Fastrak.h
 	vrpn_Tracker_Filter.h

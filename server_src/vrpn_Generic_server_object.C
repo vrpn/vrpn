@@ -70,7 +70,6 @@
 #include "vrpn_Tracker_AnalogFly.h" // for vrpn_Tracker_AnalogFlyParam, etc
 #include "vrpn_Tracker_ButtonFly.h" // for vrpn_TBF_axis, etc
 #include "vrpn_Tracker_Crossbow.h"  // for vrpn_Tracker_Crossbow
-#include "vrpn_Tracker_DeadReckoning.h"    // for vrpn_Tracker_DeadReckoning_Rotation
 #include "vrpn_Tracker_DTrack.h"    // for vrpn_Tracker_DTrack
 #include "vrpn_Tracker_Fastrak.h"   // for vrpn_Tracker_Fastrak
 #include "vrpn_Tracker_GameTrak.h"  // for vrpn_Tracker_GameTrak
