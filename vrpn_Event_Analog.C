@@ -31,8 +31,8 @@ vrpn_Event_Analog::vrpn_Event_Analog ( const char * name,
                                        const char* evdev_name) : 
   vrpn_Analog( name, c),
   fd(-1),
-  event_data( event_vector_t( 16)),
-  max_num_events( 16)
+  max_num_events( 16),
+  event_data( event_vector_t( 16))
 {
   #if defined(_WIN32)
 

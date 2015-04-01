@@ -218,7 +218,7 @@ vrpn_File_Connection::~vrpn_File_Connection(void)
     while (d_logHead) {
         np = d_logHead->next;
         if (d_logHead->data.buffer) {
-            delete[](char *)d_logHead -> data.buffer;
+            delete[]d_logHead -> data.buffer;
         }
         delete d_logHead;
         d_logHead = np;
@@ -850,7 +850,7 @@ vrpn_File_Connection::vrpn_FileBookmark::~vrpn_FileBookmark()
 {
     if (oldCurrentLogEntryCopy == NULL) return;
     if (oldCurrentLogEntryCopy->data.buffer != NULL)
-        delete[](char *)(oldCurrentLogEntryCopy->data.buffer);
+        delete[](oldCurrentLogEntryCopy->data.buffer);
     delete oldCurrentLogEntryCopy;
 }
 
@@ -876,8 +876,7 @@ bool vrpn_File_Connection::store_stream_bookmark()
         {
             if (d_bookmark.oldCurrentLogEntryCopy != NULL) {
                 if (d_bookmark.oldCurrentLogEntryCopy->data.buffer != NULL)
-                    delete[](
-                        char *)(d_bookmark.oldCurrentLogEntryCopy->data.buffer);
+                    delete[](d_bookmark.oldCurrentLogEntryCopy->data.buffer);
                 delete d_bookmark.oldCurrentLogEntryCopy;
             }
             d_bookmark.oldCurrentLogEntryCopy = NULL;
@@ -907,7 +906,7 @@ bool vrpn_File_Connection::store_stream_bookmark()
             d_bookmark.oldCurrentLogEntryCopy->data.payload_len =
                 d_currentLogEntry->data.payload_len;
             if (d_bookmark.oldCurrentLogEntryCopy->data.buffer != NULL) {
-                delete[](char *)d_bookmark.oldCurrentLogEntryCopy->data.buffer;
+                delete[]d_bookmark.oldCurrentLogEntryCopy->data.buffer;
             }
             d_bookmark.oldCurrentLogEntryCopy->data.buffer =
                 new char[d_currentLogEntry->data.payload_len];
@@ -915,7 +914,7 @@ bool vrpn_File_Connection::store_stream_bookmark()
                 d_bookmark.valid = false;
                 return false;
             }
-            memcpy((char *)d_bookmark.oldCurrentLogEntryCopy->data.buffer,
+            memcpy(const_cast<char *>(d_bookmark.oldCurrentLogEntryCopy->data.buffer),
                    d_currentLogEntry->data.buffer,
                    d_currentLogEntry->data.payload_len);
         }
@@ -970,9 +969,9 @@ bool vrpn_File_Connection::return_to_bookmark()
                 d_bookmark.oldCurrentLogEntryCopy->data.msg_time;
             d_currentLogEntry->data.payload_len =
                 d_bookmark.oldCurrentLogEntryCopy->data.payload_len;
-            char *temp = (char *)d_currentLogEntry->data.buffer;
+            const char *temp = d_currentLogEntry->data.buffer;
             d_currentLogEntry->data.buffer = newBuffer;
-            memcpy((char *)d_currentLogEntry->data.buffer,
+            memcpy(const_cast<char *>(d_currentLogEntry->data.buffer),
                    d_bookmark.oldCurrentLogEntryCopy->data.buffer,
                    d_currentLogEntry->data.payload_len);
             if (temp) delete[] temp;
@@ -1105,7 +1104,7 @@ int vrpn_File_Connection::read_entry(void)
             return -1;
         }
 
-        retval = fread((char *)header.buffer, 1, header.payload_len, d_file);
+        retval = fread(const_cast<char *>(header.buffer), 1, header.payload_len, d_file);
     }
 
     // return 1 if nothing to read OR end-of-file;
@@ -1143,7 +1142,7 @@ int vrpn_File_Connection::read_entry(void)
         // to the same message.
         if (d_logTail) {
             if (d_logTail->data.buffer) {
-                delete[](char *)d_logTail -> data.buffer;
+                delete[]d_logTail -> data.buffer;
             }
             delete d_logTail;
         }
@@ -1234,8 +1233,8 @@ int vrpn_File_Connection::handle_play_to_time(void *userdata,
     vrpn_File_Connection *me = (vrpn_File_Connection *)userdata;
     timeval newtime;
 
-    newtime.tv_sec = ((vrpn_int32 *)(p.buffer))[0];
-    newtime.tv_usec = ((vrpn_int32 *)(p.buffer))[1];
+    newtime.tv_sec = ((const vrpn_int32 *)(p.buffer))[0];
+    newtime.tv_usec = ((const vrpn_int32 *)(p.buffer))[1];
 
     return me->play_to_time(newtime);
 }

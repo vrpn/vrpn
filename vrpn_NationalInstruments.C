@@ -24,10 +24,10 @@ vrpn_National_Instruments_Server::vrpn_National_Instruments_Server (const char* 
 #else
 		d_device_number(-1),
 #endif
-		d_out_min_voltage(minOutVoltage),
-		d_out_max_voltage(maxOutVoltage),
+        d_in_gain(inputGain),
         d_in_min_delay(minInputReportDelaySecs),
-        d_in_gain(inputGain)
+		d_out_min_voltage(minOutVoltage),
+		d_out_max_voltage(maxOutVoltage)
 {
   // Set the polarity.  0 is bipolar, 1 is unipolar.
   if (inBipolar) {
@@ -522,9 +522,9 @@ vrpn_Analog_Output_Server_NI::vrpn_Analog_Output_Server_NI(const char* name, vrp
 						     double minVoltage, double maxVoltage) :
 	vrpn_Analog_Output(name, c),
 	NI_device_number(-1),
+	NI_num_channels(numChannels),
 	min_voltage(minVoltage),
-	max_voltage(maxVoltage),
-	NI_num_channels(numChannels)
+	max_voltage(maxVoltage)
 {
 #ifdef	VRPN_USE_NATIONAL_INSTRUMENTS
   short i;

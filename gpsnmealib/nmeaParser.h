@@ -196,7 +196,7 @@ class NMEAParser
   virtual ~NMEAParser ();
   SENTENCE_STATUS parseSentence (const char* sentence);
 
-  void setStartSentence(char *sentence)
+  void setStartSentence(const char *sentence)
   {
 	  strcpy(startSentence, sentence);
   }

@@ -982,10 +982,10 @@ vrpn_Tracker_USB::vrpn_Tracker_USB(const char *name, vrpn_Connection *c,
                                    vrpn_uint16 vendor, vrpn_uint16 product,
                                    long baud)
     : vrpn_Tracker(name, c)
+    , _device_handle(NULL)
     , _vendor(vendor)
     , _product(product)
     , _baudrate(baud)
-    , _device_handle(NULL)
 {
     // Register handlers
     register_server_handlers();

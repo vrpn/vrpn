@@ -492,7 +492,7 @@ public:
                 // varying slowest.  Depth steps are therefore the largest
                 // steps.
                 val =
-                    ((vrpn_uint8 *)
+                    ((const vrpn_uint8 *)
                          d_valBuf)[(c - d_cMin) +
                                    (d_cMax - d_cMin + 1) *
                                        ((r - d_rMin) +
@@ -535,7 +535,7 @@ public:
                 // varying slowest.  Depth steps are therefore the largest
                 // steps.
                 val =
-                    ((vrpn_uint16 *)
+                    ((const vrpn_uint16 *)
                          d_valBuf)[(c - d_cMin) +
                                    (d_cMax - d_cMin + 1) *
                                        ((r - d_rMin) +
@@ -577,7 +577,7 @@ public:
                 // varying slowest.  Depth steps are therefore the largest
                 // steps.
                 val =
-                    ((vrpn_float32 *)
+                    ((const vrpn_float32 *)
                          d_valBuf)[(c - d_cMin) +
                                    (d_cMax - d_cMin + 1) *
                                        ((r - d_rMin) +

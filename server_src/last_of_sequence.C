@@ -76,7 +76,7 @@ int VRPN_CALLBACK handle_potential_foo (void * userdata, vrpn_HANDLERPARAM p) {
     fprintf(stderr, "handle_potential_foo:  out of memory!\n");
     return -1;
   }
-  memcpy((void *) g_fooStore.buffer, p.buffer, p.payload_len);
+  memcpy(const_cast<char *>(g_fooStore.buffer), p.buffer, p.payload_len);
 
   g_fooData = userdata;
 

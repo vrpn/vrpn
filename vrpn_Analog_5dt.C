@@ -35,10 +35,10 @@
 vrpn_5dt::vrpn_5dt (const char * p_name, vrpn_Connection * p_c, const char * p_port, int p_baud, int p_mode, bool tenbytes):
   vrpn_Serial_Analog (p_name, p_c, p_port, p_baud, 8, vrpn_SER_PARITY_NONE),
   _announced(false),	// Not yet announced our warning.
-  _numchannels (8),	// This is an estimate; will change when reports come
-  _tenbytes (tenbytes),	// Do we expect ten-byte messages?
   _wireless (p_baud == 9600), // 9600 baud implies a wireless glove.
-  _gotInfo (false)  // used to know if we have gotten a first full wireless report.
+  _gotInfo (false),  // used to know if we have gotten a first full wireless report.
+  _numchannels (8),	// This is an estimate; will change when reports come
+  _tenbytes (tenbytes)	// Do we expect ten-byte messages?
 {
   if (_wireless) {
     // All wireless gloves continually send 10 byte reports and ignore
@@ -156,7 +156,7 @@ vrpn_5dt::reset (void)
     return 0;
   }
   vrpn_flush_input_buffer (serial_fd);
-  send_command ((unsigned char *) "A", 1); // Command to init the glove
+  send_command ((const unsigned char *) "A", 1); // Command to init the glove
   vrpn_SleepMsecs (100);  //Give it time to respond
   l_timeout.tv_sec = 2;
   l_timeout.tv_usec = 0;
@@ -172,7 +172,7 @@ vrpn_5dt::reset (void)
     return -1;
   } else {
     vrpn_flush_input_buffer (serial_fd);
-    send_command ( (unsigned char *) "G", 1); //Command to Query informations from the glove
+    send_command ( (const unsigned char *) "G", 1); //Command to Query informations from the glove
     vrpn_SleepMsecs (100);  //Give it time to respond
     l_timeout.tv_sec = 2;
     l_timeout.tv_usec = 0;
@@ -204,7 +204,7 @@ vrpn_5dt::reset (void)
 
   // If we're in continuous mode, request continuous sends
   if (_mode == 2) {
-    send_command ( (unsigned char *) "D", 1); // Command to query streaming data from the glove
+    send_command ( (const unsigned char *) "D", 1); // Command to query streaming data from the glove
   }
 
   // We're now entering the syncing mode which send the read command to the glove
@@ -254,7 +254,7 @@ void vrpn_5dt::syncing (void)
   switch (_mode)
     {
     case 1:
-      send_command ((unsigned char *) "C", 1);  // Command to query data from the glove
+      send_command ((const unsigned char *) "C", 1);  // Command to query data from the glove
       break;
     case 2:
       // Nothing to be done here -- continuous mode was requested in the reset.

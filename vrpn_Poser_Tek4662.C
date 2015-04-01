@@ -169,15 +169,15 @@ void vrpn_Poser_Tek4662::reset()
   // then a "Plotter on", then a "Reset" to the plotter.
   vrpn_flush_output_buffer( d_serial_fd );
   vrpn_write_characters( d_serial_fd, ZEROES, sizeof(ZEROES) );
-  vrpn_write_characters( d_serial_fd, PLOTTER_ON, strlen((char*)PLOTTER_ON) );
-  vrpn_write_characters( d_serial_fd, RESET, strlen((char*)RESET) );
+  vrpn_write_characters( d_serial_fd, PLOTTER_ON, strlen((const char*)PLOTTER_ON) );
+  vrpn_write_characters( d_serial_fd, RESET, strlen((const char*)RESET) );
   vrpn_drain_output_buffer( d_serial_fd );
 
   // Request a position message from the plotter and then wait
   // until it responds.  Make sure we get a good response.  If
   // so, then send a Tracker message with the specified position
   // and go into SYNCING mode.  If not, then reset again.
-  vrpn_write_characters( d_serial_fd, GIN, strlen((char*)GIN) );
+  vrpn_write_characters( d_serial_fd, GIN, strlen((const char*)GIN) );
   vrpn_drain_output_buffer( d_serial_fd );
   unsigned  char  inbuf[DATA_RECORD_LENGTH];
   struct timeval wait_time = { 1, 0 };
@@ -253,7 +253,7 @@ void vrpn_Poser_Tek4662::run()
     // Intermediate X bits into lower-order bits
     MOVE[5] |= (x_int >> 2) & LOWFIVEBITS;
     vrpn_write_characters(d_serial_fd, MOVE, sizeof(MOVE));
-    vrpn_write_characters(d_serial_fd, GIN, strlen((char*)GIN) );
+    vrpn_write_characters(d_serial_fd, GIN, strlen((const char*)GIN) );
 
     // Record the fact that we're moving so that we won't send a new
     // command until the move completes.
@@ -338,7 +338,7 @@ void vrpn_Poser_Tek4662::run()
     if (vrpn_TimevalDuration(now, timestamp) > 250000L) {
       // Record the fact that we're asking so that we won't send a new
       // command until the response completes.
-      vrpn_write_characters(d_serial_fd, GIN, strlen((char*)GIN) );
+      vrpn_write_characters(d_serial_fd, GIN, strlen((const char*)GIN) );
       d_outstanding_requests++;
     }
   }
