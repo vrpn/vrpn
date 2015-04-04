@@ -20,9 +20,9 @@ static const vrpn_uint16 XKEYS_JOG_AND_SHUTTLE12 = 0x0426;
 static const vrpn_uint16 XKEYS_JOYSTICK12 = 0x0429;
 
 vrpn_Xkeys::vrpn_Xkeys(vrpn_HidAcceptor *filter, const char *name, vrpn_Connection *c, bool toggle_light)
-  : _filter(filter)
+  : vrpn_BaseClass(name, c)
   , vrpn_HidInterface(filter)
-  , vrpn_BaseClass(name, c)
+  , _filter(filter)
   , _toggle_light(toggle_light)
 {
 	init_hid();
@@ -146,8 +146,8 @@ void vrpn_Xkeys_Desktop::decodePacket(size_t bytes, vrpn_uint8 *buffer) {
 
 vrpn_Xkeys_Jog_And_Shuttle::vrpn_Xkeys_Jog_And_Shuttle(const char *name, vrpn_Connection *c)
   : vrpn_Xkeys(_filter = new vrpn_HidProductAcceptor(XKEYS_VENDOR, XKEYS_JOG_AND_SHUTTLE), name, c)
-  , vrpn_Button_Filter(name, c)
   , vrpn_Analog(name, c)
+  , vrpn_Button_Filter(name, c)
   , vrpn_Dial(name, c)
 {
 	vrpn_Analog::num_channel = 2;
@@ -312,8 +312,8 @@ void vrpn_Xkeys_Jog_And_Shuttle::decodePacket(size_t bytes, vrpn_uint8 *buffer)
 
 vrpn_Xkeys_Jog_And_Shuttle12::vrpn_Xkeys_Jog_And_Shuttle12(const char *name, vrpn_Connection *c)
 	: vrpn_Xkeys(_filter = new vrpn_HidProductAcceptor(XKEYS_VENDOR, XKEYS_JOG_AND_SHUTTLE12), name, c)
-	, vrpn_Button_Filter(name, c)
 	, vrpn_Analog(name, c)
+	, vrpn_Button_Filter(name, c)
 	, vrpn_Dial(name, c)
 {
 	vrpn_Analog::num_channel = 2;
@@ -444,8 +444,8 @@ void vrpn_Xkeys_Jog_And_Shuttle12::decodePacket(size_t bytes, vrpn_uint8 *buffer
 
 vrpn_Xkeys_Joystick::vrpn_Xkeys_Joystick(const char *name, vrpn_Connection *c)
   : vrpn_Xkeys(_filter = new vrpn_HidProductAcceptor(XKEYS_VENDOR, XKEYS_JOYSTICK), name, c)
-  , vrpn_Button_Filter(name, c)
   , vrpn_Analog(name, c)
+  , vrpn_Button_Filter(name, c)
   , vrpn_Dial(name, c)
 {
 	vrpn_Analog::num_channel = 2;
@@ -607,8 +607,8 @@ void vrpn_Xkeys_Joystick::decodePacket(size_t bytes, vrpn_uint8 *buffer)
 
 vrpn_Xkeys_Joystick12::vrpn_Xkeys_Joystick12(const char *name, vrpn_Connection *c)
 	: vrpn_Xkeys(_filter = new vrpn_HidProductAcceptor(XKEYS_VENDOR, XKEYS_JOYSTICK12), name, c)
-	, vrpn_Button_Filter(name, c)
 	, vrpn_Analog(name, c)
+	, vrpn_Button_Filter(name, c)
 	, vrpn_Dial(name, c)
 {
 	vrpn_Analog::num_channel = 3;

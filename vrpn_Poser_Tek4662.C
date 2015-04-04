@@ -32,7 +32,7 @@ const double VELOCITY= (1/0.06144) * (1/0.00254); // Meters per second
 
 // Constants used as characters to communicate to the plotter
 const unsigned char ESC = 27;
-const unsigned char BELL = '7';
+//const unsigned char BELL = '7';
 const unsigned char DEVICE = 'A';
 const unsigned char GS = 29;	  //< Puts the plotter into graphics mode
 const unsigned char ZERO = 0;
@@ -44,8 +44,8 @@ const unsigned char MOVE_TEMPLATE[] = { GS, 0x20, 0x60, 0x60, 0x20, 0x40 };
 const int	    DATA_RECORD_LENGTH = 7;
 
 // Constants used to do bit manipulation
-const unsigned BITFOUR = 1 << 4;
-const unsigned BITFIVE = 1 << 5;
+//const unsigned BITFOUR = 1 << 4;
+//const unsigned BITFIVE = 1 << 5;
 const unsigned LOWFIVEBITS = 0x001f;
 const unsigned LOWTWOBITS = 0x0003;
 

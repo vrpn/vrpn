@@ -27,13 +27,7 @@ static const int REPORT_LENGTH = 16 + 16 + 12 + 36 + 4 + 4 + 1;
  ******************************************************************************/
 vrpn_YEI_3Space::vrpn_YEI_3Space (const char * p_name
                                   , vrpn_Connection * p_c
-                                  , bool calibrate_gyros_on_setup
-                                  , bool tare_on_setup
                                   , double frames_per_second
-                                  , double red_LED_color
-                                  , double green_LED_color
-                                  , double blue_LED_color
-                                  , int LED_mode
                                   , const char *reset_commands[])
   : vrpn_Tracker_Server (p_name, p_c, 2)
   , vrpn_Analog (p_name, p_c)
@@ -106,7 +100,6 @@ vrpn_YEI_3Space::~vrpn_YEI_3Space()
  ******************************************************************************/
 void vrpn_YEI_3Space::init (bool calibrate_gyros_on_setup
                        , bool tare_on_setup
-                       , double frames_per_second
                        , double red_LED_color
                        , double green_LED_color
                        , double blue_LED_color
@@ -475,10 +468,7 @@ vrpn_YEI_3Space_Sensor::vrpn_YEI_3Space_Sensor (const char * p_name
                                   , double blue_LED_color
                                   , int LED_mode
                                   , const char *reset_commands[])
-  : vrpn_YEI_3Space (p_name, p_c, calibrate_gyros_on_setup
-                     , tare_on_setup, frames_per_second, red_LED_color
-                     , green_LED_color, blue_LED_color, LED_mode
-                     , reset_commands)
+  : vrpn_YEI_3Space (p_name, p_c, frames_per_second, reset_commands)
 {
   // Open the serial port we're going to use to talk with the device.
   if ((d_serial_fd = vrpn_open_commport(p_port, p_baud,
@@ -490,7 +480,7 @@ vrpn_YEI_3Space_Sensor::vrpn_YEI_3Space_Sensor (const char * p_name
   // Initialize the state of the device, now that we've established a
   // way to talk with it.
   init(calibrate_gyros_on_setup
-       , tare_on_setup, frames_per_second, red_LED_color
+       , tare_on_setup, red_LED_color
        , green_LED_color, blue_LED_color, LED_mode);
 }
 
@@ -747,10 +737,7 @@ vrpn_YEI_3Space_Sensor_Wireless::vrpn_YEI_3Space_Sensor_Wireless (const char * p
                                   , double blue_LED_color
                                   , int LED_mode
                                   , const char *reset_commands[])
-  : vrpn_YEI_3Space (p_name, p_c, calibrate_gyros_on_setup
-                     , tare_on_setup, frames_per_second, red_LED_color
-                     , green_LED_color, blue_LED_color, LED_mode
-                     , reset_commands)
+  : vrpn_YEI_3Space (p_name, p_c, frames_per_second, reset_commands)
   , d_i_am_first(true)
   , d_logical_id(-1)
 {
@@ -784,7 +771,7 @@ vrpn_YEI_3Space_Sensor_Wireless::vrpn_YEI_3Space_Sensor_Wireless (const char * p
   // Initialize the state of the device, now that we've established a
   // way to talk with it.
   init(calibrate_gyros_on_setup
-       , tare_on_setup, frames_per_second, red_LED_color
+       , tare_on_setup, red_LED_color
        , green_LED_color, blue_LED_color, LED_mode);
 #ifdef  VERBOSE
   printf("Constructor done\n");
@@ -811,10 +798,7 @@ vrpn_YEI_3Space_Sensor_Wireless::vrpn_YEI_3Space_Sensor_Wireless (const char * p
                                   , double blue_LED_color
                                   , int LED_mode
                                   , const char *reset_commands[])
-  : vrpn_YEI_3Space (p_name, p_c, calibrate_gyros_on_setup
-                     , tare_on_setup, frames_per_second, red_LED_color
-                     , green_LED_color, blue_LED_color, LED_mode
-                     , reset_commands)
+  : vrpn_YEI_3Space (p_name, p_c, frames_per_second, reset_commands)
   , d_i_am_first(false)
   , d_serial_fd(serial_file_descriptor)
   , d_logical_id(-1)
@@ -824,7 +808,7 @@ vrpn_YEI_3Space_Sensor_Wireless::vrpn_YEI_3Space_Sensor_Wireless (const char * p
   // Initialize the state of the device, now that we've established a
   // way to talk with it.
   init(calibrate_gyros_on_setup
-       , tare_on_setup, frames_per_second, red_LED_color
+       , tare_on_setup, red_LED_color
        , green_LED_color, blue_LED_color, LED_mode);
 }
 

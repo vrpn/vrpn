@@ -197,6 +197,12 @@ vrpn_National_Instruments_Server::vrpn_National_Instruments_Server (const char* 
 
 #else
   fprintf(stderr,"vrpn_National_Instruments_Server: Support for NI not compiled in, edit vrpn_Configure.h and recompile VRPN\n");
+  // Handle parameters that are not used, avoiding compiler warnings.
+  const char *unused = boardName;
+  unused++;
+  inputMode = inputMode + 1;
+  inputRange = inputRange + 1;
+  driveAIS = !driveAIS;
 #endif
 
   // Check if we have a connection
@@ -587,6 +593,9 @@ vrpn_Analog_Output_Server_NI::vrpn_Analog_Output_Server_NI(const char* name, vrp
   }
 #else
   fprintf(stderr,"vrpn_Analog_Output_Server_NI: Support for NI not compiled in, edit vrpn_Configure.h and recompile\n");
+  const char *unused = boardName;
+  unused++;
+  bipolar = !bipolar;
 #endif
 }
 

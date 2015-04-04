@@ -255,7 +255,7 @@ void myIdleFunc(void)
   }
 }
 
-void myKeyboardFunc(unsigned char key, int x, int y)
+void myKeyboardFunc(unsigned char key, int /*x*/, int /*y*/)
 {
   switch (key) {
   case 27:  // Escape

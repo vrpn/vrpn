@@ -54,12 +54,12 @@ void VRPN_CALLBACK	handle_button_change(void *userdata, const vrpn_BUTTONCB b)
 	}
 }
 
-void VRPN_CALLBACK	handle_dial_change(void *userdata, const vrpn_ANALOGCB info)
+void VRPN_CALLBACK	handle_dial_change(void *, const vrpn_ANALOGCB info)
 {
     static double channel_values[vrpn_CHANNEL_MAX];
     static bool initialized = false;
 
-	int i;
+    int i;
     if (!initialized) {
       for (i = 0; i < vrpn_CHANNEL_MAX; i++) {
         channel_values[i] = 0.0;
@@ -75,7 +75,7 @@ void VRPN_CALLBACK	handle_dial_change(void *userdata, const vrpn_ANALOGCB info)
     }
 }
 
-int main(int argc, char *argv[])
+int main(int, char *[])
 {
     int     done = 0;
 	vrpn_Analog_Remote *bd_dials;

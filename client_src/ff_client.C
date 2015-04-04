@@ -23,7 +23,7 @@
  *
  *****************************************************************************/
 
-void    VRPN_CALLBACK handle_force_change(void *userdata, const vrpn_FORCECB f)
+void    VRPN_CALLBACK handle_force_change(void *, const vrpn_FORCECB f)
 {
   static vrpn_FORCECB lr;        // last report
   static int first_report_done = 0;
