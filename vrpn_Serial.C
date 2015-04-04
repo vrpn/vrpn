@@ -623,7 +623,7 @@ int vrpn_read_available_characters(int comm, unsigned char *buffer,
             return -1;
         }
         sofar += ret;
-        if (sofar == bytes) {
+        if (static_cast<size_t>(sofar) == bytes) {
             break;
         }
         where += ret;

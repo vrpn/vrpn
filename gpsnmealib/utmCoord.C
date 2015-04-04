@@ -188,61 +188,6 @@ const std::string& UTMCoord::createCoordString (std::string& coordString) const
 }
 
 
-void UTMCoord::createDisplayStrings (std::string& topLeftString,
-                                      std::string& topRightString, std::string& bottomLeftString,
-                                      std::string& bottomRightString) const
-  // Purpose:
-  //  This function creates four strings that can be used for display; these
-  //  strings contain coordinate data.  The four strings are for the top left,
-  //  top right, bottom left, and bottom right text of a display; each string
-  //  is specified as follows:
-  //  - top left:     UTM zone
-  //  - top right:    Easting
-  //  - bottom left:  "UTM"
-  //  - bottom right: Northing
-  // Notes:
-  //  It is up to the calling function to write these strings to the display.
-{
-#if 0
-  bottomLeftString.LoadString (IDS_UTM);
-  if (IsOutsideUTMGrid () == false) {
-    // Extract the elements of the coordinate string.
-    CString coordString;
-    CreateCoordString (coordString);
-    topLeftString = coordString.Mid (UTM_ZONE_POS, UTM_ZONE_LEN);
-    topRightString = coordString.Mid (UTM_EASTING_POS, UTM_EASTING_LEN);
-    bottomRightString = coordString.Mid (UTM_NORTHING_POS,
-                                         UTM_NORTHING_LEN);
-  } else {
-    // The coordinate is outside of the UTM grid boundary, so the
-    // coordiante strings are empty.
-    topLeftString = "";
-    topRightString = "";
-    bottomRightString = "";
-  }
-#endif
-}
-
-
-void UTMCoord::createXYCoordStrings (std::string& xString, std::string& yString)
-  const
-  // Purpose:
-  //  This function generates two strings: a string containing the easting
-  //  coordinate (stored in the parameter xString), and a string containing the
-  //  northing coordinate (stored in the parameter yString.)
-{
-  double easting;
-  double northing;
-  int utmXZone;
-  char utmYZone;
-  getUTMCoord (utmXZone, utmYZone, easting, northing);
-#if 0
-  xString.Format ("%06d", (int)easting);
-  yString.Format ("%07d", (int)northing);
-#endif
-}
-
-
 void UTMCoord::getLatLonCoord (double& lat, double& lon) const
   // Purpose:
   //  This function converts the object's UTM coordinate to a lat/lon coordinate

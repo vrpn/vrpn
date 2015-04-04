@@ -19,14 +19,14 @@
 #undef VERBOSE
 
 // low-level stuff
-static const unsigned char CMD_BASIC = static_cast<unsigned char>(0xC0);   // mask for command
-static const unsigned char CMD_HOMEREF = static_cast<unsigned char>(0xC1);
-static const unsigned char CMD_HOMEPOS = static_cast<unsigned char>(0xC2);
-static const unsigned char CMD_SETHOME = static_cast<unsigned char>(0xC3);
-static const unsigned char CMD_BAUDSET = static_cast<unsigned char>(0xC4);
-static const unsigned char CMD_ENDSESS = static_cast<unsigned char>(0xC5);
-static const unsigned char CMD_GETMAXS = static_cast<unsigned char>(0xC6);
-static const unsigned char CMD_SETPARM = static_cast<unsigned char>(0xC7);
+//static const unsigned char CMD_BASIC = static_cast<unsigned char>(0xC0);   // mask for command
+//static const unsigned char CMD_HOMEREF = static_cast<unsigned char>(0xC1);
+//static const unsigned char CMD_HOMEPOS = static_cast<unsigned char>(0xC2);
+//static const unsigned char CMD_SETHOME = static_cast<unsigned char>(0xC3);
+//static const unsigned char CMD_BAUDSET = static_cast<unsigned char>(0xC4);
+//static const unsigned char CMD_ENDSESS = static_cast<unsigned char>(0xC5);
+//static const unsigned char CMD_GETMAXS = static_cast<unsigned char>(0xC6);
+//static const unsigned char CMD_SETPARM = static_cast<unsigned char>(0xC7);
 static const unsigned char CMD_GETNAME = static_cast<unsigned char>(0xC8);
 static const unsigned char CMD_GETPRID = static_cast<unsigned char>(0xC9);
 static const unsigned char CMD_GETMODL = static_cast<unsigned char>(0xCA);
@@ -34,15 +34,15 @@ static const unsigned char CMD_GETSERN = static_cast<unsigned char>(0xCB);
 static const unsigned char CMD_GETCOMM = static_cast<unsigned char>(0xCC);
 static const unsigned char CMD_GETPERF = static_cast<unsigned char>(0xCD);
 static const unsigned char CMD_GETVERS = static_cast<unsigned char>(0xCE);
-static const unsigned char CMD_GETMOTN = static_cast<unsigned char>(0xCF);
-static const unsigned char CMD_SETHREF = static_cast<unsigned char>(0xD0);
-static const unsigned char CMD_FACREST = static_cast<unsigned char>(0xD1);
-static const unsigned char CMD_INSMARK = static_cast<unsigned char>(0xD2);
+//static const unsigned char CMD_GETMOTN = static_cast<unsigned char>(0xCF);
+//static const unsigned char CMD_SETHREF = static_cast<unsigned char>(0xD0);
+//static const unsigned char CMD_FACREST = static_cast<unsigned char>(0xD1);
+//static const unsigned char CMD_INSMARK = static_cast<unsigned char>(0xD2);
 
-static const double PAUSE_RESET     = .015;
-static const double PAUSE_END       = .015;
-static const double PAUSE_RESTORE   = 2.0;
-static const double PAUSE_BYTE      = .015;
+//static const double PAUSE_RESET     = .015;
+//static const double PAUSE_END       = .015;
+//static const double PAUSE_RESTORE   = 2.0;
+//static const double PAUSE_BYTE      = .015;
 
 // Defines the modes in which the box can find itself.
 #define	STATUS_RESETTING	(-1)	// Resetting the box

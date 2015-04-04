@@ -98,7 +98,7 @@ vrpn_Event_Analog::read_available_data () {
 
     return vrpn_Event::vrpn_read_event( fd, &(event_data.front()), max_num_events); 
 
-  #else // if defined(LINUX)
+  #else // not Windows
   
     // check for updates at max_num_events
     if (max_num_events != event_data.size()) {
@@ -111,5 +111,5 @@ vrpn_Event_Analog::read_available_data () {
     // read data
     return vrpn_Event::vrpn_read_event( fd, &(event_data.front()), max_num_events); 
 
-  #endif  // #if defined(LINUX)
+  #endif  // not Windows
 }

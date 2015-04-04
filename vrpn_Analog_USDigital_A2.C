@@ -144,6 +144,11 @@ _numDevices(0)
     }
 #else
     fprintf(stderr,"vrpn_Analog_USDigital_A2::vrpn_Analog_USDigital_A2(): Not compiled in; define VRPN_USE_USDIGITAL in vrpn_Configure.h and recompile VRPN\n");
+    portNum = portNum + 1; // Remove unused parameter warning.
+    numChannels = numChannels + 1; // Remove unused parameter warning.
+    _SEIopened = !_SEIopened; // Removed unused variable warning.
+    _devAddr = _devAddr + 1; // Removed unused variable warning.
+    _numDevices = _numDevices + 1; // Removed unused variable warning.
 #endif
 }    //  constructor
 

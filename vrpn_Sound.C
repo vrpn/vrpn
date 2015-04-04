@@ -1433,8 +1433,8 @@ int vrpn_Sound_Server::handle_loadSoundLocal(void *userdata,
 }
 
 /* not supported */
-int vrpn_Sound_Server::handle_loadSoundRemote(void *userdata,
-                                              vrpn_HANDLERPARAM p)
+int vrpn_Sound_Server::handle_loadSoundRemote(void *,
+                                              vrpn_HANDLERPARAM)
 {
     return 0;
 }
@@ -1615,8 +1615,8 @@ int vrpn_Sound_Server::handle_loadModelLocal(void *userdata,
 }
 
 /* not handled yet */
-int vrpn_Sound_Server::handle_loadModelRemote(void *userdata,
-                                              vrpn_HANDLERPARAM p)
+int vrpn_Sound_Server::handle_loadModelRemote(void *,
+                                              vrpn_HANDLERPARAM)
 {
     return 0;
 }

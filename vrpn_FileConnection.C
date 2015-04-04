@@ -1017,7 +1017,7 @@ vrpn_File_Connection *vrpn_File_Connection::get_File_Connection(void)
 // virtual
 int vrpn_File_Connection::read_cookie(void)
 {
-    char readbuf[2048]; // HACK!
+    char readbuf[128]; // XXX HACK!
     size_t bytes = fread(readbuf, vrpn_cookie_size(), 1, d_file);
     if (bytes == 0) {
         fprintf(stderr, "vrpn_File_Connection::read_cookie:  "
@@ -1025,6 +1025,7 @@ int vrpn_File_Connection::read_cookie(void)
                         "run add_vrpn_cookie on it and try again.\n");
         return -1;
     }
+    readbuf[vrpn_cookie_size()] = '\0';
 
     int retval = check_vrpn_file_cookie(readbuf);
     if (retval < 0) {

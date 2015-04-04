@@ -36,18 +36,18 @@ static const vrpn_uint16 vrpn_5DT_DATAGLOVE5 = 0x0010;
 static const vrpn_uint16 vrpn_5DT_DATAGLOVE14 = 0x0000;
 
 
-static const vrpn_uint16 vrpn_5DT_DATAGLOVE14_RIGHT_WIRED = 0x0000;
-static const vrpn_uint16 vrpn_5DT_DATAGLOVE14_LEFT_WIRED = 0x0001;
-static const vrpn_uint16 vrpn_5DT_DATAGLOVE14_RIGHT_WIRELESS_PORTA = 0x0002;
-static const vrpn_uint16 vrpn_5DT_DATAGLOVE14_LEFT_WIRELESS_PORTA = 0x0003;
-static const vrpn_uint16 vrpn_5DT_DATAGLOVE14_RIGHT_WIRELESS_PORTB = 0x0006;
-static const vrpn_uint16 vrpn_5DT_DATAGLOVE14_LEFT_WIRELESS_PORTB = 0x0007;
-static const vrpn_uint16 vrpn_5DT_DATAGLOVE5_RIGHT_WIRED = 0x0010;
-static const vrpn_uint16 vrpn_5DT_DATAGLOVE5_LEFT_WIRED = 0x0011;
-static const vrpn_uint16 vrpn_5DT_DATAGLOVE5_RIGHT_WIRELESS_PORTA = 0x0012;
-static const vrpn_uint16 vrpn_5DT_DATAGLOVE5_LEFT_WIRELESS_PORTA = 0x0013;
-static const vrpn_uint16 vrpn_5DT_DATAGLOVE5_RIGHT_WIRELESS_PORTB = 0x0016;
-static const vrpn_uint16 vrpn_5DT_DATAGLOVE5_LEFT_WIRELESS_PORTB = 0x0017;
+//static const vrpn_uint16 vrpn_5DT_DATAGLOVE14_RIGHT_WIRED = 0x0000;
+//static const vrpn_uint16 vrpn_5DT_DATAGLOVE14_LEFT_WIRED = 0x0001;
+//static const vrpn_uint16 vrpn_5DT_DATAGLOVE14_RIGHT_WIRELESS_PORTA = 0x0002;
+//static const vrpn_uint16 vrpn_5DT_DATAGLOVE14_LEFT_WIRELESS_PORTA = 0x0003;
+//static const vrpn_uint16 vrpn_5DT_DATAGLOVE14_RIGHT_WIRELESS_PORTB = 0x0006;
+//static const vrpn_uint16 vrpn_5DT_DATAGLOVE14_LEFT_WIRELESS_PORTB = 0x0007;
+//static const vrpn_uint16 vrpn_5DT_DATAGLOVE5_RIGHT_WIRED = 0x0010;
+//static const vrpn_uint16 vrpn_5DT_DATAGLOVE5_LEFT_WIRED = 0x0011;
+//static const vrpn_uint16 vrpn_5DT_DATAGLOVE5_RIGHT_WIRELESS_PORTA = 0x0012;
+//static const vrpn_uint16 vrpn_5DT_DATAGLOVE5_LEFT_WIRELESS_PORTA = 0x0013;
+//static const vrpn_uint16 vrpn_5DT_DATAGLOVE5_RIGHT_WIRELESS_PORTB = 0x0016;
+//static const vrpn_uint16 vrpn_5DT_DATAGLOVE5_LEFT_WIRELESS_PORTB = 0x0017;
 
 
 vrpn_Analog_5dtUSB::vrpn_Analog_5dtUSB(vrpn_HidAcceptor *filter,

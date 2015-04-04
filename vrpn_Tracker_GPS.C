@@ -124,15 +124,12 @@ int vrpn_Tracker_GPS::get_report(void)
 	//int ret;		// Return value from function call to be checked
 	int ret;
     
-	int i = 0;
     //	unsigned char *bufptr;	// Points into buffer at the current value to read
 	int done=0;
     
 	//char speed[256];
 	//char course[256];
 	//	int buflen = 0;
-	unsigned int numparameter=0;
-	unsigned int index=0;
 	int charRead = 0;
     //	char temp [256];
     

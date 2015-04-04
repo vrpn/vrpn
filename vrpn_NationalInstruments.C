@@ -12,22 +12,22 @@
 
 vrpn_National_Instruments_Server::vrpn_National_Instruments_Server (const char* name, vrpn_Connection * c, 
                              const char *boardName,
-						     int numInChannels, int numOutChannels,
+                             int numInChannels, int numOutChannels,
                              double minInputReportDelaySecs,
                              bool inBipolar, int inputMode, int inputRange, bool driveAIS, int inputGain,
                              bool outBipolar, double minOutVoltage, double maxOutVoltage) :
         vrpn_Analog(name, c),
-		vrpn_Analog_Output(name, c),
+        vrpn_Analog_Output(name, c),
 #if defined(VRPN_USE_NATIONAL_INSTRUMENTS_MX)
-		d_analog_task_handle(0),
-		d_analog_out_task_handle(0),
+        d_analog_task_handle(0),
+        d_analog_out_task_handle(0),
 #else
-		d_device_number(-1),
+        d_device_number(-1),
 #endif
         d_in_gain(inputGain),
         d_in_min_delay(minInputReportDelaySecs),
-		d_out_min_voltage(minOutVoltage),
-		d_out_max_voltage(maxOutVoltage)
+        d_out_min_voltage(minOutVoltage),
+        d_out_max_voltage(maxOutVoltage)
 {
   // Set the polarity.  0 is bipolar, 1 is unipolar.
   if (inBipolar) {

@@ -604,10 +604,11 @@ vrpn_Button_Parallel::vrpn_Button_Parallel(const char *name, vrpn_Connection *c,
         }
     }
     fprintf(stderr, "vrpn_Button_Parallel: Using port %x\n", port);
-#else // _WIN32
+#else // not linux or _WIN32
     fprintf(stderr, "vrpn_Button_Parallel: not supported on this platform\n?");
     status = BUTTON_FAIL;
-    portno = portno; // unused argument
+    portno = portno + 1; // unused argument if we don't do something with it
+    porthex = porthex + 1; // unused argument if we don't do something with it
     return;
 #endif
 

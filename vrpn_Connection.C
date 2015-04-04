@@ -694,7 +694,7 @@ int vrpn_Log::saveLogSoFar(void)
 
         retval = fwrite(lp->data.buffer, 1, host_len, d_file);
 
-        if (retval != host_len) {
+        if (retval != static_cast<size_t>(host_len)) {
             fprintf(stderr, "vrpn_Log::saveLogSoFar:  "
                             "Couldn't write log file.\n");
             lp = d_logTail;
@@ -1760,7 +1760,7 @@ int vrpn_noint_block_write(int outfile, const char buffer[], size_t length)
             sofar += 1; /* Restoring it from above -1 */
         }
 
-    } while ((ret > 0) && (sofar < length));
+    } while ((ret > 0) && (static_cast<size_t>(sofar) < length));
 
     if (ret == -1) return (-1); /* Error during write */
     if (ret == 0) return (0);   /* EOF reached */
@@ -1802,7 +1802,7 @@ int vrpn_noint_block_read(int infile, char buffer[], size_t length)
             ret = 1;    /* So we go around the loop again */
             sofar += 1; /* Restoring it from above -1 */
         }
-    } while ((ret > 0) && (sofar < length));
+    } while ((ret > 0) && (static_cast<size_t>(sofar) < length));
 
     if (ret == -1) return (-1); /* Error during read */
     if (ret == 0) return (0);   /* EOF reached */
@@ -2270,9 +2270,9 @@ static int get_local_socket_name(char *local_host, size_t max_length, const char
 
 int vrpn_udp_request_lob_packet(
 	SOCKET udp_sock,       // Socket to use to send
-    const char *machine,   // Name of the machine to call
-    const int remote_port, // UDP port on remote machine
-    const int local_port,  // TCP port on this machine
+    const char *,              // Name of the machine to call
+    const int,                 // UDP port on remote machine
+    const int local_port,      // TCP port on this machine
     const char *NIC_IP = NULL)
 {
     char msg[150];      /* Message to send */
@@ -4094,7 +4094,7 @@ int vrpn_Endpoint_IP::getOneTCPMessage(int fd, char *buf, size_t buflen)
     }
 
     // Read the body of the message
-    if (vrpn_noint_block_read(fd, buf, ceil_len) != ceil_len) {
+    if (static_cast<size_t>(vrpn_noint_block_read(fd, buf, ceil_len)) != ceil_len) {
         perror("vrpn: vrpn_Endpoint::handle_tcp_messages: Can't read body");
         return -1;
     }

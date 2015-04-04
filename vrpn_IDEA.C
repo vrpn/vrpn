@@ -124,8 +124,8 @@ bool vrpn_IDEA::send_command(const char *cmd)
   strcpy(buf, cmd);
   buf[len] = '\r';
   buf[len+1] = '\0';
-  return (vrpn_write_characters(serial_fd, 
-    (const unsigned char *)((void*)(buf)), strlen(buf)) == strlen(buf) );
+  return (static_cast<size_t>(vrpn_write_characters(serial_fd, 
+    (const unsigned char *)((void*)(buf)), strlen(buf))) == strlen(buf) );
 }
 
 // Helper function to scale int by a double and get an int.
@@ -246,7 +246,7 @@ bool  vrpn_IDEA::move_until_done_or_error(vrpn_float64 location_in_steps, double
 {
   // Send a move command, scaled by the fractional current and
   // acceleration values.
-  if (!send_move_request(location_in_steps, d_fractional_c_a)) {
+  if (!send_move_request(location_in_steps, scale)) {
     VRPN_MSG_ERROR("Could not do move");
     return false;
   }
