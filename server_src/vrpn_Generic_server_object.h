@@ -18,7 +18,6 @@ class vrpn_Generic_Server_Object {
 public:
     vrpn_Generic_Server_Object(vrpn_Connection *connection_to_use,
                                const char *config_file_name = "vrpn.cfg",
-                               int port = vrpn_DEFAULT_LISTEN_PORT_NO,
                                bool be_verbose = false,
                                bool bail_on_open_error = false);
     ~vrpn_Generic_Server_Object();
