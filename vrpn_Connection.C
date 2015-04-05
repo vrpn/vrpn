@@ -831,12 +831,10 @@ int vrpn_Log::setCompoundName(const char *name, int index)
     //   and foo, 5 to foo-5
 
     dot = strrchr(name, '.');
-
     if (dot) {
         strncpy(newName, name, dot - name);
         newName[dot - name] = 0;
-    }
-    else {
+    } else {
         strcpy(newName, name);
     }
     len = strlen(newName);
@@ -855,12 +853,7 @@ int vrpn_Log::setName(const char *name, size_t len)
     if (d_logFileName) {
         delete[] d_logFileName;
     }
-
     d_logFileName = new char[1 + len];
-    if (!d_logFileName) {
-        fprintf(stderr, "vrpn_Log::setName:  Out of memory!\n");
-        return -1;
-    }
     strncpy(d_logFileName, name, len);
     d_logFileName[len] = '\0';
 
@@ -1213,10 +1206,6 @@ int vrpn_TypeDispatcher::addHandler(vrpn_int32 type,
 
     // Allocate and initialize the new entry
     new_entry = new vrpnMsgCallbackEntry();
-    if (new_entry == NULL) {
-        fprintf(stderr, "vrpn_TypeDispatcher::addHandler:  Out of memory\n");
-        return -1;
-    }
     new_entry->handler = handler;
     new_entry->userdata = userdata;
     new_entry->sender = sender;
@@ -3318,11 +3307,6 @@ int vrpn_Endpoint::pack_log_description(void)
     size_t bufsize =
         2 * sizeof(vrpn_int32) + strlen(inName) + 1 + strlen(outName) + 1;
     char *buf = new char[bufsize];
-    if (buf == NULL) {
-        fprintf(stderr,
-                "vrpn_Endpoint::pack_log_description(): Out of memory\n");
-        return -1;
-    }
 
     // If we're not requesting remote logging, don't send any message.
 
@@ -5694,11 +5678,6 @@ void vrpn_Connection_IP::server_check_for_incoming_connections(
         // the incoming port on his machine.
         char *checkHost = new char[strlen(msg) + 1];
         int checkPort;
-        if (checkHost == NULL) {
-            fprintf(stderr,
-                    "server_check_for_incoming_connections(): Out of memory\n");
-            return;
-        }
         if (sscanf(msg, "%s %d", checkHost, &checkPort) != 2) {
             fprintf(
                 stderr,
@@ -5977,15 +5956,8 @@ vrpn_Connection_IP::vrpn_Connection_IP(
     // to keep it from changing.
     if (NIC_IPaddress != NULL) {
         char *IP = new char[strlen(NIC_IPaddress) + 1];
-        if (IP == NULL) {
-            fprintf(
-                stderr,
-                "vrpn_Connection_IP::vrpn_Connection_IP(): Out of memory\n");
-        }
-        else {
-            strcpy(IP, NIC_IPaddress);
-            d_NIC_IP = IP;
-        }
+        strcpy(IP, NIC_IPaddress);
+        d_NIC_IP = IP;
     }
 
     // Initialize the things that must be for any constructor
@@ -6041,15 +6013,8 @@ vrpn_Connection_IP::vrpn_Connection_IP(
     // to keep it from changing.
     if (NIC_IPaddress != NULL) {
         char *IP = new char[strlen(NIC_IPaddress) + 1];
-        if (IP == NULL) {
-            fprintf(
-                stderr,
-                "vrpn_Connection_IP::vrpn_Connection_IP(): Out of memory\n");
-        }
-        else {
-            strcpy(IP, NIC_IPaddress);
-            d_NIC_IP = IP;
-        }
+        strcpy(IP, NIC_IPaddress);
+        d_NIC_IP = IP;
     }
 
     isrsh = (strstr(station_name, "x-vrsh:") ? VRPN_TRUE : VRPN_FALSE);
