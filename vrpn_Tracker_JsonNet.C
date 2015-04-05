@@ -355,6 +355,7 @@ bool vrpn_Tracker_JsonNet::_network_init(int udp_port)
 	}
 #endif
 	struct sockaddr_in localSocketAddress;
+        memset((void *)&localSocketAddress, 0, sizeof(localSocketAddress));
 	localSocketAddress.sin_family = AF_INET;
 	localSocketAddress.sin_addr.s_addr = htonl(INADDR_ANY);
 	localSocketAddress.sin_port = htons(udp_port);

@@ -2244,6 +2244,7 @@ static int get_local_socket_name(char *local_host, size_t max_length, const char
     // Copy this to the output
     if ((unsigned)strlen(myIPstring) > max_length) {
         fprintf(stderr, "get_local_socket_name: Name too long to return\n");
+        vrpn_closeSocket(udp_socket);
         return -1;
     }
 

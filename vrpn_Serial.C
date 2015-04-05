@@ -307,6 +307,7 @@ int vrpn_open_commport(const char *portname, long baud, int charsize,
     default:
         fprintf(stderr, "vrpn_open_commport: unsupported parity setting (only "
                         "none, odd and even)\n");
+        close(fileDescriptor);
         return -1;
     }
 

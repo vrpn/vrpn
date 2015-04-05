@@ -53,7 +53,7 @@ static void angle_and_buttons_from_rocker_doublet(
 	vrpn_float64 *angle,
 	bool *up, bool *right, bool *down, bool *left)
 {
-	vrpn_uint8 value;
+	vrpn_uint8 value = 8; // Default is  nothing set in case we don't recognize it.
 	switch (value0) {
 	case 0x00:
 		switch (value1) {
