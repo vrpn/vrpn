@@ -4038,13 +4038,13 @@ int vrpn_Endpoint_IP::getOneTCPMessage(int fd, char *buf, size_t buflen)
 
 #ifdef VERBOSE2
     fprintf(stderr,
-            "vrpn_Endpoint::handle_tcp_messages():  something to read\n");
+            "vrpn_Endpoint::getOneTCPMessage():  something to read\n");
 #endif
 
     // Read and parse the header
     if (vrpn_noint_block_read(fd, (char *)header, sizeof(header)) !=
         sizeof(header)) {
-        fprintf(stderr, "vrpn_Endpoint::handle_tcp_messages:  "
+        fprintf(stderr, "vrpn_Endpoint::getOneTCPMessage:  "
                         "Can't read header (this is normal when a connection "
                         "is dropped)\n");
         return -1;
@@ -4070,7 +4070,7 @@ int vrpn_Endpoint_IP::getOneTCPMessage(int fd, char *buf, size_t buflen)
         if (vrpn_noint_block_read(fd, (char *)rgch,
                                   header_len - sizeof(header)) !=
             (int)(header_len - sizeof(header))) {
-            fprintf(stderr, "vrpn_Endpoint::handle_tcp_messages:  "
+            fprintf(stderr, "vrpn_Endpoint::getOneTCPMessage:  "
                             "Can't read header + alignment\n");
             return -1;
         }
@@ -4089,13 +4089,13 @@ int vrpn_Endpoint_IP::getOneTCPMessage(int fd, char *buf, size_t buflen)
     // message body.
     if (buflen < ceil_len) {
         fprintf(stderr,
-                "vrpn: vrpn_Endpoint::handle_tcp_messages: Message too long\n");
+                "vrpn: vrpn_Endpoint::getOneTCPMessage: Message too long\n");
         return -1;
     }
 
     // Read the body of the message
     if (vrpn_noint_block_read(fd, buf, ceil_len) != ceil_len) {
-        perror("vrpn: vrpn_Endpoint::handle_tcp_messages: Can't read body");
+        perror("vrpn: vrpn_Endpoint::getOneTCPMessage: Can't read body");
         return -1;
     }
 
