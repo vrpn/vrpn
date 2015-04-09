@@ -248,9 +248,9 @@ pid_t wait3(int *statusp, int options, struct rusage *rusage);
  * If the VRPN_RSH environment variable is set, that will be used as the full
  * path instead.  */
 #ifdef linux
-#define RSH (char *) "/usr/local/bin/ssh"
+#define RSH "/usr/local/bin/ssh"
 #else
-#define RSH (char *) "/usr/local/bin/rsh"
+#define RSH "/usr/local/bin/rsh"
 #endif
 
 /* How long to wait for a UDP packet to cause a callback connection,
@@ -694,7 +694,7 @@ int vrpn_Log::saveLogSoFar(void)
 
         retval = fwrite(lp->data.buffer, 1, host_len, d_file);
 
-        if (retval != host_len) {
+        if (retval != static_cast<size_t>(host_len)) {
             fprintf(stderr, "vrpn_Log::saveLogSoFar:  "
                             "Couldn't write log file.\n");
             lp = d_logTail;
@@ -707,7 +707,7 @@ int vrpn_Log::saveLogSoFar(void)
     while (d_logTail) {
         lp = d_logTail->next;
         if (d_logTail->data.buffer) {
-            delete[](char *)d_logTail -> data.buffer; // ugly cast
+            delete[]d_logTail -> data.buffer; // ugly cast
         }
         delete d_logTail;
         d_logTail = lp;
@@ -804,7 +804,7 @@ int vrpn_Log::logMessage(vrpn_int32 payloadLen, struct timeval time,
         }
 
         // need to explicitly override the const
-        memcpy((char *)lp->data.buffer, buffer, payloadLen);
+        memcpy(const_cast<char *>(lp->data.buffer), buffer, payloadLen);
     }
 
     // Insert the new message into the log
@@ -831,12 +831,10 @@ int vrpn_Log::setCompoundName(const char *name, int index)
     //   and foo, 5 to foo-5
 
     dot = strrchr(name, '.');
-
     if (dot) {
         strncpy(newName, name, dot - name);
         newName[dot - name] = 0;
-    }
-    else {
+    } else {
         strcpy(newName, name);
     }
     len = strlen(newName);
@@ -855,12 +853,7 @@ int vrpn_Log::setName(const char *name, size_t len)
     if (d_logFileName) {
         delete[] d_logFileName;
     }
-
     d_logFileName = new char[1 + len];
-    if (!d_logFileName) {
-        fprintf(stderr, "vrpn_Log::setName:  Out of memory!\n");
-        return -1;
-    }
     strncpy(d_logFileName, name, len);
     d_logFileName[len] = '\0';
 
@@ -1213,10 +1206,6 @@ int vrpn_TypeDispatcher::addHandler(vrpn_int32 type,
 
     // Allocate and initialize the new entry
     new_entry = new vrpnMsgCallbackEntry();
-    if (new_entry == NULL) {
-        fprintf(stderr, "vrpn_TypeDispatcher::addHandler:  Out of memory\n");
-        return -1;
-    }
     new_entry->handler = handler;
     new_entry->userdata = userdata;
     new_entry->sender = sender;
@@ -1760,7 +1749,7 @@ int vrpn_noint_block_write(int outfile, const char buffer[], size_t length)
             sofar += 1; /* Restoring it from above -1 */
         }
 
-    } while ((ret > 0) && (sofar < length));
+    } while ((ret > 0) && (static_cast<size_t>(sofar) < length));
 
     if (ret == -1) return (-1); /* Error during write */
     if (ret == 0) return (0);   /* EOF reached */
@@ -1802,7 +1791,7 @@ int vrpn_noint_block_read(int infile, char buffer[], size_t length)
             ret = 1;    /* So we go around the loop again */
             sofar += 1; /* Restoring it from above -1 */
         }
-    } while ((ret > 0) && (sofar < length));
+    } while ((ret > 0) && (static_cast<size_t>(sofar) < length));
 
     if (ret == -1) return (-1); /* Error during read */
     if (ret == 0) return (0);   /* EOF reached */
@@ -2244,6 +2233,7 @@ static int get_local_socket_name(char *local_host, size_t max_length, const char
     // Copy this to the output
     if ((unsigned)strlen(myIPstring) > max_length) {
         fprintf(stderr, "get_local_socket_name: Name too long to return\n");
+        vrpn_closeSocket(udp_socket);
         return -1;
     }
 
@@ -2270,9 +2260,9 @@ static int get_local_socket_name(char *local_host, size_t max_length, const char
 
 int vrpn_udp_request_lob_packet(
 	SOCKET udp_sock,       // Socket to use to send
-    const char *machine,   // Name of the machine to call
-    const int remote_port, // UDP port on remote machine
-    const int local_port,  // TCP port on this machine
+    const char *,              // Name of the machine to call
+    const int,                 // UDP port on remote machine
+    const int local_port,      // TCP port on this machine
     const char *NIC_IP = NULL)
 {
     char msg[150];      /* Message to send */
@@ -2462,7 +2452,7 @@ static int vrpn_start_server(const char *machine, char *server_name, char *args,
         int num_descriptors; /* Number of available file descr */
         char myIPchar[100];  /* Host name of this host */
         char command[600];   /* Command passed to system() call */
-        char *rsh_to_use;    /* Full path to Rsh command. */
+        const char *rsh_to_use;    /* Full path to Rsh command. */
 
         if (vrpn_getmyIP(myIPchar, sizeof(myIPchar), IPaddress, server_sock)) {
             fprintf(stderr, "vrpn_start_server: Error finding my IP\n");
@@ -3317,11 +3307,6 @@ int vrpn_Endpoint::pack_log_description(void)
     size_t bufsize =
         2 * sizeof(vrpn_int32) + strlen(inName) + 1 + strlen(outName) + 1;
     char *buf = new char[bufsize];
-    if (buf == NULL) {
-        fprintf(stderr,
-                "vrpn_Endpoint::pack_log_description(): Out of memory\n");
-        return -1;
-    }
 
     // If we're not requesting remote logging, don't send any message.
 
@@ -4094,7 +4079,7 @@ int vrpn_Endpoint_IP::getOneTCPMessage(int fd, char *buf, size_t buflen)
     }
 
     // Read the body of the message
-    if (vrpn_noint_block_read(fd, buf, ceil_len) != ceil_len) {
+    if (static_cast<size_t>(vrpn_noint_block_read(fd, buf, ceil_len)) != ceil_len) {
         perror("vrpn: vrpn_Endpoint::getOneTCPMessage: Can't read body");
         return -1;
     }
@@ -4346,7 +4331,7 @@ int vrpn_Endpoint::handle_type_message(void *userdata, vrpn_HANDLERPARAM p)
 
     // Use the exact length packed into the start of the buffer
     // to figure out where to put the trailing '\0'
-    i = ntohl(*((vrpn_int32 *)p.buffer));
+    i = ntohl(*((const vrpn_int32 *)p.buffer));
     type_name[i] = '\0';
 
 #ifdef VERBOSE
@@ -4418,7 +4403,7 @@ int vrpn_Endpoint::handle_sender_message(void *userdata, vrpn_HANDLERPARAM p)
 
     // Use the exact length packed into the start of the buffer
     // to figure out where to put the trailing '\0'
-    i = ntohl(*((vrpn_int32 *)p.buffer));
+    i = ntohl(*((const vrpn_int32 *)p.buffer));
     sender_name[i] = '\0';
 
 #ifdef VERBOSE
@@ -5693,11 +5678,6 @@ void vrpn_Connection_IP::server_check_for_incoming_connections(
         // the incoming port on his machine.
         char *checkHost = new char[strlen(msg) + 1];
         int checkPort;
-        if (checkHost == NULL) {
-            fprintf(stderr,
-                    "server_check_for_incoming_connections(): Out of memory\n");
-            return;
-        }
         if (sscanf(msg, "%s %d", checkHost, &checkPort) != 2) {
             fprintf(
                 stderr,
@@ -5976,15 +5956,8 @@ vrpn_Connection_IP::vrpn_Connection_IP(
     // to keep it from changing.
     if (NIC_IPaddress != NULL) {
         char *IP = new char[strlen(NIC_IPaddress) + 1];
-        if (IP == NULL) {
-            fprintf(
-                stderr,
-                "vrpn_Connection_IP::vrpn_Connection_IP(): Out of memory\n");
-        }
-        else {
-            strcpy(IP, NIC_IPaddress);
-            d_NIC_IP = IP;
-        }
+        strcpy(IP, NIC_IPaddress);
+        d_NIC_IP = IP;
     }
 
     // Initialize the things that must be for any constructor
@@ -6040,15 +6013,8 @@ vrpn_Connection_IP::vrpn_Connection_IP(
     // to keep it from changing.
     if (NIC_IPaddress != NULL) {
         char *IP = new char[strlen(NIC_IPaddress) + 1];
-        if (IP == NULL) {
-            fprintf(
-                stderr,
-                "vrpn_Connection_IP::vrpn_Connection_IP(): Out of memory\n");
-        }
-        else {
-            strcpy(IP, NIC_IPaddress);
-            d_NIC_IP = IP;
-        }
+        strcpy(IP, NIC_IPaddress);
+        d_NIC_IP = IP;
     }
 
     isrsh = (strstr(station_name, "x-vrsh:") ? VRPN_TRUE : VRPN_FALSE);

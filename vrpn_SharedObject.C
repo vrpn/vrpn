@@ -677,14 +677,14 @@ void vrpn_Shared_int32::sendUpdate(vrpn_int32 newValue, timeval when)
     char buffer[32];
     vrpn_int32 buflen = 32;
     char *bp = buffer;
-    vrpn_LamportTimestamp *t;
 
     if (d_connection) {
         if (d_lClock) {
+            vrpn_LamportTimestamp *t;
             t = d_lClock->getTimestampAndAdvance();
             encodeLamport(&bp, &buflen, newValue, when, t);
-        }
-        else {
+            delete t;
+        } else {
             encode(&bp, &buflen, newValue, when);
         }
         d_connection->pack_message(32 - buflen, d_lastUpdate, d_update_type,

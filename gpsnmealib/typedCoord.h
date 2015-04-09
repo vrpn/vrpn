@@ -111,11 +111,6 @@ public:
                                 double& dirStartToEnd, double& bearingEndToStart) const;
   virtual const std::string& createCoordString (std::string& coordString) const
     = 0;
-  virtual void createDisplayStrings (std::string& topLeftString,
-                                     std::string& topRightString, std::string& bottomLeftString,
-                                     std::string& bottomRightString) const = 0;
-  virtual void createXYCoordStrings (std::string& xString,
-                                     std::string& yString) const = 0;
   virtual COORD_TYPE getCoordType () const = 0;
   GPS_FIX_QUALITY getFixQuality () const
   {return m_fixQuality;}

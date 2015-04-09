@@ -31,14 +31,9 @@ static void normalize_axis(const unsigned int value, const short deadzone, const
 	if (channel > 1.0) { channel = 1.0; }
 }
 
-static void normalize_axes(const unsigned int x, const unsigned int y, const short deadzone, const vrpn_float64 scale, vrpn_float64& channelX, vrpn_float64& channelY) {
-	normalize_axis(x, deadzone, scale, channelX);
-	normalize_axis(y, deadzone, scale, channelY);
-}
-
 vrpn_Contour::vrpn_Contour(vrpn_HidAcceptor *filter, const char *name, vrpn_Connection *c)
-  : vrpn_HidInterface(filter)
-  , vrpn_BaseClass(name, c)
+  : vrpn_BaseClass(name, c)
+  , vrpn_HidInterface(filter)
   , _filter(filter)
 {
 	init_hid();
@@ -63,22 +58,20 @@ void vrpn_Contour::on_data_received(size_t bytes, vrpn_uint8 *buffer)
   decodePacket(bytes, buffer);
 }
 
-int vrpn_Contour::on_last_disconnect(void *thisPtr, vrpn_HANDLERPARAM /*p*/)
+int vrpn_Contour::on_last_disconnect(void* /*thisPtr*/, vrpn_HANDLERPARAM /*p*/)
 {
-	vrpn_Contour *me = static_cast<vrpn_Contour *>(thisPtr);
 	return 0;
 }
 
-int vrpn_Contour::on_connect(void *thisPtr, vrpn_HANDLERPARAM /*p*/)
+int vrpn_Contour::on_connect(void* /*thisPtr*/, vrpn_HANDLERPARAM /*p*/)
 {
-	vrpn_Contour *me = static_cast<vrpn_Contour *>(thisPtr);
 	return 0;
 }
 
 vrpn_Contour_ShuttleXpress::vrpn_Contour_ShuttleXpress(const char *name, vrpn_Connection *c)
   : vrpn_Contour(_filter = new vrpn_HidProductAcceptor(CONTOUR_VENDOR, CONTOUR_SHUTTLEXPRESS), name, c)
-  , vrpn_Button_Filter(name, c)
   , vrpn_Analog(name, c)
+  , vrpn_Button_Filter(name, c)
   , vrpn_Dial(name, c)
 {
   vrpn_Analog::num_channel = 2;
@@ -213,8 +206,8 @@ void vrpn_Contour_ShuttleXpress::decodePacket(size_t bytes, vrpn_uint8 *buffer) 
 
 vrpn_Contour_ShuttlePROv2::vrpn_Contour_ShuttlePROv2(const char *name, vrpn_Connection *c)
 	: vrpn_Contour(_filter = new vrpn_HidProductAcceptor(CONTOUR_VENDOR, CONTOUR_SHUTTLEPROV2), name, c)
-	, vrpn_Button_Filter(name, c)
 	, vrpn_Analog(name, c)
+	, vrpn_Button_Filter(name, c)
 	, vrpn_Dial(name, c)
 {
 	vrpn_Analog::num_channel = 2;

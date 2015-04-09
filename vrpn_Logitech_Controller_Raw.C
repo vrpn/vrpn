@@ -68,18 +68,11 @@ static void normalize_axes(const unsigned int x, const unsigned int y, const sho
 	normalize_axis(y, deadzone, scale, channelY, wordSize);
 }
 
-static vrpn_float64 normalize_trigger(unsigned int trigger)
-{
-	// Filter out low-intensity signals
-	int value = trigger - 0x80;
-	return ((fabs(static_cast<double>(value)) < GAMEPAD_TRIGGER_THRESHOLD) ? 0.0f : (value * 2.0f / 255.0f));
-}
-
 //////////////////////////////////////////////////////////////////////////
 // Common base class
 //////////////////////////////////////////////////////////////////////////
 vrpn_Logitech_Controller_Raw::vrpn_Logitech_Controller_Raw(vrpn_HidAcceptor *filter, const char *name, vrpn_Connection *c) :
-	vrpn_HidInterface(filter), vrpn_BaseClass(name, c), _filter(filter)
+	vrpn_BaseClass(name, c), vrpn_HidInterface(filter), _filter(filter)
 {
 	init_hid();
 }
@@ -101,15 +94,13 @@ void vrpn_Logitech_Controller_Raw::on_data_received(size_t bytes, vrpn_uint8 *bu
 	decodePacket(bytes, buffer);
 }
 
-int vrpn_Logitech_Controller_Raw::on_last_disconnect(void *thisPtr, vrpn_HANDLERPARAM /*p*/)
+int vrpn_Logitech_Controller_Raw::on_last_disconnect(void* /*thisPtr*/, vrpn_HANDLERPARAM /*p*/)
 {
-	vrpn_Logitech_Controller_Raw* me = static_cast<vrpn_Logitech_Controller_Raw*>(thisPtr);
 	return (0);
 }
 
-int vrpn_Logitech_Controller_Raw::on_connect(void* thisPtr, vrpn_HANDLERPARAM /*p*/)
+int vrpn_Logitech_Controller_Raw::on_connect(void* /*thisPtr*/, vrpn_HANDLERPARAM /*p*/)
 {
-	vrpn_Logitech_Controller_Raw* me = static_cast<vrpn_Logitech_Controller_Raw*>(thisPtr);
 	return (0);
 }
 
@@ -118,7 +109,7 @@ int vrpn_Logitech_Controller_Raw::on_connect(void* thisPtr, vrpn_HANDLERPARAM /*
 //////////////////////////////////////////////////////////////////////////
 vrpn_Logitech_Extreme_3D_Pro::vrpn_Logitech_Extreme_3D_Pro(const char *name, vrpn_Connection *c) :
 	vrpn_Logitech_Controller_Raw(_filter = new vrpn_HidProductAcceptor(LOGITECH_VENDOR, EXTREME_3D_PRO), name, c),
-	vrpn_Button_Filter(name, c), vrpn_Analog(name, c), vrpn_Dial(name, c)
+	vrpn_Analog(name, c), vrpn_Button_Filter(name, c), vrpn_Dial(name, c)
 {
 	vrpn_Analog::num_channel = 5;
 	vrpn_Dial::num_dials = 0;

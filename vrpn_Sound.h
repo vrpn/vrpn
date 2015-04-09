@@ -47,7 +47,7 @@ typedef struct _vrpn_SoundDef {
     vrpn_float64 dopler_scale;
     vrpn_float64 equalization_val;
     vrpn_float64 pitch;
-    vrpn_float32 volume; // Jason Clark calls this volume, but really its gain!
+    vrpn_float32 volume; // Jason Clark calls this volume, but really it is gain!
     _vrpn_SoundDef()
         : max_front_dist(0)
         , min_front_dist(0)
@@ -59,7 +59,8 @@ typedef struct _vrpn_SoundDef {
         , dopler_scale(0)
         , equalization_val(0)
         , pitch(0)
-        , volume(0){};
+        , volume(0)
+    { velocity[0] = velocity[1] = velocity[2] = velocity[3] = 0.0; };
 
 } vrpn_SoundDef;
 

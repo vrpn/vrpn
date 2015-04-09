@@ -24,12 +24,14 @@ bool vrpn_HidInterface::connected() const { return _working; }
 
 vrpn_HidInterface::vrpn_HidInterface(vrpn_HidAcceptor *acceptor)
     : _acceptor(acceptor)
-    , _device(NULL)
-    , _working(false)
-    , _vendor(0)
-    , _product(0)
-    , _interface(0)
 {
+    // Move initialization inside function so it happens in the order specified.
+    _device = NULL;
+    _working = false;
+    _vendor = 0;
+    _product = 0;
+    _interface = 0;
+
     if (_acceptor == NULL) {
         fprintf(stderr,
                 "vrpn_HidInterface::vrpn_HidInterface(): NULL acceptor\n");
@@ -195,7 +197,7 @@ void vrpn_HidInterface::send_data(size_t bytes, const vrpn_uint8 *buffer)
     }
     int ret;
     if ((ret = hid_write(_device, const_cast<vrpn_uint8 *>(buffer), bytes)) !=
-        bytes) {
+        static_cast<int>(bytes)) {
         fprintf(stderr, "vrpn_HidInterface::send_data(): hid_interrupt_write() "
                         "failed with code %d\n",
                 ret);

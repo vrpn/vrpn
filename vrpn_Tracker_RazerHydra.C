@@ -447,10 +447,9 @@ void vrpn_Tracker_RazerHydra::_enter_motion_controller_mode()
     vrpn_gettimeofday(&_set_feature, NULL);
 }
 
-void vrpn_Tracker_RazerHydra::_report_for_sensor(int sensorNum, vrpn_uint8 * data, double dt)
+void vrpn_Tracker_RazerHydra::_report_for_sensor(int sensorNum, vrpn_uint8 * data, double /*dt*/)
 {
-    if (!d_connection)
-    {
+    if (!d_connection) {
         return;
     }
     static const double MM_PER_METER = 0.001;
@@ -483,8 +482,7 @@ void vrpn_Tracker_RazerHydra::_report_for_sensor(int sensorNum, vrpn_uint8 * dat
 
     // autocalibrate if docked
     _docked[sensorNum] = q_vec_magnitude(pos) < _docking_distance;
-    if(_docked[sensorNum])
-    {
+    if(_docked[sensorNum]) {
         _calibration_done[sensorNum] = true;
 
         // store the base quaternion to fix up any bizarre rotations - ensures that we start x-right, y-front, z-up
@@ -494,10 +492,11 @@ void vrpn_Tracker_RazerHydra::_report_for_sensor(int sensorNum, vrpn_uint8 * dat
         // initialize hemisphere tracking
         // coordinate sanity check - sensor 0 (left): -x, -y, -z
         //                           sensor 1 (right) +x, -y, -z
-        if(pos[1] > 0 || pos[2] > 0)
+        if(pos[1] > 0 || pos[2] > 0) {
             _mirror[sensorNum] = -1; // wrong hemisphere, switch
-        else
+        } else {
             _mirror[sensorNum] = 1;
+        }
 
         q_vec_type tmp;
         q_vec_copy(tmp, pos);
@@ -515,8 +514,7 @@ void vrpn_Tracker_RazerHydra::_report_for_sensor(int sensorNum, vrpn_uint8 * dat
         q_vec_copy(_old_position[sensorNum], tmp);
     }
 
-    if (_calibration_done[sensorNum])
-    {
+    if (_calibration_done[sensorNum]) {
         // apply orientation calibration, undoing the original
         // rotation and then doing the current rotation using the
         // calibration data.
@@ -528,8 +526,7 @@ void vrpn_Tracker_RazerHydra::_report_for_sensor(int sensorNum, vrpn_uint8 * dat
         // apply current hemisphere fix
         q_vec_scale(pos, _mirror[sensorNum], pos);
 
-        if(!_docked[sensorNum])
-        {
+        if(!_docked[sensorNum]) {
             // check for hemisphere transition
             q_vec_type v_direct, v_mirror, pos_inv;
             q_vec_subtract(v_direct, pos, _old_position[sensorNum]);
@@ -542,8 +539,7 @@ void vrpn_Tracker_RazerHydra::_report_for_sensor(int sensorNum, vrpn_uint8 * dat
 
             // too big jump, likely hemisphere switch
             // in that case the coordinates given are mirrored symmetrically across the base
-            if (dist_direct > dist_mirror)
-            {
+            if (dist_direct > dist_mirror) {
                 /*
                 fprintf(stdout, "%d Switched hemisphere! %3.2f %3.2f\n", sensorNum, dist_direct, dist_mirror);
                 fprintf(stdout, "\tOld: %3.2f, %3.2f, %3.2f    Current: %3.2f, %3.2f, %3.2f\n",
@@ -580,7 +576,6 @@ void vrpn_Tracker_RazerHydra::_report_for_sensor(int sensorNum, vrpn_uint8 * dat
 
     /// Joystick button
     buttons[6 + buttonOffset] = (buttonBits & 0x40) != 0;
-
 
     /*********************
      * Decode analog axes

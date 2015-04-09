@@ -25,14 +25,8 @@ set_target_properties(vrpn_timecode_generator
 if(VRPN_INSTALL)
 	install(TARGETS
 		vrpn_timecode_generator
-		ARCHIVE
-		DESTINATION
-		lib
-		COMPONENT
-		serversdk
-		PUBLIC_HEADER
-		DESTINATION
-		include
-		COMPONENT
-		serversdk)
+		RUNTIME DESTINATION bin COMPONENT serversdk
+		LIBRARY DESTINATION lib${LIB_SUFFIX} COMPONENT serversdk
+		ARCHIVE DESTINATION lib${LIB_SUFFIX} COMPONENT serversdk
+		PUBLIC_HEADER DESTINATION include COMPONENT serversdk)
 endif()

@@ -1,6 +1,8 @@
 #include <stdio.h>  // for fprintf, stderr, NULL, etc
 #include <stdlib.h> // for atoi, exit
 #include <string.h> // for strcmp
+#include <string>
+#include <sstream>
 
 #include "vrpn_BaseClass.h"             // for ::vrpn_TEXT_NORMAL, etc
 #include "vrpn_Configure.h"             // for VRPN_CALLBACK, etc
@@ -252,19 +254,17 @@ int main(int argc, char *argv[])
     // Form the name based on the type of connection requested.  For a standard
     // VRPN UDP/TCP port, we give it the name "NIC:port" if there is a NIC name,
     // otherwise just ":port" for the default NIC.
-    char con_name[1024];
+    std::stringstream con_name;
     if (g_NICname) {
-        sprintf(con_name, "%s:%d", g_NICname, port);
+        con_name << g_NICname;
     }
-    else {
-        sprintf(con_name, ":%d", port);
-    }
+    con_name << ":" << port;
     connection =
-        vrpn_create_server_connection(con_name, g_inLogName, g_outLogName);
+        vrpn_create_server_connection(con_name.str().c_str(), g_inLogName, g_outLogName);
 
     // Create the generic server object and make sure it is doing okay.
     generic_server = new vrpn_Generic_Server_Object(
-        connection, config_file_name, port, verbose, bail_on_error);
+        connection, config_file_name, verbose, bail_on_error);
     if ((generic_server == NULL) || !generic_server->doing_okay()) {
         fprintf(stderr, "Could not start generic server, exiting\n");
         shutDown();

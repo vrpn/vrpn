@@ -17,8 +17,13 @@
 #define MPSS_PER_G (9.80665)
 
 vrpn_Tracker_Crossbow::vrpn_Tracker_Crossbow(const char *name, vrpn_Connection *c, const char *port, long baud, 
-	float g_range, float ar_range) : vrpn_Tracker_Serial(name, c, port, baud), just_read_something(0),
-	lin_accel_range(g_range), ang_accel_range(ar_range), device_version(0), device_serial(0)
+	float g_range, float ar_range)
+  : vrpn_Tracker_Serial(name, c, port, baud)
+  , lin_accel_range(g_range)
+  , ang_accel_range(ar_range)
+  , device_serial(0)
+  , device_version(0)
+  , just_read_something(0)
 {
 }
 

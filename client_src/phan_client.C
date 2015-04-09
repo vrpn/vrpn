@@ -17,7 +17,7 @@
  *
  *****************************************************************************/
 
-void    VRPN_CALLBACK handle_force_change(void *userdata, const vrpn_FORCECB f)
+void    VRPN_CALLBACK handle_force_change(void *, const vrpn_FORCECB f)
 {
 	static vrpn_FORCECB lr;        // last report
 	static int first_report_done = 0;
@@ -30,7 +30,7 @@ void    VRPN_CALLBACK handle_force_change(void *userdata, const vrpn_FORCECB f)
 	lr = f;
 }
 
-void    VRPN_CALLBACK handle_tracker_change(void *userdata, const vrpn_TRACKERCB t)
+void    VRPN_CALLBACK handle_tracker_change(void *, const vrpn_TRACKERCB t)
 {
 	static vrpn_TRACKERCB lr; // last report
 	static float dist_interval_sq = 0.004f;
@@ -60,7 +60,7 @@ void	VRPN_CALLBACK handle_button_change(void *userdata, const vrpn_BUTTONCB b)
 	*(int *)userdata = done;
 }
 
-int main(int argc, char *argv[])
+int main(int , char *[])
 {
 	printf("generates a flat horizontal plane on ForceDevice %s\n", PHANTOM_SERVER);
         int     done = 0;

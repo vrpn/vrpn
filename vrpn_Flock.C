@@ -215,11 +215,18 @@ int vrpn_Tracker_Flock::checkError() {
 
 vrpn_Tracker_Flock::vrpn_Tracker_Flock(char *name, vrpn_Connection *c,
 				       int cSensors, const char *port, long baud,
-				       int fStreamMode, int useERT, bool invertQuaternion, int active_hemisphere) :
-  vrpn_Tracker_Serial(name,c,port,baud), cSensors(cSensors), cResets(0),
-  fStream(fStreamMode), fGroupMode(1), cSyncs(0), fFirstStatusReport(1), d_useERT(useERT),
-  activeHemisphere(active_hemisphere),
-  d_invertQuaternion(invertQuaternion) {
+				       int fStreamMode, int useERT, bool invertQuaternion, int active_hemisphere)
+  : vrpn_Tracker_Serial(name,c,port,baud)
+  , activeHemisphere(active_hemisphere)
+  , cSensors(cSensors)
+  , fStream(fStreamMode)
+  , fGroupMode(1)
+  , d_useERT(useERT)
+  , d_invertQuaternion(invertQuaternion)
+  , cResets(0)
+  , cSyncs(0)
+  , fFirstStatusReport(1)
+{
     if (cSensors>VRPN_FLOCK_MAX_SENSORS) {
       fprintf(stderr, "\nvrpn_Tracker_Flock: too many sensors requested ... only %d allowed (%d specified)", VRPN_FLOCK_MAX_SENSORS, cSensors );
       cSensors = VRPN_FLOCK_MAX_SENSORS;

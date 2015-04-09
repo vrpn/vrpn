@@ -157,7 +157,7 @@ void vrpn_Imager_Stream_Buffer::mainloop(void)
 /* static */
 // This method just passes the call on to the virtual function.
 int vrpn_Imager_Stream_Buffer::static_handle_got_first_connection(
-    void *userdata, vrpn_HANDLERPARAM p)
+    void *userdata, vrpn_HANDLERPARAM)
 {
     vrpn_Imager_Stream_Buffer *me =
         static_cast<vrpn_Imager_Stream_Buffer *>(userdata);
@@ -883,7 +883,7 @@ void vrpn_Imager_Stream_Buffer::handle_request_logging_status()
 // structure
 // so that the parent object can hear about it.
 void vrpn_Imager_Stream_Buffer::handle_image_description(
-    void *pvISB, const struct timeval msg_time)
+    void *pvISB, const struct timeval)
 {
     vrpn_Imager_Stream_Buffer *me =
         static_cast<vrpn_Imager_Stream_Buffer *>(pvISB);

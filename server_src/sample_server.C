@@ -19,7 +19,7 @@ int VRPN_CALLBACK handle_any_print (void * userdata, vrpn_HANDLERPARAM p) {
   return 0;  // non-error completion
 }
 
-int main (int argc, char ** argv) {
+int main (int, char **) {
 
   vrpn_Connection * listen_connection;
   long myId;

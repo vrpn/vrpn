@@ -111,9 +111,9 @@ static vrpn_float64 normalize_trigger(unsigned int trigger)
 // Common base class
 //////////////////////////////////////////////////////////////////////////
 vrpn_Microsoft_Controller_Raw::vrpn_Microsoft_Controller_Raw(vrpn_HidAcceptor *filter, const char *name, vrpn_Connection *c)
-  : _filter(filter)
+  : vrpn_BaseClass(name, c)
   , vrpn_HidInterface(filter)
-  , vrpn_BaseClass(name, c)
+  , _filter(filter)
 {
 	init_hid();
 }
@@ -134,15 +134,13 @@ void vrpn_Microsoft_Controller_Raw::on_data_received(size_t bytes, vrpn_uint8 *b
   decodePacket(bytes, buffer);
 }
 
-int vrpn_Microsoft_Controller_Raw::on_last_disconnect(void *thisPtr, vrpn_HANDLERPARAM /*p*/)
+int vrpn_Microsoft_Controller_Raw::on_last_disconnect(void* /*thisPtr*/, vrpn_HANDLERPARAM /*p*/)
 {
-	vrpn_Microsoft_Controller_Raw *me = static_cast<vrpn_Microsoft_Controller_Raw *>(thisPtr);
 	return 0;
 }
 
-int vrpn_Microsoft_Controller_Raw::on_connect(void *thisPtr, vrpn_HANDLERPARAM /*p*/)
+int vrpn_Microsoft_Controller_Raw::on_connect(void* /*thisPtr*/, vrpn_HANDLERPARAM /*p*/)
 {
-	vrpn_Microsoft_Controller_Raw *me = static_cast<vrpn_Microsoft_Controller_Raw *>(thisPtr);
 	return 0;
 }
 
@@ -151,7 +149,7 @@ int vrpn_Microsoft_Controller_Raw::on_connect(void *thisPtr, vrpn_HANDLERPARAM /
 //////////////////////////////////////////////////////////////////////////
 vrpn_Microsoft_SideWinder_Precision_2::vrpn_Microsoft_SideWinder_Precision_2(const char *name, vrpn_Connection *c) :
 	vrpn_Microsoft_Controller_Raw(_filter = new vrpn_HidProductAcceptor(MICROSOFT_VENDOR, SIDEWINDER_PRECISION_2), name, c),
-	vrpn_Button_Filter(name, c), vrpn_Analog(name, c), vrpn_Dial(name, c)
+	vrpn_Analog(name, c), vrpn_Button_Filter(name, c), vrpn_Dial(name, c)
 {
 	vrpn_Analog::num_channel = 5;
 	vrpn_Dial::num_dials = 0;
@@ -295,7 +293,7 @@ void vrpn_Microsoft_SideWinder_Precision_2::decodePacket(size_t bytes, vrpn_uint
 //////////////////////////////////////////////////////////////////////////
 vrpn_Microsoft_SideWinder::vrpn_Microsoft_SideWinder(const char *name, vrpn_Connection *c) :
 	vrpn_Microsoft_Controller_Raw(_filter = new vrpn_HidProductAcceptor(MICROSOFT_VENDOR, SIDEWINDER), name, c),
-	vrpn_Button_Filter(name, c), vrpn_Analog(name, c), vrpn_Dial(name, c)
+	vrpn_Analog(name, c), vrpn_Button_Filter(name, c), vrpn_Dial(name, c)
 {
 	vrpn_Analog::num_channel = 3;
 	vrpn_Dial::num_dials = 0;
@@ -401,8 +399,8 @@ void vrpn_Microsoft_SideWinder::decodePacket(size_t bytes, vrpn_uint8 *buffer)
 //////////////////////////////////////////////////////////////////////////
 vrpn_Microsoft_Controller_Raw_Xbox_S::vrpn_Microsoft_Controller_Raw_Xbox_S(const char *name, vrpn_Connection *c)
   : vrpn_Microsoft_Controller_Raw(_filter = new vrpn_HidProductAcceptor(MICROSOFT_VENDOR, XBOX_S), name, c)
-  , vrpn_Button_Filter(name, c)
   , vrpn_Analog(name, c)
+  , vrpn_Button_Filter(name, c)
   , vrpn_Dial(name, c)
 {
   vrpn_Analog::num_channel = 5;
@@ -646,8 +644,8 @@ void vrpn_Microsoft_Controller_Raw_Xbox_S::decodePacket(size_t bytes, vrpn_uint8
 //////////////////////////////////////////////////////////////////////////
 vrpn_Microsoft_Controller_Raw_Xbox_360::vrpn_Microsoft_Controller_Raw_Xbox_360(const char *name, vrpn_Connection *c, vrpn_uint16 vendorId /*=MICROSOFT_VENDOR*/, vrpn_uint16 productId /*=XBOX_360*/)
 : vrpn_Microsoft_Controller_Raw(_filter = new vrpn_HidProductAcceptor(vendorId, productId), name, c)
-, vrpn_Button_Filter(name, c)
 , vrpn_Analog(name, c)
+, vrpn_Button_Filter(name, c)
 , vrpn_Dial(name, c)
 {
 	vrpn_Analog::num_channel = 6;
@@ -713,7 +711,8 @@ void vrpn_Microsoft_Controller_Raw_Xbox_360::report_changes(vrpn_uint32 class_of
 	}
 }
 
-void vrpn_Microsoft_Controller_Raw_Xbox_360::decodePacket(size_t bytes, vrpn_uint8 *buffer) {
+void vrpn_Microsoft_Controller_Raw_Xbox_360::decodePacket(size_t bytes, vrpn_uint8 *buffer)
+{
 	// Decode all full reports, each of which is 14 bytes long.
         // Because there is only one type of report, the initial "0" report-type
         // byte is removed by the HIDAPI driver.
@@ -799,7 +798,7 @@ void vrpn_Microsoft_Controller_Raw_Xbox_360::decodePacket(size_t bytes, vrpn_uin
 			buttons[10] = buttons[11] = buttons[12] = buttons[13] = false;
 			if (value != 0)
 			{
-				int lowerBtn = (10 + (value >> 3)) & 0x03;
+				//int lowerBtn = (10 + (value >> 3)) & 0x03;
 				switch (value)
 				{
 				case 1:

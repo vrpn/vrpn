@@ -235,16 +235,16 @@ void vrpn_Tracker_Liberty::reset()
    if (ret != whoami_len) {
   	fprintf(stderr,"  Got %d of %d characters for status\n",ret, whoami_len);
    }
+   if (ret != -1) {
+      statusmsg[ret] = '\0';	// Null-terminate the string
+   }
    // It seems like some versions of the tracker report longer
-   // messages; so we reduced this chech so that it does not check for the
+   // messages; so we reduced this check so that it does not check for the
    // appropriate length of message or for the last character being a 10,
    // so that it works more generally.  The removed tests are:
    // || (ret!=whoami_len) || (statusmsg[ret-1]!=(char)(10))
    if ( (statusmsg[0]!='0') ) {
      int i;
-     if (ret != -1) {
-        statusmsg[ret] = '\0';	// Null-terminate the string
-     }
      fprintf(stderr, "  Liberty: status is (");
      for (i = 0; i < ret; i++) {
       	if (isprint(statusmsg[i])) {

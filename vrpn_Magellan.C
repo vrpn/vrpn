@@ -53,10 +53,10 @@ vrpn_Magellan::vrpn_Magellan (const char * name, vrpn_Connection * c,
 			const char * port, int baud, bool altreset):
 		vrpn_Serial_Analog(name, c, port, baud),
 		vrpn_Button_Filter(name, c),
+		_altreset(altreset),
 		_numbuttons(9),
 		_numchannels(6),
-		_null_radius(8),
-		_altreset(altreset)
+		_null_radius(8)
 {
 	// Set the parameters in the parent classes
 	vrpn_Button::num_buttons = _numbuttons;
@@ -122,7 +122,7 @@ int	vrpn_Magellan::reset(void)
 	// Read back the response and make sure it matches what we expect.
 	// Give it a reasonable amount of time to finish, then timeout
 	vrpn_flush_input_buffer(serial_fd);
-	vrpn_write_slowly(serial_fd, (unsigned char *)reset_str, strlen(reset_str), 5);
+	vrpn_write_slowly(serial_fd, (const unsigned char *)reset_str, strlen(reset_str), 5);
 	timeout.tv_sec = 1;
 	timeout.tv_usec = 0;
 	ret = vrpn_read_available_characters(serial_fd, inbuf, strlen(expect_back), &timeout);

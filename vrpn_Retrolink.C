@@ -53,7 +53,7 @@ static void angle_and_buttons_from_rocker_doublet(
 	vrpn_float64 *angle,
 	bool *up, bool *right, bool *down, bool *left)
 {
-	vrpn_uint8 value;
+	vrpn_uint8 value = 8; // Default is  nothing set in case we don't recognize it.
 	switch (value0) {
 	case 0x00:
 		switch (value1) {
@@ -83,9 +83,9 @@ static void angle_and_buttons_from_rocker_doublet(
 }
 
 vrpn_Retrolink::vrpn_Retrolink(vrpn_HidAcceptor *filter, const char *name, vrpn_Connection *c)
-  : _filter(filter)
+  : vrpn_BaseClass(name, c)
   , vrpn_HidInterface(filter)
-  , vrpn_BaseClass(name, c)
+  , _filter(filter)
 {
 	init_hid();
 }
@@ -106,22 +106,20 @@ void vrpn_Retrolink::on_data_received(size_t bytes, vrpn_uint8 *buffer)
   decodePacket(bytes, buffer);
 }
 
-int vrpn_Retrolink::on_last_disconnect(void *thisPtr, vrpn_HANDLERPARAM /*p*/)
+int vrpn_Retrolink::on_last_disconnect(void* /*thisPtr*/, vrpn_HANDLERPARAM /*p*/)
 {
-	vrpn_Retrolink *me = static_cast<vrpn_Retrolink *>(thisPtr);
 	return 0;
 }
 
-int vrpn_Retrolink::on_connect(void *thisPtr, vrpn_HANDLERPARAM /*p*/)
+int vrpn_Retrolink::on_connect(void* /*thisPtr*/, vrpn_HANDLERPARAM /*p*/)
 {
-	vrpn_Retrolink *me = static_cast<vrpn_Retrolink *>(thisPtr);
 	return 0;
 }
 
 vrpn_Retrolink_GameCube::vrpn_Retrolink_GameCube(const char *name, vrpn_Connection *c)
 	: vrpn_Retrolink(_filter = new vrpn_HidProductAcceptor(RETROLINK_VENDOR, RETROLINK_GAMECUBE), name, c)
-  , vrpn_Button_Filter(name, c)
   , vrpn_Analog(name, c)
+  , vrpn_Button_Filter(name, c)
 {
   vrpn_Analog::num_channel = 5;
   vrpn_Button::num_buttons = 12;
@@ -259,8 +257,8 @@ void vrpn_Retrolink_GameCube::decodePacket(size_t bytes, vrpn_uint8 *buffer)
 
 vrpn_Retrolink_Genesis::vrpn_Retrolink_Genesis(const char *name, vrpn_Connection *c)
 	: vrpn_Retrolink(_filter = new vrpn_HidProductAcceptor(RETROLINK_VENDOR, RETROLINK_GENESIS), name, c)
-  , vrpn_Button_Filter(name, c)
   , vrpn_Analog(name, c)
+  , vrpn_Button_Filter(name, c)
 {
   vrpn_Analog::num_channel = 1;
   vrpn_Button::num_buttons = 12;

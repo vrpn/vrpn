@@ -37,7 +37,7 @@ vrpn_Tracker_LibertyHS::vrpn_Tracker_LibertyHS(const char *name, vrpn_Connection
     receptor_index(receptoridx),
     num_resets(0),
     whoami_len(whoamilen>vrpn_LIBERTYHS_MAX_WHOAMI_LEN ? vrpn_LIBERTYHS_MAX_WHOAMI_LEN : whoamilen),
-    sync_index(-1), read_len(0)
+    read_len(0), sync_index(-1)
 {
 	if (additional_reset_commands == NULL) {
 		add_reset_cmd[0] = '\0';
@@ -314,14 +314,14 @@ void vrpn_Tracker_LibertyHS::reset()
    if (do_filter) {
      if (DEBUG) fprintf(stderr,"[DEBUG]: Enabling filtering\n");
 
-     if (write_usb_data((void*)"X0.2,0.2,0.8,0.8\015", 17) == 17) {
+     if (write_usb_data(const_cast<char*>("X0.2,0.2,0.8,0.8\015"), 17) == 17) {
 	vrpn_SleepMsecs(1000.0*1); // Sleep for a second to let it respond
      } else {
 	perror("  LibertyHS write position filter failed");
 	status = vrpn_TRACKER_FAIL;
 	return;
      }
-     if (write_usb_data((void*)"Y0.2,0.2,0.8,0.8\015", 17) == 17) {
+     if (write_usb_data(const_cast<char*>("Y0.2,0.2,0.8,0.8\015"), 17) == 17) {
 	vrpn_SleepMsecs(1000.0*1); // Sleep for a second to let it respond
      } else {
 	perror("  LibertyHS write orientation filter failed");
@@ -331,14 +331,14 @@ void vrpn_Tracker_LibertyHS::reset()
    } else {
      if (DEBUG) fprintf(stderr,"[DEBUG]: Disabling filtering\n");
 
-     if (write_usb_data((void*)"X0,1,0,0\015", 9) == 9) {
+     if (write_usb_data(const_cast<char*>("X0,1,0,0\015"), 9) == 9) {
 	vrpn_SleepMsecs(1000.0*1); // Sleep for a second to let it respond
      } else {
 	perror("  LibertyHS write position filter failed");
 	status = vrpn_TRACKER_FAIL;
 	return;
      }
-     if (write_usb_data((void*)"Y0,1,0,0\015", 9) == 9) {
+     if (write_usb_data(const_cast<char*>("Y0,1,0,0\015"), 9) == 9) {
 	vrpn_SleepMsecs(1000.0*1); // Sleep for a second to let it respond
      } else {
 	perror("  LibertyHS write orientation filter failed");
