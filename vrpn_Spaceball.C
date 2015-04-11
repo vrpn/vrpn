@@ -346,10 +346,9 @@ int vrpn_Spaceball::get_report(void)
             nextchar = 1;  // this is where the timer data is, if we want it.
             nextchar = 3;  // Skip the zeroeth character (the command)
             for (chan = 0; chan < _numchannels; chan++) {
-              long intval;
+              vrpn_int16 intval;
               intval  = (buf[nextchar++]) << 8;
               intval |= (buf[nextchar++]);
-              intval  = (intval << 16) >> 16;
 
               // If the absolute value of the integer is <= the NULL 
               // radius, it should be set to zero.
