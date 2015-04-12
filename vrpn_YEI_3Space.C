@@ -296,7 +296,7 @@ void vrpn_YEI_3Space::handle_report(unsigned char *report)
     quat[Q_W] = value;
     if (0 != report_pose(i, timestamp, pos, quat)) {
         VRPN_MSG_ERROR ("vrpn_YEI_3Space::handle_report(): Error sending sensor report");
-        d_sensor = STATUS_RESETTING;
+        d_status = STATUS_RESETTING;
     }
   }
 
@@ -319,7 +319,7 @@ void vrpn_YEI_3Space::handle_report(unsigned char *report)
   double interval = 1;
   if (0 != report_pose_acceleration(sensor, timestamp, acc, acc_quat, interval)) {
       VRPN_MSG_ERROR ("vrpn_YEI_3Space::handle_report(): Error sending acceleration report");
-      d_sensor = STATUS_RESETTING;
+      d_status = STATUS_RESETTING;
   }
 
   // Read the analog values and put them into the channels.
@@ -328,24 +328,13 @@ void vrpn_YEI_3Space::handle_report(unsigned char *report)
     channel[i] = value;
   }
 
-  // Check the temperature to make sure it is above 1.
-  // If not, there is trouble parsing the report.  Sometimes the wired
-  // unit gets the wrong number of bytes in the report, causing things
-  // to wrap around.  This catches that case.
-  // XXX We took this out because some sensors were reporting -200C at
-  // a conference.
-//  if (channel[9] <= 1) {
-//	  VRPN_MSG_ERROR("vrpn_YEI_3Space::handle_report(): Invalid temperature, resetting");
-//	  d_sensor = STATUS_RESETTING;
-//  }
-
   // Check the confidence factor to make sure it is between 0 and 1.
   // If not, there is trouble parsing the report.  Sometimes the wired
   // unit gets the wrong number of bytes in the report, causing things
   // to wrap around.  This catches that case.
   if ((channel[10] < 0) || (channel[10] > 1)) {
 	  VRPN_MSG_ERROR("vrpn_YEI_3Space::handle_report(): Invalid confidence, resetting");
-	  d_sensor = STATUS_RESETTING;
+      d_status = STATUS_RESETTING;
   }
 
   // Read the button values and put them into the buttons.
@@ -1114,8 +1103,6 @@ bool vrpn_YEI_3Space_Sensor_Wireless::receive_LED_values_response (struct timeva
   d_LED_color[2] = value;
   return true;
 }
-
-// XXXX Fix things below here.
 
 /******************************************************************************
  * NAME      : vrpn_YEI_3Space_Sensor_Wireless::get_report
