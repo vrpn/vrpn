@@ -30,28 +30,13 @@ vrpn_Xkeys::vrpn_Xkeys(vrpn_HidAcceptor *filter, const char *name, vrpn_Connecti
 
 vrpn_Xkeys::~vrpn_Xkeys()
 {
-  if (_toggle_light) {
-	// Indicate we're no longer waiting for a connection by
-        // turning off both the red and green LEDs.
-	vrpn_uint8 outputs[9] = {0};
-	outputs[8] = 0;
-	send_data(9, outputs);
-
-  }
   delete _filter;
 }
 
 void vrpn_Xkeys::init_hid() {
-	// Get notifications when clients connect and disconnect
-	register_autodeleted_handler(d_connection->register_message_type(vrpn_dropped_last_connection), on_last_disconnect, this);
-	register_autodeleted_handler(d_connection->register_message_type(vrpn_got_connection), on_connect, this);
-
-	// Indicate we're waiting for a connection by turning on the red LED
-  if (_toggle_light) {
-	vrpn_uint8 outputs[9] = {0};
-	outputs[8] = 128;
-	send_data(9, outputs);
-  }
+  // Get notifications when clients connect and disconnect
+  register_autodeleted_handler(d_connection->register_message_type(vrpn_dropped_last_connection), on_last_disconnect, this);
+  register_autodeleted_handler(d_connection->register_message_type(vrpn_got_connection), on_connect, this);
 }
 
 void vrpn_Xkeys::on_data_received(size_t bytes, vrpn_uint8 *buffer)
@@ -64,9 +49,7 @@ int vrpn_Xkeys::on_last_disconnect(void *thisPtr, vrpn_HANDLERPARAM /*p*/)
 	vrpn_Xkeys *me = static_cast<vrpn_Xkeys *>(thisPtr);
 	if (me->_toggle_light) {
 		// Set light to red to indicate we have no active connections
-		vrpn_uint8 outputs[9] = {0};
-		outputs[8] = 128;
-		me->send_data(9, outputs);
+		me->setLEDs(On, Off);
 	}
 	return 0;
 }
@@ -77,15 +60,81 @@ int vrpn_Xkeys::on_connect(void *thisPtr, vrpn_HANDLERPARAM /*p*/)
 
 	if (me->_toggle_light) {
 		// Set light to green to indicate we have an active connection
-		vrpn_uint8 outputs[9] = {0};
-		outputs[8] = 64;
-		me->send_data(9, outputs);
+		me->setLEDs(Off, On);
 	}
 	return 0;
 }
 
+void vrpn_Xkeys_v1::setLEDs(LED_STATE red, LED_STATE green)
+{
+  vrpn_uint8 outputs[9] = {0};
+  switch (red) {
+    case Off:  // do not set anything to 1 for off.
+      break;
+    case On:
+    case Flash:
+      outputs[8] |= 128;
+      break;
+    default:   // For both on and flash, turn on (we don't know how to flash)
+      fprintf(stderr,"vrpn_Xkeys_v2::setLED(): Unrecognized state\n");
+  }
+  switch (green) {
+    case Off:  // do not set anything to 1 for off.
+      break;
+    case On:
+    case Flash:
+      outputs[8] |= 64;
+      break;
+    default:   // For both on and flash, turn on (we don't know how to flash)
+      fprintf(stderr,"vrpn_Xkeys_v2::setLED(): Unrecognized state\n");
+  }
+
+  // Send the combined command to turn on and off both red and green.
+  send_data(9, outputs);
+}
+
+void vrpn_Xkeys_v2::setLEDs(LED_STATE red, LED_STATE green)
+{
+  vrpn_uint8 outputs[36] = {0};
+  outputs[1] = 0xb3;
+
+  // Send the red command.
+  outputs[2] = 7;        // 6 = green LED, 7 = red LED
+  switch (red) {
+    case On:  // do not set anything to 1 for off.
+      outputs[3] = 1;        // 0 = off, 1 = on, 2 = flash
+      break;
+    case Flash:  // do not set anything to 1 for off.
+      outputs[3] = 2;        // 0 = off, 1 = on, 2 = flash
+      break;
+    case Off:  // do not set anything to 1 for off.
+      outputs[3] = 0;        // 0 = off, 1 = on, 2 = flash
+      break;
+    default:   // Never heard of this state.
+      fprintf(stderr,"vrpn_Xkeys_v2::setLED(): Unrecognized state\n");
+  }
+  send_data(36, outputs);
+
+  // Send the green command.
+  outputs[2] = 6;        // 6 = green LED, 7 = red LED
+  switch (green) {
+    case On:  // do not set anything to 1 for off.
+      outputs[3] = 1;        // 0 = off, 1 = on, 2 = flash
+      break;
+    case Flash:  // do not set anything to 1 for off.
+      outputs[3] = 2;        // 0 = off, 1 = on, 2 = flash
+      break;
+    case Off:  // do not set anything to 1 for off.
+      outputs[3] = 0;        // 0 = off, 1 = on, 2 = flash
+      break;
+    default:   // Never heard of this state.
+      fprintf(stderr,"vrpn_Xkeys_v2::setLED(): Unrecognized state\n");
+  }
+  send_data(36, outputs);
+}
+
 vrpn_Xkeys_Desktop::vrpn_Xkeys_Desktop(const char *name, vrpn_Connection *c)
-  : vrpn_Xkeys(_filter = new vrpn_HidProductAcceptor(XKEYS_VENDOR, XKEYS_DESKTOP), name, c)
+  : vrpn_Xkeys_v1(_filter = new vrpn_HidProductAcceptor(XKEYS_VENDOR, XKEYS_DESKTOP), name, c)
   , vrpn_Button_Filter(name, c)
 {
   // 21 buttons (don't forget about button 0)
@@ -145,7 +194,7 @@ void vrpn_Xkeys_Desktop::decodePacket(size_t bytes, vrpn_uint8 *buffer) {
 }
 
 vrpn_Xkeys_Jog_And_Shuttle::vrpn_Xkeys_Jog_And_Shuttle(const char *name, vrpn_Connection *c)
-  : vrpn_Xkeys(_filter = new vrpn_HidProductAcceptor(XKEYS_VENDOR, XKEYS_JOG_AND_SHUTTLE), name, c)
+  : vrpn_Xkeys_v1(_filter = new vrpn_HidProductAcceptor(XKEYS_VENDOR, XKEYS_JOG_AND_SHUTTLE), name, c)
   , vrpn_Analog(name, c)
   , vrpn_Button_Filter(name, c)
   , vrpn_Dial(name, c)
@@ -311,7 +360,7 @@ void vrpn_Xkeys_Jog_And_Shuttle::decodePacket(size_t bytes, vrpn_uint8 *buffer)
 }
 
 vrpn_Xkeys_Jog_And_Shuttle12::vrpn_Xkeys_Jog_And_Shuttle12(const char *name, vrpn_Connection *c)
-	: vrpn_Xkeys(_filter = new vrpn_HidProductAcceptor(XKEYS_VENDOR, XKEYS_JOG_AND_SHUTTLE12), name, c)
+	: vrpn_Xkeys_v2(_filter = new vrpn_HidProductAcceptor(XKEYS_VENDOR, XKEYS_JOG_AND_SHUTTLE12), name, c)
 	, vrpn_Analog(name, c)
 	, vrpn_Button_Filter(name, c)
 	, vrpn_Dial(name, c)
@@ -443,7 +492,7 @@ void vrpn_Xkeys_Jog_And_Shuttle12::decodePacket(size_t bytes, vrpn_uint8 *buffer
 }
 
 vrpn_Xkeys_Joystick::vrpn_Xkeys_Joystick(const char *name, vrpn_Connection *c)
-  : vrpn_Xkeys(_filter = new vrpn_HidProductAcceptor(XKEYS_VENDOR, XKEYS_JOYSTICK), name, c)
+  : vrpn_Xkeys_v1(_filter = new vrpn_HidProductAcceptor(XKEYS_VENDOR, XKEYS_JOYSTICK), name, c)
   , vrpn_Analog(name, c)
   , vrpn_Button_Filter(name, c)
   , vrpn_Dial(name, c)
@@ -606,7 +655,7 @@ void vrpn_Xkeys_Joystick::decodePacket(size_t bytes, vrpn_uint8 *buffer)
 }
 
 vrpn_Xkeys_Joystick12::vrpn_Xkeys_Joystick12(const char *name, vrpn_Connection *c)
-	: vrpn_Xkeys(_filter = new vrpn_HidProductAcceptor(XKEYS_VENDOR, XKEYS_JOYSTICK12), name, c)
+	: vrpn_Xkeys_v2(_filter = new vrpn_HidProductAcceptor(XKEYS_VENDOR, XKEYS_JOYSTICK12), name, c)
 	, vrpn_Analog(name, c)
 	, vrpn_Button_Filter(name, c)
 	, vrpn_Dial(name, c)
@@ -733,7 +782,7 @@ void vrpn_Xkeys_Joystick12::decodePacket(size_t bytes, vrpn_uint8 *buffer)
 }
 
 vrpn_Xkeys_Pro::vrpn_Xkeys_Pro(const char *name, vrpn_Connection *c)
-  : vrpn_Xkeys(_filter = new vrpn_HidProductAcceptor(XKEYS_VENDOR, XKEYS_PRO), name, c)
+  : vrpn_Xkeys_v1(_filter = new vrpn_HidProductAcceptor(XKEYS_VENDOR, XKEYS_PRO), name, c)
   , vrpn_Button_Filter(name, c)
 {
 	vrpn_Button::num_buttons = 59;  // Don't forget button 0
@@ -853,7 +902,7 @@ void vrpn_Xkeys_Pro::decodePacket(size_t bytes, vrpn_uint8 *buffer)
 }
 
 vrpn_Xkeys_XK3::vrpn_Xkeys_XK3(const char *name, vrpn_Connection *c)
-  : vrpn_Xkeys(_filter = new vrpn_HidProductAcceptor(XKEYS_VENDOR, XKEYS_XK3), name, c, false)
+  : vrpn_Xkeys_v1(_filter = new vrpn_HidProductAcceptor(XKEYS_VENDOR, XKEYS_XK3), name, c, false)
   , vrpn_Button_Filter(name, c)
 {
   // 3 buttons

@@ -53,7 +53,15 @@ protected:
   static int VRPN_CALLBACK on_connect(void *thisPtr, vrpn_HANDLERPARAM p);
   static int VRPN_CALLBACK on_last_disconnect(void *thisPtr, vrpn_HANDLERPARAM p);
 
-  virtual void decodePacket(size_t bytes, vrpn_uint8 *buffer) = 0;	
+  // Decode the packet of data in a way that is appropriate to the
+  // actual device.
+  virtual void decodePacket(size_t bytes, vrpn_uint8 *buffer) = 0;
+
+  // Set the LEDs on the device in a way that is appropriate for the
+  // particular device.
+  typedef enum { Off, On, Flash } LED_STATE;
+  virtual void setLEDs(LED_STATE red, LED_STATE green) = 0;
+
   struct timeval _timestamp;
   vrpn_HidAcceptor *_filter;
   bool		_toggle_light;
@@ -62,7 +70,39 @@ protected:
   int register_types(void) { return 0; }
 };
 
-class vrpn_Xkeys_Desktop: protected vrpn_Xkeys, public vrpn_Button_Filter {
+// Original devices that used one method to turn the LEDs on and off.
+class vrpn_Xkeys_v1: public vrpn_Xkeys {
+public:
+  vrpn_Xkeys_v1(vrpn_HidAcceptor *filter, const char *name,
+                      vrpn_Connection *c = 0, bool toggle_light = true)
+    : vrpn_Xkeys(filter, name, c, toggle_light) {
+      // Indicate we're waiting for a connection by turning on the red LED
+      if (_toggle_light) { setLEDs(On, Off); }
+    };
+
+  ~vrpn_Xkeys_v1() { if (_toggle_light) setLEDs(Off, Off); };
+
+protected:
+  virtual void setLEDs(LED_STATE red, LED_STATE green);
+};
+
+// Next generation devices that used another method to turn the LEDs on and off.
+class vrpn_Xkeys_v2: public vrpn_Xkeys {
+public:
+  vrpn_Xkeys_v2(vrpn_HidAcceptor *filter, const char *name,
+                      vrpn_Connection *c = 0, bool toggle_light = true)
+    : vrpn_Xkeys(filter, name, c, toggle_light) {
+      // Indicate we're waiting for a connection by turning on the red LED
+      if (_toggle_light) { setLEDs(On, Off); }
+    };
+
+  ~vrpn_Xkeys_v2() { if (_toggle_light) setLEDs(Off, Off); };
+
+protected:
+  virtual void setLEDs(LED_STATE red, LED_STATE green);
+};
+
+class vrpn_Xkeys_Desktop: protected vrpn_Xkeys_v1, public vrpn_Button_Filter {
 public:
   vrpn_Xkeys_Desktop(const char *name, vrpn_Connection *c = 0);
   virtual ~vrpn_Xkeys_Desktop() {};
@@ -78,7 +118,7 @@ protected:
   void decodePacket(size_t bytes, vrpn_uint8 *buffer);
 };
 
-class vrpn_Xkeys_Pro: protected vrpn_Xkeys, public vrpn_Button_Filter {
+class vrpn_Xkeys_Pro: protected vrpn_Xkeys_v1, public vrpn_Button_Filter {
 public:
   vrpn_Xkeys_Pro(const char *name, vrpn_Connection *c = 0);
   virtual ~vrpn_Xkeys_Pro() {};
@@ -95,7 +135,7 @@ protected:
 };
 
 // Original unit with 58 buttons
-class vrpn_Xkeys_Joystick: protected vrpn_Xkeys, public vrpn_Analog, public vrpn_Button_Filter, public vrpn_Dial {
+class vrpn_Xkeys_Joystick: protected vrpn_Xkeys_v1, public vrpn_Analog, public vrpn_Button_Filter, public vrpn_Dial {
 public:
   vrpn_Xkeys_Joystick(const char *name, vrpn_Connection *c = 0);
   virtual ~vrpn_Xkeys_Joystick() {};
@@ -118,7 +158,7 @@ protected:
 };
 
 // 12-button version of the above unit.
-class vrpn_Xkeys_Joystick12 : protected vrpn_Xkeys, public vrpn_Analog, public vrpn_Button_Filter, public vrpn_Dial {
+class vrpn_Xkeys_Joystick12 : protected vrpn_Xkeys_v2, public vrpn_Analog, public vrpn_Button_Filter, public vrpn_Dial {
 public:
 	vrpn_Xkeys_Joystick12(const char *name, vrpn_Connection *c = 0);
 	virtual ~vrpn_Xkeys_Joystick12() {};
@@ -141,7 +181,7 @@ protected:
 };
 
 // Original unit with 58 buttons.
-class vrpn_Xkeys_Jog_And_Shuttle: protected vrpn_Xkeys, public vrpn_Analog, public vrpn_Button_Filter, public vrpn_Dial {
+class vrpn_Xkeys_Jog_And_Shuttle: protected vrpn_Xkeys_v1, public vrpn_Analog, public vrpn_Button_Filter, public vrpn_Dial {
 public:
   vrpn_Xkeys_Jog_And_Shuttle(const char *name, vrpn_Connection *c = 0);
   virtual ~vrpn_Xkeys_Jog_And_Shuttle() {};
@@ -163,7 +203,7 @@ protected:
 };
 
 // 12-button version of the above unit.
-class vrpn_Xkeys_Jog_And_Shuttle12 : protected vrpn_Xkeys, public vrpn_Analog, public vrpn_Button_Filter, public vrpn_Dial {
+class vrpn_Xkeys_Jog_And_Shuttle12 : protected vrpn_Xkeys_v2, public vrpn_Analog, public vrpn_Button_Filter, public vrpn_Dial {
 public:
 	vrpn_Xkeys_Jog_And_Shuttle12(const char *name, vrpn_Connection *c = 0);
 	virtual ~vrpn_Xkeys_Jog_And_Shuttle12() {};
@@ -184,7 +224,7 @@ protected:
 	vrpn_uint8 _lastDial;
 };
 
-class vrpn_Xkeys_XK3 : protected vrpn_Xkeys, public vrpn_Button_Filter {
+class vrpn_Xkeys_XK3 : protected vrpn_Xkeys_v1, public vrpn_Button_Filter {
 public:
   vrpn_Xkeys_XK3(const char *name, vrpn_Connection *c = 0);
   virtual ~vrpn_Xkeys_XK3() {};
