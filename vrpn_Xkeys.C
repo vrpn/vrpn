@@ -17,6 +17,7 @@ static const vrpn_uint16 XKEYS_PRO = 0x0291;
 static const vrpn_uint16 XKEYS_JOYSTICK = 0x0251;
 static const vrpn_uint16 XKEYS_XK3 = 0x042C;
 static const vrpn_uint16 XKEYS_JOG_AND_SHUTTLE12 = 0x0426;
+static const vrpn_uint16 XKEYS_JOG_AND_SHUTTLE68 = 0x045a;
 static const vrpn_uint16 XKEYS_JOYSTICK12 = 0x0429;
 
 vrpn_Xkeys::vrpn_Xkeys(vrpn_HidAcceptor *filter, const char *name, vrpn_Connection *c, bool toggle_light)
@@ -491,6 +492,138 @@ void vrpn_Xkeys_Jog_And_Shuttle12::decodePacket(size_t bytes, vrpn_uint8 *buffer
 	}
 }
 
+vrpn_Xkeys_Jog_And_Shuttle68::vrpn_Xkeys_Jog_And_Shuttle68(const char *name, vrpn_Connection *c)
+	: vrpn_Xkeys_v2(_filter = new vrpn_HidProductAcceptor(XKEYS_VENDOR, XKEYS_JOG_AND_SHUTTLE68), name, c)
+	, vrpn_Analog(name, c)
+	, vrpn_Button_Filter(name, c)
+	, vrpn_Dial(name, c)
+{
+	vrpn_Analog::num_channel = 2;
+	vrpn_Dial::num_dials = 1;
+	vrpn_Button::num_buttons = 69;  // Don't forget button 0
+
+	// Initialize the state of all the analogs, buttons, and dials
+	_lastDial = 0;
+	memset(buttons, 0, sizeof(buttons));
+	memset(lastbuttons, 0, sizeof(lastbuttons));
+	memset(channel, 0, sizeof(channel));
+	memset(last, 0, sizeof(last));
+}
+
+void vrpn_Xkeys_Jog_And_Shuttle68::mainloop()
+{
+	update();
+	server_mainloop();
+	vrpn_gettimeofday(&_timestamp, NULL);
+	report_changes();
+
+	vrpn_Analog::server_mainloop();
+	vrpn_Button::server_mainloop();
+	vrpn_Dial::server_mainloop();
+}
+
+void vrpn_Xkeys_Jog_And_Shuttle68::report(vrpn_uint32 class_of_service)
+{
+	vrpn_Analog::timestamp = _timestamp;
+	vrpn_Button::timestamp = _timestamp;
+	vrpn_Dial::timestamp = _timestamp;
+
+	vrpn_Analog::report(class_of_service);
+	vrpn_Button::report_changes();
+	vrpn_Dial::report();
+}
+
+void vrpn_Xkeys_Jog_And_Shuttle68::report_changes(vrpn_uint32 class_of_service)
+{
+	vrpn_Analog::timestamp = _timestamp;
+	vrpn_Button::timestamp = _timestamp;
+	vrpn_Dial::timestamp = _timestamp;
+
+	vrpn_Analog::report_changes(class_of_service);
+	vrpn_Button::report_changes();
+	vrpn_Dial::report_changes();
+}
+
+void vrpn_Xkeys_Jog_And_Shuttle68::decodePacket(size_t bytes, vrpn_uint8 *buffer)
+{
+	// Print the report so we can figure out what is going on.
+	for (size_t i = 0; i < bytes; i++) {
+	printf("%02x ", buffer[i]);
+	}
+	printf("\n");
+	return;
+
+	// The full report is 32 bytes long.  Byte 0 is always 0, as are
+	// bytes 12-31.  Bytes 8-11 seem to be some sort of time code.
+	// Buttons: The reset button is the low-order bit in byte 1.
+	//   The first column are the 3 low-order bits in byte 2
+	//   The next three columns are the low-order bits in bytes 3-5.
+	// Jog: Shows up as various high-order bits in the button bytes
+	//      but also as a signed number in byte 7 that ranges from
+	//      0 through 7 for positive rotation and down to F9 for
+	//      negative.
+	// Shuttle: Shows up as high-order bits in the button bytes,
+	//      but also as a signed number in byte 6, which goes to
+	//      1 briefly as you jog right and to FF briefly as you
+	//      jog left; then back to 0.
+	
+	if (bytes % 32 == 0) {
+
+		// Loop through the reports in case we got multiple.
+		size_t i;
+		for (i = 0; i < bytes / 32; i++) {
+			vrpn_uint8 *report = buffer + (i * 32);
+
+			// Check for zero in the bytes that should be.
+			if (report[0] != 0) {
+				// Garbled report; skip it
+				fprintf(stderr, "vrpn_Xkeys: Found a corrupted report; # total bytes = %u\n", static_cast<unsigned>(bytes));
+				continue;
+			}
+			for (size_t j = 12; j < 32; j++) {
+				if (report[j] != 0) {
+					// Garbled report; skip it
+					fprintf(stderr, "vrpn_Xkeys: Found a corrupted report; # total bytes = %u\n", static_cast<unsigned>(bytes));
+					continue;
+				}
+			}
+
+			// Decode the "programming switch"
+			buttons[0] = (report[1] & 0x01) != 0;
+
+			// Decode the other buttons in column-major order
+			for (int btn = 0; btn < 12; btn++) {
+				vrpn_uint8 *offset, mask;
+
+				offset = report + btn / 3 + 2;
+				mask = static_cast<vrpn_uint8>(1 << (btn % 3));
+
+				buttons[btn + 1] = (*offset & mask) != 0;
+			}
+
+			// Report jog dial as analog and dial
+			// Report shuttle knob as analog
+
+			// Do the unsigned/signed conversion at the last minute so the
+			// signed values work properly.  The dial turns 1/10th of the
+			// way around for each tick.
+			dials[0] = static_cast<vrpn_int8>(report[6]) / 10.0;
+
+			// Double cast on channel 0 ensures negative values stay negative.
+			// Channel 1 sums the revolutions of the dial.
+			channel[0] = static_cast<float>(static_cast<signed char>(report[7])) / 7.0;
+			channel[1] += dials[0];
+
+			// Store the current dial position for the next delta
+			_lastDial = report[1];
+		}
+	}
+	else {
+		fprintf(stderr, "vrpn_Xkeys_Jog_And_Shuttle68::decodePacket(): Unrecognized packet length (%u)\n", static_cast<unsigned>(bytes));
+		return;
+	}
+}
+
 vrpn_Xkeys_Joystick::vrpn_Xkeys_Joystick(const char *name, vrpn_Connection *c)
   : vrpn_Xkeys_v1(_filter = new vrpn_HidProductAcceptor(XKEYS_VENDOR, XKEYS_JOYSTICK), name, c)
   , vrpn_Analog(name, c)
@@ -902,7 +1035,7 @@ void vrpn_Xkeys_Pro::decodePacket(size_t bytes, vrpn_uint8 *buffer)
 }
 
 vrpn_Xkeys_XK3::vrpn_Xkeys_XK3(const char *name, vrpn_Connection *c)
-  : vrpn_Xkeys_v1(_filter = new vrpn_HidProductAcceptor(XKEYS_VENDOR, XKEYS_XK3), name, c, false)
+  : vrpn_Xkeys_noLEDs(_filter = new vrpn_HidProductAcceptor(XKEYS_VENDOR, XKEYS_XK3), name, c, false)
   , vrpn_Button_Filter(name, c)
 {
   // 3 buttons
