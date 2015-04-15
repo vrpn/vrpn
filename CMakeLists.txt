@@ -297,6 +297,7 @@ endif()
 
 # Passing just the major version works with as desired multi-python-capable find module such
 # as in latest CMake (2.8.9)
+set(Python_ADDITIONAL_VERSIONS 3.4)
 find_package(PythonLibs ${_VRPN_PYTHON_VERSIONSEARCH})
 if(PYTHONLIBS_FOUND)
 	if(PYTHONLIBS_VERSION_STRING)
