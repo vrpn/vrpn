@@ -149,10 +149,10 @@ void vrpn_Tracker_Colibri::get_report()
                     acc[2] = data[i]->a[2];
 
                     // Delta Orientation of the sensor
-                    const float x = data[i]->g[0] * vel_quat_dt;
-                    const float y = data[i]->g[1] * vel_quat_dt;
-                    const float z = data[i]->g[2] * vel_quat_dt;
-                    const float angle = sqrt(x*x + y*y + z*z);  //module of angular velocity
+                    const vrpn_float64 x = data[i]->g[0] * vel_quat_dt;
+                    const vrpn_float64 y = data[i]->g[1] * vel_quat_dt;
+                    const vrpn_float64 z = data[i]->g[2] * vel_quat_dt;
+                    const vrpn_float64 angle = sqrt(x*x + y*y + z*z);  //module of angular velocity
                     if (angle > 0.0) {
                         vel_quat[0] = x*sin(angle/2.0f)/angle;
                         vel_quat[1] = y*sin(angle/2.0f)/angle;

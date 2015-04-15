@@ -855,15 +855,14 @@ endif()
 ###
 # Trivisio ColibriAPI
 ###
-option(VRPN_USE_COLIBRIAPI
+find_package(ColibriApi)
+option_requires(VRPN_USE_COLIBRIAPI
 	"Build with Trivisio ColibriAPI support"
-	OFF)
+	OFF_BY_DEFAULT
+	COLIBRIAPI_FOUND)
 if(VRPN_USE_COLIBRIAPI)
-	set(TRIVISIO_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/trivisio" CACHE PATH "location of ColibriAPI headers")
-	set(TRIVISIO_LIBRARY_DIR "${CMAKE_SOURCE_DIR}/trivisio" CACHE PATH "location of ColibriAPI libraries")
-	include_directories(${TRIVISIO_INCLUDE_DIR})
-	link_directories(${TRIVISIO_LIBRARY_DIR})
-	list(APPEND SERVER_EXTRA_LIBS colibri-api)
+	include_directories(${COLIBRIAPI_INCLUDE_DIR})
+	list(APPEND SERVER_EXTRA_LIBS ${COLIBRIAPI_LIBRARIES})
 endif()
 
 ###
