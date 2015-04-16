@@ -16,6 +16,7 @@
 #include <GL/glut.h>
 #include <cstring>
 #include <vector>
+#include <cstdlib>
 
 #include <vrpn_Tracker.h>        // for vrpn_TRACKERACCCB, etc
 #include <quat/quat.h>
