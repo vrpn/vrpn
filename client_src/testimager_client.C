@@ -34,7 +34,7 @@ int			g_Xdim, g_Ydim;	//< Dimensions in X and Y
 bool g_ready_for_region = false;	//< Everything set up to handle a region?
 unsigned char *g_image = NULL;		//< Pointer to the storage for the image
 bool g_already_posted = false;		//< Posted redisplay since the last display?
-bool g_autoscale = false;               //< Should we auto-scale the brightness and contrast?
+bool g_autoscale = false;           //< Should we auto-scale the brightness and contrast?
 
 //----------------------------------------------------------------------------
 // Imager callback handlers.
