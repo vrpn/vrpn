@@ -17,8 +17,8 @@
 #include <GLUT/glut.h>
 #include <OpenGL/OpenGL.h>
 #else
-#include <GL/gl.h>                      // for glClear, glClearColor, etc
 #include <GL/glut.h>                    // for glutCreateWindow, etc   // IWYU pragma: keep
+#include <GL/gl.h>                      // for glClear, glClearColor, etc
 #endif
 #include <cstring>
 #include <vector>
