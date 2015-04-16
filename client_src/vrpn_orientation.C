@@ -58,18 +58,11 @@ void display(void)
 		glTranslated(0., -20*i, 0);
 		if(withCube) {
 			glPushMatrix();
-			{
-				float axisx=0., axisy=0., axisz=1., angle=0.;
-				float len = sqrt(data->quat[0]*data->quat[0] + data->quat[1]*data->quat[1] + data->quat[2]*data->quat[2]);
-				if (len > 1.e-4f) {
-					axisx = data->quat[0]/len;
-					axisy = data->quat[1]/len;
-					axisz = data->quat[2]/len;
-					angle =  2.0 * acos(data->quat[3]);
-					if (angle > 1.e-4f) // Avoid flickering due to OpenGL small rotation bug
-						glRotated(-angle*180/Q_PI, axisx, axisy, axisz);
-				}
-			}
+            {
+                qogl_matrix_type matrix;
+                q_to_ogl_matrix(matrix, data->quat);
+                glMultMatrixd(matrix);
+            }
 
 			float s = 3.;
 			float w = 3.0 * s;
