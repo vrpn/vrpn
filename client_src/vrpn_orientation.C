@@ -13,7 +13,13 @@
 #include <iomanip>
 #include <sstream>
 #include <cmath>
-#include <GL/glut.h>
+#ifdef __APPLE__
+#include <GLUT/glut.h>
+#include <OpenGL/OpenGL.h>
+#else
+#include <GL/gl.h>                      // for glClear, glClearColor, etc
+#include <GL/glut.h>                    // for glutCreateWindow, etc   // IWYU pragma: keep
+#endif
 #include <cstring>
 #include <vector>
 #include <cstdlib>
