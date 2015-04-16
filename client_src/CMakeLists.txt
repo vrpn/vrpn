@@ -80,13 +80,18 @@ if(VRPN_BUILD_CLIENTS)
 		endforeach()
 
 		if(GLUT_FOUND AND OPENGL_FOUND)
+
+			option(VRPN_GLUT_IS_STATIC_FREEGLUT
+				"Is the GLUT used a static build of FreeGLUT?"
+				NO)
+			mark_as_advanced(VRPN_GLUT_IS_STATIC_FREEGLUT)
+
 			include_directories(${GLUT_INCLUDE_DIR} ${OPENGL_INCLUDE_DIR})
 			add_executable(testimager_client testimager_client.C)
 			target_link_libraries(testimager_client
 				${VRPN_CLIENT_LIBRARY}
 				${GLUT_glut_LIBRARY}
 				${OPENGL_LIBRARIES})
-
 			set_target_properties(testimager_client PROPERTIES FOLDER Tests)
 
 			if(VRPN_INSTALL)
@@ -98,10 +103,7 @@ if(VRPN_BUILD_CLIENTS)
 					COMPONENT
 					tests)
 			endif()
-			option(VRPN_GLUT_IS_STATIC_FREEGLUT
-				"Is the GLUT used for the imaging test client a static build of FreeGLUT?"
-				NO)
-			mark_as_advanced(VRPN_GLUT_IS_STATIC_FREEGLUT)
+
 			if(VRPN_GLUT_IS_STATIC_FREEGLUT)
 				set_property(TARGET
 					testimager_client
@@ -109,6 +111,33 @@ if(VRPN_BUILD_CLIENTS)
 					COMPILE_DEFINITIONS
 					"FREEGLUT_STATIC")
 			endif()
+
+			include_directories(${GLUT_INCLUDE_DIR} ${OPENGL_INCLUDE_DIR})
+			add_executable(vrpn_orientation vrpn_orientation.C)
+			target_link_libraries(vrpn_orientation
+				${VRPN_CLIENT_LIBRARY}
+				${GLUT_glut_LIBRARY}
+				${OPENGL_LIBRARIES})
+			set_target_properties(vrpn_orientation PROPERTIES FOLDER Clients)
+
+			if(VRPN_INSTALL)
+				install(TARGETS
+					vrpn_orientation
+					RUNTIME
+					DESTINATION
+					bin
+					COMPONENT
+					clients)
+			endif()
+
+			if(VRPN_GLUT_IS_STATIC_FREEGLUT)
+				set_property(TARGET
+					vrpn_orientation
+					PROPERTY
+					COMPILE_DEFINITIONS
+					"FREEGLUT_STATIC")
+			endif()
+
 		endif()
 
 	endif()
