@@ -63,8 +63,8 @@ find_path(COLIBRIAPI_INCLUDE_DIR
 	"${COLIBRIAPI_ROOT_DIR}"
 	PATHS
 	"${_progfiles}/ColibriAPI 1.1.20140925 (64-bit)"
-        "$ENV{HOME}"
-        "$ENV{HOME}/ColibriAPI-1.1.20140710-Linux-amd64"
+	"$ENV{HOME}"
+	"$ENV{HOME}/ColibriAPI-1.1.20140710-Linux-amd64"
 	C:/usr/local
 	/usr/local)
 
@@ -77,8 +77,8 @@ find_library(COLIBRIAPI_LIBRARY
 	"${COLIBRIAPI_ROOT_DIR}"
 	PATHS
 	"${_progfiles}/ColibriAPI 1.1.20140925 (64-bit)"
-        "$ENV{HOME}"
-        "$ENV{HOME}/ColibriAPI-1.1.20140710-Linux-amd64"
+	"$ENV{HOME}"
+	"$ENV{HOME}/ColibriAPI-1.1.20140710-Linux-amd64"
 	C:/usr/local
 	/usr/local)
 
