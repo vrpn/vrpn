@@ -1537,3 +1537,117 @@ bool vrpn_test_threads_and_semaphores(void)
 
     return true;
 }
+
+bool vrpn_test_pack_unpack(void)
+{
+    // Get a buffer to use that is large enough to test all of the routines.
+    vrpn_float64 dbuffer[256];
+    vrpn_int32 buflen;
+
+    vrpn_float64 in_float64 = 42.1;
+    vrpn_int32 in_int32 = 17;
+    vrpn_uint16 in_uint16 = 397;
+    vrpn_uint8 in_uint8 = 1;
+
+    vrpn_float64 out_float64;
+    vrpn_int32 out_int32;
+    vrpn_uint16 out_uint16;
+    vrpn_uint8 out_uint8;
+
+    // Test packing using little-endian routines.
+    // IMPORTANT: Do these from large to small to get good alignment.
+    char *bufptr = (char *)dbuffer;
+    buflen = sizeof(dbuffer);
+    if (vrpn_buffer_to_little_endian(&bufptr, &buflen, in_float64) != 0) {
+        fprintf(stderr, "vrpn_test_pack_unpack(): Could not buffer little endian\n");
+        return false;
+    }
+    if (vrpn_buffer_to_little_endian(&bufptr, &buflen, in_int32) != 0) {
+        fprintf(stderr, "vrpn_test_pack_unpack(): Could not buffer little endian\n");
+        return false;
+    }
+    if (vrpn_buffer_to_little_endian(&bufptr, &buflen, in_uint16) != 0) {
+        fprintf(stderr, "vrpn_test_pack_unpack(): Could not buffer little endian\n");
+        return false;
+    }
+    if (vrpn_buffer_to_little_endian(&bufptr, &buflen, in_uint8) != 0) {
+        fprintf(stderr, "vrpn_test_pack_unpack(): Could not buffer little endian\n");
+        return false;
+    }
+
+    // Test unpacking using little-endian routines.
+    bufptr = (char *)dbuffer;
+    if (in_float64 != (out_float64 = vrpn_unbuffer_from_little_endian<vrpn_float64>(bufptr))) {
+        fprintf(stderr, "vrpn_test_pack_unpack(): Could not unbuffer little endian\n");
+        return false;
+    }
+    if (in_int32 != (out_int32 = vrpn_unbuffer_from_little_endian<vrpn_int32>(bufptr))) {
+        fprintf(stderr, "vrpn_test_pack_unpack(): Could not unbuffer little endian\n");
+        return false;
+    }
+    if (in_uint16 != (out_uint16 = vrpn_unbuffer_from_little_endian<vrpn_uint16>(bufptr))) {
+        fprintf(stderr, "vrpn_test_pack_unpack(): Could not unbuffer little endian\n");
+        return false;
+    }
+    if (in_uint8 != (out_uint8 = vrpn_unbuffer_from_little_endian<vrpn_uint8>(bufptr))) {
+        fprintf(stderr, "vrpn_test_pack_unpack(): Could not unbuffer little endian\n");
+        return false;
+    }
+
+    // Test packing using big-endian routines.
+    bufptr = (char *)dbuffer;
+    buflen = sizeof(dbuffer);
+    if (vrpn_buffer(&bufptr, &buflen, in_float64) != 0) {
+        fprintf(stderr, "vrpn_test_pack_unpack(): Could not buffer big endian\n");
+        return false;
+    }
+    if (vrpn_buffer(&bufptr, &buflen, in_int32) != 0) {
+        fprintf(stderr, "vrpn_test_pack_unpack(): Could not buffer big endian\n");
+        return false;
+    }
+    if (vrpn_buffer(&bufptr, &buflen, in_uint16) != 0) {
+        fprintf(stderr, "vrpn_test_pack_unpack(): Could not buffer big endian\n");
+        return false;
+    }
+    if (vrpn_buffer(&bufptr, &buflen, in_uint8) != 0) {
+        fprintf(stderr, "vrpn_test_pack_unpack(): Could not buffer big endian\n");
+        return false;
+    }
+
+    // Test unpacking using big-endian routines.
+    bufptr = (char *)dbuffer;
+    if (in_float64 != (out_float64 = vrpn_unbuffer<vrpn_float64>(bufptr))) {
+        fprintf(stderr, "vrpn_test_pack_unpack(): Could not unbuffer big endian\n");
+        return false;
+    }
+    if (in_int32 != (out_int32 = vrpn_unbuffer<vrpn_int32>(bufptr))) {
+        fprintf(stderr, "vrpn_test_pack_unpack(): Could not unbuffer big endian\n");
+        return false;
+    }
+    if (in_uint16 != (out_uint16 = vrpn_unbuffer<vrpn_uint16>(bufptr))) {
+        fprintf(stderr, "vrpn_test_pack_unpack(): Could not unbuffer big endian\n");
+        return false;
+    }
+    if (in_uint8 != (out_uint8 = vrpn_unbuffer<vrpn_uint8>(bufptr))) {
+        fprintf(stderr, "vrpn_test_pack_unpack(): Could not unbuffer big endian\n");
+        return false;
+    }
+
+    // XXX Test pack/unpack of all other types.
+
+    // Test packing little-endian and unpacking big-endian; they should
+    // be different.
+    bufptr = (char *)dbuffer;
+    buflen = sizeof(dbuffer);
+    if (vrpn_buffer_to_little_endian(&bufptr, &buflen, in_float64) != 0) {
+        fprintf(stderr, "vrpn_test_pack_unpack(): Could not buffer little endian\n");
+        return false;
+    }
+    bufptr = (char *)dbuffer;
+    if (in_float64 == (out_float64 = vrpn_unbuffer<vrpn_float64>(bufptr))) {
+        fprintf(stderr, "vrpn_test_pack_unpack(): Cross-packing produced same result\n");
+        return false;
+    }
+
+    return true;
+}

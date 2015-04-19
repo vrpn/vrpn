@@ -356,7 +356,14 @@ int main (int argc, char * argv [])
 		return -1;
 	}
 
-	//---------------------------------------------------------------------
+    //---------------------------------------------------------------------
+    // test the packing and unpacking routines
+    if (!vrpn_test_pack_unpack()) {
+        fprintf(stderr, "vrpn_test_pack_unpack() failed!\n");
+        return -1;
+    }
+
+    //---------------------------------------------------------------------
 	// test the thread library
 	if (!vrpn_test_threads_and_semaphores()) {
 		fprintf(stderr, "vrpn_test_threads_and_semaphores() failed!\n");

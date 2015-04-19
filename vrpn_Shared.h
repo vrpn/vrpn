@@ -402,6 +402,49 @@ template <typename T, typename ByteT> inline T vrpn_unbuffer(ByteT *&input)
     return ntoh(value.typed);
 }
 
+/// Function template to buffer values to a buffer stored in little-
+/// endian order. Specify the type to buffer T as a template parameter.
+/// The templated buffer type ByteT will be deduced automatically.
+/// The input pointer will be advanced past the unbuffered value.
+template <typename T, typename ByteT>
+inline int vrpn_buffer_to_little_endian(ByteT **insertPt, vrpn_int32 *buflen, const T inVal)
+{
+    using namespace vrpn_byte_order;
+
+    VRPN_STATIC_ASSERT(sizeof(ByteT) == 1, SIZE_OF_BUFFER_ITEM_IS_NOT_ONE_BYTE);
+
+    if ((insertPt == NULL) || (buflen == NULL)) {
+        fprintf(stderr, "vrpn_buffer: NULL pointer\n");
+        return -1;
+    }
+
+    if (sizeof(T) > static_cast<size_t>(*buflen)) {
+        fprintf(stderr, "vrpn_buffer: buffer not large enough\n");
+        return -1;
+    }
+
+    /// Union to allow type-punning and ensure alignment
+    union {
+        typename ::vrpn_detail::remove_const<ByteT>::type bytes[sizeof(T)];
+        T typed;
+    } value;
+
+    /// Populate union in network byte order
+    value.typed = hton(inVal);
+
+    /// Swap known big-endian (aka network byte order) into little-endian
+    for (unsigned int i = 0, j = sizeof(T) - 1; i < sizeof(T); ++i, --j) {
+        (*insertPt)[i] = value.bytes[j];
+    }
+
+    /// Advance insert pointer
+    *insertPt += sizeof(T);
+    /// Decrement buffer length
+    *buflen -= sizeof(T);
+
+    return 0;
+}
+
 /// Function template to buffer values to a buffer stored in network
 /// byte order. Specify the type to buffer T as a template parameter.
 /// The templated buffer type ByteT will be deduced automatically.
@@ -611,3 +654,7 @@ protected:
 
 // Returns true if they work and false if they do not.
 extern bool vrpn_test_threads_and_semaphores(void);
+
+// Returns true if tests work and false if they do not.
+extern bool vrpn_test_pack_unpack(void);
+
