@@ -169,7 +169,7 @@ void display(void)
 				foo.width(6);
 				foo << "  Yaw: ";
 				foo.width(7);
-				float tmp = std::fmod(eul[0], 2*Q_PI);
+				float tmp = std::fmod(-eul[0], 2*Q_PI);
 				if (tmp<0)
 					tmp += 2*Q_PI;
 				foo << tmp*180/Q_PI;
@@ -183,7 +183,7 @@ void display(void)
 				foo.width(6);
 				foo << "Pitch: ";
 				foo.width(7);
-				foo << eul[1]*180/Q_PI;
+				foo << -eul[1]*180/Q_PI;
 				e2 = foo.str();
 			}
 			{
@@ -300,3 +300,4 @@ int main(int argc, char* argv[])
 
 	return 0;
 }
+
