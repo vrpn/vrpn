@@ -9,6 +9,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 #include <stdlib.h>
 #include <math.h>
+#include <quat/quat.h>
 #include "vrpn_Tracker_Colibri.h"
 
 #ifdef VRPN_USE_COLIBRIAPI
@@ -137,10 +138,11 @@ void vrpn_Tracker_Colibri::get_report()
                 // No need to fill in position, as we don't get position information
 
                 // Orientation of the sensor
-                d_quat[0] = data[i]->q[1];
-                d_quat[1] = data[i]->q[2];
-                d_quat[2] = data[i]->q[3];
-                d_quat[3] = data[i]->q[0];
+                d_quat[Q_X] = data[i]->q[1];
+                d_quat[Q_Y] = data[i]->q[2];
+                d_quat[Q_Z] = data[i]->q[3];
+                d_quat[Q_W] = data[i]->q[0];
+				q_conjugate(d_quat, d_quat); // VRPN defines a right-handed coordinate system
 
                 if (report_a_w) {
                     // Acceleration of the sensor
@@ -154,13 +156,13 @@ void vrpn_Tracker_Colibri::get_report()
                     const vrpn_float64 z = data[i]->g[2] * vel_quat_dt;
                     const vrpn_float64 angle = sqrt(x*x + y*y + z*z);  //module of angular velocity
                     if (angle > 0.0) {
-                        vel_quat[0] = x*sin(angle/2.0f)/angle;
-                        vel_quat[1] = y*sin(angle/2.0f)/angle;
-                        vel_quat[2] = z*sin(angle/2.0f)/angle;
-                        vel_quat[3] = cos(angle/2.0f);
+                        vel_quat[Q_X] = x*sin(angle/2.0f)/angle;
+                        vel_quat[Q_Y] = y*sin(angle/2.0f)/angle;
+                        vel_quat[Q_Z] = z*sin(angle/2.0f)/angle;
+                        vel_quat[Q_W] = cos(angle/2.0f);
                     } else { //to avoid illegal expressions
-                        vel_quat[0] = vel_quat[1] = vel_quat[2] = 0.0f;
-                        vel_quat[3] = 1.0f;
+                        vel_quat[Q_X] = vel_quat[Q_Y] = vel_quat[Q_Z] = 0.0f;
+                        vel_quat[Q_W] = 1.0f;
                     }
                 }
 
@@ -193,3 +195,4 @@ void vrpn_Tracker_Colibri::send_report()
 }
 
 #endif //VRPN_USE_COLIBRIAPI
+
