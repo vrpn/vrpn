@@ -20,8 +20,8 @@
 #include "vrpn_MessageMacros.h"         // for VRPN_MSG_INFO, VRPN_MSG_WARNING, VRPN_MSG_ERROR
 
 #define	INCHES_TO_METERS	(2.54/100.0)
-const bool DEBUG = false;  // General Debug Messages
-const bool DEBUGA = false; // Only errors
+static const bool VRPN_LIBERTY_DEBUG = false;  // General Debug Messages
+static const bool VRPN_LIBERTY_DEBUGA = false; // Only errors
 
 vrpn_Tracker_Liberty::vrpn_Tracker_Liberty(const char *name, vrpn_Connection *c, 
 		      const char *port, long baud, int enable_filtering, int numstations,
@@ -48,7 +48,7 @@ vrpn_Tracker_Liberty::vrpn_Tracker_Liberty(const char *name, vrpn_Connection *c,
 		stylus_buttons[i] = NULL;
 	}
 
-	if (DEBUG) fprintf(stderr,"[DEBUG] Constructed Liberty Object\n");
+	if (VRPN_LIBERTY_DEBUG) fprintf(stderr,"[DEBUG] Constructed Liberty Object\n");
 }
 
 vrpn_Tracker_Liberty::~vrpn_Tracker_Liberty()
@@ -87,7 +87,7 @@ int vrpn_Tracker_Liberty::set_sensor_output_format(int sensor)
      sprintf(outstring, "O%d,2,7%s%s%s,0\015", sensor+1, timestring,
 	buttonstring, analogstring);
  
-     if (DEBUG)     fprintf(stderr,"[DEBUG]: %s \n",outstring);
+     if (VRPN_LIBERTY_DEBUG)     fprintf(stderr,"[DEBUG]: %s \n",outstring);
     if (vrpn_write_characters(serial_fd, (const unsigned char *)outstring,
 	    strlen(outstring)) == (int)strlen(outstring)) {
 		vrpn_SleepMsecs(50);	// Sleep for a bit to let command run
@@ -283,7 +283,7 @@ printf("LIBERTY LATUS STATUS (whoami):\n%s\n\n",statusmsg);
    // Liberty manual.
 
    if (do_filter) {
-     if (DEBUG) fprintf(stderr,"[DEBUG]: Enabling filtering\n");
+     if (VRPN_LIBERTY_DEBUG) fprintf(stderr,"[DEBUG]: Enabling filtering\n");
 
      if (vrpn_write_characters(serial_fd,
 	     (const unsigned char *)"X0.2,0.2,0.8,0.8\015", 17) == 17) {
@@ -302,7 +302,7 @@ printf("LIBERTY LATUS STATUS (whoami):\n%s\n\n",statusmsg);
 	return;
      }
    } else {
-     if (DEBUG) fprintf(stderr,"[DEBUG]: Disabling filtering\n");
+     if (VRPN_LIBERTY_DEBUG) fprintf(stderr,"[DEBUG]: Disabling filtering\n");
 
      if (vrpn_write_characters(serial_fd,
 	     (const unsigned char *)"X0,1,0,0\015", 9) == 9) {
@@ -456,7 +456,7 @@ int vrpn_Tracker_Liberty::get_report(void)
      if (got_single_sync_char != 1) {
        ret = vrpn_read_available_characters(serial_fd, buffer, 1);
        if (ret != 1) {
-	 //if (DEBUG) fprintf(stderr,"[DEBUG]: Missed First Sync Char, ret= %i\n",ret);
+	 //if (VRPN_LIBERTY_DEBUG) fprintf(stderr,"[DEBUG]: Missed First Sync Char, ret= %i\n",ret);
 	 return 0;
        }
      }
@@ -468,7 +468,7 @@ int vrpn_Tracker_Liberty::get_report(void)
        got_single_sync_char = 0;
      }
      else if (ret != -1) {
-       if (DEBUG) fprintf(stderr,"[DEBUG]: Missed Second Sync Char\n");
+       if (VRPN_LIBERTY_DEBUG) fprintf(stderr,"[DEBUG]: Missed Second Sync Char\n");
        got_single_sync_char = 1;
        return 0;
      }
@@ -489,11 +489,11 @@ int vrpn_Tracker_Liberty::get_report(void)
 		"got '%c%c')", buffer[0], buffer[1]);
 	VRPN_MSG_INFO(errmsg);
 	vrpn_flush_input_buffer(serial_fd);
-	if (DEBUG) fprintf(stderr,"[DEBUGA]: Getting Report - Not LY or PA or LU, Got Character %c %c \n",buffer[0],buffer[1]);
+	if (VRPN_LIBERTY_DEBUG) fprintf(stderr,"[DEBUGA]: Getting Report - Not LY or PA or LU, Got Character %c %c \n",buffer[0],buffer[1]);
       	return 0;
       }
 
-        if (DEBUG) fprintf(stderr,"[DEBUG]: Getting Report - Got LY or PA or LU\n");
+        if (VRPN_LIBERTY_DEBUG) fprintf(stderr,"[DEBUG]: Getting Report - Got LY or PA or LU\n");
 
       // Got the first character of a report -- go into AWAITING_STATION mode
       // and record that we got one character at this time. The next
@@ -520,7 +520,7 @@ int vrpn_Tracker_Liberty::get_report(void)
       if (vrpn_read_available_characters(serial_fd, &buffer[bufcount], 1) != 1) {
       	return 0;
       }
-            if (DEBUG) fprintf(stderr,"[DEBUG]: Awaiting Station - Got Station (%i) \n",buffer[2]);
+            if (VRPN_LIBERTY_DEBUG) fprintf(stderr,"[DEBUG]: Awaiting Station - Got Station (%i) \n",buffer[2]);
 
       d_sensor = buffer[2] - 1;	// Convert ASCII 1 to sensor 0 and so on.
       if ( (d_sensor < 0) || (d_sensor >= num_stations) ) {
@@ -554,14 +554,14 @@ int vrpn_Tracker_Liberty::get_report(void)
    ret = vrpn_read_available_characters(serial_fd, &buffer[bufcount],
 		REPORT_LEN-bufcount);
    if (ret == -1) {
-	if (DEBUGA) fprintf(stderr,"[DEBUG]: Error Reading Report\n");
+	if (VRPN_LIBERTY_DEBUGA) fprintf(stderr,"[DEBUG]: Error Reading Report\n");
 	VRPN_MSG_ERROR("Error reading report");
 	status = vrpn_TRACKER_FAIL;
 	return 0;
    }
    bufcount += ret;
    if (bufcount < REPORT_LEN) {	// Not done -- go back for more
-     if (DEBUG)	fprintf(stderr,"[DEBUG]: Don't have full report (%i of %i)\n",bufcount,REPORT_LEN);
+     if (VRPN_LIBERTY_DEBUG)	fprintf(stderr,"[DEBUG]: Don't have full report (%i of %i)\n",bufcount,REPORT_LEN);
 	return 0;
  }
 
@@ -582,7 +582,7 @@ int vrpn_Tracker_Liberty::get_report(void)
    && 
    ((buffer[0] != 'L') || (buffer[1] != 'U'))
    ) {
-     if (DEBUGA)	fprintf(stderr,"[DEBUG]: Don't have LY or PA or 'LU' at beginning");
+     if (VRPN_LIBERTY_DEBUGA)	fprintf(stderr,"[DEBUG]: Don't have LY or PA or 'LU' at beginning");
 	   status = vrpn_TRACKER_SYNCING;
 	   VRPN_MSG_INFO("Not 'LY' or 'PA' or 'LU' in record, re-syncing");
 	   vrpn_flush_input_buffer(serial_fd);
@@ -593,7 +593,7 @@ int vrpn_Tracker_Liberty::get_report(void)
 	   status = vrpn_TRACKER_SYNCING;
 	   VRPN_MSG_INFO("No space character at end of report, re-syncing\n");
 	   vrpn_flush_input_buffer(serial_fd);
-	   if (DEBUGA) fprintf(stderr,"[DEBUG]: Don't have space at end of report, got (%c) sensor %i\n",buffer[bufcount-1], d_sensor);
+	   if (VRPN_LIBERTY_DEBUGA) fprintf(stderr,"[DEBUG]: Don't have space at end of report, got (%c) sensor %i\n",buffer[bufcount-1], d_sensor);
 
 	   return 0;
    }
@@ -601,7 +601,7 @@ int vrpn_Tracker_Liberty::get_report(void)
    //Decode the error status and output a debug message
    if (buffer[4] != ' ') {
      // An error has been flagged
-     if (DEBUGA) fprintf(stderr,"[DEBUG]:Error Flag %i\n",buffer[4]);
+     if (VRPN_LIBERTY_DEBUGA) fprintf(stderr,"[DEBUG]:Error Flag %i\n",buffer[4]);
    }
 
    //--------------------------------------------------------------------
