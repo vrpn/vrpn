@@ -207,9 +207,8 @@ list(APPEND EXTRA_LIBS quat)
 
 ###
 # Threading (not on win32)
-# Remove the test for Android when threads are fixed in the Android CMake.
 ###
-if(NOT WIN32 AND NOT BUILD_WITH_ANDROID_NDK)
+if(NOT WIN32)
 	find_package(Threads REQUIRED)
 	list(APPEND EXTRA_LIBS ${CMAKE_THREAD_LIBS_INIT})
 endif()
