@@ -24,7 +24,7 @@ VRPN_SUPPRESS_EMPTY_OBJECT_WARNING()
 #include <libusb.h>                     // for libusb_bulk_transfer, etc
 
 #define	INCHES_TO_METERS	(2.54f/100.0f)
-const bool METRIC_UNITS = true;
+static const bool VRPN_LIBERTYHS_METRIC_UNITS = true;
 static const bool VRPN_LIBERTYHS_DEBUG = false;  // General Debug Messages
 static const bool VRPN_LIBERTYHS_DEBUGA = false; // Only errors
 
@@ -401,7 +401,7 @@ void vrpn_Tracker_LibertyHS::reset()
    vrpn_SleepMsecs(1000.0);
 
    // Set METRIC units
-   if (METRIC_UNITS) {
+   if (VRPN_LIBERTYHS_METRIC_UNITS) {
         sprintf(outstring2, "U1\r");
         if (write_usb_data(outstring2, strlen(outstring2)) == (int)strlen(outstring2)) {
               fprintf(stderr, "  LibertyHS set to metric units\n");
@@ -620,7 +620,7 @@ int vrpn_Tracker_LibertyHS::get_report(void)
 
      // When copying the positions, convert from inches to meters, since the
      // LibertyHS reports in inches and VRPN reports in meters.
-     float convFactor = METRIC_UNITS ? 1.0f : INCHES_TO_METERS;
+     float convFactor = VRPN_LIBERTYHS_METRIC_UNITS ? 1.0f : INCHES_TO_METERS;
      pos[0] = vrpn_unbuffer_from_little_endian<vrpn_float32>(bufptr) * convFactor;
      pos[1] = vrpn_unbuffer_from_little_endian<vrpn_float32>(bufptr) * convFactor;
      pos[2] = vrpn_unbuffer_from_little_endian<vrpn_float32>(bufptr) * convFactor;
