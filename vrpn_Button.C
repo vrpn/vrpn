@@ -4,7 +4,8 @@
 #endif
 #include <string.h> // for strncpy
 
-#if defined(linux) && !defined(VRPN_CLIENT_ONLY)
+#if defined(linux) && !defined(VRPN_CLIENT_ONLY) && !defined(__ANDROID__)
+#define VRPN_USE_LINUX_PARALLEL_SUPPORT
 #include <linux/lp.h>  // for LPGETSTATUS
 #include <sys/ioctl.h> // for ioctl
 #endif
@@ -541,7 +542,7 @@ vrpn_Button_Parallel::vrpn_Button_Parallel(const char *name, vrpn_Connection *c,
                                            int portno, unsigned porthex)
     : vrpn_Button_Filter(name, c)
 {
-#ifdef linux
+#if defined(VRPN_USE_LINUX_PARALLEL_SUPPORT)
     const char *portname;
     switch (portno) {
     case 1:
@@ -572,7 +573,7 @@ vrpn_Button_Parallel::vrpn_Button_Parallel(const char *name, vrpn_Connection *c,
         status = BUTTON_FAIL;
         return;
     }
-#elif _WIN32
+#elif defined(_WIN32)
     // if on NT we need a device driver to do direct reads
     // from the parallel port
     if (!openGiveIO()) {
@@ -612,7 +613,7 @@ vrpn_Button_Parallel::vrpn_Button_Parallel(const char *name, vrpn_Connection *c,
     return;
 #endif
 
-#if defined(linux) || defined(_WIN32)
+#if defined(VRPN_USE_LINUX_PARALLEL_SUPPORT) || defined(_WIN32)
 // Set the INIT line on the device to provide power to the python
 //  update: don't need this for builtin LPT1 on DELLs, but do need it
 //    for warp9 PCI parallel port. Added next lines.  BCE Nov07.00
@@ -641,7 +642,7 @@ vrpn_Button_Parallel::vrpn_Button_Parallel(const char *name, vrpn_Connection *c,
 
 vrpn_Button_Parallel::~vrpn_Button_Parallel()
 {
-#ifdef linux
+#ifdef VRPN_USE_LINUX_PARALLEL_SUPPORT
     if (port >= 0) {
         close(port);
     }
@@ -697,34 +698,34 @@ void vrpn_Button_Python::read(void)
     }
 
 // Read from the status register, read 3 times to debounce noise.
-#ifdef linux
+#if defined(VRPN_USE_LINUX_PARALLEL_SUPPORT)
     for (i = 0; i < debounce_count; i++)
         if (ioctl(port, LPGETSTATUS, &status_register[i]) == -1) {
             perror("vrpn_Button_Python::read(): ioctl() failed");
             return;
         }
 
-#elif _WIN32
+#elif defined(_WIN32)
 #ifndef __CYGWIN__
     const unsigned short STATUS_REGISTER_OFFSET = 1;
     for (i = 0; i < debounce_count; i++) {
 #ifdef _inp
         status_register[i] =
             _inp((unsigned short)(port + STATUS_REGISTER_OFFSET));
-#else
+#else // !_inp
         status_register[i] = 0;
-#endif
+#endif // _inp
     }
-#else
+#else // __CYGWIN__
     for (i = 0; i < debounce_count; i++) {
         status_register[i] = 0;
     }
-#endif
-#else
+#endif // __CYGWIN
+#else // not _WIN32 or VRPN_USE_LINUX_PARALLEL_SUPPORT
     for (i = 0; i < debounce_count; i++) {
         status_register[i] = 0;
     }
-#endif
+#endif // _WIN32, VRPN_USE_LINUX_PARALLEL_SUPPORT
     for (i = 0; i < debounce_count; i++) {
         status_register[i] = status_register[i] & BIT_MASK;
     }
