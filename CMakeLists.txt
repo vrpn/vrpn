@@ -33,13 +33,6 @@ else()
 	set(TRUE_UNLESS_SUBPROJECT TRUE)
 endif()
 
-# TODO Remove the following when it is fixed in the Android CMake.
-if(BUILD_WITH_ANDROID_NDK)
-	set(CMAKE_CXX_FLAGS
-		"--sysroot=${ANDROID_NDK_SYSROOT} ${CMAKE_CXX_FLAGS}")
-	set(CMAKE_C_FLAGS "--sysroot=${ANDROID_NDK_SYSROOT} ${CMAKE_C_FLAGS}")
-endif()
-
 ###
 # On Windows 7, it does not work to install in the default location,
 # which is the Program Files directory, because you have to not only have
@@ -354,17 +347,15 @@ option_requires(VRPN_BUILD_PYTHON_HANDCODED_3X
 ###
 # javac, jar, and javah (for java wrapper)
 ###
-if(BUILD_WITH_ANDROID_NDK)
-	set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
-	set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY NEVER)
-	set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE NEVER)
-	find_package(Java COMPONENTS Development REQUIRED)
-	find_package(JNI REQUIRED)
+if(ANDROID)
+	find_host_package(Java COMPONENTS Development)
+	find_host_package(JNI)
+	find_host_program(JAVAH_EXECUTABLE NAMES javah)
 else()
 	find_package(Java COMPONENTS Development)
 	find_package(JNI)
+	find_program(JAVAH_EXECUTABLE NAMES javah)
 endif()
-find_program(JAVAH_EXECUTABLE NAMES javah)
 mark_as_advanced(JAVAH_EXECUTABLE)
 option_requires(VRPN_BUILD_JAVA
 	"Build VRPN Java bindings"
@@ -373,12 +364,6 @@ option_requires(VRPN_BUILD_JAVA
 	Java_JAR_EXECUTABLE
 	JNI_FOUND
 	JAVAH_EXECUTABLE)
-
-if(BUILD_WITH_ANDROID_NDK)
-	set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM ONLY)
-	set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
-	set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
-endif()
 
 ###
 # MPI
