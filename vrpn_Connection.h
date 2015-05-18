@@ -1058,6 +1058,10 @@ int VRPN_API vrpn_noint_block_read(SOCKET insock, char *buffer, size_t length);
 //      The intention of this section is that it can open connections for
 // objects that are in different libraries (trackers, buttons and sound),
 // even if they all refer to the same connection.
+//	Even though each indivual vrpn_Connection class is not yet thread
+// safe, so should only have its methods called from a single thread,
+// the vrpn_ConnectionManager should be thread safe to allow connections
+// to be created and destroyed by different threads.
 
 class VRPN_API vrpn_ConnectionManager {
 
@@ -1083,6 +1087,10 @@ public:
     vrpn_Connection *getByName(const char *name);
 
 private:
+
+    /// Mutex to ensure thread safety;
+    vrpn_Semaphore d_semaphore;
+
     struct knownConnection {
         char name[1000];
         vrpn_Connection *connection;
@@ -1100,7 +1108,7 @@ private:
     // @brief copy constructor undefined to prevent instantiations
     vrpn_ConnectionManager(const vrpn_ConnectionManager &);
 
-    static void deleteConnection(vrpn_Connection *, knownConnection **);
+    void deleteConnection(vrpn_Connection *, knownConnection **);
 };
 
 #endif // VRPN_CONNECTION_H
