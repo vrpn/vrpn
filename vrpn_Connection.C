@@ -1426,6 +1426,7 @@ void vrpn_TypeDispatcher::clear(void)
 
 vrpn_ConnectionManager::~vrpn_ConnectionManager(void)
 {
+    d_semaphore.p();
     // fprintf(stderr, "In ~vrpn_ConnectionManager:  tearing down the list.\n");
 
     // Call the destructor of every known connection.
@@ -1437,17 +1438,26 @@ vrpn_ConnectionManager::~vrpn_ConnectionManager(void)
     while (d_anonList) {
         delete d_anonList->connection;
     }
+    d_semaphore.v();
 }
 
 // static
 vrpn_ConnectionManager &vrpn_ConnectionManager::instance(void)
 {
+    // We have a separate semaphore for this static function to
+    // make sure it is only entered by one thread at a time.
+    // This avoids a race on the constructor of the static
+    // instance.
+    static vrpn_Semaphore sem;
+    sem.p();
     static vrpn_ConnectionManager manager;
+    sem.v();
     return manager;
 }
 
 void vrpn_ConnectionManager::addConnection(vrpn_Connection *c, const char *name)
 {
+    d_semaphore.p();
     knownConnection *p;
 
     p = new knownConnection;
@@ -1463,17 +1473,22 @@ void vrpn_ConnectionManager::addConnection(vrpn_Connection *c, const char *name)
         p->next = d_anonList;
         d_anonList = p;
     }
+    d_semaphore.v();
 }
 
 void vrpn_ConnectionManager::deleteConnection(vrpn_Connection *c)
 {
+    d_semaphore.p();
     deleteConnection(c, &d_kcList);
     deleteConnection(c, &d_anonList);
+    d_semaphore.v();
 }
 
 void vrpn_ConnectionManager::deleteConnection(vrpn_Connection *c,
                                               knownConnection **snitch)
 {
+    // NOTE: The private methods do not grab the semaphore; it will have
+    // been grabbed by the public method that called it.
     knownConnection *victim = *snitch;
 
     while (victim && (victim->connection != c)) {
@@ -1492,6 +1507,8 @@ void vrpn_ConnectionManager::deleteConnection(vrpn_Connection *c,
 
 vrpn_Connection *vrpn_ConnectionManager::getByName(const char *name)
 {
+    // NOTE: The private methods do not grab the semaphore; it will have
+    // been grabbed by the public method that called it.
     knownConnection *p;
     for (p = d_kcList; p && strcmp(p->name, name); p = p->next) {
         // do nothing
