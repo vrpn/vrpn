@@ -2016,8 +2016,8 @@ static SOCKET open_socket(int type, unsigned short *portno,
     vrpn_int32 optval = 1;
     vrpn_int32 sockoptsuccess =
         setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof optval);
-    fprintf(stderr, "setsockopt returned %i, optval: %i\n", sockoptsuccess,
-            optval);
+    //fprintf(stderr, "setsockopt returned %i, optval: %i\n", sockoptsuccess,
+    //        optval);
 #endif
 
     namelen = sizeof(name);
