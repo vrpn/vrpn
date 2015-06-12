@@ -451,9 +451,9 @@ public:
     ///< when lobbing datagrams at the server and
     ///< waiting for it to call back.
 
-	/// Socket to use to lob UDP requests asking for the server to
-	/// call us back.
-	SOCKET d_udpLobSocket;
+    /// Socket to use to lob UDP requests asking for the server to
+    /// call us back.
+    SOCKET d_udpLobSocket;
 
     char *d_remote_machine_name;    ///< Machine to call
     int d_remote_port_number;       ///< Port to connect to on remote machine
@@ -531,7 +531,8 @@ public:
     /// Returns vrpn_true if the connection is okay, vrpn_false if not
     virtual vrpn_bool doing_okay(void) const;
 
-    /// Returns vrpn_true if the connection has been established, vrpn_false if not
+    /// Returns vrpn_true if the connection has been established, vrpn_false if
+    /// not
     /// (For a networkless connection, this is equivalent to doing_okay()).
     virtual vrpn_bool connected(void) const;
 
@@ -826,8 +827,8 @@ protected:
                                   const char *local_in_logfile_name,
                                   const char *local_out_logfile_name);
 
-/// @name Only used for a vrpn_Connection that awaits incoming connections
-/// @{
+    /// @name Only used for a vrpn_Connection that awaits incoming connections
+    /// @{
     SOCKET listen_udp_sock; ///< UDP Connect requests come here
     SOCKET listen_tcp_sock; ///< TCP Connection requests come here
     /// @}
@@ -875,6 +876,7 @@ protected:
     /// of 'loopback:'.
     /// For now, we don't enable logging on a Loopback connection.
     vrpn_Connection_Loopback();
+
 public:
     virtual ~vrpn_Connection_Loopback(void);
 
@@ -889,7 +891,8 @@ public:
     /// Returns vrpn_true if the connection is okay, vrpn_false if not
     virtual vrpn_bool doing_okay(void) const { return vrpn_true; }
 
-    /// Returns vrpn_true if the connection has been established, vrpn_false if not
+    /// Returns vrpn_true if the connection has been established, vrpn_false if
+    /// not
     /// (For a networkless connection, this is equivalent to doing_okay()).
     virtual vrpn_bool connected(void) const { return vrpn_true; }
 
@@ -903,7 +906,7 @@ protected:
     ///
     /// This function was protected, now is public, so we can use it
     /// to send out intermediate results without calling mainloop
-    virtual int send_pending_reports(void) {return 0;}
+    virtual int send_pending_reports(void) { return 0; }
 };
 
 /// @brief Create a client connection of arbitrary type (VRPN UDP/TCP, TCP,
