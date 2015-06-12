@@ -18,10 +18,6 @@ struct timeval;
 #pragma warning(disable : 4995 4996)
 #endif
 
-#if defined(__ANDROID__)
-#include <bitset>
-#endif
-
 /// This is the list of states that a connection can be in
 /// (possible values for status).  doing_okay() returns VRPN_TRUE
 /// for connections > BROKEN.
