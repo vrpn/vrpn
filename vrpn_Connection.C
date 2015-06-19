@@ -4800,6 +4800,10 @@ int vrpn_Connection::delete_endpoint(int endpointIndex)
         delete endpoint;
     }
     d_endpoints[endpointIndex] = NULL;
+    if (d_numEndpoints == endpointIndex + 1) {
+        // This was the last endpoint in the list, can shrink it.
+        d_numEndpoints--;
+    }
 
     return 0;
 }
