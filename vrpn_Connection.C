@@ -5865,7 +5865,10 @@ void vrpn_Connection_IP::server_check_for_incoming_connections(
 void vrpn_Connection_IP::drop_connection(int whichEndpoint)
 {
     vrpn_Endpoint *endpoint = d_endpoints[whichEndpoint];
-
+    if (!endpoint) {
+        /// @todo sometimes we end up in here with a null endpoint?
+        return;
+    }
     endpoint->drop_connection();
 
     // If we're a client, try to reconnect to the server
