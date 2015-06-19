@@ -4724,6 +4724,9 @@ int vrpn_Connection::register_log_filter(vrpn_LOGFILTER filter, void *userdata)
 {
     int i;
     for (i = 0; i < d_numEndpoints; i++) {
+        if (!d_endpoints[i]) {
+            continue;
+        }
         d_endpoints[i]->d_inLog->addFilter(filter, userdata);
         d_endpoints[i]->d_outLog->addFilter(filter, userdata);
     }
@@ -4736,6 +4739,9 @@ int vrpn_Connection::save_log_so_far()
     int i;
     int final_retval = 0;
     for (i = 0; i < d_numEndpoints; i++) {
+        if (!d_endpoints[i]) {
+            continue;
+        }
         final_retval |= d_endpoints[i]->d_inLog->saveLogSoFar();
         final_retval |= d_endpoints[i]->d_outLog->saveLogSoFar();
     }
