@@ -65,9 +65,6 @@ public:
     // mutex by default (0 is a sync primitive)
     vrpn_Semaphore(int cNumResources = 1);
 
-    // This does not copy the state of the semaphore, just creates
-    // a new one with the same resource count
-    vrpn_Semaphore(const vrpn_Semaphore &s);
     ~vrpn_Semaphore();
 
     // routine to reset it (true on success, false on failure)
@@ -88,6 +85,10 @@ public:
 
 protected:
     // common init and destroy routines
+    /// @brief non-copyable
+    vrpn_Semaphore(const vrpn_Semaphore &);
+    /// @brief non-assignable
+    vrpn_Semaphore & operator=(const vrpn_Semaphore &);
     bool init();
     bool destroy();
 

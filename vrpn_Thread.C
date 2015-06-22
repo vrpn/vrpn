@@ -42,15 +42,6 @@ vrpn_Semaphore::vrpn_Semaphore(int cNumResources)
     init();
 }
 
-// create a new internal structure for the semaphore
-// (binary copy is not ok)
-// This does not copy the state of the semaphore
-vrpn_Semaphore::vrpn_Semaphore(const vrpn_Semaphore &s)
-    : cResources(s.cResources)
-{
-    init();
-}
-
 bool vrpn_Semaphore::init()
 {
 #ifdef sgi
