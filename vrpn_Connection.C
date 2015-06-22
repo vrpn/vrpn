@@ -4959,10 +4959,8 @@ vrpn_Connection::vrpn_Connection(const char *local_in_logfile_name,
                             "Couldn't open incoming log file.\n",
                     __LINE__);
             connectionStatus = BROKEN;
-            // fprintf(stderr, "BROKEN - vrpn_Connection::vrpn_Connection.\n");
             return;
         }
-        // fprintf(stderr, "vrpn_Connection: opened logfile.\n");
     }
 
     if (local_out_logfile_name && (strlen(local_out_logfile_name) != 0)) {
@@ -4974,10 +4972,8 @@ vrpn_Connection::vrpn_Connection(const char *local_in_logfile_name,
                             "Couldn't open local outgoing log file.\n",
                     __LINE__);
             connectionStatus = BROKEN;
-            // fprintf(stderr, "BROKEN - vrpn_Connection::vrpn_Connection.\n");
             return;
         }
-        // fprintf(stderr, "vrpn_Connection: opened logfile.\n");
     }
 }
 
@@ -5762,7 +5758,7 @@ void vrpn_Connection_IP::server_check_for_incoming_connections(
         fprintf(stderr, "Error accepting on TCP socket.\n");
         return;
     }
-    else if (retval) { // Some data to read!  Go get it.
+    if (retval) { // Some data to read!  Go get it.
 
         printf("vrpn: TCP connection request received.\n");
 
@@ -6033,7 +6029,7 @@ vrpn_Connection_IP::vrpn_Connection_IP(
             vrpn_connect_udp_port(endpoint->d_remote_machine_name,
                                   endpoint->d_remote_port_number, d_NIC_IP);
         if (endpoint->d_udpLobSocket == INVALID_SOCKET) {
-            fprintf(stderr, "vrpn_Connection_IP: Can't Set up socket to lob "
+            fprintf(stderr, "vrpn_Connection_IP: Can't set up socket to lob "
                             "UDP packets!\n");
             connectionStatus = BROKEN;
             // fprintf(stderr, "BROKEN -
@@ -6096,16 +6092,13 @@ vrpn_Connection_IP::vrpn_Connection_IP(
         if (retval == -1) {
             fprintf(stderr, "vrpn_Connection_IP: Can't poll for accept\n");
             connectionStatus = BROKEN;
-            // fprintf(stderr, "BROKEN -
-            // vrpn_Connection_IP::vrpn_Connection_IP.\n");
             return;
         }
         if (retval == 1) { // Got one!
             endpoint->status = COOKIE_PENDING;
-// fprintf(stderr, "COOKIE_PENDING -
-// vrpn_Connection_IP::vrpn_Connection_IP.\n");
 #ifdef VERBOSE
-            printf("vrpn: Connection established on initial try\n");
+            printf("vrpn: Connection established on initial try "
+                   "(COOKIE_PENDING)\n");
 #endif
             // Set up the things that need to happen when a new connection
             // is established.
