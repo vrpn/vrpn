@@ -4900,13 +4900,6 @@ vrpn_Connection::vrpn_Connection(const char *local_in_logfile_name,
 
     if (local_in_logfile_name) {
         d_serverLogName = new char[1 + strlen(local_in_logfile_name)];
-        if (!d_serverLogName) {
-            fprintf(stderr, "vrpn_Connection::vrpn_Connection:%d  "
-                            "Out of memory.\n",
-                    __LINE__);
-            connectionStatus = BROKEN;
-            return;
-        }
         strcpy(d_serverLogName, local_in_logfile_name);
     }
 }
