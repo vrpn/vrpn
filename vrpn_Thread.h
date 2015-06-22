@@ -62,35 +62,42 @@
 
 class VRPN_API vrpn_Semaphore {
 public:
-    // mutex by default (0 is a sync primitive)
+    /// @brief constructor - mutex by default (0 is a sync primitive)
     vrpn_Semaphore(int cNumResources = 1);
 
+    /// @brief destructor
     ~vrpn_Semaphore();
 
-    // routine to reset it (true on success, false on failure)
-    // (may create new semaphore)
+    /// @brief routine to reset it (true on success, false on failure)
+    /// (may create new semaphore)
     bool reset(int cNumResources = 1);
 
-    // routines to use it (p blocks, condP does not)
-    // p returns 1 when it has acquired the resource, -1 on fail
-    // v returns 0 when it has released the resource, -1 on fail
-    // condP returns 0 if it could not access the resource
-    // and 1 if it could (-1 on fail)
+    /// @brief Blocking acquire of resource. ("down")
+    /// @return 1 when it has acquired the resource, -1 on fail
     int p();
+
+    /// @brief Release of resource. ("up")
+    /// @return 0 when it has released the resource, -1 on fail
     int v();
+
+    /// @brief Non-blocking attempt to acquire resource ("down")
+    /// @return 0 if it could not access the resource
+    /// and 1 if it could (-1 on fail)
     int condP();
 
-    // read values
+    /// @brief read values
     int numResources();
 
-protected:
-    // common init and destroy routines
+private:
     /// @brief non-copyable
     vrpn_Semaphore(const vrpn_Semaphore &);
     /// @brief non-assignable
     vrpn_Semaphore & operator=(const vrpn_Semaphore &);
+    /// @name common init and destroy routines
+    /// @{
     bool init();
     bool destroy();
+    /// @}
 
     int cResources;
 
