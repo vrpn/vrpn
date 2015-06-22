@@ -1426,7 +1426,7 @@ void vrpn_TypeDispatcher::clear(void)
 
 vrpn_ConnectionManager::~vrpn_ConnectionManager(void)
 {
-    d_semaphore.p();
+    vrpn::SemaphoreGuard guard(d_semaphore);
     // fprintf(stderr, "In ~vrpn_ConnectionManager:  tearing down the list.\n");
 
     // Call the destructor of every known connection.
@@ -1438,7 +1438,6 @@ vrpn_ConnectionManager::~vrpn_ConnectionManager(void)
     while (d_anonList) {
         delete d_anonList->connection;
     }
-    d_semaphore.v();
 }
 
 // static
@@ -1449,39 +1448,40 @@ vrpn_ConnectionManager &vrpn_ConnectionManager::instance(void)
     // This avoids a race on the constructor of the static
     // instance.
     static vrpn_Semaphore sem;
-    sem.p();
+    vrpn::SemaphoreGuard guard(sem);
     static vrpn_ConnectionManager manager;
-    sem.v();
     return manager;
 }
 
 void vrpn_ConnectionManager::addConnection(vrpn_Connection *c, const char *name)
 {
-    d_semaphore.p();
-    knownConnection *p;
+    vrpn::SemaphoreGuard guard(d_semaphore);
+    {
+        knownConnection *p;
 
-    p = new knownConnection;
-    p->connection = c;
+        p = new knownConnection;
+        p->connection = c;
 
-    if (name) {
-        strncpy(p->name, name, 1000);
-        p->next = d_kcList;
-        d_kcList = p;
+        if (name) {
+            strncpy(p->name, name, 1000);
+            p->next = d_kcList;
+            d_kcList = p;
+        }
+        else {
+            p->name[0] = 0;
+            p->next = d_anonList;
+            d_anonList = p;
+        }
     }
-    else {
-        p->name[0] = 0;
-        p->next = d_anonList;
-        d_anonList = p;
-    }
-    d_semaphore.v();
 }
 
 void vrpn_ConnectionManager::deleteConnection(vrpn_Connection *c)
 {
-    d_semaphore.p();
-    deleteConnection(c, &d_kcList);
-    deleteConnection(c, &d_anonList);
-    d_semaphore.v();
+    vrpn::SemaphoreGuard guard(d_semaphore);
+    {
+        deleteConnection(c, &d_kcList);
+        deleteConnection(c, &d_anonList);
+    }
 }
 
 void vrpn_ConnectionManager::deleteConnection(vrpn_Connection *c,
