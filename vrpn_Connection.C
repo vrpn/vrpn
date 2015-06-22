@@ -4741,6 +4741,9 @@ int vrpn_Connection::register_log_filter(vrpn_LOGFILTER filter, void *userdata)
 {
     int i;
     for (i = 0; i < d_numEndpoints; i++) {
+        if (!d_endpoints[i]) {
+            continue;
+        }
         d_endpoints[i]->d_inLog->addFilter(filter, userdata);
         d_endpoints[i]->d_outLog->addFilter(filter, userdata);
     }
@@ -4753,6 +4756,9 @@ int vrpn_Connection::save_log_so_far()
     int i;
     int final_retval = 0;
     for (i = 0; i < d_numEndpoints; i++) {
+        if (!d_endpoints[i]) {
+            continue;
+        }
         final_retval |= d_endpoints[i]->d_inLog->saveLogSoFar();
         final_retval |= d_endpoints[i]->d_outLog->saveLogSoFar();
     }
@@ -4811,6 +4817,10 @@ int vrpn_Connection::delete_endpoint(int endpointIndex)
         delete endpoint;
     }
     d_endpoints[endpointIndex] = NULL;
+    if (d_numEndpoints == endpointIndex + 1) {
+        // This was the last endpoint in the list, can shrink it.
+        d_numEndpoints--;
+    }
 
     return 0;
 }
@@ -5882,7 +5892,10 @@ void vrpn_Connection_IP::server_check_for_incoming_connections(
 void vrpn_Connection_IP::drop_connection(int whichEndpoint)
 {
     vrpn_Endpoint *endpoint = d_endpoints[whichEndpoint];
-
+    if (!endpoint) {
+        /// @todo sometimes we end up in here with a null endpoint?
+        return;
+    }
     endpoint->drop_connection();
 
     // If we're a client, try to reconnect to the server
