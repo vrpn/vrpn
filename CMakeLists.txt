@@ -1025,7 +1025,8 @@ set(VRPN_CLIENT_PUBLIC_HEADERS
 	vrpn_Sound.h
 	vrpn_Text.h
 	vrpn_Tracker.h
-	vrpn_Types.h)
+	vrpn_Types.h
+	vrpn_WindowsH.h)
 
 set(VRPN_SERVER_SOURCES
 	${VRPN_CLIENT_SOURCES}
