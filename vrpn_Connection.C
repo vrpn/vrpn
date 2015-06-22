@@ -4818,8 +4818,7 @@ int vrpn_Connection::compact_endpoints(void)
 // asked for.
 vrpn_Connection::vrpn_Connection(const char *local_in_logfile_name,
                                  const char *local_out_logfile_name,
-                                 vrpn_Endpoint_IP *(*epa)(vrpn_Connection *,
-                                                          vrpn_int32 *))
+                                 vrpn_EndpointAllocator epa)
     : d_numConnectedEndpoints(0)
     , d_references(0)
     , d_autoDeleteStatus(false)
@@ -4877,10 +4876,11 @@ vrpn_Connection::vrpn_Connection(const char *local_in_logfile_name,
     }
 }
 
-vrpn_Connection::vrpn_Connection(
-    const char *local_in_logfile_name, const char *local_out_logfile_name,
-    const char *remote_in_logfile_name, const char *remote_out_logfile_name,
-    vrpn_Endpoint_IP *(*epa)(vrpn_Connection *, vrpn_int32 *))
+vrpn_Connection::vrpn_Connection(const char *local_in_logfile_name,
+                                 const char *local_out_logfile_name,
+                                 const char *remote_in_logfile_name,
+                                 const char *remote_out_logfile_name,
+                                 vrpn_EndpointAllocator epa)
     : connectionStatus(BROKEN)
     , d_numConnectedEndpoints(0)
     , d_references(0)

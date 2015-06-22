@@ -513,8 +513,7 @@ protected:
     /// of arbitrary type based on a name.
     vrpn_Connection(const char *local_in_logfile_name,
                     const char *local_out_logfile_name,
-                    vrpn_Endpoint_IP *(*epa)(vrpn_Connection *,
-                                             vrpn_int32 *) = allocateEndpoint);
+                    vrpn_EndpointAllocator epa = allocateEndpoint);
 
     /// Constructor for client connection.  This cannot be called
     /// directly because vrpn_Connection is an abstract base class.
@@ -523,8 +522,7 @@ protected:
                     const char *local_out_logfile_name,
                     const char *remote_in_logfile_name,
                     const char *remote_out_logfile_name,
-                    vrpn_Endpoint_IP *(*epa)(vrpn_Connection *,
-                                             vrpn_int32 *) = allocateEndpoint);
+                    vrpn_EndpointAllocator epa = allocateEndpoint);
 
 public:
     virtual ~vrpn_Connection(void);
@@ -749,7 +747,7 @@ protected:
     vrpn_int32 d_serverLogMode;
     char *d_serverLogName;
 
-    vrpn_Endpoint_IP *(*d_endpointAllocator)(vrpn_Connection *, vrpn_int32 *);
+    vrpn_EndpointAllocator d_endpointAllocator;
     vrpn::BoundEndpointAllocator d_boundEndpointAllocator;
     vrpn_bool d_updateEndpoint;
 
@@ -782,8 +780,7 @@ protected:
                        const char *remote_in_logfile_name = NULL,
                        const char *remote_out_logfile_name = NULL,
                        const char *NIC_IPaddress = NULL,
-                       vrpn_Endpoint_IP *(*epa)(
-                           vrpn_Connection *, vrpn_int32 *) = allocateEndpoint);
+                       vrpn_EndpointAllocator epa = allocateEndpoint);
 
 public:
     /// Make a server that listens for client connections.
