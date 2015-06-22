@@ -188,10 +188,8 @@ public:
     // Accessors for the initial thread to pass new logfile names down to the
     // logging thread, which will cause it to initiate a changeover of logging
     // connections.  Space for the return strings will be allocated in these
-    // functions
-    // and must be deleted by the logging thread ONLY IF the get function fills
-    // the
-    // values in (it returns true if it does).
+    // functions and must be deleted by the logging thread ONLY IF the get
+    // function fills the values in (it returns true if it does).
     // NOTE:  this is used to query BOTH the presence of new logfile names
     // AS WELL AS the names themselves.  this function will only return values
     // if new logfile names have been requested since the last time this

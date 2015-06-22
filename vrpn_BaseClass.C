@@ -122,12 +122,9 @@ int vrpn_TextPrinter::add_object(vrpn_BaseClass *o)
 }
 
 /** Removes an object from the list of watched objects.  Returns 0 on success
-   and
-    -1 on failure.  Unregistering a non-watched object has no effect, nor is it
-   an error.  Objects
-    are considered to be the same if they share the same connection and they
-   have
-    the same service name.
+   and -1 on failure.  Unregistering a non-watched object has no effect, nor is
+   it an error.  Objects are considered to be the same if they share the same
+   connection and they have the same service name.
 */
 void vrpn_TextPrinter::remove_object(vrpn_BaseClass *o)
 {
@@ -289,24 +286,17 @@ void vrpn_TextPrinter::set_ostream_to_use(FILE *o)
     the "@" sign in the name.
 
     vrpn_BaseClassUnique is a virtual base class so it will only be called once,
-   while
-    vrpn_BaseClass may be called multiple times.
-    Setting d_connection and d_servicename, only needs to be done once
-    for each object (even if it inherits from multiple device classes).  So
-   these
-    things should technically go into the vrpn_BaseClassUnique constructor,
-   except that
-    it is unable to accept parameters.  If the vrpn_BaseClassUnique constructor
-    *did* take the service-name, connnection, and use-ref-count parameters
-    then every derived class (not just those at the top level) would have to
-   make
-    an explicit call to the vrpn_BaseClassUnique constructor.  As it stands,
-   these
-    derived classes will instead use the 0-parameter version of the
-   vrpn_BaseClassUnique
-    constructor implicitly.
-    As a result, this constructor must make sure that it only executes the code
-   therein once.
+   while vrpn_BaseClass may be called multiple times. Setting d_connection and
+   d_servicename, only needs to be done once for each object (even if it
+   inherits from multiple device classes).  So these things should technically
+   go into the vrpn_BaseClassUnique constructor, except that it is unable to
+   accept parameters.  If the vrpn_BaseClassUnique constructor *did* take the
+   service-name, connnection, and use-ref-count parameters then every derived
+   class (not just those at the top level) would have to make an explicit call
+   to the vrpn_BaseClassUnique constructor.  As it stands, these derived classes
+   will instead use the 0-parameter version of the vrpn_BaseClassUnique
+   constructor implicitly. As a result, this constructor must make sure that it
+   only executes the code therein once.
 */
 
 vrpn_BaseClass::vrpn_BaseClass(const char *name, vrpn_Connection *c)
@@ -318,18 +308,15 @@ vrpn_BaseClass::vrpn_BaseClass(const char *name, vrpn_Connection *c)
 
     if (firstTimeCalled) {
         // Get the connection for this object established. If the user passed in
-        // a
-        // NULL connection object, then we determine the connection from the
-        // name of
-        // the object itself (for example, Tracker0@mumble.cs.unc.edu will make
-        // a
-        // connection to the machine mumble on the standard VRPN port).
+        // a NULL connection object, then we determine the connection from the
+        // name of the object itself (for example, Tracker0@mumble.cs.unc.edu
+        // will make a connection to the machine mumble on the standard VRPN
+        // port).
         //
         // The vrpn_BaseClassUnique destructor handles telling the connection we
         // are no longer referring to it.  Since we only add the reference once
         // here (when d_connection is NULL), it is okay for the unique
-        // destructor
-        // to remove the reference.
+        // destructor to remove the reference.
         if (c) { // using existing connection.
             d_connection = c;
             d_connection->addReference();
