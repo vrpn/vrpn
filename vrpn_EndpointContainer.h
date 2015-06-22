@@ -26,75 +26,12 @@
 
 // Standard includes
 #include <vector>
-#include <assert.h>
 #include <stddef.h> // for NULL
 
 class VRPN_API vrpn_Endpoint;
 class VRPN_API vrpn_Endpoint_IP;
-class vrpn_Connection;
-
-/// @brief Function pointer to an endpoint allocator.
-typedef vrpn_Endpoint_IP *(*vrpn_EndpointAllocator)(
-    vrpn_Connection *connection, vrpn_int32 *numActiveConnections);
 
 namespace vrpn {
-
-    /// @brief Combines the function pointer for an Endpoint Allocator with its
-    /// two arguments into a single callable object, with the ability to
-    /// override the last parameter at call time.
-    class BoundEndpointAllocator {
-    public:
-        BoundEndpointAllocator()
-            : epa_(NULL)
-            , conn_(NULL)
-            , numActiveEndpoints_(NULL)
-        {
-        }
-        BoundEndpointAllocator(vrpn_EndpointAllocator epa,
-                               vrpn_Connection *conn,
-                               vrpn_int32 *numActiveEndpoints = NULL)
-            : epa_(epa)
-            , conn_(conn)
-            , numActiveEndpoints_(numActiveEndpoints)
-        {
-        }
-
-        typedef vrpn_Endpoint_IP *return_type;
-
-        /// @brief Default, fully pre-bound
-        return_type operator()() const
-        {
-            assert(epa_);
-            if (!epa_) {
-                return NULL;
-            }
-            return (*epa_)(conn_, numActiveEndpoints_);
-        }
-
-        /// @brief Overload, with alternate num active connnection pointer.
-        return_type operator()(vrpn_int32 *alternateNumActiveEndpoints) const
-        {
-            assert(epa_);
-            if (!epa_) {
-                return NULL;
-            }
-            return (*epa_)(conn_, alternateNumActiveEndpoints);
-        }
-
-        /// @brief Creates a new bound allocator with a different num endpoints
-        /// pointer.
-        BoundEndpointAllocator
-        create_alternate(vrpn_int32 *alternateNumActiveEndpoints) const
-        {
-            return BoundEndpointAllocator(epa_, conn_,
-                                          alternateNumActiveEndpoints);
-        }
-
-    private:
-        vrpn_EndpointAllocator epa_;
-        vrpn_Connection *conn_;
-        vrpn_int32 *numActiveEndpoints_;
-    };
 
     class EndpointIterator;
 
@@ -137,9 +74,16 @@ namespace vrpn {
         /// @brief Shorthand for get_by_index(0)
         pointer front() const { return get_by_index(0); }
 
-        /// @brief Allocates an endpoint using the given allocator in the
-        /// container, returning a reference to the new endpoint.
-        pointer allocate(BoundEndpointAllocator const &allocator);
+        /// @brief Given the result of an endpoint allocator, if it's non-NULL,
+        /// takes ownership of it.
+        /// @return the input pointer
+        template <typename T> T *acquire(T *endpoint)
+        {
+            if (endpoint) {
+                container_.push_back(endpoint);
+            }
+            return endpoint;
+        }
 
         /// @brief Goes through and gets rid of the NULL entries.
         void compact();

@@ -161,6 +161,61 @@ struct VRPN_API vrpn_LOGLIST {
     vrpn_LOGLIST *prev;
 };
 
+class VRPN_API vrpn_Endpoint_IP;
+class VRPN_API vrpn_Connection;
+
+/// @brief Function pointer to an endpoint allocator.
+typedef vrpn_Endpoint_IP *(*vrpn_EndpointAllocator)(
+    vrpn_Connection *connection, vrpn_int32 *numActiveConnections);
+
+namespace vrpn {
+
+    /// @brief Combines the function pointer for an Endpoint Allocator with its
+    /// two arguments into a single callable object, with the ability to
+    /// override the last parameter at call time.
+    class BoundEndpointAllocator {
+    public:
+        BoundEndpointAllocator()
+            : epa_(NULL)
+            , conn_(NULL)
+            , numActiveEndpoints_(NULL)
+        {
+        }
+        BoundEndpointAllocator(vrpn_EndpointAllocator epa,
+                               vrpn_Connection *conn,
+                               vrpn_int32 *numActiveEndpoints = NULL)
+            : epa_(epa)
+            , conn_(conn)
+            , numActiveEndpoints_(numActiveEndpoints)
+        {
+        }
+
+        typedef vrpn_Endpoint_IP *return_type;
+
+        /// @brief Default, fully pre-bound
+        return_type operator()() const
+        {
+            if (!epa_) {
+                return NULL;
+            }
+            return (*epa_)(conn_, numActiveEndpoints_);
+        }
+
+        /// @brief Overload, with alternate num active connnection pointer.
+        return_type operator()(vrpn_int32 *alternateNumActiveEndpoints) const
+        {
+            if (!epa_) {
+                return NULL;
+            }
+            return (*epa_)(conn_, alternateNumActiveEndpoints);
+        }
+
+    private:
+        vrpn_EndpointAllocator epa_;
+        vrpn_Connection *conn_;
+        vrpn_int32 *numActiveEndpoints_;
+    };
+} // namespace vrpn
 /// @todo HACK
 /// These structs must be declared outside of vrpn_Connection
 /// (although we'd like to make them protected/private members)

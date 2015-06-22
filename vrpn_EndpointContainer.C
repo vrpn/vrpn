@@ -58,16 +58,6 @@ namespace vrpn {
         container_.clear();
     }
 
-    EndpointContainer::pointer
-    EndpointContainer::allocate(BoundEndpointAllocator const &allocator)
-    {
-        contained_type newEndpoint(allocator());
-        if (newEndpoint) {
-            container_.push_back(newEndpoint);
-        }
-        return newEndpoint;
-    }
-
     void EndpointContainer::compact()
     {
         if (needsCompact_) {

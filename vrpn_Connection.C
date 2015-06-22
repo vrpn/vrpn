@@ -4849,8 +4849,8 @@ vrpn_Connection::vrpn_Connection(const char *local_in_logfile_name,
                                    handle_log_message);
 
     if (local_out_logfile_name) {
-        vrpn_Endpoint *endpoint = d_endpoints.allocate(
-            d_boundEndpointAllocator.create_alternate(NULL));
+        vrpn_Endpoint *endpoint =
+            d_endpoints.acquire(d_boundEndpointAllocator(NULL));
         if (!endpoint) {
             fprintf(stderr, "vrpn_Connection::vrpn_Connection:%d  "
                             "Couldn't create endpoint for log file.\n",
@@ -4907,8 +4907,7 @@ vrpn_Connection::vrpn_Connection(const char *local_in_logfile_name,
     vrpn_Connection::init(epa);
 
     // We're a client;  create our single endpoint and initialize it.
-
-    vrpn_Endpoint *endpoint = d_endpoints.allocate(d_boundEndpointAllocator);
+    vrpn_Endpoint *endpoint = d_endpoints.acquire(d_boundEndpointAllocator());
     if (!endpoint) {
         fprintf(stderr, "vrpn_Connection:%d  Out of memory.\n", __LINE__);
         connectionStatus = BROKEN;
@@ -5435,7 +5434,8 @@ int vrpn_Connection_IP::connect_to_client(const char *machine, int port)
                         " Too many existing connections.\n");
         return -1;
     }
-    vrpn_Endpoint_IP *endpoint = d_endpoints.allocate(d_boundEndpointAllocator);
+    vrpn_Endpoint_IP *endpoint =
+        d_endpoints.acquire(d_boundEndpointAllocator());
 
     if (!endpoint) {
         fprintf(stderr, "vrpn_Connection_IP::connect_to_client:"
@@ -5694,7 +5694,7 @@ void vrpn_Connection_IP::server_check_for_incoming_connections(
         // the client.
 
         vrpn_Endpoint_IP *endpoint =
-            d_endpoints.allocate(d_boundEndpointAllocator);
+            d_endpoints.acquire(d_boundEndpointAllocator());
         if (!endpoint) {
             fprintf(
                 stderr,
@@ -5767,7 +5767,7 @@ void vrpn_Connection_IP::server_check_for_incoming_connections(
         }
 
         vrpn_Endpoint_IP *endpoint =
-            d_endpoints.allocate(d_boundEndpointAllocator);
+            d_endpoints.acquire(d_boundEndpointAllocator());
         if (!endpoint) {
             fprintf(
                 stderr,
