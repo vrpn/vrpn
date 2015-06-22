@@ -1,4 +1,19 @@
 #!/bin/sh
+
+function IncludeDirectories()
+{
+cat <<'EOS'
+				AdditionalIncludeDirectories="&quot;$(SYSTEMDRIVE)\Program Files\Microsoft Platform SDK for Windows Server 2003 R2\Include&quot;;../dtrack;quat;../isense;../Dtrack;../libfreespace/include;&quot;$(SYSTEMDRIVE)\Program Files\National Instruments\NI-DAQ\DAQmx ANSI C Dev\include&quot;;&quot;$(SYSTEMDRIVE)\Program Files\National Instruments\NI-DAQ\Include&quot;;&quot;$(SYSTEMDRIVE)\sdk\cpp&quot;;&quot;$(SYSTEMDRIVE)\Program Files\boost\boost_1_34_1&quot;;./submodules/hidapi/hidapi;&quot;$(SYSTEMDRIVE)\Program Files\libusb-1.0\libusb&quot;;&quot;$(SYSTEMDRIVE)\Program Files (x86)\Polhemus\PDI\PDI_90\Inc&quot;"
+EOS
+}
+
+function LinkDirectories()
+{
+cat <<'EOS'
+				AdditionalLibraryDirectories="$(SYSTEMDRIVE)\Program Files\Microsoft Platform SDK for Windows Server 2003 R2\Lib;$(SYSTEMDRIVE)\sdk\cpp;$(SYSTEMDRIVE)\Program Files\boost\boost_1_34_1\lib;&quot;$(SYSTEMDRIVE)\Program Files (x86)\Polhemus\PDI\PDI_90\Lib\Win32&quot;"
+EOS
+}
+
 function SourceFile()
 {
 cat <<EOS
@@ -123,7 +138,9 @@ cat <<'EOS'
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="&quot;$(SYSTEMDRIVE)\Program Files\Microsoft Platform SDK for Windows Server 2003 R2\Include&quot;;../dtrack;quat;../isense;../Dtrack;../libfreespace/include;&quot;$(SYSTEMDRIVE)\Program Files\National Instruments\NI-DAQ\DAQmx ANSI C Dev\include&quot;;&quot;$(SYSTEMDRIVE)\Program Files\National Instruments\NI-DAQ\Include&quot;;&quot;$(SYSTEMDRIVE)\sdk\cpp&quot;;&quot;$(SYSTEMDRIVE)\Program Files\boost\boost_1_34_1&quot;;./submodules/hidapi/hidapi;&quot;$(SYSTEMDRIVE)\Program Files\libusb-1.0\libusb&quot;"
+EOS
+IncludeDirectories
+cat <<'EOS'
 				PreprocessorDefinitions="_CRT_SECURE_NO_WARNINGS,VRPNDLL_NOEXPORTS"
 				StringPooling="true"
 				RuntimeLibrary="2"
@@ -149,6 +166,9 @@ cat <<'EOS'
 			<Tool
 				Name="VCLibrarianTool"
 				OutputFile=".\pc_win32/Release\vrpn.lib"
+EOS
+LinkDirectories
+cat <<'EOS'
 				SuppressStartupBanner="true"
 			/>
 			<Tool
@@ -197,7 +217,9 @@ cat <<'EOS'
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;$(SYSTEMDRIVE)\Program Files\Microsoft Platform SDK for Windows Server 2003 R2\Include&quot;;../dtrack;quat;../isense;../Dtrack;../libfreespace/include;&quot;$(SYSTEMDRIVE)\Program Files\National Instruments\NI-DAQ\DAQmx ANSI C Dev\include&quot;;&quot;$(SYSTEMDRIVE)\Program Files\National Instruments\NI-DAQ\Include&quot;;&quot;$(SYSTEMDRIVE)\sdk\cpp&quot;;&quot;$(SYSTEMDRIVE)\Program Files\boost\boost_1_34_1&quot;;./submodules/hidapi/hidapi;&quot;$(SYSTEMDRIVE)\Program Files\libusb-1.0\libusb&quot;"
+EOS
+IncludeDirectories
+cat <<'EOS'
 				PreprocessorDefinitions="_CRT_SECURE_NO_WARNINGS,VRPNDLL_NOEXPORTS"
 				RuntimeLibrary="3"
 				PrecompiledHeaderFile=".\pc_win32/Debug/vrpn.pch"
@@ -222,6 +244,9 @@ cat <<'EOS'
 			<Tool
 				Name="VCLibrarianTool"
 				OutputFile=".\pc_win32/Debug\vrpn.lib"
+EOS
+LinkDirectories
+cat <<'EOS'
 				SuppressStartupBanner="true"
 			/>
 			<Tool
@@ -309,7 +334,9 @@ cat <<'EOS'
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;$(SYSTEMDRIVE)\Program Files\Microsoft Platform SDK for Windows Server 2003 R2\Include&quot;;quat;../isense;../Dtrack;../libfreespace/include;&quot;$(SYSTEMDRIVE)\Program Files\National Instruments\NI-DAQ\DAQmx ANSI C Dev\include&quot;;&quot;$(SYSTEMDRIVE)\Program Files\National Instruments\NI-DAQ\Include&quot;;&quot;$(SYSTEMDRIVE)\sdk\cpp&quot;;&quot;$(SYSTEMDRIVE)\Program Files\boost\boost_1_34_1&quot;;./submodules/hidapi/hidapi;&quot;$(SYSTEMDRIVE)\Program Files\libusb-1.0\libusb&quot;"
+EOS
+IncludeDirectories
+cat <<'EOS'
 				PreprocessorDefinitions="VRPNDLL_EXPORTS,_CRT_SECURE_NO_WARNINGS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -339,7 +366,9 @@ cat <<'EOS'
 				OutputFile=".\pc_win32/DLL/Debug/vrpndll.dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories="$(SYSTEMDRIVE)\Program Files\Microsoft Platform SDK for Windows Server 2003 R2\Lib,$(SYSTEMDRIVE)\sdk\cpp,$(SYSTEMDRIVE)\Program Files\boost\boost_1_34_1\lib"
+EOS
+LinkDirectories
+cat <<'EOS'
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile=".\pc_win32/DLL/Debug/vrpndll.pdb"
 				ImportLibrary=".\pc_win32\DLL\Debug\vrpndll.lib"
@@ -407,7 +436,9 @@ cat <<'EOS'
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="&quot;$(SYSTEMDRIVE)\Program Files\Microsoft Platform SDK for Windows Server 2003 R2\Include&quot;;quat;../isense;../Dtrack;../libfreespace/include;&quot;$(SYSTEMDRIVE)\Program Files\National Instruments\NI-DAQ\DAQmx ANSI C Dev\include&quot;;&quot;$(SYSTEMDRIVE)\Program Files\National Instruments\NI-DAQ\Include&quot;;&quot;$(SYSTEMDRIVE)\sdk\cpp&quot;;&quot;$(SYSTEMDRIVE)\Program Files\boost\boost_1_34_1&quot;;./submodules/hidapi/hidapi;&quot;$(SYSTEMDRIVE)\Program Files\libusb-1.0\libusb&quot;"
+EOS
+IncludeDirectories
+cat <<'EOS'
 				PreprocessorDefinitions="VRPNDLL_EXPORTS,_CRT_SECURE_NO_WARNINGS"
 				StringPooling="true"
 				RuntimeLibrary="2"
@@ -436,7 +467,9 @@ cat <<'EOS'
 				OutputFile=".\pc_win32/DLL/Release/vrpndll.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories="$(SYSTEMDRIVE)\Program Files\Microsoft Platform SDK for Windows Server 2003 R2\Lib,$(SYSTEMDRIVE)\sdk\cpp,$(SYSTEMDRIVE)\Program Files\boost\boost_1_34_1\lib"
+EOS
+LinkDirectories
+cat <<'EOS'
 				ProgramDatabaseFile=".\pc_win32/DLL/Release/vrpndll.pdb"
 				ImportLibrary=".\pc_win32\DLL\Release\vrpndll.lib"
 				TargetMachine="1"
