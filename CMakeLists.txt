@@ -975,6 +975,7 @@ set(VRPN_CLIENT_SOURCES
 	vrpn_Button.C
 	vrpn_Connection.C
 	vrpn_Dial.C
+	vrpn_EndpointContainer.C
 	vrpn_FileConnection.C
 	vrpn_FileController.C
 	vrpn_ForceDevice.C
@@ -1004,6 +1005,7 @@ set(VRPN_CLIENT_PUBLIC_HEADERS
 	vrpn_Connection.h
 	vrpn_ConnectionPtr.h
 	vrpn_Dial.h
+	vrpn_EndpointContainer.h
 	vrpn_FileConnection.h
 	vrpn_FileController.h
 	vrpn_ForceDevice.h

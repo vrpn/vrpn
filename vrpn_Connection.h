@@ -6,6 +6,7 @@
 #include "vrpn_Configure.h" // for VRPN_API, VRPN_CALLBACK, etc
 #include "vrpn_Shared.h"    // for SOCKET, timeval
 #include "vrpn_Types.h"     // for vrpn_int32, vrpn_uint32, etc
+#include "vrpn_EndpointContainer.h"
 
 #if !(defined(_WIN32) && defined(VRPN_USE_WINSOCK_SOCKETS))
 #include <sys/select.h> // for fd_set
@@ -659,8 +660,7 @@ protected:
 
     /// Sockets used to talk to remote Connection(s)
     /// and other information needed on a per-connection basis
-    vrpn_Endpoint_IP *d_endpoints[vrpn_MAX_ENDPOINTS];
-    vrpn_int32 d_numEndpoints;
+    vrpn::EndpointContainer d_endpoints;
 
     vrpn_int32 d_numConnectedEndpoints;
     ///< We need to track the number of connected endpoints separately
@@ -679,6 +679,7 @@ protected:
     virtual void init(void); ///< Base initialization for all constructors.
 
     int delete_endpoint(int whichEndpoint);
+    int delete_endpoint(vrpn_Endpoint *endpoint);
     int compact_endpoints(void);
 
     virtual int pack_sender_description(vrpn_int32 which);
@@ -749,6 +750,7 @@ protected:
     char *d_serverLogName;
 
     vrpn_Endpoint_IP *(*d_endpointAllocator)(vrpn_Connection *, vrpn_int32 *);
+    vrpn::BoundEndpointAllocator d_boundEndpointAllocator;
     vrpn_bool d_updateEndpoint;
 
     virtual void updateEndpoints(void);
@@ -856,8 +858,10 @@ protected:
     /// new connection has just been established, and the tcp port
     /// has been connected to it.
     virtual void handle_connection(int whichEndpoint);
+    virtual void handle_connection(vrpn_Endpoint *endpoint);
 
     virtual void drop_connection(int whichEndpoint);
+    virtual void drop_connection(vrpn_Endpoint *endpoint);
 
     char *d_NIC_IP;
 };
@@ -1086,7 +1090,6 @@ public:
     vrpn_Connection *getByName(const char *name);
 
 private:
-
     /// Mutex to ensure thread safety;
     vrpn_Semaphore d_semaphore;
 
