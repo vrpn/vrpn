@@ -5,7 +5,6 @@
 	Name="vrpn"
 	ProjectGUID="{7EE1DB03-16A5-4465-9164-061BE0C88B8C}"
 	RootNamespace="vrpn"
-	TargetFrameworkVersion="131072"
 	>
 	<Platforms>
 		<Platform
@@ -44,7 +43,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="&quot;$(SYSTEMDRIVE)\Program Files\Microsoft Platform SDK for Windows Server 2003 R2\Include&quot;;../dtrack;quat;../isense;../Dtrack;../libfreespace/include;&quot;$(SYSTEMDRIVE)\Program Files\National Instruments\NI-DAQ\DAQmx ANSI C Dev\include&quot;;&quot;$(SYSTEMDRIVE)\Program Files\National Instruments\NI-DAQ\Include&quot;;&quot;$(SYSTEMDRIVE)\sdk\cpp&quot;;&quot;$(SYSTEMDRIVE)\Program Files\boost\boost_1_34_1&quot;;./submodules/hidapi/hidapi;&quot;$(SYSTEMDRIVE)\Program Files\libusb-1.0\libusb&quot;;&quot;C:\Program Files (x86)\Polhemus\PDI\PDI_90\Inc&quot;"
+				AdditionalIncludeDirectories="&quot;$(SYSTEMDRIVE)\Program Files\Microsoft Platform SDK for Windows Server 2003 R2\Include&quot;;../dtrack;quat;../isense;../Dtrack;../libfreespace/include;&quot;$(SYSTEMDRIVE)\Program Files\National Instruments\NI-DAQ\DAQmx ANSI C Dev\include&quot;;&quot;$(SYSTEMDRIVE)\Program Files\National Instruments\NI-DAQ\Include&quot;;&quot;$(SYSTEMDRIVE)\sdk\cpp&quot;;&quot;$(SYSTEMDRIVE)\Program Files\boost\boost_1_34_1&quot;;./submodules/hidapi/hidapi;&quot;$(SYSTEMDRIVE)\Program Files\libusb-1.0\libusb&quot;;&quot;$(SYSTEMDRIVE)\Program Files (x86)\Polhemus\PDI\PDI_90\Inc&quot;"
 				PreprocessorDefinitions="_CRT_SECURE_NO_WARNINGS,VRPNDLL_NOEXPORTS"
 				StringPooling="true"
 				RuntimeLibrary="2"
@@ -70,6 +69,7 @@
 			<Tool
 				Name="VCLibrarianTool"
 				OutputFile=".\pc_win32/Release\vrpn.lib"
+				AdditionalLibraryDirectories="$(SYSTEMDRIVE)\Program Files\Microsoft Platform SDK for Windows Server 2003 R2\Lib;$(SYSTEMDRIVE)\sdk\cpp;$(SYSTEMDRIVE)\Program Files\boost\boost_1_34_1\lib;&quot;$(SYSTEMDRIVE)\Program Files (x86)\Polhemus\PDI\PDI_90\Lib\Win32&quot;"
 				SuppressStartupBanner="true"
 			/>
 			<Tool
@@ -118,7 +118,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;$(SYSTEMDRIVE)\Program Files\Microsoft Platform SDK for Windows Server 2003 R2\Include&quot;;../dtrack;quat;../isense;../Dtrack;../libfreespace/include;&quot;$(SYSTEMDRIVE)\Program Files\National Instruments\NI-DAQ\DAQmx ANSI C Dev\include&quot;;&quot;$(SYSTEMDRIVE)\Program Files\National Instruments\NI-DAQ\Include&quot;;&quot;$(SYSTEMDRIVE)\sdk\cpp&quot;;&quot;$(SYSTEMDRIVE)\Program Files\boost\boost_1_34_1&quot;;./submodules/hidapi/hidapi;&quot;$(SYSTEMDRIVE)\Program Files\libusb-1.0\libusb&quot;;&quot;C:\Program Files (x86)\Polhemus\PDI\PDI_90\Inc&quot;"
+				AdditionalIncludeDirectories="&quot;$(SYSTEMDRIVE)\Program Files\Microsoft Platform SDK for Windows Server 2003 R2\Include&quot;;../dtrack;quat;../isense;../Dtrack;../libfreespace/include;&quot;$(SYSTEMDRIVE)\Program Files\National Instruments\NI-DAQ\DAQmx ANSI C Dev\include&quot;;&quot;$(SYSTEMDRIVE)\Program Files\National Instruments\NI-DAQ\Include&quot;;&quot;$(SYSTEMDRIVE)\sdk\cpp&quot;;&quot;$(SYSTEMDRIVE)\Program Files\boost\boost_1_34_1&quot;;./submodules/hidapi/hidapi;&quot;$(SYSTEMDRIVE)\Program Files\libusb-1.0\libusb&quot;;&quot;$(SYSTEMDRIVE)\Program Files (x86)\Polhemus\PDI\PDI_90\Inc&quot;"
 				PreprocessorDefinitions="_CRT_SECURE_NO_WARNINGS,VRPNDLL_NOEXPORTS"
 				RuntimeLibrary="3"
 				PrecompiledHeaderFile=".\pc_win32/Debug/vrpn.pch"
@@ -143,7 +143,7 @@
 			<Tool
 				Name="VCLibrarianTool"
 				OutputFile=".\pc_win32/Debug\vrpn.lib"
-				AdditionalLibraryDirectories="&quot;C:\Program Files (x86)\Polhemus\PDI\PDI_90\Lib\Win32&quot;"
+				AdditionalLibraryDirectories="$(SYSTEMDRIVE)\Program Files\Microsoft Platform SDK for Windows Server 2003 R2\Lib;$(SYSTEMDRIVE)\sdk\cpp;$(SYSTEMDRIVE)\Program Files\boost\boost_1_34_1\lib;&quot;$(SYSTEMDRIVE)\Program Files (x86)\Polhemus\PDI\PDI_90\Lib\Win32&quot;"
 				SuppressStartupBanner="true"
 			/>
 			<Tool
@@ -433,46 +433,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="vrpn_OmegaTemperature.C"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						CompileAs="2"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						CompileAs="2"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="vrpn_Tracker_OSVRHackerDevKit.C"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						CompileAs="2"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						CompileAs="2"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath="vrpn_BiosciencesTools.C"
 				>
 				<FileConfiguration
@@ -573,6 +533,26 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="vrpn_CHProducts_Controller_Raw.C"
+				>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath="vrpn_Connection.C"
 				>
 				<FileConfiguration
@@ -593,7 +573,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\vrpn_Contour.C"
+				RelativePath="vrpn_Contour.C"
 				>
 				<FileConfiguration
 					Name="Release|Win32"
@@ -613,7 +593,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\vrpn_CHProducts_Controller_Raw.C"
+				RelativePath="vrpn_DevInput.C"
 				>
 				<FileConfiguration
 					Name="Release|Win32"
@@ -714,6 +694,26 @@
 			</File>
 			<File
 				RelativePath="vrpn_Dyna.C"
+				>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="vrpn_EndpointContainer.C"
 				>
 				<FileConfiguration
 					Name="Release|Win32"
@@ -993,7 +993,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\vrpn_Futaba.C"
+				RelativePath="vrpn_Futaba.C"
 				>
 				<FileConfiguration
 					Name="Release|Win32"
@@ -1033,7 +1033,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\vrpn_Griffin.C"
+				RelativePath="vrpn_Griffin.C"
 				>
 				<FileConfiguration
 					Name="Release|Win32"
@@ -1293,7 +1293,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\vrpn_Logitech_Controller_Raw.C"
+				RelativePath="vrpn_Logitech_Controller_Raw.C"
 				>
 				<FileConfiguration
 					Name="Release|Win32"
@@ -1353,7 +1353,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\vrpn_Microsoft_Controller_Raw.C"
+				RelativePath="vrpn_Microsoft_Controller_Raw.C"
 				>
 				<FileConfiguration
 					Name="Release|Win32"
@@ -1473,6 +1473,26 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="vrpn_OmegaTemperature.C"
+				>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath="vrpn_Poser.C"
 				>
 				<FileConfiguration
@@ -1553,26 +1573,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="vrpn_RetroLink.C"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						CompileAs="2"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						CompileAs="2"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath="vrpn_RedundantTransmission.C"
 				>
 				<FileConfiguration
@@ -1593,7 +1593,27 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\vrpn_Saitek_Controller_Raw.C"
+				RelativePath="vrpn_Retrolink.C"
+				>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="vrpn_Saitek_Controller_Raw.C"
 				>
 				<FileConfiguration
 					Name="Release|Win32"
@@ -1614,6 +1634,26 @@
 			</File>
 			<File
 				RelativePath="vrpn_Serial.C"
+				>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="vrpn_SerialPort.C"
 				>
 				<FileConfiguration
 					Name="Release|Win32"
@@ -1834,6 +1874,26 @@
 			</File>
 			<File
 				RelativePath="vrpn_Tracker_ButtonFly.C"
+				>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="vrpn_Tracker_Colibri.C"
 				>
 				<FileConfiguration
 					Name="Release|Win32"
@@ -2133,6 +2193,26 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="vrpn_Tracker_OSVRHackerDevKit.C"
+				>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath="vrpn_Tracker_PDI.C"
 				>
 				<FileConfiguration
@@ -2194,6 +2274,26 @@
 			</File>
 			<File
 				RelativePath="vrpn_Tracker_SpacePoint.C"
+				>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="vrpn_Tracker_ThalmicLabsMyo.C"
 				>
 				<FileConfiguration
 					Name="Release|Win32"
@@ -2530,14 +2630,6 @@
 				>
 			</File>
 			<File
-				RelativePath="vrpn_OmegaTemperature.h"
-				>
-			</File>
-			<File
-				RelativePath="vrpn_Tracker_OSVRHackerDevKit.h"
-				>
-			</File>
-			<File
 				RelativePath="vrpn_BiosciencesTools.h"
 				>
 			</File>
@@ -2558,6 +2650,10 @@
 				>
 			</File>
 			<File
+				RelativePath="vrpn_CHProducts_Controller_Raw.h"
+				>
+			</File>
+			<File
 				RelativePath="vrpn_Configure.h"
 				>
 			</File>
@@ -2566,11 +2662,15 @@
 				>
 			</File>
 			<File
-				RelativePath=".\vrpn_Contour.h"
+				RelativePath="vrpn_ConnectionPtr.h"
 				>
 			</File>
 			<File
-				RelativePath=".\vrpn_CHProducts_Controller_Raw.h"
+				RelativePath="vrpn_Contour.h"
+				>
+			</File>
+			<File
+				RelativePath="vrpn_DevInput.h"
 				>
 			</File>
 			<File
@@ -2594,6 +2694,10 @@
 				>
 			</File>
 			<File
+				RelativePath="vrpn_EndpointContainer.h"
+				>
+			</File>
+			<File
 				RelativePath="vrpn_Event.h"
 				>
 			</File>
@@ -2611,6 +2715,10 @@
 			</File>
 			<File
 				RelativePath="vrpn_FileController.h"
+				>
+			</File>
+			<File
+				RelativePath="vrpn_FixedPoint.h"
 				>
 			</File>
 			<File
@@ -2646,7 +2754,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\vrpn_Futaba.h"
+				RelativePath="vrpn_Futaba.h"
 				>
 			</File>
 			<File
@@ -2654,7 +2762,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\vrpn_Griffin.h"
+				RelativePath="vrpn_Griffin.h"
 				>
 			</File>
 			<File
@@ -2710,7 +2818,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\vrpn_Logitech_Controller_Raw.h"
+				RelativePath="vrpn_Logitech_Controller_Raw.h"
 				>
 			</File>
 			<File
@@ -2730,7 +2838,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\vrpn_Microsoft_Controller_Raw.h"
+				RelativePath="vrpn_MessageMacros.h"
+				>
+			</File>
+			<File
+				RelativePath="vrpn_Microsoft_Controller_Raw.h"
 				>
 			</File>
 			<File
@@ -2754,6 +2866,14 @@
 				>
 			</File>
 			<File
+				RelativePath="vrpn_OmegaTemperature.h"
+				>
+			</File>
+			<File
+				RelativePath="vrpn_OneEuroFilter.h"
+				>
+			</File>
+			<File
 				RelativePath="vrpn_Poser.h"
 				>
 			</File>
@@ -2770,19 +2890,27 @@
 				>
 			</File>
 			<File
-				RelativePath="vrpn_RetroLink.h"
-				>
-			</File>
-			<File
 				RelativePath="vrpn_RedundantTransmission.h"
 				>
 			</File>
 			<File
-				RelativePath=".\vrpn_Saitek_Controller_Raw.h"
+				RelativePath="vrpn_Retrolink.h"
+				>
+			</File>
+			<File
+				RelativePath="vrpn_Saitek_Controller_Raw.h"
+				>
+			</File>
+			<File
+				RelativePath="vrpn_SendTextMessageStreamProxy.h"
 				>
 			</File>
 			<File
 				RelativePath="vrpn_Serial.h"
+				>
+			</File>
+			<File
+				RelativePath="vrpn_SerialPort.h"
 				>
 			</File>
 			<File
@@ -2827,6 +2955,10 @@
 			</File>
 			<File
 				RelativePath="vrpn_Tracker_ButtonFly.h"
+				>
+			</File>
+			<File
+				RelativePath="vrpn_Tracker_Colibri.h"
 				>
 			</File>
 			<File
@@ -2886,6 +3018,10 @@
 				>
 			</File>
 			<File
+				RelativePath="vrpn_Tracker_OSVRHackerDevKit.h"
+				>
+			</File>
+			<File
 				RelativePath="vrpn_Tracker_PDI.h"
 				>
 			</File>
@@ -2899,6 +3035,10 @@
 			</File>
 			<File
 				RelativePath="vrpn_Tracker_SpacePoint.h"
+				>
+			</File>
+			<File
+				RelativePath="vrpn_Tracker_ThalmicLabsMyo.h"
 				>
 			</File>
 			<File
