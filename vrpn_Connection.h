@@ -674,8 +674,10 @@ protected:
     handle_disconnect_message(void *userdata, vrpn_HANDLERPARAM p);
     /// @}
 
-    virtual void init(void); ///< Base initialization for all constructors.
-
+private:
+    void init(vrpn_EndpointAllocator
+                  epa); ///< Base initialization for all constructors.
+protected:
     int delete_endpoint(int whichEndpoint);
     int delete_endpoint(vrpn_Endpoint *endpoint);
     int compact_endpoints(void);
@@ -747,7 +749,6 @@ protected:
     vrpn_int32 d_serverLogMode;
     char *d_serverLogName;
 
-    vrpn_EndpointAllocator d_endpointAllocator;
     vrpn::BoundEndpointAllocator d_boundEndpointAllocator;
     vrpn_bool d_updateEndpoint;
 
@@ -837,7 +838,7 @@ protected:
     handle_UDP_message(void *userdata, vrpn_HANDLERPARAM p);
 
     /// @brief Called by all constructors
-    virtual void init(void);
+    void init(void);
 
     /// @brief send pending report, clear the buffer.
     ///

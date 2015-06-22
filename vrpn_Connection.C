@@ -4768,14 +4768,14 @@ vrpn_File_Connection *vrpn_Connection::get_File_Connection(void)
     return NULL;
 }
 
-void vrpn_Connection::init(void)
+void vrpn_Connection::init(vrpn_EndpointAllocator epa)
 {
     // Lots of constants used to be set up here.  They were moved
     // into the constructors in 02.10;  this will create a slight
     // increase in maintenance burden keeping the constructors consistent.
 
-    d_boundEndpointAllocator = vrpn::BoundEndpointAllocator(
-        d_endpointAllocator, this, &d_numConnectedEndpoints);
+    d_boundEndpointAllocator =
+        vrpn::BoundEndpointAllocator(epa, this, &d_numConnectedEndpoints);
 
     vrpn_gettimeofday(&start_time, NULL);
 
@@ -4839,11 +4839,10 @@ vrpn_Connection::vrpn_Connection(const char *local_in_logfile_name,
           (local_in_logfile_name ? vrpn_LOG_INCOMING : vrpn_LOG_NONE) |
           (local_out_logfile_name ? vrpn_LOG_OUTGOING : vrpn_LOG_NONE))
     , d_serverLogName(NULL)
-    , d_endpointAllocator(epa)
     , d_updateEndpoint(vrpn_FALSE)
 {
     // Initialize the things that must be for any constructor
-    vrpn_Connection::init();
+    vrpn_Connection::init(epa);
 
     // Server connections should handle log messages.
     d_dispatcher->setSystemHandler(vrpn_CONNECTION_LOG_DESCRIPTION,
@@ -4900,13 +4899,12 @@ vrpn_Connection::vrpn_Connection(const char *local_in_logfile_name,
     , d_serverLogCount(0)
     , d_serverLogMode(vrpn_LOG_NONE)
     , d_serverLogName(NULL)
-    , d_endpointAllocator(epa)
     , d_updateEndpoint(vrpn_FALSE)
 {
     int retval;
 
     // Initialize the things that must be for any constructor
-    vrpn_Connection::init();
+    vrpn_Connection::init(epa);
 
     // We're a client;  create our single endpoint and initialize it.
 
