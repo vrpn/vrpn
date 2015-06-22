@@ -4772,7 +4772,7 @@ void vrpn_Connection::init(void)
 {
     // Lots of constants used to be set up here.  They were moved
     // into the constructors in 02.10;  this will create a slight
-    // increase in maintenance burden keeping the constructors consistient.
+    // increase in maintenance burden keeping the constructors consistent.
 
     d_boundEndpointAllocator = vrpn::BoundEndpointAllocator(
         d_endpointAllocator, this, &d_numConnectedEndpoints);

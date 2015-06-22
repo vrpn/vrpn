@@ -1058,7 +1058,7 @@ int VRPN_API vrpn_noint_block_read(SOCKET insock, char *buffer, size_t length);
 //      The intention of this section is that it can open connections for
 // objects that are in different libraries (trackers, buttons and sound),
 // even if they all refer to the same connection.
-//	Even though each indivual vrpn_Connection class is not yet thread
+//	Even though each individual vrpn_Connection class is not yet thread
 // safe, so should only have its methods called from a single thread,
 // the vrpn_ConnectionManager should be thread safe to allow connections
 // to be created and destroyed by different threads.
