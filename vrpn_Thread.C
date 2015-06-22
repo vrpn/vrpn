@@ -42,9 +42,9 @@ vrpn_Semaphore::vrpn_Semaphore(int cNumResources)
     init();
 }
 
+#ifdef sgi
 bool vrpn_Semaphore::init()
 {
-#ifdef sgi
     if (vrpn_Semaphore::ppaArena == NULL) {
         vrpn_Semaphore::allocArena();
     }
@@ -67,7 +67,11 @@ bool vrpn_Semaphore::init()
             return false;
         }
     }
+    return true;
+}
 #elif defined(_WIN32)
+bool vrpn_Semaphore::init()
+{
     // args are security, initial count, max count, and name
     // TCH 20 Feb 2001 - Make the PC behavior closer to the SGI behavior.
     int numMax = cResources;
@@ -92,7 +96,11 @@ bool vrpn_Semaphore::init()
         LocalFree(lpMsgBuf);
         return false;
     }
+    return true;
+}
 #elif defined(__APPLE__)
+bool vrpn_Semaphore::init()
+{
     // We need to use sem_open on the mac because sem_init is not implemented
     int numMax = cResources;
     if (numMax < 1) {
@@ -107,7 +115,12 @@ bool vrpn_Semaphore::init()
         return false;
     }
     delete[] tempname;
+    return true;
+}
 #else
+
+bool vrpn_Semaphore::init()
+{
     // Posix threads are the default.
     // We use sem_init on linux (instead of sem_open).
     int numMax = cResources;
@@ -119,21 +132,24 @@ bool vrpn_Semaphore::init()
         perror("vrpn_Semaphore::vrpn_Semaphore: error initializing semaphore");
         return false;
     }
-#endif
-
     return true;
 }
+#endif
 
+#ifdef sgi
 bool vrpn_Semaphore::destroy()
 {
-#ifdef sgi
     if (fUsingLock) {
         usfreelock(l, vrpn_Semaphore::ppaArena);
     }
     else {
         usfreesema(ps, vrpn_Semaphore::ppaArena);
     }
+    return true;
+}
 #elif defined(_WIN32)
+bool vrpn_Semaphore::destroy()
+{
     if (!CloseHandle(hSemaphore)) {
         // get error info from windows (from FormatMessage help page)
         LPVOID lpMsgBuf;
@@ -151,7 +167,11 @@ bool vrpn_Semaphore::destroy()
         LocalFree(lpMsgBuf);
         return false;
     }
+    return true;
+ }
 #else
+bool vrpn_Semaphore::destroy()
+{
     // Posix threads are the default.
 #ifdef __APPLE__
     if (sem_close(semaphore) != 0) {
@@ -167,9 +187,9 @@ bool vrpn_Semaphore::destroy()
     delete semaphore;
 #endif
     semaphore = NULL;
-#endif
     return true;
 }
+#endif
 
 vrpn_Semaphore::~vrpn_Semaphore()
 {
