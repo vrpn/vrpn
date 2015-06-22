@@ -992,6 +992,7 @@ set(VRPN_CLIENT_SOURCES
 	vrpn_SharedObject.C
 	vrpn_Sound.C
 	vrpn_Text.C
+	vrpn_Thread.C
 	vrpn_Tracker.C)
 
 set(VRPN_CLIENT_PUBLIC_HEADERS
@@ -1024,6 +1025,7 @@ set(VRPN_CLIENT_PUBLIC_HEADERS
 	vrpn_SharedObject.h
 	vrpn_Sound.h
 	vrpn_Text.h
+	vrpn_Thread.h
 	vrpn_Tracker.h
 	vrpn_Types.h
 	vrpn_WindowsH.h)
