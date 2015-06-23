@@ -733,7 +733,6 @@ private:
     void init(vrpn_EndpointAllocator
                   epa); ///< Base initialization for all constructors.
 protected:
-    int delete_endpoint(int whichEndpoint);
     int delete_endpoint(vrpn_Endpoint *endpoint);
     int compact_endpoints(void);
 
@@ -910,13 +909,11 @@ protected:
     /// This routine is called by a server-side connection when a
     /// new connection has just been established, and the tcp port
     /// has been connected to it.
-    virtual void handle_connection(int whichEndpoint);
     virtual void handle_connection(vrpn_Endpoint *endpoint);
 
     /// Drops the connection with the given, non-NULL endpoint.  Depending on if
     /// we're a server or a client, this may result in the endpoints needing
     /// compacting once you're no longer iterating on the endpoint container.
-    virtual void drop_connection(int whichEndpoint);
     virtual void drop_connection(vrpn_Endpoint *endpoint);
 
     /// Like drop_connection, except it includes the call to compact the

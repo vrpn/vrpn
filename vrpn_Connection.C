@@ -4802,12 +4802,6 @@ void vrpn_Connection::init(vrpn_EndpointAllocator epa)
  * Deletes the endpoint and NULLs the entry in the list of open endpoints.
  */
 
-int vrpn_Connection::delete_endpoint(int endpointIndex)
-{
-    d_endpoints.destroy(endpointIndex);
-    return 0;
-}
-
 int vrpn_Connection::delete_endpoint(vrpn_Endpoint *endpoint)
 {
     d_endpoints.destroy(endpoint);
@@ -5463,12 +5457,6 @@ int vrpn_Connection_IP::connect_to_client(const char *machine, int port)
     return 0;
 }
 
-void vrpn_Connection_IP::handle_connection(int endpointIndex)
-{
-
-    handle_connection(d_endpoints.get_by_index(endpointIndex));
-}
-
 void vrpn_Connection_IP::handle_connection(vrpn_Endpoint *endpoint)
 {
     // Set up the things that need to happen when a new connection is
@@ -5828,11 +5816,6 @@ void vrpn_Connection_IP::server_check_for_incoming_connections(
     }
 
     return;
-}
-
-void vrpn_Connection_IP::drop_connection(int whichEndpoint)
-{
-    drop_connection(d_endpoints.get_by_index(whichEndpoint));
 }
 
 void vrpn_Connection_IP::drop_connection(vrpn_Endpoint *endpoint)
