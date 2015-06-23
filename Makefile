@@ -600,6 +600,7 @@ LIB_FILES =  \
 	vrpn_SharedObject.C \
 	vrpn_Sound.C \
 	vrpn_Text.C \
+	vrpn_Thread.C \
 	vrpn_Tracker.C
 
 LIB_OBJECTS = $(patsubst %,$(OBJECT_DIR)/%,$(LIB_FILES:.C=.o))
@@ -631,7 +632,9 @@ LIB_INCLUDES = \
 	vrpn_MainloopContainer.h \
 	vrpn_BufferUtils.h \
 	vrpn_SendTextMessageStreamProxy.h \
-	vrpn_EndpointContainer.h
+	vrpn_EndpointContainer.h \
+	vrpn_Thread.h \
+	vrpn_WindowsH.h
 
 $(LIB_OBJECTS):
 $(OBJECT_DIR)/libvrpn.a: $(MAKEFILE) $(LIB_OBJECTS)
