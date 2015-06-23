@@ -209,8 +209,11 @@ namespace vrpn {
         /// @brief prefix ++ operator, increments (and skips any nulls)
         type &operator++()
         {
-            if (!valid()) {
-                // Early out if we're already at the end
+            /// Invariant might be invalid here, since the user might have just
+            /// deleted something.
+            if (equal_to_default_()) {
+                // Early out if we're already the end sentinel (default
+                // constructor value)
                 return *this;
             }
 
@@ -246,6 +249,10 @@ namespace vrpn {
         /// @}
 
     private:
+        bool equal_to_default_() const
+        {
+            return (NULL == container_) && (index_ == 0);
+        }
         /// @brief Function to verify an iterator to enforce the class
         /// invariant.
         void enforce_invariant_()
