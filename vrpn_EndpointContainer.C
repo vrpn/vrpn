@@ -89,4 +89,11 @@ namespace vrpn {
         return false;
     }
 
+    void EndpointContainer::acquire_(EndpointContainer::pointer endpoint)
+    {
+        if (NULL != endpoint) {
+            container_.push_back(endpoint);
+        }
+    }
+
 } // namespace vrpn

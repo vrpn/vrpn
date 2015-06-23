@@ -79,9 +79,7 @@ namespace vrpn {
         /// @return the input pointer
         template <typename T> T *acquire(T *endpoint)
         {
-            if (endpoint) {
-                container_.push_back(endpoint);
-            }
+            acquire_(endpoint);
             return endpoint;
         }
 
@@ -123,6 +121,12 @@ namespace vrpn {
         raw_iterator end_() { return container_.end(); }
         raw_const_iterator end_() const { return container_.end(); }
         // @}
+        /// @name Internal helper methods
+        /// @{
+        /// @brief Implementation of acquire for the stored pointer type.
+        void acquire_(pointer endpoint);
+
+        /// @}
         container_type container_;
         bool needsCompact_;
     };
