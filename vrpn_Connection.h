@@ -703,18 +703,30 @@ protected:
 
     int connectionStatus; ///< Status of the connection
 
+    /// Redefining this and passing it to constructors
+    /// allows a subclass to use a different subclass of Endpoint.
+    /// It should do NOTHING but return an endpoint
+    /// of the appropriate class;  it may not access subclass data,
+    /// since it'll be called from a constructor
     static vrpn_Endpoint_IP *allocateEndpoint(vrpn_Connection *,
                                               vrpn_int32 *connectedEC);
-    ///< Redefining this and passing it to constructors
-    ///< allows a subclass to use a different subclass of Endpoint.
-    ///< It should do NOTHING but return an endpoint
-    ///< of the appropriate class;  it may not access subclass data,
-    ///< since it'll be called from a constructor
+
+#ifdef _MSC_VER
+#pragma warning(push)
+// Disable "need dll interface" warning on these members
+#pragma warning(disable : 4251)
+#endif
+    /// Function object wrapping an endpoint allocator and binding its
+    /// arguments.
+    vrpn::BoundEndpointAllocator d_boundEndpointAllocator;
 
     /// Sockets used to talk to remote Connection(s)
     /// and other information needed on a per-connection basis
     vrpn::EndpointContainer d_endpoints;
 
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
     vrpn_int32 d_numConnectedEndpoints;
     ///< We need to track the number of connected endpoints separately
     ///< to properly send out got-first-connection/dropped-last-connection
@@ -803,7 +815,6 @@ protected:
     vrpn_int32 d_serverLogMode;
     char *d_serverLogName;
 
-    vrpn::BoundEndpointAllocator d_boundEndpointAllocator;
     vrpn_bool d_updateEndpoint;
 
     virtual void updateEndpoints(void);
