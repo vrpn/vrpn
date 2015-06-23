@@ -584,6 +584,7 @@ LIB_FILES =  \
 	vrpn_Button.C \
 	vrpn_Connection.C \
 	vrpn_Dial.C \
+	vrpn_EndpointContainer.C \
 	vrpn_FileConnection.C \
 	vrpn_FileController.C \
 	vrpn_ForceDevice.C \
@@ -629,7 +630,8 @@ LIB_INCLUDES = \
 	vrpn_MainloopObject.h \
 	vrpn_MainloopContainer.h \
 	vrpn_BufferUtils.h \
-	vrpn_SendTextMessageStreamProxy.h
+	vrpn_SendTextMessageStreamProxy.h \
+	vrpn_EndpointContainer.h
 
 $(LIB_OBJECTS):
 $(OBJECT_DIR)/libvrpn.a: $(MAKEFILE) $(LIB_OBJECTS)

@@ -970,11 +970,13 @@ endif()
 set(VRPN_CLIENT_SOURCES
 	vrpn_Analog.C
 	vrpn_Analog_Output.C
+	vrpn_Assert.C
 	vrpn_Auxiliary_Logger.C
 	vrpn_BaseClass.C
 	vrpn_Button.C
 	vrpn_Connection.C
 	vrpn_Dial.C
+	vrpn_EndpointContainer.C
 	vrpn_FileConnection.C
 	vrpn_FileController.C
 	vrpn_ForceDevice.C
@@ -999,12 +1001,14 @@ set(VRPN_CLIENT_PUBLIC_HEADERS
 	"${PROJECT_BINARY_DIR}/vrpn_Configure.h"
 	vrpn_Analog.h
 	vrpn_Analog_Output.h
+	vrpn_Assert.h
 	vrpn_Auxiliary_Logger.h
 	vrpn_BaseClass.h
 	vrpn_Button.h
 	vrpn_Connection.h
 	vrpn_ConnectionPtr.h
 	vrpn_Dial.h
+	vrpn_EndpointContainer.h
 	vrpn_FileConnection.h
 	vrpn_FileController.h
 	vrpn_ForceDevice.h

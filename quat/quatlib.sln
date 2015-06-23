@@ -1,6 +1,5 @@
-
-Microsoft Visual Studio Solution File, Format Version 9.00
-# Visual Studio 2005
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual C++ Express 2008
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "quatlib", "quatlib.vcproj", "{0C16E98C-A372-4E58-990D-EE276B32644E}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "xform_to_components", "testapps\xform_to_components.vcproj", "{CDE91DDD-1BFC-4BF0-B5E6-611C9AED47D0}"

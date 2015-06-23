@@ -82,13 +82,13 @@ vrpn_File_Connection::vrpn_File_Connection(const char *station_name,
 
     // Because we are a file connection, our status should be CONNECTED
     // Later set this to BROKEN if there is a problem opening/reading the file.
-    if (d_endpoints[0] == NULL) {
+    if (!d_endpoints.is_valid(0)) {
         fprintf(stderr, "vrpn_File_Connection::vrpn_File_Connection(): NULL "
                         "zeroeth endpoint\n");
     }
     else {
         connectionStatus = CONNECTED;
-        d_endpoints[0]->status = CONNECTED;
+        d_endpoints.front()->status = CONNECTED;
     }
 
     // If we are preloading, then we must accumulate messages.
@@ -652,7 +652,7 @@ int vrpn_File_Connection::playone()
 //    1 if we hit end_filetime
 int vrpn_File_Connection::playone_to_filetime(timeval end_filetime)
 {
-    vrpn_Endpoint *endpoint = d_endpoints[0];
+    vrpn_Endpoint *endpoint = d_endpoints.front();
     timeval now;
     int retval;
 
@@ -1033,12 +1033,12 @@ int vrpn_File_Connection::read_cookie(void)
     }
 
     // TCH July 2001
-    if (!d_endpoints[0]) {
+    if (!d_endpoints.is_valid(0)) {
         fprintf(stderr, "vrpn_File_Connection::read_cookie:  "
                         "No endpoints[0].  Internal failure.\n");
         return -1;
     }
-    d_endpoints[0]->d_inLog->setCookie(readbuf);
+    d_endpoints.front()->d_inLog->setCookie(readbuf);
 
     return 0;
 }
@@ -1174,7 +1174,7 @@ int vrpn_File_Connection::close_file()
 int vrpn_File_Connection::reset()
 {
     // make it as if we never saw any messages from our previous activity
-    d_endpoints[0]->drop_connection();
+    d_endpoints.front()->drop_connection();
 
     // If we are accumulating, reset us back to the beginning of the memory
     // buffer chain. Otherwise, go back to the beginning of the file and
@@ -1245,7 +1245,7 @@ int vrpn_File_Connection::send_pending_reports(void)
     // Do nothing except clear the buffer -
     // file connections aren't really connected to anything.
 
-    d_endpoints[0]->clearBuffers(); // Clear the buffer for the next time
+    d_endpoints.front()->clearBuffers(); // Clear the buffer for the next time
     return 0;
 }
 

@@ -28,43 +28,43 @@
 
 #ifdef VRPN_USE_WINSOCK_SOCKETS
 
-  // A socket in Windows can not be closed like it can in unix-land
-  #define vrpn_closeSocket closesocket
+// A socket in Windows can not be closed like it can in unix-land
+#define vrpn_closeSocket closesocket
 
-  // Socket errors don't set errno in Windows; they use their own
-  // custom error reporting methods.
-  #define vrpn_socket_error WSAGetLastError()
-  static std::string WSA_number_to_string(int err)
-  {
-	LPTSTR s = NULL;
-	FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-		NULL, err,
-		MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-		(LPTSTR)&s, 0, NULL);
-	std::string ret = s;
-	LocalFree(s);
-	return ret;
-  }
-  #define vrpn_socket_error_to_chars(x) (WSA_number_to_string(x)).c_str()
-  #define vrpn_EINTR WSAEINTR
+// Socket errors don't set errno in Windows; they use their own
+// custom error reporting methods.
+#define vrpn_socket_error WSAGetLastError()
+static std::string WSA_number_to_string(int err)
+{
+    LPTSTR s = NULL;
+    FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM |
+                      FORMAT_MESSAGE_IGNORE_INSERTS,
+                  NULL, err, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+                  (LPTSTR)&s, 0, NULL);
+    std::string ret = s;
+    LocalFree(s);
+    return ret;
+}
+#define vrpn_socket_error_to_chars(x) (WSA_number_to_string(x)).c_str()
+#define vrpn_EINTR WSAEINTR
 
 #else
-  #include <errno.h> // for errno, EINTR
+#include <errno.h> // for errno, EINTR
 
-  #define vrpn_closeSocket close
+#define vrpn_closeSocket close
 
-  #define vrpn_socket_error errno
-  #define vrpn_socket_error_to_chars(x) strerror(x)
-  #define vrpn_EINTR EINTR
+#define vrpn_socket_error errno
+#define vrpn_socket_error_to_chars(x) strerror(x)
+#define vrpn_EINTR EINTR
 
-  #include <arpa/inet.h>  // for inet_addr
-  #include <netinet/in.h> // for sockaddr_in, ntohl, in_addr, etc
-  #include <sys/socket.h> // for getsockname, send, AF_INET, etc
-  #include <unistd.h>     // for close, read, fork, etc
-  #ifdef _AIX
-    #define _USE_IRS
-  #endif
-  #include <netdb.h> // for hostent, gethostbyname, etc
+#include <arpa/inet.h>  // for inet_addr
+#include <netinet/in.h> // for sockaddr_in, ntohl, in_addr, etc
+#include <sys/socket.h> // for getsockname, send, AF_INET, etc
+#include <unistd.h>     // for close, read, fork, etc
+#ifdef _AIX
+#define _USE_IRS
+#endif
+#include <netdb.h> // for hostent, gethostbyname, etc
 
 #endif
 
@@ -92,13 +92,13 @@
 
 // cast fourth argument to setsockopt()
 #ifdef VRPN_USE_WINSOCK_SOCKETS
-  #define SOCK_CAST (char *)
+#define SOCK_CAST (char *)
 #else
-  #ifdef sparc
-    #define SOCK_CAST (const char *)
-  #else
-    #define SOCK_CAST
-  #endif
+#ifdef sparc
+#define SOCK_CAST (const char *)
+#else
+#define SOCK_CAST
+#endif
 #endif
 
 #if defined(_AIX) || defined(__APPLE__) || defined(ANDROID) || defined(__linux)
@@ -707,7 +707,7 @@ int vrpn_Log::saveLogSoFar(void)
     while (d_logTail) {
         lp = d_logTail->next;
         if (d_logTail->data.buffer) {
-            delete[]d_logTail -> data.buffer; // ugly cast
+            delete[] d_logTail->data.buffer; // ugly cast
         }
         delete d_logTail;
         d_logTail = lp;
@@ -834,7 +834,8 @@ int vrpn_Log::setCompoundName(const char *name, int index)
     if (dot) {
         strncpy(newName, name, dot - name);
         newName[dot - name] = 0;
-    } else {
+    }
+    else {
         strcpy(newName, name);
     }
     len = strlen(newName);
@@ -1700,7 +1701,7 @@ int vrpn_noint_select(int width, fd_set *readfds, fd_set *writefds,
         if (ret >= 0) { /* We are done if timeout or found some */
             done = 1;
         }
-		else if (vrpn_socket_error != vrpn_EINTR) { /* Done if non-intr error */
+        else if (vrpn_socket_error != vrpn_EINTR) { /* Done if non-intr error */
             done = 1;
         }
         else if ((timeout != NULL) &&
@@ -1753,7 +1754,7 @@ int vrpn_noint_select(int width, fd_set *readfds, fd_set *writefds,
 int vrpn_noint_block_write(int outfile, const char buffer[], size_t length)
 {
     register int sofar = 0; /* How many characters sent so far */
-    register int ret;   /* Return value from write() */
+    register int ret;       /* Return value from write() */
 
     do {
         /* Try to write the remaining data */
@@ -1804,7 +1805,7 @@ int vrpn_noint_block_read(int infile, char buffer[], size_t length)
         sofar += ret;
 
         /* Ignore interrupted system calls - retry */
-		if ((ret == -1) && (vrpn_socket_error == vrpn_EINTR)) {
+        if ((ret == -1) && (vrpn_socket_error == vrpn_EINTR)) {
             ret = 1;    /* So we go around the loop again */
             sofar += 1; /* Restoring it from above -1 */
         }
@@ -1961,7 +1962,7 @@ int vrpn_noint_block_read_timeout(SOCKET infile, char buffer[], size_t length,
         sofar += ret;
 
         /* Ignore interrupted system calls - retry */
-		if ((ret == -1) && (vrpn_socket_error == vrpn_EINTR)) {
+        if ((ret == -1) && (vrpn_socket_error == vrpn_EINTR)) {
             ret = 1;    /* So we go around the loop again */
             sofar += 1; /* Restoring it from above -1 */
         }
@@ -2006,7 +2007,8 @@ static SOCKET open_socket(int type, unsigned short *portno,
     if (sock == INVALID_SOCKET) {
         fprintf(stderr, "open_socket: can't open socket.\n");
 #ifndef _WIN32_WCE
-		fprintf(stderr, "  -- Error %d (%s).\n", vrpn_socket_error, vrpn_socket_error_to_chars(vrpn_socket_error));
+        fprintf(stderr, "  -- Error %d (%s).\n", vrpn_socket_error,
+                vrpn_socket_error_to_chars(vrpn_socket_error));
 #endif
         return INVALID_SOCKET;
     }
@@ -2016,8 +2018,8 @@ static SOCKET open_socket(int type, unsigned short *portno,
     vrpn_int32 optval = 1;
     vrpn_int32 sockoptsuccess =
         setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof optval);
-    //fprintf(stderr, "setsockopt returned %i, optval: %i\n", sockoptsuccess,
-    //        optval);
+// fprintf(stderr, "setsockopt returned %i, optval: %i\n", sockoptsuccess,
+//        optval);
 #endif
 
     namelen = sizeof(name);
@@ -2064,7 +2066,8 @@ static SOCKET open_socket(int type, unsigned short *portno,
             fprintf(stderr, " %d", *portno);
         }
 #ifndef _WIN32_WCE
-		fprintf(stderr, "  --  %d  --  %s\n", vrpn_socket_error, vrpn_socket_error_to_chars(vrpn_socket_error));
+        fprintf(stderr, "  --  %d  --  %s\n", vrpn_socket_error,
+                vrpn_socket_error_to_chars(vrpn_socket_error));
 #endif
         fprintf(stderr, "  (This probably means that another application has "
                         "the port open already)\n");
@@ -2208,19 +2211,21 @@ static SOCKET vrpn_connect_udp_port(const char *machineName, int remotePort,
  * call back.  This turned out to be unroutable, so the server failed to call
  * back on the correct IP address.  Presumably, this happens when the gateway
  * is configured to be a single outgoing NIC.  This was on a Linux box.  We
- * need a more reliable way to select the outgoing NIC.  XXX Actually, the problem may be that
- * we aren't listening on the incorrect port -- the UDP receipt code may
- * use the IP address the message came from rather than the machine name
- * in the message.
+ * need a more reliable way to select the outgoing NIC.  XXX Actually, the
+ * problem may be that we aren't listening on the incorrect port -- the UDP
+ * receipt code may use the IP address the message came from rather than the
+ * machine name in the message.
  *
- * @param local_host A buffer of size 64 that will contain the name of the local interface.
+ * @param local_host A buffer of size 64 that will contain the name of the local
+ * interface.
  * @param max_length The maximum length of the local_host buffer.
  * @param remote_host The name of the remote host.
  *
  * @return Returns -1 on getsockname() error, or the output of sprintf
  * building the local_host string.
  */
-static int get_local_socket_name(char *local_host, size_t max_length, const char* remote_host)
+static int get_local_socket_name(char *local_host, size_t max_length,
+                                 const char *remote_host)
 {
     const int remote_port = vrpn_DEFAULT_LISTEN_PORT_NO;
     struct sockaddr_in udp_name;
@@ -2228,24 +2233,28 @@ static int get_local_socket_name(char *local_host, size_t max_length, const char
 
     SOCKET udp_socket = vrpn_connect_udp_port(remote_host, remote_port, NULL);
     if (udp_socket == INVALID_SOCKET) {
-      fprintf(stderr, "get_local_socket_name: cannot connect_udp_port to %s.\n", remote_host);
-      fprintf(stderr, " (returning 0.0.0.0 so we listen on all ports).\n");
-      udp_name.sin_addr.s_addr = 0;
-    } else {
-      if (getsockname(udp_socket, (struct sockaddr *)&udp_name, GSN_CAST & udp_namelen)) {
-          fprintf(stderr, "get_local_socket_name: cannot get socket name.\n");
-          vrpn_closeSocket(udp_socket);
-          return -1;
-      }
+        fprintf(stderr,
+                "get_local_socket_name: cannot connect_udp_port to %s.\n",
+                remote_host);
+        fprintf(stderr, " (returning 0.0.0.0 so we listen on all ports).\n");
+        udp_name.sin_addr.s_addr = 0;
+    }
+    else {
+        if (getsockname(udp_socket, (struct sockaddr *)&udp_name,
+                        GSN_CAST & udp_namelen)) {
+            fprintf(stderr, "get_local_socket_name: cannot get socket name.\n");
+            vrpn_closeSocket(udp_socket);
+            return -1;
+        }
     }
 
     // NOTE NIC will be 0.0.0.0 if we listen on all NICs.
     char myIPstring[100];
     int ret = sprintf(myIPstring, "%d.%d.%d.%d",
-        ntohl(udp_name.sin_addr.s_addr) >> 24,
-        (ntohl(udp_name.sin_addr.s_addr) >> 16) & 0xff,
-        (ntohl(udp_name.sin_addr.s_addr) >> 8) & 0xff,
-        ntohl(udp_name.sin_addr.s_addr) & 0xff);
+                      ntohl(udp_name.sin_addr.s_addr) >> 24,
+                      (ntohl(udp_name.sin_addr.s_addr) >> 16) & 0xff,
+                      (ntohl(udp_name.sin_addr.s_addr) >> 8) & 0xff,
+                      ntohl(udp_name.sin_addr.s_addr) & 0xff);
 
     // Copy this to the output
     if ((unsigned)strlen(myIPstring) > max_length) {
@@ -2276,10 +2285,10 @@ static int get_local_socket_name(char *local_host, size_t max_length, const char
  */
 
 int vrpn_udp_request_lob_packet(
-	SOCKET udp_sock,       // Socket to use to send
-    const char *,              // Name of the machine to call
-    const int,                 // UDP port on remote machine
-    const int local_port,      // TCP port on this machine
+    SOCKET udp_sock,      // Socket to use to send
+    const char *,         // Name of the machine to call
+    const int,            // UDP port on remote machine
+    const int local_port, // TCP port on this machine
     const char *NIC_IP = NULL)
 {
     char msg[150];      /* Message to send */
@@ -2466,10 +2475,10 @@ static int vrpn_start_server(const char *machine, char *server_name, char *args,
     if (pid == 0) { /* CHILD */
         int loop;
         int ret;
-        int num_descriptors; /* Number of available file descr */
-        char myIPchar[100];  /* Host name of this host */
-        char command[600];   /* Command passed to system() call */
-        const char *rsh_to_use;    /* Full path to Rsh command. */
+        int num_descriptors;    /* Number of available file descr */
+        char myIPchar[100];     /* Host name of this host */
+        char command[600];      /* Command passed to system() call */
+        const char *rsh_to_use; /* Full path to Rsh command. */
 
         if (vrpn_getmyIP(myIPchar, sizeof(myIPchar), IPaddress, server_sock)) {
             fprintf(stderr, "vrpn_start_server: Error finding my IP\n");
@@ -2691,7 +2700,7 @@ vrpn_Endpoint_IP::vrpn_Endpoint_IP(vrpn_TypeDispatcher *dispatcher,
     , d_tcpSocket(INVALID_SOCKET)
     , d_tcpListenSocket(INVALID_SOCKET)
     , d_tcpListenPort(0)
-	, d_udpLobSocket(INVALID_SOCKET)
+    , d_udpLobSocket(INVALID_SOCKET)
     , d_remote_machine_name(NULL)
     , d_remote_port_number(0)
     , d_tcp_only(vrpn_FALSE)
@@ -2767,10 +2776,10 @@ vrpn_Endpoint_IP::~vrpn_Endpoint_IP(void)
         vrpn_closeSocket(d_tcpListenSocket);
         d_tcpListenSocket = INVALID_SOCKET;
     }
-	if (d_udpLobSocket != INVALID_SOCKET) {
-		vrpn_closeSocket(d_udpLobSocket);
-		d_udpLobSocket = INVALID_SOCKET;
-	}
+    if (d_udpLobSocket != INVALID_SOCKET) {
+        vrpn_closeSocket(d_udpLobSocket);
+        d_udpLobSocket = INVALID_SOCKET;
+    }
 
     // Delete the buffers created in the constructor
     if (d_tcpOutbuf) {
@@ -2847,7 +2856,7 @@ void vrpn_Endpoint_IP::init(void)
     d_tcpSocket = INVALID_SOCKET;
     d_tcpListenSocket = INVALID_SOCKET;
     d_tcpListenPort = 0;
-	d_udpLobSocket = INVALID_SOCKET;
+    d_udpLobSocket = INVALID_SOCKET;
     d_udpOutboundSocket = INVALID_SOCKET;
     d_udpInboundSocket = INVALID_SOCKET;
 
@@ -2896,7 +2905,8 @@ int vrpn_Endpoint_IP::mainloop(timeval *timeout)
                               timeout) == -1) {
             fprintf(stderr, "vrpn_Endpoint::mainloop: select failed.\n");
 #ifndef _WIN32_WCE
-			fprintf(stderr, "  Error (%d):  %s.\n", vrpn_socket_error, vrpn_socket_error_to_chars(vrpn_socket_error));
+            fprintf(stderr, "  Error (%d):  %s.\n", vrpn_socket_error,
+                    vrpn_socket_error_to_chars(vrpn_socket_error));
 #endif
             status = BROKEN;
             return -1;
@@ -3016,20 +3026,20 @@ int vrpn_Endpoint_IP::mainloop(timeval *timeout)
         // do BAD THINGS (TM).
 
         if (time_to_try_again) {
-			//XXX On Linux, if we are talking to a machine that does not
-			// have a server running, then our connect eventually tells us
-			// that is was refused, and we can't communicate on that
-			// UDP socket anymore.  We should switch to a connectionless
-			// sendto() option instead, but this runs the way it used
-			// to, which worked, but still leaves the socket open after
-			// the send; closing it right away broke on some Windows
-			// machines.
-			vrpn_closeSocket(d_udpLobSocket);
-			d_udpLobSocket = vrpn_connect_udp_port(d_remote_machine_name,
-				d_remote_port_number, d_NICaddress);
+            // XXX On Linux, if we are talking to a machine that does not
+            // have a server running, then our connect eventually tells us
+            // that is was refused, and we can't communicate on that
+            // UDP socket anymore.  We should switch to a connectionless
+            // sendto() option instead, but this runs the way it used
+            // to, which worked, but still leaves the socket open after
+            // the send; closing it right away broke on some Windows
+            // machines.
+            vrpn_closeSocket(d_udpLobSocket);
+            d_udpLobSocket = vrpn_connect_udp_port(
+                d_remote_machine_name, d_remote_port_number, d_NICaddress);
 
-			if (vrpn_udp_request_lob_packet(d_udpLobSocket,
-                    d_remote_machine_name, d_remote_port_number,
+            if (vrpn_udp_request_lob_packet(
+                    d_udpLobSocket, d_remote_machine_name, d_remote_port_number,
                     d_tcpListenPort, d_NICaddress) == -1) {
                 fprintf(stderr,
                         "vrpn_Endpoint: mainloop: Can't lob UDP request\n");
@@ -3211,7 +3221,8 @@ int vrpn_Endpoint_IP::send_pending_reports(void)
     if (connection) {
         fprintf(stderr, "vrpn_Endpoint::send_pending_reports():  "
                         "select() failed.\n");
-		fprintf(stderr, "Error (%d):  %s.\n", vrpn_socket_error, vrpn_socket_error_to_chars(vrpn_socket_error));
+        fprintf(stderr, "Error (%d):  %s.\n", vrpn_socket_error,
+                vrpn_socket_error_to_chars(vrpn_socket_error));
         status = BROKEN;
         return -1;
     }
@@ -3810,8 +3821,7 @@ int vrpn_Endpoint_IP::setup_new_connection(void)
 
     // Keep Valgrind happy
     memset(sendbuf, 0, sizeof(sendbuf));
-    retval =
-        write_vrpn_cookie(sendbuf, sizeof(sendbuf), d_remoteLogMode);
+    retval = write_vrpn_cookie(sendbuf, sizeof(sendbuf), d_remoteLogMode);
     if (retval < 0) {
         perror("vrpn_Endpoint::setup_new_connection:  "
                "Internal error - array too small.  The code's broken.");
@@ -3897,8 +3907,8 @@ void vrpn_Endpoint_IP::poll_for_cookie(const timeval *pTimeout)
 
 int vrpn_Endpoint_IP::finish_new_connection_setup(void)
 {
-	const vrpn_int32 sendlen = static_cast<vrpn_int32>(vrpn_COOKIE_SIZE);
-	char recvbuf[vrpn_COOKIE_SIZE];
+    const vrpn_int32 sendlen = static_cast<vrpn_int32>(vrpn_COOKIE_SIZE);
+    char recvbuf[vrpn_COOKIE_SIZE];
 
     // Keep Valgrind happy
     memset(recvbuf, 0, sizeof(recvbuf));
@@ -3961,7 +3971,8 @@ int vrpn_Endpoint_IP::finish_new_connection_setup(void)
         if (d_udpInboundSocket == INVALID_SOCKET) {
             // Open the UDP port to accept time-critical messages on.
 
-            unsigned short udp_portnum = static_cast<unsigned short>(INADDR_ANY);
+            unsigned short udp_portnum =
+                static_cast<unsigned short>(INADDR_ANY);
             d_udpInboundSocket = ::open_udp_socket(&udp_portnum, d_NICaddress);
             if (d_udpInboundSocket == INVALID_SOCKET) {
                 fprintf(stderr, "vrpn_Endpoint::finish_new_connection_setup:  "
@@ -4039,8 +4050,7 @@ int vrpn_Endpoint_IP::getOneTCPMessage(int fd, char *buf, size_t buflen)
     int retval;
 
 #ifdef VERBOSE2
-    fprintf(stderr,
-            "vrpn_Endpoint::getOneTCPMessage():  something to read\n");
+    fprintf(stderr, "vrpn_Endpoint::getOneTCPMessage():  something to read\n");
 #endif
 
     // Read and parse the header
@@ -4096,7 +4106,8 @@ int vrpn_Endpoint_IP::getOneTCPMessage(int fd, char *buf, size_t buflen)
     }
 
     // Read the body of the message
-    if (static_cast<size_t>(vrpn_noint_block_read(fd, buf, ceil_len)) != ceil_len) {
+    if (static_cast<size_t>(vrpn_noint_block_read(fd, buf, ceil_len)) !=
+        ceil_len) {
         perror("vrpn: vrpn_Endpoint::getOneTCPMessage: Can't read body");
         return -1;
     }
@@ -4561,15 +4572,12 @@ static int flush_udp_socket(SOCKET fd)
 
 int vrpn_Connection::pack_type_description(vrpn_int32 which)
 {
-    int retval;
-    int i;
 
-    for (i = 0; i < d_numEndpoints; i++) {
-        if (d_endpoints[i]) {
-            retval = d_endpoints[i]->pack_type_description(which);
-            if (retval) {
-                return -1;
-            }
+    for (vrpn::EndpointIterator it = d_endpoints.begin(), e = d_endpoints.end();
+         it != e; ++it) {
+        int retval = it->pack_type_description(which);
+        if (retval) {
+            return -1;
         }
     }
 
@@ -4578,15 +4586,11 @@ int vrpn_Connection::pack_type_description(vrpn_int32 which)
 
 int vrpn_Connection::pack_sender_description(vrpn_int32 which)
 {
-    int retval;
-    int i;
-
-    for (i = 0; i < d_numEndpoints; i++) {
-        if (d_endpoints[i]) {
-            retval = d_endpoints[i]->pack_sender_description(which);
-            if (retval) {
-                return -1;
-            }
+    for (vrpn::EndpointIterator it = d_endpoints.begin(), e = d_endpoints.end();
+         it != e; ++it) {
+        int retval = it->pack_sender_description(which);
+        if (retval) {
+            return -1;
         }
     }
 
@@ -4650,8 +4654,6 @@ int vrpn_Connection::pack_message(vrpn_uint32 len, struct timeval time,
                                   const char *buffer,
                                   vrpn_uint32 class_of_service)
 {
-    int i, ret;
-
     // Make sure I'm not broken
     if (connectionStatus == BROKEN) {
         printf("vrpn_Connection::pack_message: Can't pack because the "
@@ -4677,11 +4679,11 @@ int vrpn_Connection::pack_message(vrpn_uint32 len, struct timeval time,
     // yanking local callbacks in order to have message delivery be the
     // same on local and remote systems in the case where a local handler
     // packs one or more messages in response to this message.
-    ret = 0;
-    for (i = 0; i < d_numEndpoints; i++) {
-        if (d_endpoints[i] &&
-            (d_endpoints[i]->pack_message(len, time, type, sender, buffer,
-                                          class_of_service) != 0)) {
+    int ret = 0;
+    for (vrpn::EndpointIterator it = d_endpoints.begin(), e = d_endpoints.end();
+         it != e; ++it) {
+        if (it->pack_message(len, time, type, sender, buffer,
+                             class_of_service) != 0) {
             ret = -1;
         }
     }
@@ -4739,10 +4741,11 @@ const char *vrpn_Connection::message_type_name(vrpn_int32 type)
 // virtual
 int vrpn_Connection::register_log_filter(vrpn_LOGFILTER filter, void *userdata)
 {
-    int i;
-    for (i = 0; i < d_numEndpoints; i++) {
-        d_endpoints[i]->d_inLog->addFilter(filter, userdata);
-        d_endpoints[i]->d_outLog->addFilter(filter, userdata);
+
+    for (vrpn::EndpointIterator it = d_endpoints.begin(), e = d_endpoints.end();
+         it != e; ++it) {
+        it->d_inLog->addFilter(filter, userdata);
+        it->d_outLog->addFilter(filter, userdata);
     }
     return 0;
 }
@@ -4750,11 +4753,11 @@ int vrpn_Connection::register_log_filter(vrpn_LOGFILTER filter, void *userdata)
 // virtual
 int vrpn_Connection::save_log_so_far()
 {
-    int i;
     int final_retval = 0;
-    for (i = 0; i < d_numEndpoints; i++) {
-        final_retval |= d_endpoints[i]->d_inLog->saveLogSoFar();
-        final_retval |= d_endpoints[i]->d_outLog->saveLogSoFar();
+    for (vrpn::EndpointIterator it = d_endpoints.begin(), e = d_endpoints.end();
+         it != e; ++it) {
+        final_retval |= it->d_inLog->saveLogSoFar();
+        final_retval |= it->d_outLog->saveLogSoFar();
     }
     return final_retval;
 }
@@ -4765,17 +4768,14 @@ vrpn_File_Connection *vrpn_Connection::get_File_Connection(void)
     return NULL;
 }
 
-void vrpn_Connection::init(void)
+void vrpn_Connection::init(vrpn_EndpointAllocator epa)
 {
-    vrpn_int32 i;
-
     // Lots of constants used to be set up here.  They were moved
     // into the constructors in 02.10;  this will create a slight
-    // increase in maintenance burden keeping the constructors consistient.
+    // increase in maintenance burden keeping the constructors consistent.
 
-    for (i = 0; i < vrpn_MAX_ENDPOINTS; i++) {
-        d_endpoints[i] = NULL;
-    }
+    d_boundEndpointAllocator =
+        vrpn::BoundEndpointAllocator(epa, this, &d_numConnectedEndpoints);
 
     vrpn_gettimeofday(&start_time, NULL);
 
@@ -4802,16 +4802,9 @@ void vrpn_Connection::init(void)
  * Deletes the endpoint and NULLs the entry in the list of open endpoints.
  */
 
-int vrpn_Connection::delete_endpoint(int endpointIndex)
+int vrpn_Connection::delete_endpoint(vrpn_Endpoint *endpoint)
 {
-
-    vrpn_Endpoint *endpoint = d_endpoints[endpointIndex];
-
-    if (endpoint) {
-        delete endpoint;
-    }
-    d_endpoints[endpointIndex] = NULL;
-
+    d_endpoints.destroy(endpoint);
     return 0;
 }
 
@@ -4821,16 +4814,7 @@ int vrpn_Connection::delete_endpoint(int endpointIndex)
 
 int vrpn_Connection::compact_endpoints(void)
 {
-    int i;
-
-    for (i = 0; i < d_numEndpoints; i++) {
-        if (!d_endpoints[i]) {
-            d_endpoints[i] = d_endpoints[d_numEndpoints - 1];
-            d_endpoints[d_numEndpoints - 1] = NULL;
-
-            d_numEndpoints--;
-        }
-    }
+    d_endpoints.compact();
 
     return 0;
 }
@@ -4839,10 +4823,8 @@ int vrpn_Connection::compact_endpoints(void)
 // asked for.
 vrpn_Connection::vrpn_Connection(const char *local_in_logfile_name,
                                  const char *local_out_logfile_name,
-                                 vrpn_Endpoint_IP *(*epa)(vrpn_Connection *,
-                                                          vrpn_int32 *))
-    : d_numEndpoints(0)
-    , d_numConnectedEndpoints(0)
+                                 vrpn_EndpointAllocator epa)
+    : d_numConnectedEndpoints(0)
     , d_references(0)
     , d_autoDeleteStatus(false)
     , d_dispatcher(NULL)
@@ -4851,44 +4833,38 @@ vrpn_Connection::vrpn_Connection(const char *local_in_logfile_name,
           (local_in_logfile_name ? vrpn_LOG_INCOMING : vrpn_LOG_NONE) |
           (local_out_logfile_name ? vrpn_LOG_OUTGOING : vrpn_LOG_NONE))
     , d_serverLogName(NULL)
-    , d_endpointAllocator(epa)
     , d_updateEndpoint(vrpn_FALSE)
 {
-    int retval;
-    vrpn_Endpoint *endpoint; // shorthand for d_endpoints[0]
-
     // Initialize the things that must be for any constructor
-    vrpn_Connection::init();
+    vrpn_Connection::init(epa);
 
     // Server connections should handle log messages.
     d_dispatcher->setSystemHandler(vrpn_CONNECTION_LOG_DESCRIPTION,
                                    handle_log_message);
 
     if (local_out_logfile_name) {
-        d_endpoints[0] = (*d_endpointAllocator)(this, NULL);
-        if (!d_endpoints[0]) {
+        vrpn_Endpoint *endpoint =
+            d_endpoints.acquire(d_boundEndpointAllocator(NULL));
+        if (!endpoint) {
             fprintf(stderr, "vrpn_Connection::vrpn_Connection:%d  "
                             "Couldn't create endpoint for log file.\n",
                     __LINE__);
             connectionStatus = BROKEN;
             return;
         }
-        endpoint = d_endpoints[0];
         endpoint->setConnection(this);
         d_updateEndpoint = vrpn_TRUE;
         endpoint->d_outLog->setName(local_out_logfile_name);
         endpoint->d_outLog->logMode() = d_serverLogMode;
-        retval = endpoint->d_outLog->open();
+        int retval = endpoint->d_outLog->open();
         if (retval == -1) {
             fprintf(stderr, "vrpn_Connection::vrpn_Connection:%d  "
                             "Couldn't open outgoing log file.\n",
                     __LINE__);
-            delete d_endpoints[0];
-            d_endpoints[0] = NULL;
+            d_endpoints.destroy(endpoint);
             connectionStatus = BROKEN;
             return;
         }
-        d_numEndpoints = 1;
         endpoint->d_remoteLogMode = vrpn_LOG_NONE;
         endpoint->d_remoteInLogName = new char[10];
         strcpy(endpoint->d_remoteInLogName, "");
@@ -4900,24 +4876,16 @@ vrpn_Connection::vrpn_Connection(const char *local_in_logfile_name,
 
     if (local_in_logfile_name) {
         d_serverLogName = new char[1 + strlen(local_in_logfile_name)];
-        if (!d_serverLogName) {
-            fprintf(stderr, "vrpn_Connection::vrpn_Connection:%d  "
-                            "Out of memory.\n",
-                    __LINE__);
-            connectionStatus = BROKEN;
-            return;
-        }
         strcpy(d_serverLogName, local_in_logfile_name);
     }
 }
 
-vrpn_Connection::vrpn_Connection(
-    const char *local_in_logfile_name, const char *local_out_logfile_name,
-    const char *remote_in_logfile_name, const char *remote_out_logfile_name,
-    vrpn_Endpoint_IP *(*epa)(vrpn_Connection *, vrpn_int32 *))
+vrpn_Connection::vrpn_Connection(const char *local_in_logfile_name,
+                                 const char *local_out_logfile_name,
+                                 const char *remote_in_logfile_name,
+                                 const char *remote_out_logfile_name,
+                                 vrpn_EndpointAllocator epa)
     : connectionStatus(BROKEN)
-    , // default value if not otherwise set in ctr
-    d_numEndpoints(0)
     , d_numConnectedEndpoints(0)
     , d_references(0)
     , d_autoDeleteStatus(false)
@@ -4925,27 +4893,22 @@ vrpn_Connection::vrpn_Connection(
     , d_serverLogCount(0)
     , d_serverLogMode(vrpn_LOG_NONE)
     , d_serverLogName(NULL)
-    , d_endpointAllocator(epa)
     , d_updateEndpoint(vrpn_FALSE)
 {
-    vrpn_Endpoint *endpoint;
     int retval;
 
     // Initialize the things that must be for any constructor
-    vrpn_Connection::init();
+    vrpn_Connection::init(epa);
 
     // We're a client;  create our single endpoint and initialize it.
-    d_endpoints[0] = (*d_endpointAllocator)(this, &d_numConnectedEndpoints);
-    d_endpoints[0]->setConnection(this);
-    d_updateEndpoint = vrpn_TRUE;
-    if (!d_endpoints[0]) {
+    vrpn_Endpoint *endpoint = d_endpoints.acquire(d_boundEndpointAllocator());
+    if (!endpoint) {
         fprintf(stderr, "vrpn_Connection:%d  Out of memory.\n", __LINE__);
         connectionStatus = BROKEN;
         return;
     }
-
-    d_numEndpoints = 1;
-    endpoint = d_endpoints[0]; // shorthand
+    endpoint->setConnection(this);
+    d_updateEndpoint = vrpn_TRUE;
 
     // Store the remote log file name and the remote log mode
     endpoint->d_remoteLogMode =
@@ -4987,10 +4950,8 @@ vrpn_Connection::vrpn_Connection(
                             "Couldn't open incoming log file.\n",
                     __LINE__);
             connectionStatus = BROKEN;
-            // fprintf(stderr, "BROKEN - vrpn_Connection::vrpn_Connection.\n");
             return;
         }
-        // fprintf(stderr, "vrpn_Connection: opened logfile.\n");
     }
 
     if (local_out_logfile_name && (strlen(local_out_logfile_name) != 0)) {
@@ -5002,15 +4963,15 @@ vrpn_Connection::vrpn_Connection(
                             "Couldn't open local outgoing log file.\n",
                     __LINE__);
             connectionStatus = BROKEN;
-            // fprintf(stderr, "BROKEN - vrpn_Connection::vrpn_Connection.\n");
             return;
         }
-        // fprintf(stderr, "vrpn_Connection: opened logfile.\n");
     }
 }
 
 vrpn_Connection::~vrpn_Connection(void)
 {
+    // Clean up the endpoints before the dispatcher
+    d_endpoints.clear();
 
     // Clean up types, senders, and callbacks.
     if (d_dispatcher) {
@@ -5047,8 +5008,6 @@ void vrpn_Connection::removeReference()
 
 vrpn_int32 vrpn_Connection::register_sender(const char *name)
 {
-    vrpn_int32 retval;
-    vrpn_int32 i;
 
 #ifdef VERBOSE
     fprintf(stderr, "vrpn_Connection::register_sender:  "
@@ -5057,7 +5016,7 @@ vrpn_int32 vrpn_Connection::register_sender(const char *name)
 #endif
 
     // See if the name is already in the list.  If so, return it.
-    retval = d_dispatcher->getSenderID(name);
+    vrpn_int32 retval = d_dispatcher->getSenderID(name);
     if (retval != -1) {
 #ifdef VERBOSE
         fprintf(stderr, "Sender already defined as id %d.\n", retval);
@@ -5079,8 +5038,9 @@ vrpn_int32 vrpn_Connection::register_sender(const char *name)
 
     // If the other side has declared this sender, establish the
     // mapping for it.
-    for (i = 0; i < d_numEndpoints; i++) {
-        d_endpoints[i]->newLocalSender(name, retval);
+    for (vrpn::EndpointIterator it = d_endpoints.begin(), e = d_endpoints.end();
+         it != e; ++it) {
+        it->newLocalSender(name, retval);
     }
 
     // One more in place -- return its index
@@ -5089,8 +5049,6 @@ vrpn_int32 vrpn_Connection::register_sender(const char *name)
 
 vrpn_int32 vrpn_Connection::register_message_type(const char *name)
 {
-    vrpn_int32 retval;
-    vrpn_int32 i;
 
 #ifdef VERBOSE
     fprintf(stderr, "vrpn_Connection::register_message_type:  "
@@ -5099,7 +5057,7 @@ vrpn_int32 vrpn_Connection::register_message_type(const char *name)
 #endif
 
     // See if the name is already in the list.  If so, return it.
-    retval = d_dispatcher->getTypeID(name);
+    vrpn_int32 retval = d_dispatcher->getTypeID(name);
     if (retval != -1) {
 #ifdef VERBOSE
         fprintf(stderr, "Type already defined as id %d.\n", retval);
@@ -5122,8 +5080,9 @@ vrpn_int32 vrpn_Connection::register_message_type(const char *name)
 
     // If the other side has declared this type, establish the
     // mapping for it.
-    for (i = 0; i < d_numEndpoints; i++) {
-        d_endpoints[i]->newLocalType(name, retval);
+    for (vrpn::EndpointIterator it = d_endpoints.begin(), e = d_endpoints.end();
+         it != e; ++it) {
+        it->newLocalType(name, retval);
     }
 
     // One more in place -- return its index
@@ -5151,8 +5110,10 @@ void vrpn_Connection::get_log_names(char **local_in_logname,
                                     char **remote_in_logname,
                                     char **remote_out_logname)
 {
-    if (!(d_endpoints[0])) return;
-    vrpn_Endpoint *endpoint = d_endpoints[0];
+    vrpn_Endpoint *endpoint = d_endpoints.front();
+    if (!endpoint) {
+        return;
+    }
     // XXX it is possible to have more than one endpoint, and other endpoints
     // may have other log names
 
@@ -5238,11 +5199,9 @@ int vrpn_Connection::message_type_is_registered(const char *name) const
 vrpn_bool vrpn_Connection::doing_okay(void) const
 {
 
-    int endpointIndex;
-
-    for (endpointIndex = 0; endpointIndex < d_numEndpoints; endpointIndex++) {
-        if (d_endpoints[endpointIndex] &&
-            (!d_endpoints[endpointIndex]->doing_okay())) {
+    for (vrpn::EndpointIterator it = d_endpoints.begin(), e = d_endpoints.end();
+         it != e; ++it) {
+        if (!it->doing_okay()) {
             return VRPN_FALSE;
         }
     }
@@ -5252,11 +5211,9 @@ vrpn_bool vrpn_Connection::doing_okay(void) const
 // Loop over endpoints and return TRUE if any of them are connected.
 vrpn_bool vrpn_Connection::connected(void) const
 {
-    int endpointIndex;
-
-    for (endpointIndex = 0; endpointIndex < d_numEndpoints; endpointIndex++) {
-        if (d_endpoints[endpointIndex] &&
-            (d_endpoints[endpointIndex]->status == CONNECTED)) {
+    for (vrpn::EndpointIterator it = d_endpoints.begin(), e = d_endpoints.end();
+         it != e; ++it) {
+        if (it->status == CONNECTED) {
             return VRPN_TRUE;
         }
     }
@@ -5326,7 +5283,8 @@ vrpn_Connection *vrpn_get_connection_by_name(
         if (is_file) {
             c = new vrpn_File_Connection(cname, local_in_logfile_name,
                                          local_out_logfile_name);
-        } else {
+        }
+        else {
             int port = vrpn_get_port_number(cname);
             c = new vrpn_Connection_IP(
                 cname, port, local_in_logfile_name, local_out_logfile_name,
@@ -5398,10 +5356,13 @@ vrpn_create_server_connection(const char *cname,
         delete[] location;
         return NULL;
 #endif
-    } else if (is_loopback) {
+    }
+    else if (is_loopback) {
         c = new vrpn_Connection_Loopback();
-    } else {
-        // Not Loopback or MPI port, so we presume that we are a standard VRPN UDP/TCP
+    }
+    else {
+        // Not Loopback or MPI port, so we presume that we are a standard VRPN
+        // UDP/TCP
         // port.  Open that kind, based on the machine and port name.  If we
         // don't
         // have a machine name, then we pass NULL to the NIC address.  If we do
@@ -5463,26 +5424,22 @@ int vrpn_Connection_IP::connect_to_client(const char *machine, int port)
         return -1;
     };
 
-    int which_end = d_numEndpoints;
-
     // Make sure that we have room for a new connection
-    if (which_end >= vrpn_MAX_ENDPOINTS) {
+    if (d_endpoints.full()) {
         fprintf(stderr, "vrpn_Connection_IP::connect_to_client:"
                         " Too many existing connections.\n");
         return -1;
     }
-
-    d_endpoints[which_end] =
-        (*d_endpointAllocator)(this, &d_numConnectedEndpoints);
-    d_endpoints[which_end]->setConnection(this);
-    d_updateEndpoint = vrpn_TRUE;
-    vrpn_Endpoint_IP *endpoint = d_endpoints[which_end];
+    vrpn_Endpoint_IP *endpoint =
+        d_endpoints.acquire(d_boundEndpointAllocator());
 
     if (!endpoint) {
         fprintf(stderr, "vrpn_Connection_IP::connect_to_client:"
                         " Out of memory on new endpoint\n");
         return -1;
     }
+    endpoint->setConnection(this);
+    d_updateEndpoint = vrpn_TRUE;
 
     char msg[100];
     sprintf(msg, "%s %d", machine, port);
@@ -5493,26 +5450,21 @@ int vrpn_Connection_IP::connect_to_client(const char *machine, int port)
     if (endpoint->status != COOKIE_PENDING) { // Something broke
         endpoint->status = BROKEN;
         return -1;
+        /// @todo Only the other branch incremented numEndpoints - why?
     }
-    else {
-        d_numEndpoints++;
-        handle_connection(which_end);
-    }
+    handle_connection(endpoint);
 
     return 0;
 }
 
-void vrpn_Connection_IP::handle_connection(int endpointIndex)
+void vrpn_Connection_IP::handle_connection(vrpn_Endpoint *endpoint)
 {
-
-    vrpn_Endpoint *endpoint = d_endpoints[endpointIndex];
-
     // Set up the things that need to happen when a new connection is
     // started.
     if (endpoint->setup_new_connection()) {
         fprintf(stderr, "vrpn_Connection_IP::handle_connection():  "
                         "Can't set up new connection!\n");
-        drop_connection(endpointIndex);
+        drop_connection_and_compact(endpoint);
         return;
     }
 }
@@ -5557,13 +5509,12 @@ int vrpn_Connection_IP::handle_UDP_message(void *userdata, vrpn_HANDLERPARAM p)
 
 int vrpn_Connection_IP::send_pending_reports(void)
 {
-    int i;
-
-    for (i = 0; i < d_numEndpoints; i++) {
-        if (d_endpoints[i] && (d_endpoints[i]->send_pending_reports() != 0)) {
+    for (vrpn::EndpointIterator it = d_endpoints.begin(), e = d_endpoints.end();
+         it != e; ++it) {
+        if (it->send_pending_reports() != 0) {
             fprintf(stderr, "vrpn_Connection_IP::send_pending_reports:  "
                             "Closing failed endpoint.\n");
-            drop_connection(i);
+            drop_connection(it);
         }
     }
 
@@ -5626,10 +5577,8 @@ void vrpn_Connection_IP::init(void)
 void vrpn_Connection_IP::server_check_for_incoming_connections(
     const struct timeval *pTimeout)
 {
-    vrpn_Endpoint_IP *endpoint; // shorthand for d_endpoints[which_end]
     int request;
     timeval timeout;
-    int which_end = d_numEndpoints;
     int retval;
     int port;
 
@@ -5724,7 +5673,7 @@ void vrpn_Connection_IP::server_check_for_incoming_connections(
         delete[] checkHost;
 
         // Make sure that we have room for a new connection
-        if (which_end >= vrpn_MAX_ENDPOINTS) {
+        if (d_endpoints.full()) {
             fprintf(stderr, "vrpn: Too many existing connections;  "
                             "ignoring request from %s\n",
                     msg);
@@ -5733,11 +5682,9 @@ void vrpn_Connection_IP::server_check_for_incoming_connections(
 
         // Create a new endpoint and start trying to connect it to
         // the client.
-        d_endpoints[which_end] =
-            (*d_endpointAllocator)(this, &d_numConnectedEndpoints);
-        d_endpoints[which_end]->setConnection(this);
-        d_updateEndpoint = vrpn_TRUE;
-        endpoint = d_endpoints[which_end];
+
+        vrpn_Endpoint_IP *endpoint =
+            d_endpoints.acquire(d_boundEndpointAllocator());
         if (!endpoint) {
             fprintf(
                 stderr,
@@ -5745,6 +5692,8 @@ void vrpn_Connection_IP::server_check_for_incoming_connections(
                 "    Out of memory on new endpoint\n");
             return;
         }
+        endpoint->setConnection(this);
+        d_updateEndpoint = vrpn_TRUE;
 
         // Server-side logging under multiconnection - TCH July 2000
         // Check for NULL server log name, which happens when the log file
@@ -5768,21 +5717,14 @@ void vrpn_Connection_IP::server_check_for_incoming_connections(
         endpoint->setNICaddress(d_NIC_IP);
         endpoint->status = TRYING_TO_CONNECT;
 
-        // d_numEndpoints must be incremented before handle_connection is called
-        // otherwise the functions doing_okay and connected do not check all
-        // the endpoints. Because of this topo was unable to send the header
-        // information and nano crashed...
-        d_numEndpoints++;
-
         // Because we sometimes use multiple NICs, we are ignoring the IP from
-        // the
-        // client, and filling in the NIC that the udp request arrived on.
+        // the client, and filling in the NIC that the udp request arrived on.
         sscanf(msg, "%*s %d", &port); // get the port
         // Fill in NIC address.  Copy the machine name so that we can delete it
         // in the destructor.
         endpoint->d_remote_machine_name = vrpn_copy_service_location(fromname);
         endpoint->connect_tcp_to(msg);
-        handle_connection(which_end);
+        handle_connection(endpoint);
 
         // HACK
         // We don't want to do this, but connection requests are soft state
@@ -5804,21 +5746,18 @@ void vrpn_Connection_IP::server_check_for_incoming_connections(
         fprintf(stderr, "Error accepting on TCP socket.\n");
         return;
     }
-    else if (retval) { // Some data to read!  Go get it.
+    if (retval) { // Some data to read!  Go get it.
 
         printf("vrpn: TCP connection request received.\n");
 
-        if (which_end >= vrpn_MAX_ENDPOINTS) {
+        if (d_endpoints.full()) {
             fprintf(stderr, "vrpn: Too many existing connections;  "
                             "ignoring request.\n");
             return;
         }
 
-        d_endpoints[which_end] =
-            (*d_endpointAllocator)(this, &d_numConnectedEndpoints);
-        d_endpoints[which_end]->setConnection(this);
-        d_updateEndpoint = vrpn_TRUE;
-        endpoint = d_endpoints[which_end];
+        vrpn_Endpoint_IP *endpoint =
+            d_endpoints.acquire(d_boundEndpointAllocator());
         if (!endpoint) {
             fprintf(
                 stderr,
@@ -5826,6 +5765,8 @@ void vrpn_Connection_IP::server_check_for_incoming_connections(
                 "    Out of memory on new endpoint\n");
             return;
         }
+        endpoint->setConnection(this);
+        d_updateEndpoint = vrpn_TRUE;
 
         // Since we're being connected to using a TCP request, tell the endpoint
         // not to try and establish any other connections (since the client is
@@ -5871,18 +5812,14 @@ void vrpn_Connection_IP::server_check_for_incoming_connections(
         endpoint->setNICaddress(d_NIC_IP);
         endpoint->d_tcpSocket = newSocket;
 
-        d_numEndpoints++;
-
-        handle_connection(which_end);
+        handle_connection(endpoint);
     }
 
     return;
 }
 
-void vrpn_Connection_IP::drop_connection(int whichEndpoint)
+void vrpn_Connection_IP::drop_connection(vrpn_Endpoint *endpoint)
 {
-    vrpn_Endpoint *endpoint = d_endpoints[whichEndpoint];
-
     endpoint->drop_connection();
 
     // If we're a client, try to reconnect to the server
@@ -5892,15 +5829,19 @@ void vrpn_Connection_IP::drop_connection(int whichEndpoint)
         endpoint->status = TRYING_TO_CONNECT;
     }
     else {
-        delete_endpoint(whichEndpoint);
+        delete_endpoint(endpoint);
     }
+}
+
+void vrpn_Connection_IP::drop_connection_and_compact(vrpn_Endpoint *endpoint)
+{
+    drop_connection(endpoint);
+    compact_endpoints();
 }
 
 int vrpn_Connection_IP::mainloop(const struct timeval *pTimeout)
 {
-    vrpn_Endpoint *endpoint;
     timeval timeout;
-    int endpointIndex;
 
     if (d_updateEndpoint) {
         updateEndpoints();
@@ -5930,14 +5871,8 @@ int vrpn_Connection_IP::mainloop(const struct timeval *pTimeout)
         server_check_for_incoming_connections(pTimeout);
     }
 
-    for (endpointIndex = 0; endpointIndex < d_numEndpoints; endpointIndex++) {
-        endpoint = d_endpoints[endpointIndex];
-
-        // The current array-sorting code is liable to break when unexpected
-        // things happen, so we have to double-check it here.
-        if (!endpoint) {
-            continue;
-        }
+    for (vrpn::EndpointIterator it = d_endpoints.begin(), e = d_endpoints.end();
+         it != e; ++it) {
 
         if (pTimeout) {
             timeout = *pTimeout;
@@ -5947,10 +5882,10 @@ int vrpn_Connection_IP::mainloop(const struct timeval *pTimeout)
             timeout.tv_usec = 0;
         }
 
-        endpoint->mainloop(&timeout);
+        it->mainloop(&timeout);
 
-        if (endpoint->status == BROKEN) {
-            drop_connection(endpointIndex);
+        if (it->status == BROKEN) {
+            drop_connection(it);
         }
     }
 
@@ -6040,7 +5975,13 @@ vrpn_Connection_IP::vrpn_Connection_IP(
     // Initialize the things that must be for any constructor
     vrpn_Connection_IP::init();
 
-    endpoint = d_endpoints[0]; // shorthand
+    endpoint = d_endpoints.front(); // shorthand
+    if (!endpoint) {
+        fprintf(stderr, "vrpn_Connection_IP: First endpoint is null!\n");
+        connectionStatus = BROKEN;
+        return;
+    }
+
     endpoint->setNICaddress(d_NIC_IP);
 
     // If we are not a TCP-only or remote-server-starting
@@ -6054,6 +5995,7 @@ vrpn_Connection_IP::vrpn_Connection_IP(
         // that asks to machine to call us back here.
         endpoint->d_remote_machine_name = vrpn_copy_machine_name(station_name);
         if (!endpoint->d_remote_machine_name) {
+            /// @todo do we drop the endpoint here?
             fprintf(stderr,
                     "vrpn_Connection_IP: Can't get remote machine name!\n");
             connectionStatus = BROKEN;
@@ -6070,19 +6012,21 @@ vrpn_Connection_IP::vrpn_Connection_IP(
 
         endpoint->status = TRYING_TO_CONNECT;
 
-		/* Create a UDP socket and connect it to the port on the remote
-		* machine. */
+        /* Create a UDP socket and connect it to the port on the remote
+        * machine. */
 
-		endpoint->d_udpLobSocket = vrpn_connect_udp_port(endpoint->d_remote_machine_name,
-			endpoint->d_remote_port_number, d_NIC_IP);
-		if (endpoint->d_udpLobSocket == INVALID_SOCKET) {
-			fprintf(stderr,
-				"vrpn_Connection_IP: Can't Set up socket to lob UDP packets!\n");
-			connectionStatus = BROKEN;
-			// fprintf(stderr, "BROKEN -
-			// vrpn_Connection_IP::vrpn_Connection_IP.\n");
-			return;
-		}
+        endpoint->d_udpLobSocket =
+            vrpn_connect_udp_port(endpoint->d_remote_machine_name,
+                                  endpoint->d_remote_port_number, d_NIC_IP);
+        if (endpoint->d_udpLobSocket == INVALID_SOCKET) {
+            /// @todo do we drop the endpoint here?
+            fprintf(stderr, "vrpn_Connection_IP: Can't set up socket to lob "
+                            "UDP packets!\n");
+            connectionStatus = BROKEN;
+            // fprintf(stderr, "BROKEN -
+            // vrpn_Connection_IP::vrpn_Connection_IP.\n");
+            return;
+        }
 
 #ifdef VERBOSE
         printf("vrpn_Connection_IP: Getting the TCP port to listen on\n");
@@ -6091,12 +6035,14 @@ vrpn_Connection_IP::vrpn_Connection_IP(
         // By listening on only localhost (as opposed to all interfaces,
         // i.e., 0.0.0.0), we can avoid complaints from the Windows firewall.
         char local_host[64];
-        get_local_socket_name(local_host, sizeof(local_host), endpoint->d_remote_machine_name);
+        get_local_socket_name(local_host, sizeof(local_host),
+                              endpoint->d_remote_machine_name);
 
         // Set up the connection that we will listen on.
         if (vrpn_get_a_TCP_socket(&endpoint->d_tcpListenSocket,
                                   &endpoint->d_tcpListenPort,
                                   local_host) == -1) {
+            /// @todo do we drop the endpoint here?
             fprintf(stderr, "vrpn_Connection_IP: Can't create listen socket\n");
             endpoint->status = BROKEN;
             endpoint->d_tcpListenSocket = INVALID_SOCKET;
@@ -6107,9 +6053,11 @@ vrpn_Connection_IP::vrpn_Connection_IP(
 
         // Lob a packet asking for a connection on that port.
         vrpn_gettimeofday(&endpoint->d_last_connect_attempt, NULL);
-		if (vrpn_udp_request_lob_packet(endpoint->d_udpLobSocket,
-                endpoint->d_remote_machine_name, endpoint->d_remote_port_number,
-                endpoint->d_tcpListenPort, NIC_IPaddress) == -1) {
+        if (vrpn_udp_request_lob_packet(
+                endpoint->d_udpLobSocket, endpoint->d_remote_machine_name,
+                endpoint->d_remote_port_number, endpoint->d_tcpListenPort,
+                NIC_IPaddress) == -1) {
+            /// @todo do we drop the endpoint here?
             fprintf(stderr, "vrpn_Connection_IP: Can't lob UDP request\n");
             endpoint->status = BROKEN;
             // fprintf(stderr, "BROKEN -
@@ -6135,25 +6083,23 @@ vrpn_Connection_IP::vrpn_Connection_IP(
         retval = vrpn_poll_for_accept(endpoint->d_tcpListenSocket,
                                       &endpoint->d_tcpSocket, 1.0);
         if (retval == -1) {
+            /// @todo do we drop the endpoint here (and places like it)?
             fprintf(stderr, "vrpn_Connection_IP: Can't poll for accept\n");
             connectionStatus = BROKEN;
-            // fprintf(stderr, "BROKEN -
-            // vrpn_Connection_IP::vrpn_Connection_IP.\n");
             return;
         }
         if (retval == 1) { // Got one!
             endpoint->status = COOKIE_PENDING;
-// fprintf(stderr, "COOKIE_PENDING -
-// vrpn_Connection_IP::vrpn_Connection_IP.\n");
 #ifdef VERBOSE
-            printf("vrpn: Connection established on initial try\n");
+            printf("vrpn: Connection established on initial try "
+                   "(COOKIE_PENDING)\n");
 #endif
             // Set up the things that need to happen when a new connection
             // is established.
             if (endpoint->setup_new_connection()) {
                 fprintf(stderr, "vrpn_Connection_IP: "
                                 "Can't set up new connection!\n");
-                drop_connection(0);
+                drop_connection_and_compact(endpoint);
                 // status = BROKEN;
                 // fprintf(stderr, "BROKEN -
                 // vrpn_Connection_IP::vrpn_Connection_IP.\n");
@@ -6201,7 +6147,7 @@ vrpn_Connection_IP::vrpn_Connection_IP(
         if (endpoint->setup_new_connection()) {
             fprintf(stderr, "vrpn_Connection_IP: "
                             "Can't set up new connection!\n");
-            drop_connection(0);
+            drop_connection_and_compact(endpoint);
             return;
         }
     }
@@ -6250,7 +6196,7 @@ vrpn_Connection_IP::vrpn_Connection_IP(
             if (endpoint->setup_new_connection()) {
                 fprintf(stderr, "vrpn_Connection_IP:  "
                                 "Can't set up new connection!\n");
-                drop_connection(0);
+                drop_connection_and_compact(endpoint);
                 connectionStatus = BROKEN;
                 // fprintf(stderr, "BROKEN -
                 // vrpn_Connection_IP::vrpn_Connection_IP.\n");
@@ -6264,9 +6210,6 @@ vrpn_Connection_IP::vrpn_Connection_IP(
 
 vrpn_Connection_IP::~vrpn_Connection_IP(void)
 {
-
-    vrpn_int32 i;
-
     // Remove myself from the "known connections" list
     //   (or the "anonymous connections" list).
     vrpn_ConnectionManager::instance().deleteConnection(this);
@@ -6287,12 +6230,8 @@ vrpn_Connection_IP::~vrpn_Connection_IP(void)
         d_NIC_IP = NULL;
     }
 
-    for (i = 0; i < d_numEndpoints; i++) {
-        if (d_endpoints[i]) {
-            d_endpoints[i]->drop_connection();
-            delete d_endpoints[i];
-        }
-    }
+    // Clean up the endpoints
+    d_endpoints.clear();
 
 #ifdef VRPN_USE_WINSOCK_SOCKETS
 
@@ -6562,5 +6501,3 @@ char *vrpn_set_service_name(const char *specifier, const char *newServiceName)
     delete[] location;
     return newSpecifier;
 }
-
-
