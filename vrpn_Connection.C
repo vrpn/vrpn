@@ -5476,7 +5476,7 @@ void vrpn_Connection_IP::handle_connection(vrpn_Endpoint *endpoint)
     if (endpoint->setup_new_connection()) {
         fprintf(stderr, "vrpn_Connection_IP::handle_connection():  "
                         "Can't set up new connection!\n");
-        drop_connection(endpoint);
+        drop_connection_and_compact(endpoint);
         return;
     }
 }
@@ -5850,6 +5850,12 @@ void vrpn_Connection_IP::drop_connection(vrpn_Endpoint *endpoint)
     }
 }
 
+void vrpn_Connection_IP::drop_connection_and_compact(vrpn_Endpoint *endpoint)
+{
+    drop_connection(endpoint);
+    compact_endpoints();
+}
+
 int vrpn_Connection_IP::mainloop(const struct timeval *pTimeout)
 {
     timeval timeout;
@@ -6105,7 +6111,7 @@ vrpn_Connection_IP::vrpn_Connection_IP(
             if (endpoint->setup_new_connection()) {
                 fprintf(stderr, "vrpn_Connection_IP: "
                                 "Can't set up new connection!\n");
-                drop_connection(endpoint);
+                drop_connection_and_compact(endpoint);
                 // status = BROKEN;
                 // fprintf(stderr, "BROKEN -
                 // vrpn_Connection_IP::vrpn_Connection_IP.\n");
@@ -6153,7 +6159,7 @@ vrpn_Connection_IP::vrpn_Connection_IP(
         if (endpoint->setup_new_connection()) {
             fprintf(stderr, "vrpn_Connection_IP: "
                             "Can't set up new connection!\n");
-            drop_connection(0);
+            drop_connection_and_compact(endpoint);
             return;
         }
     }
@@ -6202,7 +6208,7 @@ vrpn_Connection_IP::vrpn_Connection_IP(
             if (endpoint->setup_new_connection()) {
                 fprintf(stderr, "vrpn_Connection_IP:  "
                                 "Can't set up new connection!\n");
-                drop_connection(0);
+                drop_connection_and_compact(endpoint);
                 connectionStatus = BROKEN;
                 // fprintf(stderr, "BROKEN -
                 // vrpn_Connection_IP::vrpn_Connection_IP.\n");

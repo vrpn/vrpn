@@ -913,8 +913,16 @@ protected:
     virtual void handle_connection(int whichEndpoint);
     virtual void handle_connection(vrpn_Endpoint *endpoint);
 
+    /// Drops the connection with the given, non-NULL endpoint.  Depending on if
+    /// we're a server or a client, this may result in the endpoints needing
+    /// compacting once you're no longer iterating on the endpoint container.
     virtual void drop_connection(int whichEndpoint);
     virtual void drop_connection(vrpn_Endpoint *endpoint);
+
+    /// Like drop_connection, except it includes the call to compact the
+    /// endpoints. Only safe to call if you can guarantee no iterators are open
+    /// to the container, since compact invalidates them.
+    void drop_connection_and_compact(vrpn_Endpoint *endpoint);
 
     char *d_NIC_IP;
 };
