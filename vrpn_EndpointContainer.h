@@ -65,10 +65,14 @@ namespace vrpn {
         typedef EndpointIterator iterator;
         typedef EndpointIterator const_iterator;
 
+        /// @brief Constructor of empty container.
         EndpointContainer();
 
+        /// @brief Destructor - includes a call to clear()
         ~EndpointContainer();
 
+        /// @brief Tells each held endpoint in turn to drop the connection then
+        /// deletes it
         void clear();
 
         /// @brief Shorthand for get_by_index(0)
@@ -112,10 +116,10 @@ namespace vrpn {
         iterator end() const;
 
     private:
+        /// @name Internal raw iterators and methods
+        /// @{
         typedef container_type::iterator raw_iterator;
         typedef container_type::const_iterator raw_const_iterator;
-        /// @name Internal iterator methods
-        /// @{
         raw_iterator begin_() { return container_.begin(); }
         raw_const_iterator begin_() const { return container_.begin(); }
         raw_iterator end_() { return container_.end(); }
@@ -131,8 +135,16 @@ namespace vrpn {
         bool needsCompact_;
     };
 
-    /// @brief An iterator (ForwardIterator concept, I believe) that goes
-    /// forward in an EndpointContainer skipping the NULLs.
+    /// @brief An iterator that goes forward in an EndpointContainer skipping
+    /// the NULLs, that also acts a bit like a pointer/smart pointer (can treat
+    /// it as a vrpn_Endpoint *)
+    ///
+    /// Because we know at design time that it iterates through pointers,
+    /// we have pointer-related operator overloads that mean there's no need to
+    /// double-dereference.
+    ///
+    /// Fulfills the InputIterator concept:
+    /// http://en.cppreference.com/w/cpp/concept/InputIterator
     ///
     /// All end() iterators compare equal to each other and to the
     /// default-constructed iterator. They are the only invalid iterators:
@@ -140,7 +152,7 @@ namespace vrpn {
     /// default-constructed iterator.
     ///
     /// That is, for all EndpointIterators it, we enforce the class invariant
-    /// `it.valid() || (it == EndpointIterator())`
+    /// `it.valid() || (it == EndpointIterator())` (and that's actually an XOR)
     class EndpointIterator {
     public:
         // typedef EndpointIteratorBase<ContainerType> type;
@@ -166,6 +178,7 @@ namespace vrpn {
             enforce_invariant_();
         }
 
+        /// @brief Constructor with container and raw index into container.
         EndpointIterator(container_type &container, size_type index)
             : index_(index)
             , container_(&container)
@@ -182,8 +195,13 @@ namespace vrpn {
             return container_ && container_->is_valid(index_);
         }
 
-        /// @brief Extract the pointer.
-        pointer get_pointer() const { return container_ ? (get_raw_()) : NULL; }
+        /// @brief Extract the pointer (NULL if iterator is invalid)
+        pointer get_pointer() const
+        {
+            // Only need to condition on container validity: invalid indexes
+            // safely return null from get_raw_()
+            return container_ ? (get_raw_()) : NULL;
+        }
 
         /// @brief Implicit conversion operator to pointer.
         operator pointer() const { return get_pointer(); }
@@ -215,6 +233,8 @@ namespace vrpn {
         reference operator*() const { return *get_raw_(); }
         /// @}
 
+        /// @name Comparison operators, primarily for loop use
+        /// @{
         bool operator==(type const &other) const
         {
             return (container_ == other.container_) && (index_ == other.index_);
@@ -223,6 +243,7 @@ namespace vrpn {
         {
             return (container_ != other.container_) || (index_ != other.index_);
         }
+        /// @}
 
     private:
         /// @brief Function to verify an iterator to enforce the class
@@ -237,6 +258,9 @@ namespace vrpn {
         }
 
         /// @brief get, without checking validity of container_ first!
+        ///
+        /// Note that the container handles cases where the index is out of
+        /// range by returning NULL, so that's safe.
         pointer get_raw_() const { return container_->get_by_index(index_); }
 
         /// @brief Helper to check index vs container bounds, without checking

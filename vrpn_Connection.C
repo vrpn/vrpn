@@ -4976,7 +4976,9 @@ vrpn_Connection::vrpn_Connection(const char *local_in_logfile_name,
 
 vrpn_Connection::~vrpn_Connection(void)
 {
+    // Clean up the endpoints before the dispatcher
     d_endpoints.clear();
+
     // Clean up types, senders, and callbacks.
     if (d_dispatcher) {
         delete d_dispatcher;
@@ -6234,6 +6236,7 @@ vrpn_Connection_IP::~vrpn_Connection_IP(void)
         d_NIC_IP = NULL;
     }
 
+    // Clean up the endpoints
     d_endpoints.clear();
 
 #ifdef VRPN_USE_WINSOCK_SOCKETS
