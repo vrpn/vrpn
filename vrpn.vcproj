@@ -1813,6 +1813,26 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="vrpn_Thread.C"
+				>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath="vrpn_Tng3.C"
 				>
 				<FileConfiguration
@@ -2962,6 +2982,10 @@
 				>
 			</File>
 			<File
+				RelativePath="vrpn_Thread.h"
+				>
+			</File>
+			<File
 				RelativePath="vrpn_Tng3.h"
 				>
 			</File>
@@ -3103,6 +3127,10 @@
 			</File>
 			<File
 				RelativePath="vrpn_WiiMote.h"
+				>
+			</File>
+			<File
+				RelativePath="vrpn_WindowsH.h"
 				>
 			</File>
 			<File
