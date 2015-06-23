@@ -42,7 +42,7 @@ namespace vrpn {
     /// yet.
     static inline EndpointContainer::pointer getNullEndpoint()
     {
-        return reinterpret_cast<EndpointContainer::pointer>(NULL);
+        return static_cast<EndpointContainer::pointer>(NULL);
     }
 
     EndpointContainer::EndpointContainer()
