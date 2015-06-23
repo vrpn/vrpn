@@ -175,7 +175,8 @@ namespace vrpn {
             : index_(0)
             , container_(&container)
         {
-            enforce_invariant_();
+            // Advance index as required to maintain the class invariant.
+            skip_nulls_();
         }
 
         /// @brief Constructor with container and raw index into container.
@@ -183,7 +184,8 @@ namespace vrpn {
             : index_(index)
             , container_(&container)
         {
-            enforce_invariant_();
+            // Advance index as required to maintain the class invariant.
+            skip_nulls_();
         }
 
         /// @brief Does this iterator refer to a valid element?
@@ -219,13 +221,8 @@ namespace vrpn {
 
             // Increment until we either go out of bounds or get a non-null
             // entry
-            do {
-                index_++;
-            } while (index_in_bounds_() && (get_raw_() == NULL));
-
-            // We may have run out of elements, so check the invariant
-            enforce_invariant_();
-
+            index_++;
+            skip_nulls_();
             return *this;
         }
 
@@ -252,6 +249,14 @@ namespace vrpn {
         bool equal_to_default_() const
         {
             return (NULL == container_) && (index_ == 0);
+        }
+        void skip_nulls_()
+        {
+            while (index_in_bounds_() && (get_raw_() == NULL)) {
+                index_++;
+            }
+            // We may have run out of elements, so check the invariant
+            enforce_invariant_();
         }
         /// @brief Function to verify an iterator to enforce the class
         /// invariant.
