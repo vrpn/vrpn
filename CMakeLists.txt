@@ -1264,6 +1264,7 @@ if(VRPN_BUILD_SERVER_LIBRARY)
 		PROPERTY
 		FOLDER
 		"Library")
+	string(REPLACE ";" " " SERVER_LINK_FLAGS "${SERVER_LINK_FLAGS}")
 	set_property(TARGET
 		vrpnserver
 		PROPERTY
