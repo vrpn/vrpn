@@ -9,7 +9,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 #include <stdlib.h>
 #include <math.h>
-#include <quat/quat.h>
+#include "quat.h"
 #include "vrpn_Tracker_Colibri.h"
 
 #ifdef VRPN_USE_COLIBRIAPI
