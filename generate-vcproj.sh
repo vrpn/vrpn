@@ -287,7 +287,7 @@ cat <<'EOS'
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="8.00"
+	Version="9.00"
 	Name="vrpndll"
 	ProjectGUID="{5F38B32E-B5AE-4316-B15E-9E21D033B1BE}"
 	RootNamespace="vrpndll"

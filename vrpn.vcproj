@@ -393,6 +393,26 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="vrpn_Assert.C"
+				>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath="vrpn_Auxiliary_Logger.C"
 				>
 				<FileConfiguration
@@ -2619,6 +2639,10 @@
 			</File>
 			<File
 				RelativePath="vrpn_Analog_USDigital_A2.h"
+				>
+			</File>
+			<File
+				RelativePath="vrpn_Assert.h"
 				>
 			</File>
 			<File
