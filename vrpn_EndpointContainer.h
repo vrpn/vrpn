@@ -131,6 +131,8 @@ namespace vrpn {
         /// @{
         /// @brief Implementation of acquire for the stored pointer type.
         void acquire_(pointer endpoint);
+        /// @brief Do actual compact once we've determined it's necessary.
+        void compact_();
 
         /// @}
         container_type container_;
@@ -331,10 +333,20 @@ namespace vrpn {
         }
         return container_[i];
     }
+
     inline EndpointContainer::size_type
     EndpointContainer::get_full_container_size() const
     {
         return container_.size();
+    }
+
+    // making this condition inline so that it has minimal overhead if
+    // we don't actually need to perform a compaction.
+    inline void EndpointContainer::compact()
+    {
+        if (needsCompact_) {
+            compact_();
+        }
     }
 
     inline EndpointIterator EndpointContainer::begin() const

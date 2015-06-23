@@ -77,16 +77,14 @@ namespace vrpn {
         container_.clear();
     }
 
-    void EndpointContainer::compact()
+    void EndpointContainer::compact_()
     {
-        if (needsCompact_) {
-            size_type before = get_full_container_size();
-            raw_iterator it = std::remove(begin_(), end_(), getNullEndpoint());
-            container_.resize(it - begin_());
-            needsCompact_ = false;
-            VRPN_EC_TRACE("Compact complete: was "
-                          << before << ", now " << get_full_container_size());
-        }
+        size_type before = get_full_container_size();
+        raw_iterator it = std::remove(begin_(), end_(), getNullEndpoint());
+        container_.resize(it - begin_());
+        needsCompact_ = false;
+        VRPN_EC_TRACE("Compact complete: was " << before << ", now "
+                                               << get_full_container_size());
     }
 
     bool EndpointContainer::full() const
