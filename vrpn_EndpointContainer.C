@@ -23,6 +23,19 @@
 // Standard includes
 #include <algorithm>
 
+#undef VRPN_EC_VERBOSE
+
+#ifdef VRPN_EC_VERBOSE
+#include <iostream>
+#define VRPN_EC_TRACE(X)                                                       \
+    do {                                                                       \
+        std::cerr << "  [EC " << this << (needsCompact_ ? "*" : " ") << "] "   \
+                  << X << std::endl;                                           \
+    } while (0)
+#else
+#define VRPN_EC_TRACE(X) ((void)0)
+#endif
+
 namespace vrpn {
     namespace {
         template <typename T> struct EndpointCloser {
@@ -48,12 +61,18 @@ namespace vrpn {
     EndpointContainer::EndpointContainer()
         : needsCompact_(false)
     {
+        VRPN_EC_TRACE("Constructor.");
     }
 
-    EndpointContainer::~EndpointContainer() { clear(); }
+    EndpointContainer::~EndpointContainer()
+    {
+        VRPN_EC_TRACE("Destructor - about to call clear.");
+        clear();
+    }
 
     void EndpointContainer::clear()
     {
+        VRPN_EC_TRACE("Clear.");
         ::std::for_each(begin_(), end_(), EndpointCloser<T>());
         container_.clear();
     }
@@ -61,9 +80,12 @@ namespace vrpn {
     void EndpointContainer::compact()
     {
         if (needsCompact_) {
+            size_type before = get_full_container_size();
             raw_iterator it = std::remove(begin_(), end_(), getNullEndpoint());
             container_.resize(it - begin_());
             needsCompact_ = false;
+            VRPN_EC_TRACE("Compact complete: was "
+                          << before << ", now " << get_full_container_size());
         }
     }
 
@@ -82,6 +104,8 @@ namespace vrpn {
         raw_iterator it = std::find(begin_(), end_(), endpoint);
         if (it != end_()) {
             needsCompact_ = true;
+            VRPN_EC_TRACE(endpoint << " destroyed at location "
+                                   << (it - begin_()));
             delete *it;
             *it = NULL;
             return true;
@@ -92,6 +116,9 @@ namespace vrpn {
     void EndpointContainer::acquire_(EndpointContainer::pointer endpoint)
     {
         if (NULL != endpoint) {
+
+            VRPN_EC_TRACE(endpoint << " acquired at location "
+                                   << get_full_container_size());
             container_.push_back(endpoint);
         }
     }
