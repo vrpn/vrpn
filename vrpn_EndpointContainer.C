@@ -62,7 +62,7 @@ namespace vrpn {
     {
         if (needsCompact_) {
             raw_iterator it = std::remove(begin_(), end_(), getNullEndpoint());
-            container_.resize(it - end_());
+            container_.resize(it - begin_());
             needsCompact_ = false;
         }
     }
