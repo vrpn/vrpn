@@ -6012,6 +6012,7 @@ vrpn_Connection_IP::vrpn_Connection_IP(
         // that asks to machine to call us back here.
         endpoint->d_remote_machine_name = vrpn_copy_machine_name(station_name);
         if (!endpoint->d_remote_machine_name) {
+            /// @todo do we drop the endpoint here?
             fprintf(stderr,
                     "vrpn_Connection_IP: Can't get remote machine name!\n");
             connectionStatus = BROKEN;
@@ -6035,6 +6036,7 @@ vrpn_Connection_IP::vrpn_Connection_IP(
             vrpn_connect_udp_port(endpoint->d_remote_machine_name,
                                   endpoint->d_remote_port_number, d_NIC_IP);
         if (endpoint->d_udpLobSocket == INVALID_SOCKET) {
+            /// @todo do we drop the endpoint here?
             fprintf(stderr, "vrpn_Connection_IP: Can't set up socket to lob "
                             "UDP packets!\n");
             connectionStatus = BROKEN;
@@ -6057,6 +6059,7 @@ vrpn_Connection_IP::vrpn_Connection_IP(
         if (vrpn_get_a_TCP_socket(&endpoint->d_tcpListenSocket,
                                   &endpoint->d_tcpListenPort,
                                   local_host) == -1) {
+            /// @todo do we drop the endpoint here?
             fprintf(stderr, "vrpn_Connection_IP: Can't create listen socket\n");
             endpoint->status = BROKEN;
             endpoint->d_tcpListenSocket = INVALID_SOCKET;
@@ -6071,6 +6074,7 @@ vrpn_Connection_IP::vrpn_Connection_IP(
                 endpoint->d_udpLobSocket, endpoint->d_remote_machine_name,
                 endpoint->d_remote_port_number, endpoint->d_tcpListenPort,
                 NIC_IPaddress) == -1) {
+            /// @todo do we drop the endpoint here?
             fprintf(stderr, "vrpn_Connection_IP: Can't lob UDP request\n");
             endpoint->status = BROKEN;
             // fprintf(stderr, "BROKEN -
@@ -6096,6 +6100,7 @@ vrpn_Connection_IP::vrpn_Connection_IP(
         retval = vrpn_poll_for_accept(endpoint->d_tcpListenSocket,
                                       &endpoint->d_tcpSocket, 1.0);
         if (retval == -1) {
+            /// @todo do we drop the endpoint here (and places like it)?
             fprintf(stderr, "vrpn_Connection_IP: Can't poll for accept\n");
             connectionStatus = BROKEN;
             return;
