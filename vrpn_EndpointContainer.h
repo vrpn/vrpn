@@ -95,10 +95,6 @@ namespace vrpn {
         /// still-extant object
         bool is_valid(size_type i) const;
 
-        /// @brief Destroys the object at index i, if it exists.
-        /// @return true if there was something for us to delete
-        bool destroy(size_type i);
-
         /// @brief Destroys the contained endpoint by address.
         /// @return true if there was something for us to delete
         bool destroy(base_pointer endpoint);

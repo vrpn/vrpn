@@ -74,22 +74,16 @@ namespace vrpn {
         return !(get_full_container_size() < vrpn_MAX_ENDPOINTS - 1);
     }
 
-    bool EndpointContainer::destroy(EndpointContainer::size_type i)
-    {
-        bool valid = is_valid(i);
-        delete container_[i]; // safe to delete null
-        container_[i] = NULL;
-        needsCompact_ |= valid;
-        return valid;
-    }
-
     bool EndpointContainer::destroy(EndpointContainer::base_pointer endpoint)
     {
+        if (!endpoint) {
+            return false;
+        }
         raw_iterator it = std::find(begin_(), end_(), endpoint);
         if (it != end_()) {
+            needsCompact_ = true;
             delete *it;
             *it = NULL;
-            needsCompact_ = true;
             return true;
         }
         return false;
