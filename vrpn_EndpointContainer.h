@@ -21,6 +21,8 @@
 #include "vrpn_Types.h"
 #include "vrpn_Configure.h"
 
+#include "vrpn_Assert.h"
+
 // Library/third-party includes
 // - none
 
@@ -135,6 +137,10 @@ namespace vrpn {
         bool needsCompact_;
     };
 
+#define VRPN_ECITERATOR_ASSERT_INVARIANT()                                     \
+    VRPN_ASSERT_MSG(valid() != equal_to_default_(),                            \
+                    "Class invariant for EndpointIterator")
+
     /// @brief An iterator that goes forward in an EndpointContainer skipping
     /// the NULLs, that also acts a bit like a pointer/smart pointer (can treat
     /// it as a vrpn_Endpoint *)
@@ -168,6 +174,12 @@ namespace vrpn {
             : index_(0)
             , container_(NULL)
         {
+            VRPN_ASSERT_MSG(equal_to_default_(),
+                            "Default constructed value should be equal to "
+                            "default: verifies that 'equal_to_default_()' is "
+                            "equivalent to '*this == EndpointIterator()'");
+            VRPN_ASSERT_MSG(!valid(),
+                            "Default constructed value should not be valid");
         }
 
         /// @brief Constructor with container, points to beginning of container.
@@ -177,6 +189,7 @@ namespace vrpn {
         {
             // Advance index as required to maintain the class invariant.
             skip_nulls_();
+            VRPN_ECITERATOR_ASSERT_INVARIANT();
         }
 
         /// @brief Constructor with container and raw index into container.
@@ -186,6 +199,7 @@ namespace vrpn {
         {
             // Advance index as required to maintain the class invariant.
             skip_nulls_();
+            VRPN_ECITERATOR_ASSERT_INVARIANT();
         }
 
         /// @brief Does this iterator refer to a valid element?
@@ -200,13 +214,18 @@ namespace vrpn {
         /// @brief Extract the pointer (NULL if iterator is invalid)
         pointer get_pointer() const
         {
+            VRPN_ECITERATOR_ASSERT_INVARIANT();
             // Only need to condition on container validity: invalid indexes
             // safely return null from get_raw_()
             return container_ ? (get_raw_()) : NULL;
         }
 
         /// @brief Implicit conversion operator to pointer.
-        operator pointer() const { return get_pointer(); }
+        operator pointer() const
+        {
+            VRPN_ECITERATOR_ASSERT_INVARIANT();
+            return get_pointer();
+        }
 
         /// @brief prefix ++ operator, increments (and skips any nulls)
         type &operator++()
@@ -223,14 +242,23 @@ namespace vrpn {
             // entry
             index_++;
             skip_nulls_();
+            VRPN_ECITERATOR_ASSERT_INVARIANT();
             return *this;
         }
 
         /// @name Smart pointer idiom operators
         /// @{
-        pointer operator->() const { return get_pointer(); }
+        pointer operator->() const
+        {
+            VRPN_ECITERATOR_ASSERT_INVARIANT();
+            return get_pointer();
+        }
 
-        reference operator*() const { return *get_raw_(); }
+        reference operator*() const
+        {
+            VRPN_ECITERATOR_ASSERT_INVARIANT();
+            return *get_raw_();
+        }
         /// @}
 
         /// @name Comparison operators, primarily for loop use
@@ -285,6 +313,7 @@ namespace vrpn {
         size_type index_;
         container_type *container_;
     };
+#undef VRPN_ECITERATOR_ASSERT_INVARIANT
 
     // Inline Implementations //
 
