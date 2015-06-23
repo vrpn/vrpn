@@ -72,6 +72,10 @@ namespace vrpn {
 
     void EndpointContainer::clear()
     {
+        if (container_.empty()) {
+            // Early out if there's nothing to clear.
+            return;
+        }
         VRPN_EC_TRACE("Clear.");
         ::std::for_each(begin_(), end_(), EndpointCloser<T>());
         container_.clear();
