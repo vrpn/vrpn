@@ -2549,6 +2549,8 @@ static int vrpn_start_server(const char *machine, char *server_name, char *args,
     defined(__APPLE__)
             /* hpux include files have the wrong declaration */
             deadkid = wait3((int *)&status, WNOHANG, NULL);
+#elif defined(__ANDROID__)
+            deadkid = waitpid(-1, &status, WNOHANG);
 #else
             deadkid = wait3(&status, WNOHANG, NULL);
 #endif
