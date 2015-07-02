@@ -173,7 +173,7 @@ protected:
     static int VRPN_CALLBACK
     text_message_handler(void *userdata, vrpn_HANDLERPARAM p);
 };
-extern VRPN_API vrpn_TextPrinter vrpn_System_TextPrinter;
+extern VRPN_API vrpn_TextPrinter &vrpn_System_TextPrinter;
 
 /// INTERNAL class to hold members that there should only be one copy of
 /// even when a class inherits from multiple vrpn_BaseClasses because it

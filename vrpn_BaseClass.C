@@ -12,7 +12,8 @@
 /** Definition of the system TextPrinter object that prints messages for
     all created objects.
 */
-vrpn_TextPrinter vrpn_System_TextPrinter;
+static vrpn_TextPrinter vrpn_System_TextPrinter_instance;
+vrpn_TextPrinter &vrpn_System_TextPrinter = vrpn_System_TextPrinter_instance;
 
 vrpn_TextPrinter::vrpn_TextPrinter()
     : d_first_watched_object(NULL)
@@ -32,6 +33,9 @@ vrpn_TextPrinter::~vrpn_TextPrinter()
    which (if we have some undeleted objects) will leave objects
    that don't have a NULL connection pointer, but whose pointers
    point to already-deleted connections.  This causes a crash. */
+/* XXX Did the above change to making the vrpn_System_TextPrinter
+   static remove the race condition, so that it is safe to put
+   this back in? */
 #if 0
 
     vrpn_TextPrinter_Watch_Entry    *victim, *next;
