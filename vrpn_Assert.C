@@ -29,7 +29,7 @@ namespace vrpn {
     {
         fprintf(stderr,
                 "Assertion (%s) failed\n\tFunction: %s\n\tLocation: %s:%d\n\n",
-                expr, function, file, line);
+                expr, function, file, static_cast<int>(line));
     }
     VRPN_API void assertion_failed_msg(char const *expr, char const *msg,
                                      char const *function, char const *file,
@@ -38,6 +38,6 @@ namespace vrpn {
 
         fprintf(stderr, "Assertion (%s) failed\n\tMessage: %s\n\tFunction: "
                         "%s\n\tLocation: %s:%d\n\n",
-                expr, msg, function, file, line);
+                expr, msg, function, file, static_cast<int>(line));
     }
 } // namespace vrpn
