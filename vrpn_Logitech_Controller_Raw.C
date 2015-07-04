@@ -210,6 +210,13 @@ void vrpn_Logitech_Extreme_3D_Pro::decodePacket(size_t bytes, vrpn_uint8 *buffer
 			buttons[btn] = ((value & mask) != 0);
 		}
 
+        value = buffer[6];
+        for (int btn = 0; btn < 4; btn++)
+        {
+            mask = static_cast<vrpn_uint8>(1 << (btn % 8));
+            buttons[btn + 12] = ((value & mask) != 0);
+        }
+
 		// Point of View Hat
 		buttons[8] = buttons[9] = buttons[10] = buttons[11] = 0;
 		switch (buffer[2] >> 4)
