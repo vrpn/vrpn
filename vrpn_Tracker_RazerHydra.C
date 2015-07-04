@@ -216,8 +216,8 @@ class vrpn_Tracker_RazerHydra::MyInterface : public vrpn_HidInterface
 
         void reset_acceptor()
         {
-            if (_acceptor)
-                _acceptor->reset();
+            if (m_acceptor)
+                m_acceptor->reset();
         }
 
     protected:

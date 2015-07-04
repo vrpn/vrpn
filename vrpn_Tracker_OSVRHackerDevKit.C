@@ -52,7 +52,7 @@ vrpn_Tracker_OSVRHackerDevKit::vrpn_Tracker_OSVRHackerDevKit(const char *name,
 
 vrpn_Tracker_OSVRHackerDevKit::~vrpn_Tracker_OSVRHackerDevKit()
 {
-    delete _acceptor;
+    delete m_acceptor;
 }
 
 void vrpn_Tracker_OSVRHackerDevKit::on_data_received(std::size_t bytes,
@@ -108,7 +108,7 @@ void vrpn_Tracker_OSVRHackerDevKit::mainloop()
     _wasConnected = connected();
 
     if (!_wasConnected) {
-        _acceptor->reset();
+        m_acceptor->reset();
         reconnect();
     }
 
