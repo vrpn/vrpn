@@ -31,9 +31,10 @@ static void normalize_axis(const unsigned int value, const short deadzone, const
 	if (channel > 1.0) { channel = 1.0; }
 }
 
-vrpn_Griffin::vrpn_Griffin(vrpn_HidAcceptor *filter, const char *name, vrpn_Connection *c)
+vrpn_Griffin::vrpn_Griffin(vrpn_HidAcceptor *filter, const char *name, vrpn_Connection *c,
+    vrpn_uint16 vendor, vrpn_uint16 product)
   : vrpn_BaseClass(name, c)
-  , vrpn_HidInterface(filter)
+  , vrpn_HidInterface(filter, vendor, product)
   , _filter(filter)
 {
 	init_hid();
@@ -66,7 +67,7 @@ int vrpn_Griffin::on_connect(void* /*thisPtr*/, vrpn_HANDLERPARAM /*p*/)
 }
 
 vrpn_Griffin_PowerMate::vrpn_Griffin_PowerMate(const char *name, vrpn_Connection *c)
-  : vrpn_Griffin(_filter = new vrpn_HidProductAcceptor(GRIFFIN_VENDOR, GRIFFIN_POWERMATE), name, c)
+    : vrpn_Griffin(_filter = new vrpn_HidProductAcceptor(GRIFFIN_VENDOR, GRIFFIN_POWERMATE), name, c, GRIFFIN_VENDOR, GRIFFIN_POWERMATE)
   , vrpn_Analog(name, c)
   , vrpn_Button_Filter(name, c)
   , vrpn_Dial(name, c)

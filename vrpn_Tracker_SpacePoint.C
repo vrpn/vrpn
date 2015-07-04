@@ -19,7 +19,8 @@ VRPN_SUPPRESS_EMPTY_OBJECT_WARNING()
 #ifdef VRPN_USE_HID
 vrpn_Tracker_SpacePoint::vrpn_Tracker_SpacePoint(const char * name, vrpn_Connection * trackercon) :
                     vrpn_Tracker(name, trackercon), vrpn_Button(name, trackercon),
-                    vrpn_HidInterface(new vrpn_HidProductAcceptor(SPACEPOINT_VENDOR, SPACEPOINT_PRODUCT))
+                    vrpn_HidInterface(new vrpn_HidProductAcceptor(SPACEPOINT_VENDOR, SPACEPOINT_PRODUCT),
+                    SPACEPOINT_VENDOR, SPACEPOINT_PRODUCT)
 {
     memset(d_quat, 0, 4 * sizeof(float));
     d_quat[3] = 1.0;

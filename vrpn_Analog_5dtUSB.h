@@ -68,6 +68,9 @@ class VRPN_API vrpn_Analog_5dtUSB : public vrpn_Analog, protected vrpn_HidInterf
 
 	protected:
 		/// Protected constructor: use a subclass to specify the glove variant to use.
+        // NOTE: Because this can accept a variety of productIds, we cannot use the
+        // optimization of asking for a vendor and product ID in the constructor
+        // of the vrpn_HidInterface -- it will not understand about the masks.
 		vrpn_Analog_5dtUSB(vrpn_HidAcceptor *filter, int num_sensors,
 		                   bool isLeftHand, const char *name, vrpn_Connection *c = 0);
 		/// Extracts the sensor values from each report.

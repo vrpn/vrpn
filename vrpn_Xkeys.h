@@ -40,7 +40,9 @@
 // The Z axis of the joystick is also exported as a dial (a single tick is 1/255th revolution).
 class vrpn_Xkeys: public vrpn_BaseClass, protected vrpn_HidInterface {
 public:
-  vrpn_Xkeys(vrpn_HidAcceptor *filter, const char *name, vrpn_Connection *c = 0, bool toggle_light = true);
+  vrpn_Xkeys(vrpn_HidAcceptor *filter, const char *name,
+      vrpn_Connection *c = 0, vrpn_uint16 vendor = 0, vrpn_uint16 product = 0,
+      bool toggle_light = true);
   virtual ~vrpn_Xkeys();
 
   virtual void mainloop() = 0;
@@ -75,8 +77,9 @@ protected:
 class vrpn_Xkeys_noLEDs: public vrpn_Xkeys {
 public:
   vrpn_Xkeys_noLEDs(vrpn_HidAcceptor *filter, const char *name,
-                      vrpn_Connection *c = 0, bool toggle_light = true)
-    : vrpn_Xkeys(filter, name, c, toggle_light) { };
+      vrpn_Connection *c = 0, vrpn_uint16 vendor = 0, vrpn_uint16 product = 0,
+      bool toggle_light = true)
+    : vrpn_Xkeys(filter, name, c, vendor, product, toggle_light) { };
 
 protected:
   virtual void setLEDs(LED_STATE, LED_STATE) {};
@@ -86,8 +89,9 @@ protected:
 class vrpn_Xkeys_v1: public vrpn_Xkeys {
 public:
   vrpn_Xkeys_v1(vrpn_HidAcceptor *filter, const char *name,
-                      vrpn_Connection *c = 0, bool toggle_light = true)
-    : vrpn_Xkeys(filter, name, c, toggle_light) {
+      vrpn_Connection *c = 0, vrpn_uint16 vendor = 0, vrpn_uint16 product = 0,
+      bool toggle_light = true)
+      : vrpn_Xkeys(filter, name, c, vendor, product, toggle_light) {
       // Indicate we're waiting for a connection by turning on the red LED
       if (_toggle_light) { setLEDs(On, Off); }
     };
@@ -102,8 +106,9 @@ protected:
 class vrpn_Xkeys_v2: public vrpn_Xkeys {
 public:
   vrpn_Xkeys_v2(vrpn_HidAcceptor *filter, const char *name,
-                      vrpn_Connection *c = 0, bool toggle_light = true)
-    : vrpn_Xkeys(filter, name, c, toggle_light) {
+      vrpn_Connection *c = 0, vrpn_uint16 vendor = 0, vrpn_uint16 product = 0,
+      bool toggle_light = true)
+      : vrpn_Xkeys(filter, name, c, vendor, product, toggle_light) {
       // Indicate we're waiting for a connection by turning on the red LED
       if (_toggle_light) { setLEDs(On, Off); }
     };

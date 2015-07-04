@@ -14,8 +14,6 @@
 
 VRPN_SUPPRESS_EMPTY_OBJECT_WARNING()
 
-//using namespace std;
-
 const unsigned VENDOR_ID = 0x09d9;
 const unsigned PRODUCT_ID = 0x64df;
 
@@ -23,11 +21,10 @@ using namespace std;
 
 //WintrackerIII Data length + 1 Byte for HID Report ID (0x0 as the device has no report IDs)
 
-
-
 #ifdef VRPN_USE_HID
 vrpn_Tracker_Wintracker::vrpn_Tracker_Wintracker(const char * name, vrpn_Connection * trackercon, const char s0,  const char s1,  const char s2, const char ext, const char hemisphere):
-                    vrpn_Tracker(name, trackercon), vrpn_HidInterface(new vrpn_HidProductAcceptor(VENDOR_ID, PRODUCT_ID)){
+vrpn_Tracker(name, trackercon), vrpn_HidInterface(new vrpn_HidProductAcceptor(VENDOR_ID, PRODUCT_ID), VENDOR_ID, PRODUCT_ID)
+{
     _name = name;
     _con = trackercon;
 
@@ -73,7 +70,8 @@ vrpn_Tracker_Wintracker::vrpn_Tracker_Wintracker(const char * name, vrpn_Connect
 }
 
 
-void vrpn_Tracker_Wintracker::on_data_received(size_t bytes, vrpn_uint8 *buff){
+void vrpn_Tracker_Wintracker::on_data_received(size_t bytes, vrpn_uint8 *buff)
+{
 
     if (bytes == 24) {
 

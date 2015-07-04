@@ -16,7 +16,8 @@
 
 class vrpn_Retrolink: public vrpn_BaseClass, protected vrpn_HidInterface {
 public:
-	vrpn_Retrolink(vrpn_HidAcceptor *filter, const char *name, vrpn_Connection *c = 0);
+	vrpn_Retrolink(vrpn_HidAcceptor *filter, const char *name, vrpn_Connection *c = 0,
+        vrpn_uint16 vendor = 0, vrpn_uint16 product = 0);
 	virtual ~vrpn_Retrolink(void);
 
   virtual void mainloop(void) = 0;

@@ -8,6 +8,18 @@
 
 VRPN_SUPPRESS_EMPTY_OBJECT_WARNING()
 
+// USB vendor and product IDs for the models we support
+static const vrpn_uint16 MICROSOFT_VENDOR = 0x045e;
+static const vrpn_uint16 SIDEWINDER_PRECISION_2 = 0x0038;
+static const vrpn_uint16 SIDEWINDER = 0x003c;
+static const vrpn_uint16 XBOX_S = 0x0289;
+static const vrpn_uint16 XBOX_360 = 0x028e;
+//static const vrpn_uint16 XBOX_360_WIRELESS = 0x028f;	// does not seem to be an HID-compliant device
+
+// and generic controllers that act the same as the above
+static const vrpn_uint16 AFTERGLOW_VENDOR = 0x0e6f;
+static const vrpn_uint16 AX1_FOR_XBOX_360 = 0x0213;
+
 #if defined(VRPN_USE_HID)
 
 static const double POLL_INTERVAL = 1e+6 / 30.0;		// If we have not heard, ask.
@@ -110,9 +122,10 @@ static vrpn_float64 normalize_trigger(unsigned int trigger)
 //////////////////////////////////////////////////////////////////////////
 // Common base class
 //////////////////////////////////////////////////////////////////////////
-vrpn_Microsoft_Controller_Raw::vrpn_Microsoft_Controller_Raw(vrpn_HidAcceptor *filter, const char *name, vrpn_Connection *c)
+vrpn_Microsoft_Controller_Raw::vrpn_Microsoft_Controller_Raw(vrpn_HidAcceptor *filter, const char *name, vrpn_Connection *c,
+    vrpn_uint16 vendor, vrpn_uint16 product)
   : vrpn_BaseClass(name, c)
-  , vrpn_HidInterface(filter)
+  , vrpn_HidInterface(filter, vendor, product)
   , _filter(filter)
 {
 	init_hid();
@@ -148,7 +161,7 @@ int vrpn_Microsoft_Controller_Raw::on_connect(void* /*thisPtr*/, vrpn_HANDLERPAR
 // SideWinder Precision 2 Joystick
 //////////////////////////////////////////////////////////////////////////
 vrpn_Microsoft_SideWinder_Precision_2::vrpn_Microsoft_SideWinder_Precision_2(const char *name, vrpn_Connection *c) :
-	vrpn_Microsoft_Controller_Raw(_filter = new vrpn_HidProductAcceptor(MICROSOFT_VENDOR, SIDEWINDER_PRECISION_2), name, c),
+vrpn_Microsoft_Controller_Raw(_filter = new vrpn_HidProductAcceptor(MICROSOFT_VENDOR, SIDEWINDER_PRECISION_2), name, c, MICROSOFT_VENDOR, SIDEWINDER_PRECISION_2),
 	vrpn_Analog(name, c), vrpn_Button_Filter(name, c), vrpn_Dial(name, c)
 {
 	vrpn_Analog::num_channel = 5;
@@ -292,7 +305,7 @@ void vrpn_Microsoft_SideWinder_Precision_2::decodePacket(size_t bytes, vrpn_uint
 // SideWinder Joystick
 //////////////////////////////////////////////////////////////////////////
 vrpn_Microsoft_SideWinder::vrpn_Microsoft_SideWinder(const char *name, vrpn_Connection *c) :
-	vrpn_Microsoft_Controller_Raw(_filter = new vrpn_HidProductAcceptor(MICROSOFT_VENDOR, SIDEWINDER), name, c),
+vrpn_Microsoft_Controller_Raw(_filter = new vrpn_HidProductAcceptor(MICROSOFT_VENDOR, SIDEWINDER), name, c, MICROSOFT_VENDOR, SIDEWINDER),
 	vrpn_Analog(name, c), vrpn_Button_Filter(name, c), vrpn_Dial(name, c)
 {
 	vrpn_Analog::num_channel = 3;
@@ -398,7 +411,7 @@ void vrpn_Microsoft_SideWinder::decodePacket(size_t bytes, vrpn_uint8 *buffer)
 // Xbox S
 //////////////////////////////////////////////////////////////////////////
 vrpn_Microsoft_Controller_Raw_Xbox_S::vrpn_Microsoft_Controller_Raw_Xbox_S(const char *name, vrpn_Connection *c)
-  : vrpn_Microsoft_Controller_Raw(_filter = new vrpn_HidProductAcceptor(MICROSOFT_VENDOR, XBOX_S), name, c)
+    : vrpn_Microsoft_Controller_Raw(_filter = new vrpn_HidProductAcceptor(MICROSOFT_VENDOR, XBOX_S), name, c, MICROSOFT_VENDOR, XBOX_S)
   , vrpn_Analog(name, c)
   , vrpn_Button_Filter(name, c)
   , vrpn_Dial(name, c)
@@ -642,8 +655,8 @@ void vrpn_Microsoft_Controller_Raw_Xbox_S::decodePacket(size_t bytes, vrpn_uint8
 //////////////////////////////////////////////////////////////////////////
 // Xbox 360
 //////////////////////////////////////////////////////////////////////////
-vrpn_Microsoft_Controller_Raw_Xbox_360::vrpn_Microsoft_Controller_Raw_Xbox_360(const char *name, vrpn_Connection *c, vrpn_uint16 vendorId /*=MICROSOFT_VENDOR*/, vrpn_uint16 productId /*=XBOX_360*/)
-: vrpn_Microsoft_Controller_Raw(_filter = new vrpn_HidProductAcceptor(vendorId, productId), name, c)
+vrpn_Microsoft_Controller_Raw_Xbox_360_base::vrpn_Microsoft_Controller_Raw_Xbox_360_base(const char *name, vrpn_Connection *c, vrpn_uint16 vendor, vrpn_uint16 product)
+    : vrpn_Microsoft_Controller_Raw(_filter = new vrpn_HidProductAcceptor(vendor, product), name, c, vendor, product)
 , vrpn_Analog(name, c)
 , vrpn_Button_Filter(name, c)
 , vrpn_Dial(name, c)
@@ -660,7 +673,7 @@ vrpn_Microsoft_Controller_Raw_Xbox_360::vrpn_Microsoft_Controller_Raw_Xbox_360(c
 	memset(last, 0, sizeof(last));
 }
 
-void vrpn_Microsoft_Controller_Raw_Xbox_360::mainloop()
+void vrpn_Microsoft_Controller_Raw_Xbox_360_base::mainloop()
 {
 	update();
 	server_mainloop();
@@ -679,7 +692,7 @@ void vrpn_Microsoft_Controller_Raw_Xbox_360::mainloop()
 	}
 }
 
-void vrpn_Microsoft_Controller_Raw_Xbox_360::report(vrpn_uint32 class_of_service) {
+void vrpn_Microsoft_Controller_Raw_Xbox_360_base::report(vrpn_uint32 class_of_service) {
 	vrpn_Analog::timestamp = _timestamp;
 	vrpn_Button::timestamp = _timestamp;
 	if (vrpn_Dial::num_dials > 0)
@@ -695,7 +708,7 @@ void vrpn_Microsoft_Controller_Raw_Xbox_360::report(vrpn_uint32 class_of_service
 	}
 }
 
-void vrpn_Microsoft_Controller_Raw_Xbox_360::report_changes(vrpn_uint32 class_of_service) {
+void vrpn_Microsoft_Controller_Raw_Xbox_360_base::report_changes(vrpn_uint32 class_of_service) {
 	vrpn_Analog::timestamp = _timestamp;
 	vrpn_Button::timestamp = _timestamp;
 	if (vrpn_Dial::num_dials > 0)
@@ -711,7 +724,7 @@ void vrpn_Microsoft_Controller_Raw_Xbox_360::report_changes(vrpn_uint32 class_of
 	}
 }
 
-void vrpn_Microsoft_Controller_Raw_Xbox_360::decodePacket(size_t bytes, vrpn_uint8 *buffer)
+void vrpn_Microsoft_Controller_Raw_Xbox_360_base::decodePacket(size_t bytes, vrpn_uint8 *buffer)
 {
 	// Decode all full reports, each of which is 14 bytes long.
         // Because there is only one type of report, the initial "0" report-type
@@ -829,11 +842,24 @@ void vrpn_Microsoft_Controller_Raw_Xbox_360::decodePacket(size_t bytes, vrpn_uin
 			}
 			channel[5] = normalize_dpad(buttons[10], buttons[11], buttons[12], buttons[13]);
 		} else {
-			fprintf(stderr, "vrpn_Microsoft_Controller_Raw_Xbox_360: Unknown report = %u\n", static_cast<unsigned>(buffer[0]));
+			fprintf(stderr, "vrpn_Microsoft_Controvrpn_Microsoft_Controller_Raw_Xbox_360_baseller_Raw_Xbox_360: Unknown report = %u\n", static_cast<unsigned>(buffer[0]));
 		}
 	} else {
-		fprintf(stderr, "vrpn_Microsoft_Controller_Raw_Xbox_360: Found a corrupted report; # total bytes = %u\n", static_cast<unsigned>(bytes));
+		fprintf(stderr, "vrpn_Microsoft_Controller_Raw_Xbox_360_base: Found a corrupted report; # total bytes = %u\n", static_cast<unsigned>(bytes));
 	}
+}
+
+// The original Xbox_360.  We just declare the vendor and product ID.
+vrpn_Microsoft_Controller_Raw_Xbox_360::vrpn_Microsoft_Controller_Raw_Xbox_360(const char *name, vrpn_Connection *c)
+    : vrpn_Microsoft_Controller_Raw_Xbox_360_base(name, c, MICROSOFT_VENDOR, XBOX_360)
+{
+}
+
+// The device otherwise behaves exactly like an Xbox_360, so we re-use all of
+// the functions from that class.  We just declare the vendor and product ID.
+vrpn_Afterglow_Ax1_For_Xbox_360::vrpn_Afterglow_Ax1_For_Xbox_360(const char *name, vrpn_Connection *c)
+    : vrpn_Microsoft_Controller_Raw_Xbox_360_base(name, c, AFTERGLOW_VENDOR, AX1_FOR_XBOX_360)
+{
 }
 
 // End of VRPN_USE_HID

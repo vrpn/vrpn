@@ -24,7 +24,8 @@
 
 class vrpn_Futaba: public vrpn_BaseClass, protected vrpn_HidInterface {
 public:
-  vrpn_Futaba(vrpn_HidAcceptor *filter, const char *name, vrpn_Connection *c = 0);
+  vrpn_Futaba(vrpn_HidAcceptor *filter, const char *name, vrpn_Connection *c = 0,
+      vrpn_uint16 vendor = 0, vrpn_uint16 product = 0);
   virtual ~vrpn_Futaba(void);
 
   virtual void mainloop(void) = 0;

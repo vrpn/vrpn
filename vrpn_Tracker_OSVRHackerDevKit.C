@@ -30,6 +30,11 @@ static const vrpn_uint16 vrpn_OSVR_HACKER_DEV_KIT_HMD = 0x0b00;
 static const vrpn_uint16 vrpn_OSVR_ALT_VENDOR = 0x03EB;
 static const vrpn_uint16 vrpn_OSVR_ALT_HACKER_DEV_KIT_HMD = 0x2421;
 
+// NOTE: Cannot use the vendor-and-product parameters in the
+// vrpn_HidInterface because there are one of two possible
+// vendor/product pairs.  The Acceptor will still correctly
+// work, it will just do more work during the enumeration phase
+// because it will have to check all devices in the system.
 vrpn_Tracker_OSVRHackerDevKit::vrpn_Tracker_OSVRHackerDevKit(const char *name,
                                                              vrpn_Connection *c)
     : vrpn_Tracker(name, c)

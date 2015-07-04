@@ -28,7 +28,8 @@
 class VRPN_API vrpn_3DConnexion: public vrpn_Button_Filter, public vrpn_Analog, protected vrpn_HidInterface {
 public:
   vrpn_3DConnexion(vrpn_HidAcceptor *filter, unsigned num_buttons,
-                   const char *name, vrpn_Connection *c = 0);
+      const char *name, vrpn_Connection *c = 0,
+      vrpn_uint16 vendor = 0, vrpn_uint16 product = 0);
   virtual ~vrpn_3DConnexion();
 
   virtual void mainloop();

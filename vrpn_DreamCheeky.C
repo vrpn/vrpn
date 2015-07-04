@@ -14,9 +14,10 @@ VRPN_SUPPRESS_EMPTY_OBJECT_WARNING()
 static const vrpn_uint16 DREAMCHEEKY_VENDOR = 6465;
 static const vrpn_uint16 USB_ROLL_UP_DRUM_KIT = 32801;
 
-vrpn_DreamCheeky::vrpn_DreamCheeky(vrpn_HidAcceptor *filter, const char *name, vrpn_Connection *c)
+vrpn_DreamCheeky::vrpn_DreamCheeky(vrpn_HidAcceptor *filter, const char *name, vrpn_Connection *c,
+    vrpn_uint16 vendor, vrpn_uint16 product)
   : vrpn_BaseClass(name, c)
-  , vrpn_HidInterface(filter)
+  , vrpn_HidInterface(filter, vendor, product)
   , _filter(filter)
 {
   vrpn_gettimeofday(&_timestamp, NULL);
@@ -34,7 +35,7 @@ void vrpn_DreamCheeky::on_data_received(size_t bytes, vrpn_uint8 *buffer)
 
 vrpn_DreamCheeky_Drum_Kit::vrpn_DreamCheeky_Drum_Kit(const char *name, vrpn_Connection *c,
                                                      bool debounce)
-  : vrpn_DreamCheeky(_filter = new vrpn_HidProductAcceptor(DREAMCHEEKY_VENDOR, USB_ROLL_UP_DRUM_KIT), name, c)
+                                                     : vrpn_DreamCheeky(_filter = new vrpn_HidProductAcceptor(DREAMCHEEKY_VENDOR, USB_ROLL_UP_DRUM_KIT), name, c, DREAMCHEEKY_VENDOR, USB_ROLL_UP_DRUM_KIT)
   , vrpn_Button_Filter(name, c)
   , d_debounce(debounce)
 {

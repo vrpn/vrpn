@@ -14,18 +14,6 @@
 
 #if defined(VRPN_USE_HID)
 
-// USB vendor and product IDs for the models we support
-static const vrpn_uint16 MICROSOFT_VENDOR = 0x045e;
-static const vrpn_uint16 SIDEWINDER_PRECISION_2 = 0x0038;
-static const vrpn_uint16 SIDEWINDER = 0x003c;
-static const vrpn_uint16 XBOX_S = 0x0289;
-static const vrpn_uint16 XBOX_360 = 0x028e;
-//static const vrpn_uint16 XBOX_360_WIRELESS = 0x028f;	// does not seem to be an HID-compliant device
-
-// and generic controllers that act the same as the above
-static const vrpn_uint16 AFTERGLOW_VENDOR = 0x0e6f;
-static const vrpn_uint16 AX1_FOR_XBOX_360 = 0x0213;
-
 // Device drivers for the Microsoft Controller Raw USB line of products
 // Currently supported: Xbox Controller S, Xbox 360 Controller
 //
@@ -37,7 +25,8 @@ static const vrpn_uint16 AX1_FOR_XBOX_360 = 0x0213;
 class vrpn_Microsoft_Controller_Raw : public vrpn_BaseClass, protected vrpn_HidInterface
 {
 public:
-	vrpn_Microsoft_Controller_Raw(vrpn_HidAcceptor *filter, const char *name, vrpn_Connection *c = 0);
+	vrpn_Microsoft_Controller_Raw(vrpn_HidAcceptor *filter, const char *name,
+        vrpn_Connection *c = 0, vrpn_uint16 vendor = 0, vrpn_uint16 product = 0);
 	virtual ~vrpn_Microsoft_Controller_Raw(void);
 
 	virtual void mainloop(void) = 0;
@@ -108,15 +97,22 @@ protected:
 	vrpn_uint8 _lastDial;
 };
 
-class vrpn_Microsoft_Controller_Raw_Xbox_360: protected vrpn_Microsoft_Controller_Raw, public vrpn_Analog, public vrpn_Button_Filter, public vrpn_Dial
+// There are aftermarket clones of this controller that have different vendor and
+// product IDs.  We make a base class that implements all of the functionality
+// (which is the same) and then declare subclasses that set the vendor and
+// product ID appropriately.
+class vrpn_Microsoft_Controller_Raw_Xbox_360_base: protected vrpn_Microsoft_Controller_Raw, public vrpn_Analog, public vrpn_Button_Filter, public vrpn_Dial
 {
 public:
-	vrpn_Microsoft_Controller_Raw_Xbox_360(const char *name, vrpn_Connection *c = 0, vrpn_uint16 vendorId = MICROSOFT_VENDOR, vrpn_uint16 productId = XBOX_360);
-	virtual ~vrpn_Microsoft_Controller_Raw_Xbox_360(void) {};
+    virtual ~vrpn_Microsoft_Controller_Raw_Xbox_360_base(void) {};
 
 	virtual void mainloop(void);
 protected:
-	// Send report iff changed
+    // Only subclasses can construct.
+    vrpn_Microsoft_Controller_Raw_Xbox_360_base(const char *name, vrpn_Connection *c = 0,
+        vrpn_uint16 vendor = 0, vrpn_uint16 product = 0);
+
+    // Send report iff changed
 	void report_changes (vrpn_uint32 class_of_service = vrpn_CONNECTION_LOW_LATENCY);
 	// Send report whether or not changed
 	void report (vrpn_uint32 class_of_service = vrpn_CONNECTION_LOW_LATENCY);
@@ -127,12 +123,18 @@ protected:
 	vrpn_uint8 _lastDial;
 };
 
-// Generic Xbox 360, same as actual Xbox 360, but other IDs
-class vrpn_Afterglow_Ax1_For_Xbox_360 : public vrpn_Microsoft_Controller_Raw_Xbox_360
+// Original Xbox 360
+class vrpn_Microsoft_Controller_Raw_Xbox_360 : public vrpn_Microsoft_Controller_Raw_Xbox_360_base
 {
 public:
-	vrpn_Afterglow_Ax1_For_Xbox_360(const char *name, vrpn_Connection *c) : vrpn_Microsoft_Controller_Raw_Xbox_360(name, c, AFTERGLOW_VENDOR, AX1_FOR_XBOX_360) {};
-	virtual ~vrpn_Afterglow_Ax1_For_Xbox_360(void) {};
+    vrpn_Microsoft_Controller_Raw_Xbox_360(const char *name, vrpn_Connection *c);
+};
+
+// Generic Xbox 360, same as actual Xbox 360, but other IDs
+class vrpn_Afterglow_Ax1_For_Xbox_360 : public vrpn_Microsoft_Controller_Raw_Xbox_360_base
+{
+public:
+	vrpn_Afterglow_Ax1_For_Xbox_360(const char *name, vrpn_Connection *c);
 };
 
 // end of VRPN_USE_HID

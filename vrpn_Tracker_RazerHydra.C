@@ -94,7 +94,8 @@ class vrpn_Tracker_RazerHydra::MyInterface : public vrpn_HidInterface
             : vrpn_HidInterface(new vrpn_HidBooleanAndAcceptor(
                                     new vrpn_HidInterfaceNumberAcceptor(which_interface),
 #endif
-                                new vrpn_HidProductAcceptor(HYDRA_VENDOR, HYDRA_PRODUCT)))
+                                new vrpn_HidProductAcceptor(HYDRA_VENDOR, HYDRA_PRODUCT)),
+                                HYDRA_VENDOR, HYDRA_PRODUCT)
         {
             d_my_interface = which_interface;
             d_hydra = hydra;

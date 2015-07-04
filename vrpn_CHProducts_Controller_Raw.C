@@ -68,9 +68,10 @@ static void normalize_axes(const unsigned int x, const unsigned int y, const sho
 //////////////////////////////////////////////////////////////////////////
 // Common base class
 //////////////////////////////////////////////////////////////////////////
-vrpn_CHProducts_Controller_Raw::vrpn_CHProducts_Controller_Raw(vrpn_HidAcceptor *filter, const char *name, vrpn_Connection *c) :
+vrpn_CHProducts_Controller_Raw::vrpn_CHProducts_Controller_Raw(vrpn_HidAcceptor *filter, const char *name, vrpn_Connection *c,
+    vrpn_uint16 vendor, vrpn_uint16 product) :
 	vrpn_BaseClass(name, c)
-	, vrpn_HidInterface(filter)
+	, vrpn_HidInterface(filter, vendor, product)
 	, _filter(filter)
 {
 	init_hid();
@@ -107,7 +108,7 @@ int vrpn_CHProducts_Controller_Raw::on_connect(void* /* thisPtr */, vrpn_HANDLER
 // ST290 Pro Joystick
 //////////////////////////////////////////////////////////////////////////
 vrpn_CHProducts_Fighterstick_USB::vrpn_CHProducts_Fighterstick_USB(const char *name, vrpn_Connection *c) :
-	vrpn_CHProducts_Controller_Raw(_filter = new vrpn_HidProductAcceptor(CHPRODUCTS_VENDOR, FIGHTERSTICK_USB), name, c),
+vrpn_CHProducts_Controller_Raw(_filter = new vrpn_HidProductAcceptor(CHPRODUCTS_VENDOR, FIGHTERSTICK_USB), name, c, CHPRODUCTS_VENDOR, FIGHTERSTICK_USB),
 	vrpn_Analog(name, c), vrpn_Button_Filter(name, c), vrpn_Dial(name, c)
 {
 	vrpn_Analog::num_channel = 8;

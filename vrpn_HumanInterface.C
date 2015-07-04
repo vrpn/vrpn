@@ -63,6 +63,7 @@ bool vrpn_HidInterface::reconnect()
 {
     // Enumerate all devices and pass each one to the acceptor to see if it
     // is the one that we want.
+    printf("XXX Enumerating vendor %d, product %d\n", m_vendor_sought, m_product_sought);
     struct hid_device_info *devs = hid_enumerate(m_vendor_sought, m_product_sought);
     struct hid_device_info *loop = devs;
     bool found = false;

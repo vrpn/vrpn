@@ -31,9 +31,10 @@ static void normalize_axis(const unsigned int value, const short deadzone, const
 	if (channel > 1.0) { channel = 1.0; }
 }
 
-vrpn_Contour::vrpn_Contour(vrpn_HidAcceptor *filter, const char *name, vrpn_Connection *c)
+vrpn_Contour::vrpn_Contour(vrpn_HidAcceptor *filter, const char *name, vrpn_Connection *c,
+    vrpn_uint16 vendor, vrpn_uint16 product)
   : vrpn_BaseClass(name, c)
-  , vrpn_HidInterface(filter)
+  , vrpn_HidInterface(filter, vendor, product)
   , _filter(filter)
 {
 	init_hid();
@@ -69,7 +70,7 @@ int vrpn_Contour::on_connect(void* /*thisPtr*/, vrpn_HANDLERPARAM /*p*/)
 }
 
 vrpn_Contour_ShuttleXpress::vrpn_Contour_ShuttleXpress(const char *name, vrpn_Connection *c)
-  : vrpn_Contour(_filter = new vrpn_HidProductAcceptor(CONTOUR_VENDOR, CONTOUR_SHUTTLEXPRESS), name, c)
+    : vrpn_Contour(_filter = new vrpn_HidProductAcceptor(CONTOUR_VENDOR, CONTOUR_SHUTTLEXPRESS), name, c, CONTOUR_VENDOR, CONTOUR_SHUTTLEXPRESS)
   , vrpn_Analog(name, c)
   , vrpn_Button_Filter(name, c)
   , vrpn_Dial(name, c)
@@ -205,7 +206,7 @@ void vrpn_Contour_ShuttleXpress::decodePacket(size_t bytes, vrpn_uint8 *buffer) 
 
 
 vrpn_Contour_ShuttlePROv2::vrpn_Contour_ShuttlePROv2(const char *name, vrpn_Connection *c)
-	: vrpn_Contour(_filter = new vrpn_HidProductAcceptor(CONTOUR_VENDOR, CONTOUR_SHUTTLEPROV2), name, c)
+    : vrpn_Contour(_filter = new vrpn_HidProductAcceptor(CONTOUR_VENDOR, CONTOUR_SHUTTLEPROV2), name, c, CONTOUR_VENDOR, CONTOUR_SHUTTLEPROV2)
 	, vrpn_Analog(name, c)
 	, vrpn_Button_Filter(name, c)
 	, vrpn_Dial(name, c)
