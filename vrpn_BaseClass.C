@@ -13,7 +13,10 @@
     all created objects.
 */
 static vrpn_TextPrinter vrpn_System_TextPrinter_instance;
+// SWIG does not like this statement
+#ifndef SWIG
 vrpn_TextPrinter &vrpn_System_TextPrinter = vrpn_System_TextPrinter_instance;
+#endif
 
 vrpn_TextPrinter::vrpn_TextPrinter()
     : d_first_watched_object(NULL)

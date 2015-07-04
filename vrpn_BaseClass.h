@@ -173,7 +173,10 @@ protected:
     static int VRPN_CALLBACK
     text_message_handler(void *userdata, vrpn_HANDLERPARAM p);
 };
+// SWIG does not like this declaration.
+#ifndef SWIG
 extern VRPN_API vrpn_TextPrinter &vrpn_System_TextPrinter;
+#endif
 
 /// INTERNAL class to hold members that there should only be one copy of
 /// even when a class inherits from multiple vrpn_BaseClasses because it
