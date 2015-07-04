@@ -24,6 +24,9 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 #include "vrpn_Tracker_MotionNode.h"
+
+VRPN_SUPPRESS_EMPTY_OBJECT_WARNING()
+
 #ifdef  VRPN_USE_MOTIONNODE
 
 // Option to print out more information for run-time testing.
