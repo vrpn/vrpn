@@ -63,10 +63,11 @@ vrpn_Tracker_OSVRHackerDevKit::~vrpn_Tracker_OSVRHackerDevKit()
 void vrpn_Tracker_OSVRHackerDevKit::on_data_received(std::size_t bytes,
                                                      vrpn_uint8 *buffer)
 {
-    if (bytes != 32) {
+    if (bytes != 32 && bytes != 16) {
         send_text_message(vrpn_TEXT_WARNING)
             << "Received a report " << bytes
-            << " in length, but expected it to be 32 bytes. Discarding.";
+            << " in length, but expected it to be 32 or 16 bytes. Discarding. "
+               "(May indicate issues with HID!)";
         return;
     }
 
