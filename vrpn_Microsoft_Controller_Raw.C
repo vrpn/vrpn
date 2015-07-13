@@ -14,7 +14,7 @@ static const vrpn_uint16 SIDEWINDER_PRECISION_2 = 0x0038;
 static const vrpn_uint16 SIDEWINDER = 0x003c;
 static const vrpn_uint16 XBOX_S = 0x0289;
 static const vrpn_uint16 XBOX_360 = 0x028e;
-//static const vrpn_uint16 XBOX_360_WIRELESS = 0x028f;	// does not seem to be an HID-compliant device
+static const vrpn_uint16 XBOX_360_WIRELESS = 0x02a1;
 
 // and generic controllers that act the same as the above
 static const vrpn_uint16 AFTERGLOW_VENDOR = 0x0e6f;
@@ -852,6 +852,12 @@ void vrpn_Microsoft_Controller_Raw_Xbox_360_base::decodePacket(size_t bytes, vrp
 // The original Xbox_360.  We just declare the vendor and product ID.
 vrpn_Microsoft_Controller_Raw_Xbox_360::vrpn_Microsoft_Controller_Raw_Xbox_360(const char *name, vrpn_Connection *c)
     : vrpn_Microsoft_Controller_Raw_Xbox_360_base(name, c, MICROSOFT_VENDOR, XBOX_360)
+{
+}
+
+// The wireless Xbox_360.  We just declare the vendor and product ID.
+vrpn_Microsoft_Controller_Raw_Xbox_360_Wireless::vrpn_Microsoft_Controller_Raw_Xbox_360_Wireless(const char *name, vrpn_Connection *c)
+    : vrpn_Microsoft_Controller_Raw_Xbox_360_base(name, c, MICROSOFT_VENDOR, XBOX_360_WIRELESS)
 {
 }
 

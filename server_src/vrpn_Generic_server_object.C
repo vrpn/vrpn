@@ -5228,6 +5228,10 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(
                     VRPN_CHECK(templated_setup_HID_device_name_only<
                         vrpn_Microsoft_Controller_Raw_Xbox_360>);
                 }
+                else if (VRPN_ISIT("vrpn_Microsoft_Controller_Raw_Xbox_360_Wireless")) {
+                    VRPN_CHECK(templated_setup_HID_device_name_only<
+                        vrpn_Microsoft_Controller_Raw_Xbox_360_Wireless>);
+                }
                 else if (VRPN_ISIT("vrpn_Afterglow_Ax1_For_Xbox_360")) {
                     VRPN_CHECK(templated_setup_HID_device_name_only<
                         vrpn_Afterglow_Ax1_For_Xbox_360>);

@@ -130,6 +130,13 @@ public:
     vrpn_Microsoft_Controller_Raw_Xbox_360(const char *name, vrpn_Connection *c);
 };
 
+// Xbox 360 wireless controller
+class vrpn_Microsoft_Controller_Raw_Xbox_360_Wireless : public vrpn_Microsoft_Controller_Raw_Xbox_360_base
+{
+public:
+    vrpn_Microsoft_Controller_Raw_Xbox_360_Wireless(const char *name, vrpn_Connection *c);
+};
+
 // Generic Xbox 360, same as actual Xbox 360, but other IDs
 class vrpn_Afterglow_Ax1_For_Xbox_360 : public vrpn_Microsoft_Controller_Raw_Xbox_360_base
 {
