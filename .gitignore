@@ -38,3 +38,6 @@ Release/
 _UpgradeReport_Files/
 *.sln.cache
 *.tmp*.vcproj
+
+#Folder with build project
+build/

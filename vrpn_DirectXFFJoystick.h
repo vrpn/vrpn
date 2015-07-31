@@ -233,6 +233,76 @@ protected:
       return false;
     };
 
+	/*UMA******************************************************************************************************/
+	virtual bool setObjectNumber(vrpn_int32 n) {
+		struct timeval now;
+		vrpn_gettimeofday(&now, NULL);
+		send_text_message("vrpn_DirectXFFJoystick: Called a function not supported", now, vrpn_TEXT_ERROR);
+		return false;
+	};
+	virtual bool setTransformMatrix(vrpn_int32 CurrentObject, vrpn_float64 *transformMatrix) {
+		struct timeval now;
+		vrpn_gettimeofday(&now, NULL);
+		send_text_message("vrpn_DirectXFFJoystick: Called a function not supported", now, vrpn_TEXT_ERROR);
+		return false;
+	};
+
+	virtual bool setEffect(char *type, vrpn_int32 effect_index, vrpn_float64 gain, vrpn_float64 magnitude, vrpn_float64 duration, vrpn_float64 frequency, vrpn_float64 position[3], vrpn_float64 direction[3]) {
+		struct timeval now;
+		vrpn_gettimeofday(&now, NULL);
+		send_text_message("vrpn_DirectXFFJoystick: Called a function not supported", now, vrpn_TEXT_ERROR);
+		return false;
+	};
+	virtual bool startEffect(vrpn_int32 effectId) {
+		struct timeval now;
+		vrpn_gettimeofday(&now, NULL);
+		send_text_message("vrpn_DirectXFFJoystick: Called a function not supported", now, vrpn_TEXT_ERROR);
+		return false;
+	};
+	virtual bool stopEffect(vrpn_int32 effectId) {
+		struct timeval now;
+		vrpn_gettimeofday(&now, NULL);
+		send_text_message("vrpn_DirectXFFJoystick: Called a function not supported", now, vrpn_TEXT_ERROR);
+		return false;
+	};
+
+	virtual bool setHapticProperty(vrpn_int32 objNum, char *type, vrpn_float32 k){
+		struct timeval now;
+		vrpn_gettimeofday(&now, NULL);
+		send_text_message("vrpn_DirectXFFJoystick: Called a function not supported", now, vrpn_TEXT_ERROR);
+		return false;
+	};
+
+
+	virtual bool setTouchableFace(vrpn_int32 TFace){
+		struct timeval now;
+		vrpn_gettimeofday(&now, NULL);
+		send_text_message("vrpn_DirectXFFJoystick: Called a function not supported", now, vrpn_TEXT_ERROR);
+		return false;
+	};
+
+	virtual bool setWorkspaceProjectionMatrix(vrpn_float64 *modelMatrix, vrpn_float64 *Matrix) {
+		struct timeval now;
+		vrpn_gettimeofday(&now, NULL);
+		send_text_message("vrpn_DirectXFFJoystick: Called a function not supported", now, vrpn_TEXT_ERROR);
+		return false;
+	};
+
+	virtual bool setWorkspaceBoundingBox(vrpn_float64 *modelMatrix, vrpn_float64 *Matrix) {
+		struct timeval now;
+		vrpn_gettimeofday(&now, NULL);
+		send_text_message("vrpn_DirectXFFJoystick: Called a function not supported", now, vrpn_TEXT_ERROR);
+		return false;
+	};
+
+	virtual bool resetDevice(void) {
+		struct timeval now;
+		vrpn_gettimeofday(&now, NULL);
+		send_text_message("vrpn_DirectXFFJoystick: Called a function not supported", now, vrpn_TEXT_ERROR);
+		return false;
+	};
+	/*******************************************************************************************************/
+
 };
 
 #endif

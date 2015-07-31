@@ -130,6 +130,67 @@ vrpn_ForceDeviceServer::vrpn_ForceDeviceServer(const char *name,
         fprintf(stderr, "vrpn_Phantom:can't register handler\n");
         vrpn_ForceDevice::d_connection = NULL;
     }
+	/*UMA***************************************************************************/
+	if (register_autodeleted_handler(setTransformMatrix_message_id,
+		handle_setTransformMatrix_message, this, vrpn_ForceDevice::d_sender_id)) {
+		fprintf(stderr, "vrpn_OpenHaptics:can't register handle_setTransformMatrix_message\n");
+		vrpn_ForceDevice::d_connection = NULL;
+	}
+
+	if (register_autodeleted_handler(effect_message_id,
+		handle_setEffect_message, this, vrpn_ForceDevice::d_sender_id)) {
+		fprintf(stderr, "vrpn_OpenHaptics:can't register handle_setEffect_message\n");
+		vrpn_ForceDevice::d_connection = NULL;
+	}
+
+	if (register_autodeleted_handler(start_effect_message_id,
+		handle_start_effect_message, this, vrpn_ForceDevice::d_sender_id)) {
+		fprintf(stderr, "vrpn_OpenHaptics:can't register handle_start_effect_message\n");
+		vrpn_ForceDevice::d_connection = NULL;
+	}
+
+	if (register_autodeleted_handler(stop_effect_message_id,
+		handle_stop_effect_message, this, vrpn_ForceDevice::d_sender_id)) {
+		fprintf(stderr, "vrpn_OpenHaptics:can't register handle_stop_effect_message\n");
+		vrpn_ForceDevice::d_connection = NULL;
+	}
+
+	if (register_autodeleted_handler(setHapticProperty_message_id,
+		handle_setHapticProperty_message, this, vrpn_ForceDevice::d_sender_id)) {
+		fprintf(stderr, "vrpn_OpenHaptics:can't register handle_setHapticProperty_message\n");
+		vrpn_ForceDevice::d_connection = NULL;
+	}
+
+	if (register_autodeleted_handler(setTouchableFace_message_id,
+		handle_setTouchableFace_message, this, vrpn_ForceDevice::d_sender_id)) {
+		fprintf(stderr, "vrpn_OpenHaptics:can't register handle_setTouchableFace_message\n");
+		vrpn_ForceDevice::d_connection = NULL;
+	}
+
+	if (register_autodeleted_handler(setWorkspaceProjectionMatrix_message_id,
+		handle_setWorkspaceProjectionMatrix_message, this, vrpn_ForceDevice::d_sender_id)) {
+		fprintf(stderr, "vrpn_OpenHaptics:can't register handle_setWorkspaceProjectionMatrix_message\n");
+		vrpn_ForceDevice::d_connection = NULL;
+	}
+
+	if (register_autodeleted_handler(setWorkspaceBoundingBox_message_id,
+		handle_setWorkspaceBoundingBox_message, this, vrpn_ForceDevice::d_sender_id)) {
+		fprintf(stderr, "vrpn_OpenHaptics:can't register handle_setWorkspaceBoundingBox_message\n");
+		vrpn_ForceDevice::d_connection = NULL;
+	}
+
+	if (register_autodeleted_handler(setObjectNumber_message_id,
+		handle_setObjectNumber_message, this, vrpn_ForceDevice::d_sender_id)) {
+		fprintf(stderr, "vrpn_OpenHaptics:can't register handle_setObjectNumber_message\n");
+		vrpn_ForceDevice::d_connection = NULL;
+	}
+
+	if (register_autodeleted_handler(resetScene_message_id,
+		handle_resetScene_message, this, vrpn_ForceDevice::d_sender_id)) {
+		fprintf(stderr, "vrpn_OpenHaptics:can't register handler resetScene\n");
+		vrpn_ForceDevice::d_connection = NULL;
+	}
+	/*******************************************************************************/
 }
 
 vrpn_ForceDeviceServer::~vrpn_ForceDeviceServer() {}
@@ -197,11 +258,15 @@ int vrpn_ForceDeviceServer::handle_setVertex_message(void *userdata,
     vertNum = temp;
 
 #ifdef VRPN_USE_HDAPI
-    struct timeval now;
-    vrpn_gettimeofday(&now, NULL);
-    me->send_text_message("Trimesh not supported under HDAPI", now,
-                          vrpn_TEXT_ERROR);
-    return 0;
+	//UMA************************************************************************************
+	if (me->setVertex(objNum, vertNum, x, y, z)) {
+		return 0;
+	}
+	else {
+		fprintf(stderr, "vrpn_Phantom: error in trimesh::setVertex\n");
+		return -1;
+	}
+	//***************************************************************************************
 #else
     if (me->setVertex(objNum, vertNum, x, y, z)) {
         return 0;
@@ -575,13 +640,288 @@ int vrpn_ForceDeviceServer::handle_setObjectIsTouchable_message(
     decode_setObjectIsTouchable(p.buffer, p.payload_len, &objNum, &touch);
 
 #ifdef VRPN_USE_HDAPI
-    struct timeval now;
-    vrpn_gettimeofday(&now, NULL);
-    me->send_text_message("Trimesh not supported under HDAPI", now,
-                          vrpn_TEXT_ERROR);
-    return 0;
+	//UMA***********************************************************************************
+	if (me->setObjectIsTouchable(objNum, touch)) {
+		return 0;
+	}
+	else {
+		fprintf(stderr, "vrpn_Phantom: error in trimesh::setVertex\n");
+		return -1;
+	}
+	//**************************************************************************************
 #else
     me->setObjectIsTouchable(objNum, touch);
     return 0;
 #endif
 }
+
+/*UMA***************************************************************************************/
+int vrpn_ForceDeviceServer::handle_setTransformMatrix_message(void *userdata, vrpn_HANDLERPARAM p)
+{
+
+	vrpn_ForceDeviceServer *me = (vrpn_ForceDeviceServer *)userdata;
+
+	int objNum;
+	double transformationMatrix[16];
+
+	decode_setTransformMatrix(p.buffer, p.payload_len, &objNum, transformationMatrix);
+
+#ifdef VRPN_USE_HDAPI
+
+	if (me->setTransformMatrix(objNum, transformationMatrix))
+	{
+		return 0;
+	}
+	else {
+		fprintf(stderr, "vrpn_Phantom: error in set transform matrix\n");
+		return -1;
+	}
+	return 0;
+#else
+	struct timeval now;
+	vrpn_gettimeofday(&now, NULL);
+	me->send_text_message("SetTransformMatrix not supported without HDAPI definition", now,
+		vrpn_TEXT_ERROR);
+	return 0;
+#endif
+}
+
+int vrpn_ForceDeviceServer::handle_setEffect_message(void *userdata, vrpn_HANDLERPARAM p)
+{
+	vrpn_ForceDeviceServer *me = (vrpn_ForceDeviceServer *)userdata;
+
+	char type[20];
+	vrpn_int32 effect_index;
+	vrpn_float64 gain;
+	vrpn_float64 magnitude;
+	vrpn_float64 duration;
+	vrpn_float64 frequency;
+	vrpn_float64 position[3];
+	vrpn_float64 direction[3];
+
+
+	decode_effect(p.buffer, p.payload_len, type, &effect_index, &gain, &magnitude, &duration, &frequency, position, direction);
+
+#ifdef VRPN_USE_HDAPI
+	if (me->setEffect(type, effect_index, gain, magnitude, duration, frequency, position, direction))
+	{
+		return 0;
+	}
+	else {
+		fprintf(stderr, "vrpn_Phantom: error in start effect\n");
+		return -1;
+	}
+#else
+	struct timeval now;
+	vrpn_gettimeofday(&now, NULL);
+	me->send_text_message("SetEffect not supported without HDAPI definition", now,
+		vrpn_TEXT_ERROR);
+	return 0;
+#endif
+}
+
+int vrpn_ForceDeviceServer::handle_start_effect_message(void *userdata, vrpn_HANDLERPARAM p)
+{
+	vrpn_ForceDeviceServer *me = (vrpn_ForceDeviceServer *)userdata;
+	vrpn_int32 effect;
+	decode_start_effect(p.buffer, p.payload_len, &effect);
+
+#ifdef VRPN_USE_HDAPI
+	if (me->startEffect(effect))
+	{
+		return 0;
+	}
+	else {
+		fprintf(stderr, "vrpn_Phantom: error in start effect\n");
+		return -1;
+	}
+#else
+	struct timeval now;
+	vrpn_gettimeofday(&now, NULL);
+	me->send_text_message("StartEffect not supported without HDAPI definition", now,
+		vrpn_TEXT_ERROR);
+	return 0;
+#endif
+
+}
+
+
+int vrpn_ForceDeviceServer::handle_stop_effect_message(void *userdata, vrpn_HANDLERPARAM p)
+{
+	vrpn_ForceDeviceServer *me = (vrpn_ForceDeviceServer *)userdata;
+	vrpn_int32 effect;
+	decode_stop_effect(p.buffer, p.payload_len, &effect);
+
+#ifdef VRPN_USE_HDAPI	
+	if (me->stopEffect(effect))
+	{
+		return 0;
+	}
+	else {
+		fprintf(stderr, "vrpn_Phantom: error in stop effect\n");
+		return -1;
+	}
+#else
+	struct timeval now;
+	vrpn_gettimeofday(&now, NULL);
+	me->send_text_message("StopEffect not supported without HDAPI definition", now,
+		vrpn_TEXT_ERROR);
+	return 0;
+#endif
+}
+
+
+
+int vrpn_ForceDeviceServer::handle_setHapticProperty_message(void *userdata, vrpn_HANDLERPARAM p)
+{
+	vrpn_ForceDeviceServer *me = (vrpn_ForceDeviceServer *)userdata;
+
+	int objNum;
+	char type[20];
+	float k;
+
+
+	decode_hapticProperty(p.buffer, p.payload_len, &objNum, type, &k);
+#ifdef VRPN_USE_HDAPI
+	if (me->setHapticProperty(objNum, type, k))
+	{
+		return 0;
+	}
+	else {
+		fprintf(stderr, "vrpn_Phantom: error in set gravity\n");
+		return -1;
+	}
+#else
+	struct timeval now;
+	vrpn_gettimeofday(&now, NULL);
+	me->send_text_message("SetHapticProperty not supported without HDAPI definition", now,
+		vrpn_TEXT_ERROR);
+	return 0;
+#endif
+}
+
+int vrpn_ForceDeviceServer::handle_setTouchableFace_message(void *userdata, vrpn_HANDLERPARAM p)
+{
+	vrpn_ForceDeviceServer *me = (vrpn_ForceDeviceServer *)userdata;
+	int TFace;
+
+	decode_setTouchableFace(p.buffer, p.payload_len, &TFace);
+#ifdef VRPN_USE_HDAPI
+	if (me->setTouchableFace(TFace))
+	{
+		return 0;
+	}
+	else {
+		fprintf(stderr, "vrpn_Phantom: error in set touchable face\n");
+		return -1;
+	}
+#else
+	struct timeval now;
+	vrpn_gettimeofday(&now, NULL);
+	me->send_text_message("setTouchableFace not supported without HDAPI definition", now,
+		vrpn_TEXT_ERROR);
+	return 0;
+#endif
+}
+
+int vrpn_ForceDeviceServer::handle_setWorkspaceProjectionMatrix_message(void *userdata, vrpn_HANDLERPARAM p)
+{
+	vrpn_ForceDeviceServer *me = (vrpn_ForceDeviceServer *)userdata;
+	vrpn_float64 modelMatrix[16];
+	vrpn_float64 projectionMatrix[16];
+
+
+	decode_projectionMatrix(p.buffer, p.payload_len, modelMatrix, projectionMatrix);
+#ifdef VRPN_USE_HDAPI
+	if (me->setWorkspaceProjectionMatrix(modelMatrix, projectionMatrix))
+	{
+		return 0;
+	}
+	else
+	{
+		fprintf(stderr, "vrpn_Phantom: error in set projection matrix\n");
+		return -1;
+	}
+#else
+	struct timeval now;
+	vrpn_gettimeofday(&now, NULL);
+	me->send_text_message("setWorkspaceProjectionMatrix not supported without HDAPI definition", now,
+		vrpn_TEXT_ERROR);
+	return 0;
+#endif
+}
+
+int vrpn_ForceDeviceServer::handle_setWorkspaceBoundingBox_message(void *userdata, vrpn_HANDLERPARAM p)
+{
+	vrpn_ForceDeviceServer *me = (vrpn_ForceDeviceServer *)userdata;
+	vrpn_float64 modelMatrix[16];
+	vrpn_float64 boundingBoxMatrix[6];
+
+	decode_boundingBox(p.buffer, p.payload_len, modelMatrix, boundingBoxMatrix);
+#ifdef VRPN_USE_HDAPI
+	if (me->setWorkspaceBoundingBox(modelMatrix, boundingBoxMatrix))
+	{
+		return 0;
+	}
+	else
+	{
+		fprintf(stderr, "vrpn_Phantom: error in set bounding box\n");
+		return -1;
+	}
+#else
+	struct timeval now;
+	vrpn_gettimeofday(&now, NULL);
+	me->send_text_message("SetWorkspaceBoundingBox not supported without HDAPI definition", now,
+		vrpn_TEXT_ERROR);
+	return 0;
+#endif
+}
+
+int vrpn_ForceDeviceServer::handle_setObjectNumber_message(void *userdata, vrpn_HANDLERPARAM p)
+{
+	vrpn_ForceDeviceServer *me = (vrpn_ForceDeviceServer *)userdata;
+	int n;
+
+	decode_setObjectNumber(p.buffer, p.payload_len, &n);
+#ifdef VRPN_USE_HDAPI
+	if (me->setObjectNumber(n))
+	{
+		return 0;
+	}
+	else {
+		fprintf(stderr, "vrpn_Phantom: error in set object number\n");
+		return -1;
+	}
+#else
+	struct timeval now;
+	vrpn_gettimeofday(&now, NULL);
+	me->send_text_message("SetObjectNumber not supported without HDAPI definition", now,
+		vrpn_TEXT_ERROR);
+	return 0;
+#endif
+}
+
+int vrpn_ForceDeviceServer::handle_resetScene_message(void *userdata, vrpn_HANDLERPARAM p)
+{
+	vrpn_ForceDeviceServer *me = (vrpn_ForceDeviceServer *)userdata;
+
+	decode_resetScene(p.buffer, p.payload_len);
+#ifdef VRPN_USE_HDAPI
+	if (me->resetDevice())
+	{
+		return 0;
+	}
+	else
+	{
+		fprintf(stderr, "vrpn_Phantom: error in resetPhantom\n");
+		return -1;
+	}
+#else
+	struct timeval now;
+	vrpn_gettimeofday(&now, NULL);
+	me->send_text_message("ResetDevice not supported without HDAPI definition", now,
+		vrpn_TEXT_ERROR);
+	return 0;
+#endif
+}
+/*******************************************************************************************/
