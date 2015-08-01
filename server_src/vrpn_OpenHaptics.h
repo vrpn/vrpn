@@ -1,16 +1,25 @@
 
 /***************************************************************************************************************/
-/******************************* vrpn_OpenHaptics class with HLAPI support ******************************************
-/****************************************************************************************************************/
+/******************************* vrpn_OpenHaptics class with HLAPI support *************************************/
+/***************************************************************************************************************/
 
 
 /***************************************************************************************************************/
-/* HDAPI support has been removed due to the inconvenience of handling both HLAPI & HDAPI in the same program. 
-/* Support for Trimesh & Ghost classes has been partially removed, and changed to a new class: RigidBodyForm, that 
-/* manages bodies haptic constants and its own mesh characteristics. 
-/* Planes that were managed through HLAPI have been removed, and translated to a generic class: RigidBodyForm, that
-/* handles any kind of 3D mesh.
-/* The main server class runs a window that displays what it's been rendered by the haptic device
+// The vrpn-OpenHaptics is a device-specific class to handle devices that use OpenHaptics SDK like Phantom devices. 
+// The implementation is based on the OpenHaptics v3.0 HLAPI layer. First, it defines methods to initialize, close 
+// and reset the haptic device.  Moreover, the class implements a set of virtual methods declared in the 
+// vrpn_Tracker_Server, vrpn_Button_Server and vrpn_ForceDevice_Server classes to receive data to set the 
+// haptic scene. Data is stored in specific structures or data types, many of them are OpenHaptics types, 
+// and used to carry out the haptic rendering. 
+
+//Developed by:
+//		Maria Cuevas Rodriguez 					mariacuevas@uma.es
+//		Daniel Gonzalez Toledo 					dgonzalezt@uma.es
+//Diana Research Group  	-  www.diana.uma.es/index.php?lang=en
+//Electronic Technology Dept.
+//School of Telecommunications Engineering
+//University of Malaga
+//Spain
 /****************************************************************************************************************/
 
 #ifndef VRPN_OpenHaptics_H
@@ -27,13 +36,12 @@
 // Vrpn files
 #include "vrpn_Button.h"
 #include "vrpn_Tracker.h"
-//#include "vrpn_ForceDeviceServer_Uma.h"
 #include "vrpn_ForceDeviceServer.h"
 #include "vrpn_Connection.h"
-//#include "quat.h"
+
 
 //******************************* MAIN CLASS ***********************************************
-//* Class vrpn_Phantom, it inherits from vrpn_ForceDeviceServer_Uma, vrpn_Tracker 
+//* Class vrpn_OpenHaptics, it inherits from vrpn_ForceDeviceServer, vrpn_Tracker 
 //* and vrpn_Button_Filter
 //******************************************************************************************
 
@@ -69,10 +77,8 @@ class vrpn_OpenHaptics: public vrpn_ForceDeviceServer,public vrpn_Tracker_Server
 	
 	//******************************************************************************
 	//							Virtual Functions
-	//******************************************************************************
-	//TODO change float and double for vrpn_float32
-	virtual bool setObjectNumber(vrpn_int32 num);
-	//virtual bool setVertex (vrpn_int32 objNum, vrpn_float64 *Vertex);
+	//******************************************************************************	
+	virtual bool setObjectNumber(vrpn_int32 num);	
 	virtual bool setVertex(vrpn_int32 objNum, vrpn_int32 vertNum, vrpn_float32 x, vrpn_float32 y, vrpn_float32 z);
 	virtual bool setTransformMatrix(vrpn_int32 CurrentObject, vrpn_float64 *transformMatrix);		
 	virtual bool setEffect(char *type, vrpn_int32 effect_index, vrpn_float64 gain, vrpn_float64 magnitude, vrpn_float64 duration,
@@ -80,8 +86,7 @@ class vrpn_OpenHaptics: public vrpn_ForceDeviceServer,public vrpn_Tracker_Server
 	virtual bool startEffect(vrpn_int32 effect_index);
 	virtual bool stopEffect(vrpn_int32 effect_index);		
 	virtual bool setObjectIsTouchable(vrpn_int32 objNum, vrpn_bool IsTouchable = true); // make an object touchable or not
-	virtual bool setHapticProperty(vrpn_int32 objNum, char *type, vrpn_float32 k);
-	/*virtual bool setEnvironmentalParameters(vrpn_float32 gravity, vrpn_float32 inertia);*/
+	virtual bool setHapticProperty(vrpn_int32 objNum, char *type, vrpn_float32 k);	
 	virtual bool setTouchableFace(vrpn_int32 TFace);
 	virtual bool setWorkspaceProjectionMatrix(vrpn_float64 *modelMatrix, vrpn_float64 *matrix);
 	virtual bool setWorkspaceBoundingBox(vrpn_float64 *modelMatrix, vrpn_float64 *matrix);
@@ -278,8 +283,7 @@ private:
 	hduVector3Dd gravityVector;
 	// Boolean that indicates whether an inertia force has been activated or not
 	int inertiaBoolean;
-	//Force vector
-	//vrpn_float64 d_force[3];
+
 
 	//******************************************************************************
 	//							Functions

@@ -2,20 +2,29 @@
 /******************************* vrpn_OpenHaptics class with HLAPI support *************************************
 /****************************************************************************************************************/
 
+/***************************************************************************************************************/
+// The vrpn-OpenHaptics is a device-specific class to handle devices that use OpenHaptics SDK like Phantom devices. 
+// The implementation is based on the OpenHaptics v3.0 HLAPI layer. First, it defines methods to initialize, close 
+// and reset the haptic device.  Moreover, the class implements a set of virtual methods declared in the 
+// vrpn_Tracker_Server, vrpn_Button_Server and vrpn_ForceDevice_Server classes to receive data to set the 
+// haptic scene. Data is stored in specific structures or data types, many of them are OpenHaptics types, 
+// and used to carry out the haptic rendering. 
+
+//Developed by:
+//		Maria Cuevas Rodriguez 					mariacuevas@uma.es
+//		Daniel Gonzalez Toledo 					dgonzalezt@uma.es
+//Diana Research Group  	-  www.diana.uma.es/index.php?lang=en
+//Electronic Technology Dept.
+//School of Telecommunications Engineering
+//University of Malaga
+//Spain
+/****************************************************************************************************************/
 
 #include  "vrpn_Configure.h"
 
 #ifdef	VRPN_USE_PHANTOM_SERVER
 #include "vrpn_OpenHaptics.h"
 
-//#pragma comment (lib, "opengl32.lib") // Needed for the OpenGL calls we use.
-//#pragma warning( disable : 4786 )
-
-
-//using namespace std;
-
-//HLdouble viewTouch[16];
-//HLdouble TouchWorkspace[16];
 
 static	unsigned long	duration(struct timeval t1, struct timeval t2)
 {
@@ -23,22 +32,6 @@ static	unsigned long	duration(struct timeval t1, struct timeval t2)
 	       1000000L * (t1.tv_sec - t2.tv_sec);
 }
 
-//******************************************************************************************
-//*										Global Variable
-//******************************************************************************************
-//last_report lastData;
-//Object object[MAXOBJECT_UMA];
-//Effects effect[MAXEFFECT_UMA];
-//phantomVariable phantomVariable;
-//vrpn_OpenHaptics *ph;
-
-
-//int ObjTouchingNumber=-1;
-//HDSchedulerHandle callbackHandle;
-
-//static const double PI = 3.1415926535897932384626433832795;
-
-//bool phantomActive = false;
 
 //**********************************************************************************************************
 //****************************************  CONSTRUCTOR  ***************************************************
@@ -115,8 +108,7 @@ vrpn_OpenHaptics::vrpn_OpenHaptics(char *name, vrpn_Connection *c, float hz, flo
 	printf("\nTrying to Initialize the Phantom Device....");
 	HDErrorInfo error;
 	// Initialize the 'sconf' field
-	strcpy(sconf, newsconf);					//New line to introduce our phantom server in VRPN 0733	
-	//phantom = hdInitDevice(name);				//Deprecated in VRPN 0733	
+	strcpy(sconf, newsconf);					//New line to introduce our phantom server in VRPN 0733		
 	phantom = hdInitDevice(sconf);				//New line to introduce our phantom server in VRPN 0733	
 	if (HD_DEVICE_ERROR(error = hdGetError())) {
 		hduPrintError(stderr, &error, "\n\nFailed to initialize haptic device.\n");
@@ -153,17 +145,9 @@ vrpn_OpenHaptics::vrpn_OpenHaptics(char *name, vrpn_Connection *c, float hz, flo
 
 vrpn_OpenHaptics::~vrpn_OpenHaptics()
 {
-	/*for(int i=0; i<MAXOBJECT_UMA; i++)
-		hlDeleteShapes(object[i].objId, 1);
-
-	for(int j=0; j<MAXEFFECT_UMA; j++)
-	{
-		hlStopEffect(effect[j].effectId);
-		hlDeleteEffects(effect[j].effectId, 1);
-	}*/
-	
+		
 	//Stop Vibration effect.
-	//stopVibration();
+	stopVibration();
 	//Delete HL Shapes and Context 
 	for (unsigned int i = 0; i<object.size(); i++)
 		hlDeleteShapes(object[i].objId, 1);
@@ -200,31 +184,12 @@ void vrpn_OpenHaptics::mainloop(void)
 {
 	struct timeval current_time;
 	
-	//Vector to store the applied force over an object
-	//std::vector<double> force(3);
+	
 	
 	// Allow the base server class to do its thing
 	server_mainloop();
 	
-	// We set OpenGL matrix stack to the same values it has in the client machine, so the 
-	// haptic scene that's being felt is the same that is graphically rendered in the client.
-	// It handles camera changes at the graphic scene, so we felt is actually what is being displayed 
-	// at the client that is displayed at the server too.
-
-	/*
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	// Clear Screen And Depth Buffer
-	glLoadIdentity();
-
-	// Set projection matrix
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-    glLoadMatrixd((const GLdouble *)projectionMatrix);
-
-	// Set modelview matrix
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-	glLoadMatrixd((const GLdouble *)modelviewMatrix);
-	*/
+	
 	if (phantomDeviceInitialization){		
 		///////////////////////////////////////////////////////////////////////////
 		///////////////////////// HAPTIC RENDER PASS //////////////////////////////
@@ -232,8 +197,7 @@ void vrpn_OpenHaptics::mainloop(void)
 		hlBeginFrame();
 			/////////////////////
 			//  Render objects
-			/////////////////////
-			//for (int i = 0; i <NumberOfObjects; i++)
+			/////////////////////			
 			for (unsigned int i = 0; i < object.size(); i++)
 			{
 				if (object[i].isTouchable)
@@ -242,8 +206,7 @@ void vrpn_OpenHaptics::mainloop(void)
 
 			/////////////////////
 			//  Render effects
-			/////////////////////
-			//for (int j = 0; j <NumberOfEffects; j++)
+			/////////////////////			
 			for (unsigned int j = 0; j < effect.size(); j++)
 			{
 				if (effect[j].flagStateChanged)
@@ -258,10 +221,7 @@ void vrpn_OpenHaptics::mainloop(void)
 			hlGetBooleanv(HL_PROXY_IS_TOUCHING, &phantomVariable.contactState);
 
 			// Get and Send reaction force 		
-			if (phantomVariable.contactState){
-				//TODO This "for" would be not necessary if we could know the index of the touched object.			
-				//for (int i = 0; i < object.size(); i++)
-				//{			
+			if (phantomVariable.contactState){				
 				//objTouchingNumber is changed by a callback asynchronous. 
 				//Just in case, we store its value in a temporary varible to use it to index the array.
 				int i = objTouchingNumber;
@@ -317,16 +277,7 @@ void vrpn_OpenHaptics::mainloop(void)
 			//Get the Normal to shape when proxy touches this shape
 			hlGetDoublev(HL_PROXY_TOUCH_NORMAL, phantomVariable.normalProxy);
 			hlGetDoublev(HL_PROXY_TRANSFORM, proxyxform);
-		
-			/*DANI
-			if (phantomVariable.dop !=0)
-			{
-			for (int i =0; i<3; i++)
-			{
-			scpPos[i] = phantomVariable.proxyPos[i]/1000.0;  //mm to meters;
-			}
-			}
-			*/
+					
 
 			//Get the Proxy transformation matrix
 			hdGetDoublev(HD_CURRENT_TRANSFORM, phantomVariable.proxyT);		
@@ -429,8 +380,7 @@ bool vrpn_OpenHaptics::resetDevice(void)
 		printf("\n\nReset Haptic Scene in process...");
 		
 		//Stop Vibration effect.  
-		stopVibration(); 
-		//hdUnschedule(callbackHandle);
+		stopVibration(); 		
 		
 		//Delete HL Shapes and Context		
 		for (unsigned int i = 0; i<object.size(); i++)
@@ -543,16 +493,6 @@ void vrpn_OpenHaptics::initHL(HHD phantom)
 	//Enable optimization of the viewing parameters when rendering geometry for OpenHaptics.
 	hlEnable(HL_HAPTIC_CAMERA_VIEW);
 
-	// Get IDs for each of the objects
-	//for(int i=0; i<MAXOBJECT_UMA; i++ ) 	 
-	//	object[i].objId = hlGenShapes(1);
-
-	// Get IDs for each of the effects
-	// for(int j=0; j<MAXEFFECT_UMA; j++ ) 	 
-	//	effect[j].effectId = hlGenEffects(1);
-	//Init Effects, in the begining the effects must be off.
-	//for (int j=0; j<MAXEFFECT_UMA; j++)
-	//	effect[j].effect_active=false;
 
 	// Get IDs for the empty object that was create in the constructor.
 	object[0].objId = hlGenShapes(1);
@@ -590,23 +530,11 @@ void vrpn_OpenHaptics::initHL(HHD phantom)
 		static_cast<HLeventProc>(ProxyOnMotion),
 		static_cast<void *>(this));
 
-	/*hlMatrixMode(HL_TOUCHWORKSPACE);
-	//hlMatrixMode(HL_VIEWTOUCH);
-	hlLoadIdentity();
 	
-	HLerror error = hlGetError();
-	if (error.errorCode == HL_INVALID_VALUE)
-	{
-	printf("\n\n ERROR\n\n");
-	}*/
 
 	//Map workspace into physical Phantom Workspace, a box 160mm in X, 150 mm in Y, and 60 mm in Z
 	hlWorkspace(-80, -80, -70, 80, 80, 20);
-
-	//Modification - 27.01.11
-	//Init Effects, in the begining the effects must be off.
-	//for (int j=0; j<MAXEFFECT_UMA; j++)
-	//	effect[j].effect_active=false;
+	
 }
 
 ///************************************************************************************
@@ -665,11 +593,9 @@ void vrpn_OpenHaptics::renderHL(int objNum)
 	glMultMatrixd(object[objNum].transform);
 
 	glBegin(GL_TRIANGLES);
-
-		//for (int i = 0; i < object[objNum].objVertex.counter; i++)
+		
 		for (unsigned int i = 0; i < object[objNum].objVertex.size(); i++)
-		{  
-			//glVertex3d(object[objNum].objVertex.vertex[i].x,object[objNum].objVertex.vertex[i].y,object[objNum].objVertex.vertex[i].z);	
+		{  			
 			glVertex3d(object[objNum].objVertex[i].x, object[objNum].objVertex[i].y, object[objNum].objVertex[i].z);
 		} 
 
@@ -762,11 +688,9 @@ void vrpn_OpenHaptics::checkAngle(void)
 	hduVector3Dd ProxyUpVector;
 	hduMatrix proxyM;
 
-	if (phantomVariable.contactState){
-		//Modification by Dani 26/08/2011
-		proxyM = hduMatrix(proxyxform);
-		//ProxyDirVector.set(-1*proxyM[2][0],-1*proxyM[2][1],-1*proxyM[2][2]);
-		//For angle Flexidrive -21.1.11
+	if (phantomVariable.contactState){		
+		proxyM = hduMatrix(proxyxform);		
+		
 		ProxyUpVector.set(-1 * proxyM[1][0], -1 * proxyM[1][1], -1 * proxyM[1][2]);		
 
 		//Reset Orientation	
@@ -1053,28 +977,14 @@ bool vrpn_OpenHaptics::setObjectNumber(vrpn_int32 num)
 			//We insert a number of empty objects (NumberOfObjects -1) in the data structure.
 			//and we register the callbacks that we'll need.
 			for (int i = NumberOfObjects; i <num; i++)
-			{				
-				//Init counter
-				//object[i].objVertex.counter = 0;
-				//Init Haptic Properties
-				//object[i].objEffect.stiffness = 0;
-				//object[i].objEffect.damping = 0;
-				//object[i].objEffect.staticf = 0;
-				//object[i].objEffect.dynamicf = 0;
-				//object[i].objEffect.popthrough = 0;
-
+			{								
 				//Introduce the empty object in the structure				
 				object.push_back(temp);
 				// Get OpenHaptics ID for this object
 				object[i].objId = hlGenShapes(1);				
 
 				// Create a callback that is going to return the number of the object is touching.
-				//Pass the index of the object as userdata.
-				/*hlAddEventCallback(HL_EVENT_TOUCH,
-					object[i].objId,
-					HL_COLLISION_THREAD,
-					&ObjectIsTouched,
-					reinterpret_cast<void *>(i));	*/						
+				//Pass the index of the object as userdata.				
 				hlAddEventCallback(HL_EVENT_TOUCH,
 					object[i].objId,
 					HL_COLLISION_THREAD,
@@ -1103,12 +1013,7 @@ bool vrpn_OpenHaptics::setVertex(vrpn_int32 objNum, vrpn_int32 vertNum, vrpn_flo
 		temp.y = y;
 		temp.z = z;
 	}
-		//object[objNum].objVertex.vertex[object[objNum].objVertex.counter].x = Vertex[0];
-		//object[objNum].objVertex.vertex[object[objNum].objVertex.counter].y = Vertex[1];
-		//object[objNum].objVertex.vertex[object[objNum].objVertex.counter].z = Vertex[2];
-		//printf("vertex %lf %lf %lf\n",object[objNum].objVertex.vertex[object[objNum].objVertex.counter].x,object[objNum].objVertex.vertex[object[objNum].objVertex.counter].y,object[objNum].objVertex.vertex[object[objNum].objVertex.counter].z);
-	//object[objNum].objVertex.counter++;
-	
+			
 	//Insert the vertex in the data structure
 	object[objNum].objVertex.push_back(temp);
 	
@@ -1157,11 +1062,7 @@ bool vrpn_OpenHaptics::setObjectIsTouchable(vrpn_int32 objectID, vrpn_bool isTou
 /// *****************************************************************************************
 bool vrpn_OpenHaptics::setHapticProperty(vrpn_int32 objectID, char *type, vrpn_float32 value)
 {
-	/*printf("objNum: ");
-	printf("%d", objNum);
-	printf("Haptic Property type: ");
-	printf("%s", type);
-	*/
+	
 
 	if (strcmp(type, "stiffness") == 0)
 	{
@@ -1220,19 +1121,7 @@ bool vrpn_OpenHaptics::setEffect(char *effect_name, vrpn_int32 effect_index, vrp
 	}
 	//We insert the effect on the structure
 	effect.push_back(temp);	
-	/*
-	effect[effect_index].effect_index=effect_index;
-	effect[effect_index].gain=gain;
-	effect[effect_index].magnitude=magnitude;
-	effect[effect_index].duration=duration;
-	effect[effect_index].frequency=frequency;
-
-	for(int i=0;i<3;i++)
-		effect[effect_index].position[i]=position[i];
 	
-	for(int j=0;j<3;j++)
-		effect[effect_index].direction[j]=direction[j];*/
-
 	// Show the vertex counter	
 	if (NumberOfEffects == 0)
 		std::printf("\n");
@@ -1311,20 +1200,7 @@ bool vrpn_OpenHaptics::startEffect(vrpn_int32 effect_index)
 				}				
 			}
 		}
-	}	
-	/*
-	effect[effect_index].effect_active = true;
-	if(strcmp(effect[effect_index].type,"vibrationMotor")==0)
-	{
-		phantomVariable.effectVibMotorIndex = effect_index;
-		
-	}	
-
-	if(strcmp(effect[effect_index].type,"vibrationContact")==0)
-	{
-		phantomVariable.effectVibContactIndex = effect_index;
-	}
-	*/
+	}		
 	//printf("Start Effect phantomVariable.effectVibMotorIndex %d\n", phantomVariable.effectVibMotorIndex);
 
 	return true;
@@ -1359,38 +1235,11 @@ bool vrpn_OpenHaptics::stopEffect(vrpn_int32 effect_index)
 			}
 		}		
 	}
-	/*
-	effect[effect_index].effect_active = false;
-	if(strcmp(effect[effect_index].type,"vibrationMotor")==0)
-	{
-		phantomVariable.effectVibMotorIndex = -1;
-	}
-	if(strcmp(effect[effect_index].type,"vibrationContact")==0)
-	{
-		phantomVariable.effectVibContactIndex = -1;
-	}
-	*/
+	
 	//printf("Stop Effect phantomVariable.effectVibMotorIndex %d\n", phantomVariable.effectVibMotorIndex);
 	return true;
 }	
 
-
-/// *********************************************************************************
-/// <summary>Sets/Store the Environmental Parameters that will be rendered.</summary>
-/// *********************************************************************************
-//bool vrpn_OpenHaptics::setEnvironmentalParameters(vrpn_float32 gravity, vrpn_float32 inertia)
-//{
-//	// Sets gravity effect
-//	gravityVector.set(0,gravity,0);
-//
-//	// Sets inertia effect
-//	if (inertia == 0 || inertia == 1 )
-//		inertiaBoolean=inertia;
-//	else
-//		inertiaBoolean=0;
-//
-//	return true;
-//}
 /// ***********************************************************************
 /// <summary>Sets/Store the Touchable Face that will be rendered.</summary>
 /// ***********************************************************************
@@ -1442,10 +1291,7 @@ bool vrpn_OpenHaptics::setWorkspaceProjectionMatrix(vrpn_float64 *modelMatrix, v
 		hlLoadIdentity();
 		
 		// Fit haptic workspace to view volume.
-		hluFitWorkspace(wsParameters.projectionMatrix);
-	
-	
-
+		hluFitWorkspace(wsParameters.projectionMatrix);	
 	return true;
 }
 
@@ -1492,9 +1338,7 @@ bool vrpn_OpenHaptics::setWorkspaceBoundingBox(vrpn_float64 *modelMatrix, vrpn_f
 //***********************************************************************************************
 void HLCALLBACK vrpn_OpenHaptics::ObjectIsTouched(HLenum event, HLuint objectId, HLenum thread,
 	HLcache *cache, void *userdata)
-{
-	//ObjTouchingNumber = reinterpret_cast<int>(userdata);
-
+{	
 	vrpn_OpenHaptics* myObj = static_cast<vrpn_OpenHaptics*>(userdata);
 
 
@@ -1512,8 +1356,7 @@ void HLCALLBACK vrpn_OpenHaptics::ObjectIsTouched(HLenum event, HLuint objectId,
 void HLCALLBACK vrpn_OpenHaptics::ObjectIsUnTouched(HLenum event, HLuint object, HLenum thread,
 	HLcache *cache, void *userdata)
 {
-	//ObjTouchingNumber = -1;
-	//phantomVariable.dop = 0.0;
+	
 	vrpn_OpenHaptics* myObj = static_cast<vrpn_OpenHaptics*>(userdata);
 	myObj->objTouchingNumber = -1;
 }
@@ -1524,7 +1367,7 @@ Event callback triggered when an the proxy in on motion
 void HLCALLBACK vrpn_OpenHaptics::ProxyOnMotion(HLenum event, HLuint objectId, HLenum thread,
 	HLcache *cache, void *userdata){
 	vrpn_OpenHaptics* myObj = static_cast<vrpn_OpenHaptics*>(userdata);
-	//myObj->proxyOnMotion = true;
+	
 	myObj->phantomVariable.proxyOnMotionTracker = true;
 	myObj->phantomVariable.proxyOnMotionForceDevice = true;
 }//END Callback onMotion

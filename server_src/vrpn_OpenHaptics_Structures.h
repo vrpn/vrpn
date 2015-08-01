@@ -1,3 +1,21 @@
+/***************************************************************************************************************/
+// The vrpn-OpenHaptics is a device-specific class to handle devices that use OpenHaptics SDK like Phantom devices. 
+// The implementation is based on the OpenHaptics v3.0 HLAPI layer. First, it defines methods to initialize, close 
+// and reset the haptic device.  Moreover, the class implements a set of virtual methods declared in the 
+// vrpn_Tracker_Server, vrpn_Button_Server and vrpn_ForceDevice_Server classes to receive data to set the 
+// haptic scene. Data is stored in specific structures or data types, many of them are OpenHaptics types, 
+// and used to carry out the haptic rendering. 
+
+//Developed by:
+//		Maria Cuevas Rodriguez 					mariacuevas@uma.es
+//		Daniel Gonzalez Toledo 					dgonzalezt@uma.es
+//Diana Research Group  	-  www.diana.uma.es/index.php?lang=en
+//Electronic Technology Dept.
+//School of Telecommunications Engineering
+//University of Malaga
+//Spain
+/****************************************************************************************************************/
+
 #ifndef VRPN_OpenHaptics_STRUCTURES_H
 #define VRPN_OpenHaptics_STRUCTURES_H
 
@@ -70,13 +88,6 @@ struct XYZ{
     float x,y,z;
 };
 
-// Struct to hold the vertex and number of vertex of one object
-//struct objVertices				
-//{
-//	XYZ vertex[MAX_VERTICES];
-//	int counter;
-//};
-
 //Struct to hold the haptic object
 struct Object{
 	HLuint objId;			//This Id is given by openhaptics
@@ -84,8 +95,7 @@ struct Object{
 	double transform[16];
 	objEffect objEffect;
 	bool isTouchable;
-	//Object's vertices
-	//objVertices objVertex;			
+	//Object's vertices		
 	std::vector <XYZ> objVertex;	
 	//Reaction Force Vector
 	hduVector3Dd reactionForce;
@@ -141,13 +151,7 @@ struct phantomVariable{
 		//Proxy Direction vector for Straight tool
 		hduVector3Dd proxyDirVector;
 		//Proxy Up vector for Angle tool
-		hduVector3Dd proxyUpVector;
-		////Tangential Vector to shape at SCP
-		//hduVector3Dd crossProductVector;
-		//hduVector3Dd stiffnessTgVector;
-		//hduVector3Dd dampingTgVector;
-		//hduVector3Dd totalTgVector;
-		//hduVector3Dd proxyTgDirection;
+		hduVector3Dd proxyUpVector;		
 		//Damping & Stiffness parameters
 		HLdouble dampingK;
 		HLdouble StiffnessK;
