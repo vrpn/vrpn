@@ -1731,7 +1731,7 @@ int vrpn_Phantom::handle_update_rate_request (void * userdata,
     return -1;  // XXXshould this be a fatal error?
   }
 
-  me->update_rate = ntohd(*((double *) p.buffer));
+  me->update_rate = vrpn_ntohd(*((double *) p.buffer));
   fprintf(stderr, "vrpn_Phantom:  set update rate to %.2f hertz.\n",
           me->update_rate);
   return 0;
