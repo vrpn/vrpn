@@ -18,7 +18,6 @@ include(CppcheckTargets)
 include(SetDefaultBuildType)
 include(OptionRequires)
 include(CTest)
-include(CreateDashboardScripts)
 include(CheckIncludeFileCXX)
 
 if((NOT CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR) OR VRPN_SUBPROJECT_BUILD)
@@ -26,11 +25,15 @@ if((NOT CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR) OR VRPN_SUBPROJECT_B
 	set(SUBPROJECT TRUE)
 	set(DEFAULT_OFF_IF_SUBPROJECT OFF_BY_DEFAULT)
 	set(TRUE_UNLESS_SUBPROJECT FALSE)
+	set(QUIET_IF_SUBPROJECT QUIET) # silently search for optional deps as a subproject
+	set(BUILD_TESTING FALSE) # don't build testing or create dashboard scripts if a subproject
 else()
 	set(VRPN_INSTALL TRUE)
 	set(SUBPROJECT FALSE)
 	set(DEFAULT_OFF_IF_SUBPROJECT)
 	set(TRUE_UNLESS_SUBPROJECT TRUE)
+	set(QUIET_IF_SUBPROJECT)
+	include(CreateDashboardScripts)
 endif()
 
 ###
@@ -209,7 +212,7 @@ list(APPEND EXTRA_LIBS quat)
 # Threading (not on win32)
 ###
 if(NOT WIN32)
-	find_package(Threads REQUIRED)
+	find_package(Threads REQUIRED ${QUIET_IF_SUBPROJECT})
 	list(APPEND EXTRA_LIBS ${CMAKE_THREAD_LIBS_INIT})
 endif()
 
@@ -238,7 +241,7 @@ add_subdirectory(submodules)
 ###
 # SWIG and Python Libs (for python wrappers)
 ###
-find_package(SWIG)
+find_package(SWIG ${QUIET_IF_SUBPROJECT})
 
 set(CurrentPythonSettings
 	"${VRPN_BUILD_PYTHON}${VRPN_BUILD_PYTHON_HANDCODED_2X}${VRPN_BUILD_PYTHON_HANDCODED_3X}")
@@ -290,7 +293,7 @@ endif()
 # Passing just the major version works with as desired multi-python-capable find module such
 # as in latest CMake (2.8.9)
 set(Python_ADDITIONAL_VERSIONS 3.4)
-find_package(PythonLibs ${_VRPN_PYTHON_VERSIONSEARCH})
+find_package(PythonLibs ${_VRPN_PYTHON_VERSIONSEARCH} ${QUIET_IF_SUBPROJECT})
 if(PYTHONLIBS_FOUND)
 	if(PYTHONLIBS_VERSION_STRING)
 		string(SUBSTRING
@@ -351,8 +354,8 @@ if(ANDROID)
 	find_host_package(JNI)
 	find_host_program(JAVAH_EXECUTABLE NAMES javah)
 else()
-	find_package(Java COMPONENTS Development)
-	find_package(JNI)
+	find_package(Java COMPONENTS Development ${QUIET_IF_SUBPROJECT})
+	find_package(JNI ${QUIET_IF_SUBPROJECT})
 	find_program(JAVAH_EXECUTABLE NAMES javah)
 endif()
 mark_as_advanced(JAVAH_EXECUTABLE)
@@ -367,7 +370,7 @@ option_requires(VRPN_BUILD_JAVA
 ###
 # MPI
 ###
-find_package(MPI)
+find_package(MPI ${QUIET_IF_SUBPROJECT})
 # XXX Safe to enable by default if we find it?
 option_requires(VRPN_USE_MPI
 	"Build with MPI support"
@@ -384,7 +387,7 @@ endif()
 ###
 # Modbus library
 ###
-find_package(Modbus)
+find_package(Modbus ${QUIET_IF_SUBPROJECT})
 option_requires(VRPN_USE_MODBUS
 	"Build with Modbus support"
 	OFF_BY_DEFAULT
@@ -399,7 +402,7 @@ endif()
 ###
 # Libusb1
 ###
-find_package(Libusb1)
+find_package(Libusb1 ${QUIET_IF_SUBPROJECT})
 option_requires(VRPN_USE_LIBUSB_1_0
 	"Attempt to use LibUSB-1.0 to talk directly to USB devices."
 	${DEFAULT_OFF_IF_SUBPROJECT}
@@ -417,7 +420,7 @@ endif()
 
 # Setting up the local HIDAPI was handled above, in the submodules directory
 if(NOT VRPN_USE_LOCAL_HIDAPI)
-	find_package(HIDAPI)
+	find_package(HIDAPI ${QUIET_IF_SUBPROJECT})
 endif()
 
 # HID requires either local or system-installed HIDAPI
@@ -452,7 +455,7 @@ endif()
 ###
 # Sensable "OpenHaptics" HDAPI/HLAPI
 ###
-find_package(OpenHaptics)
+find_package(OpenHaptics ${QUIET_IF_SUBPROJECT})
 option_requires(VRPN_USE_HDAPI
 	"Allow SensAble Phantom support through HDAPI/HLAPI - VRPN_USE_PHANTOM_SERVER must still be set"
 	${DEFAULT_OFF_IF_SUBPROJECT}
@@ -465,7 +468,7 @@ endif()
 # Sensable GHOST
 ###
 if(NOT VRPN_USE_HDAPI)
-	find_package(GHOST)
+	find_package(GHOST ${QUIET_IF_SUBPROJECT})
 	option_requires(VRPN_USE_GHOST
 		"Allow SensAble Phantom support through GHOST - VRPN_USE_PHANTOM_SERVER must still be set"
 		${DEFAULT_OFF_IF_SUBPROJECT}
@@ -502,7 +505,7 @@ endif()
 ###
 # WiiUse
 ###
-find_package(WiiUse)
+find_package(WiiUse ${QUIET_IF_SUBPROJECT})
 option_requires(VRPN_USE_WIIUSE
 	"Build with WiiUse library support (makes servers GPL)"
 	${DEFAULT_OFF_IF_SUBPROJECT}
@@ -518,7 +521,7 @@ endif()
 ##
 ## Setting up the local JSONCPP was handled above, in the submodules directory
 if(NOT VRPN_USE_LOCAL_JSONCPP)
-	find_package(JsonCpp)
+	find_package(JsonCpp ${QUIET_IF_SUBPROJECT})
 endif()
 option_requires(VRPN_USE_JSONNET
 	"Build with JSONCPP (for Android widgets and other UDP JSON-based APIs)"
@@ -535,7 +538,7 @@ endif()
 ###
 # libnifalcon
 ###
-find_package(LibNifalcon)
+find_package(LibNifalcon ${QUIET_IF_SUBPROJECT})
 option_requires(VRPN_USE_LIBNIFALCON
 	"Build with libnifalcon support to access Novint Falcon devices"
 	${DEFAULT_OFF_IF_SUBPROJECT}
@@ -550,7 +553,7 @@ endif()
 # DirectInput and XInput
 ###
 if(WIN32)
-	find_package(DirectX)
+	find_package(DirectX ${QUIET_IF_SUBPROJECT})
 	option_requires(VRPN_USE_DIRECTINPUT
 		"Build with Microsoft DirectInput support"
 		${DEFAULT_OFF_IF_SUBPROJECT}
@@ -621,7 +624,7 @@ if(MSVC)
 	else()
 		set(DIRECTSHOW_OFF_BY_DEFAULT)
 	endif()
-	find_package(DirectShow)
+	find_package(DirectShow ${QUIET_IF_SUBPROJECT})
 	option_requires(VRPN_USE_DIRECTSHOW
 		"Build with Microsoft DirectShow support"
 		${DIRECTSHOW_OFF_BY_DEFAULT}
@@ -637,7 +640,7 @@ endif()
 # GPM
 ###
 if(UNIX)
-	find_package(GPM)
+	find_package(GPM ${QUIET_IF_SUBPROJECT})
 	option_requires(VRPN_USE_GPM_MOUSE
 		"Build with GPM Linux mouse interface support (makes servers GPL)"
 		${DEFAULT_OFF_IF_SUBPROJECT}
@@ -651,7 +654,7 @@ endif()
 ###
 # INTERSENSE
 ###
-find_package(InterSense)
+find_package(InterSense ${QUIET_IF_SUBPROJECT})
 option_requires(VRPN_INCLUDE_INTERSENSE
 	"Build with InterSense support"
 	${DEFAULT_OFF_IF_SUBPROJECT}
@@ -666,7 +669,7 @@ endif()
 # THALMICLABSMYO
 ###
 if(WIN32)
-	find_package(ThalmicLabsMyo)
+	find_package(ThalmicLabsMyo ${QUIET_IF_SUBPROJECT})
 	option_requires(VRPN_INCLUDE_THALMICLABSMYO
 		"Build with Thalmic Labs' Myo support"
 		${DEFAULT_OFF_IF_SUBPROJECT}
@@ -681,7 +684,7 @@ endif()
 ###
 # NIDAQMX
 ###
-find_package(NIDAQmx)
+find_package(NIDAQmx ${QUIET_IF_SUBPROJECT})
 option_requires(VRPN_USE_NATIONAL_INSTRUMENTS_MX
 	"Build with National Instruments NIDAQMX support"
 	${DEFAULT_OFF_IF_SUBPROJECT}
@@ -695,7 +698,7 @@ endif()
 ###
 # Arrington Research ViewPoint EyeTracker
 ###
-find_package(ViewPoint)
+find_package(ViewPoint ${QUIET_IF_SUBPROJECT})
 option_requires(VRPN_USE_VIEWPOINT
 	"Build with support for ViewPoint EyeTracker"
 	${DEFAULT_OFF_IF_SUBPROJECT}
@@ -718,7 +721,7 @@ endif()
 # Adrienne timecode boards
 ###
 if(WIN32 OR CYGWIN)
-	find_package(Adrienne)
+	find_package(Adrienne ${QUIET_IF_SUBPROJECT})
 	option_requires(VRPN_INCLUDE_TIMECODE_SERVER
 		"Build with support for Adrienne timecode server"
 		${DEFAULT_OFF_IF_SUBPROJECT}
@@ -767,8 +770,8 @@ if(NOT WIN32)
 	# MiKTeX 2.9's perl is broken - missing libgcc-s-sjlj-1.dll -
 	# and can't seem to work around it without popping up dialogs
 	# which is no fun for automated builds.
-	find_package(Perl)
-	find_package(PerlModules COMPONENTS Parse::RecDescent)
+	find_package(Perl ${QUIET_IF_SUBPROJECT})
+	find_package(PerlModules ${QUIET_IF_SUBPROJECT} COMPONENTS Parse::RecDescent)
 endif()
 
 option_requires(VRPN_BUILD_TEST_RPC_GENERATION
@@ -816,7 +819,7 @@ endif()
 ###
 # Hillcrest Labs' Freespace
 ###
-find_package(LibFreespace)
+find_package(LibFreespace ${QUIET_IF_SUBPROJECT})
 option_requires(VRPN_USE_FREESPACE
 	"Build with Hillcrest Labs' Freespace devices support"
 	${DEFAULT_OFF_IF_SUBPROJECT}
@@ -840,7 +843,7 @@ endif()
 ###
 # Trivisio ColibriAPI
 ###
-find_package(ColibriApi)
+find_package(ColibriApi ${QUIET_IF_SUBPROJECT})
 option_requires(VRPN_USE_COLIBRIAPI
 	"Build with Trivisio ColibriAPI support"
 	OFF_BY_DEFAULT
