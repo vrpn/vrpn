@@ -1491,7 +1491,9 @@ endif()
 
 #-----------------------------------------------------------------------------
 # Enable testing/dashboards
-create_dashboard_scripts("${CMAKE_CURRENT_SOURCE_DIR}/DashboardBuildInitialCache.cmake.in")
+if(NOT SUBPROJECT)
+	create_dashboard_scripts("${CMAKE_CURRENT_SOURCE_DIR}/DashboardBuildInitialCache.cmake.in")
+endif()
 
 #-----------------------------------------------------------------------------
 # If we succeeded, we can go on and include packaging!
