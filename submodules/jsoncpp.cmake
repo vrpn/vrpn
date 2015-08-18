@@ -2,7 +2,7 @@
 # HID and HIDAPI
 ###
 
-if(EXISTS "${VRPN_SOURCE_DIR}/submodules/jsoncpp/jsoncpp/include/json/json.h")
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/jsoncpp/include/json/json.h")
 	set(LOCAL_JSONCPP_SUBMODULE_RETRIEVED TRUE)
 else()
 	message(STATUS
@@ -10,8 +10,8 @@ else()
 endif()
 
 option_requires(VRPN_USE_LOCAL_JSONCPP
-	"Build with HIDAPI code from within VRPN source directory"
-	LOCAL_HIDAPI_SUBMODULE_RETRIEVED)
+	"Build with JSONCPP code from within VRPN source directory"
+	LOCAL_JSONCPP_SUBMODULE_RETRIEVED)
 
 if(VRPN_USE_LOCAL_JSONCPP)
 	if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/jsoncpp/jsoncpp")
