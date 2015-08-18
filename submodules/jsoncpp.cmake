@@ -5,8 +5,10 @@
 if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/jsoncpp/include/json/json.h")
 	set(LOCAL_JSONCPP_SUBMODULE_RETRIEVED TRUE)
 else()
-	message(STATUS
-		"Local JSONCPP submodule not found. To download with Git, run git submodule update --init")
+	if(NOT SUBPROJECT)
+		message(STATUS
+			"Local JSONCPP submodule not found. To download with Git, run git submodule update --init")
+	endif()
 endif()
 
 option_requires(VRPN_USE_LOCAL_JSONCPP

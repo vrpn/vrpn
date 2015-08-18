@@ -104,7 +104,7 @@ endif()
 # handle the QUIETLY and REQUIRED arguments and set xxx_FOUND to TRUE if
 # all listed variables are TRUE
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(COLIBRIAPI
+find_package_handle_standard_args(ColibriApi
 	DEFAULT_MSG
 	COLIBRIAPI_LIBRARY
 	COLIBRIAPI_INCLUDE_DIR
@@ -118,4 +118,3 @@ if(COLIBRIAPI_FOUND)
 endif()
 
 mark_as_advanced(COLIBRIAPI_LIBRARY COLIBRIAPI_INCLUDE_DIR)
-

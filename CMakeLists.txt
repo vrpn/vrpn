@@ -230,8 +230,10 @@ endif()
 ###
 # Optional packages
 ###
-message(STATUS
-	"Now searching for auto-configurable optional packages...\n")
+if(NOT SUBPROJECT)
+	message(STATUS
+		"Now searching for auto-configurable optional packages...\n")
+endif()
 
 ###
 # Submodules - bundled libraries/sources
