@@ -42,13 +42,18 @@ if("${CMAKE_SIZEOF_VOID_P}" MATCHES "8")
 else()
 	set(_libsuffixes lib)
 	set(_PF86 "ProgramFiles(x86)")
-		if(NOT "$ENV{${_PF86}}" STREQUAL "")
-			# 32-bit dir: only set on win64
-			file(TO_CMAKE_PATH "$ENV{${_PF86}}" _progfiles)
-		else()
-			# 32-bit dir on win32, useless to us on win64
-			file(TO_CMAKE_PATH "$ENV{ProgramFiles}" _progfiles)
-		endif()
+	if(NOT "$ENV{${_PF86}}" STREQUAL "")
+		# 32-bit dir: only set on win64
+		file(TO_CMAKE_PATH "$ENV{${_PF86}}" _progfiles)
+	else()
+		# 32-bit dir on win32, useless to us on win64
+		file(TO_CMAKE_PATH "$ENV{ProgramFiles}" _progfiles)
+	endif()
+endif()
+
+set(_vrpn_quiet)
+if(VRPN_FIND_QUIETLY)
+	set(_vrpn_quiet QUIET)
 endif()
 
 ###
@@ -99,15 +104,23 @@ set(_deps_libs)
 set(_deps_includes)
 set(_deps_check)
 
-find_package(quatlib)
+find_package(quatlib ${_vrpn_quiet})
 list(APPEND _deps_libs ${QUATLIB_LIBRARIES})
 list(APPEND _deps_includes ${QUATLIB_INCLUDE_DIRS})
 list(APPEND _deps_check QUATLIB_FOUND)
 
 if(NOT WIN32)
-	find_package(Threads)
+	find_package(Threads ${_vrpn_quiet})
 	list(APPEND _deps_libs ${CMAKE_THREAD_LIBS_INIT})
 	list(APPEND _deps_check CMAKE_HAVE_THREADS_LIBRARY)
+endif()
+
+if(WIN32)
+	find_package(Libusb1 ${_vrpn_quiet})
+	if(LIBUSB1_FOUND)
+		list(APPEND _deps_libs ${LIBUSB1_LIBRARIES})
+		list(APPEND _deps_includes ${LIBUSB1_INCLUDE_DIRS})
+	endif()
 endif()
 
 
