@@ -85,12 +85,12 @@ message(STATUS
 	"Configuring the VRPN suite version ${CPACK_PACKAGE_VERSION} using the CMake-based build system\n")
 
 set(CPACK_PACKAGE_VENDOR
-	"Russell M. Taylor II at the University of North Carolina at Chapel Hill")
+	"VRPN Community led by Sensics, Inc.")
 set(CPACK_PACKAGE_FILE_NAME
 	"${PROJECT_NAME}-${CPACK_PACKAGE_VERSION}-${CMAKE_SYSTEM_NAME}-${CMAKE_SYSTEM_PROCESSOR}")
 set(CPACK_SOURCE_PACKAGE_FILE_NAME
 	"${PROJECT_NAME}-${CPACK_PACKAGE_VERSION}-src")
-set(CPACK_PACKAGE_CONTACT "VRPN Community <vrpn@listserv.unc.edu>")
+set(CPACK_PACKAGE_CONTACT "Sensics VRPN Contact <vrpn@sensics.com>")
 
 #-----------------------------------------------------------------------------
 # Compiler flags we got from Hans for Windows and from Sheldon Andrews
