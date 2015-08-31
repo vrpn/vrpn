@@ -41,8 +41,8 @@ vrpn_Streaming_Arduino::vrpn_Streaming_Arduino(std::string name,
     // Verify the validity of the parameters
     if (m_numchannels > MAX_TCHANNELS) {
       std::cerr << "vrpn_Streaming_Arduino: Can only support "
-        << m_numchannels << " analog channels, not "
-        << MAX_TCHANNELS << std::endl;
+        << MAX_TCHANNELS << " analog channels, not "
+        << m_numchannels << std::endl;
 	    m_numchannels = MAX_TCHANNELS;
     }
 
