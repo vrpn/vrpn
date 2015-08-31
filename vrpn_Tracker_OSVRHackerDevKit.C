@@ -105,8 +105,8 @@ void vrpn_Tracker_OSVRHackerDevKit::on_data_received(std::size_t bytes,
         }
     }
     if (version >= 2) {
-        // Unsigned Q7.9
-        typedef vrpn::FixedPoint<7,9> VelFixedPoint;
+        // Signed Q6.9
+        typedef vrpn::FixedPoint<6,9> VelFixedPoint;
         q_vec_type angVel;
         angVel[0] =
             VelFixedPoint(vrpn_unbuffer_from_little_endian<vrpn_uint16>(buffer))
