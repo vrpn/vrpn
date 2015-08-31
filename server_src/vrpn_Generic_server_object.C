@@ -65,6 +65,7 @@
 #include "vrpn_sgibox.h" //for access to the B&D box connected to an SGI via the IRIX GL drivers
 #include "vrpn_Sound.h"             // for vrpn_Sound
 #include "vrpn_Spaceball.h"         // for vrpn_Spaceball
+#include "vrpn_Streaming_Arduino.h" // for vrpn_Streaming_Arduino
 #include "vrpn_Tng3.h"              // for vrpn_Tng3
 #include "vrpn_Tracker_3DMouse.h"   // for vrpn_Tracker_3DMouse
 #include "vrpn_Tracker_AnalogFly.h" // for vrpn_Tracker_AnalogFlyParam, etc
@@ -2212,24 +2213,45 @@ int vrpn_Generic_Server_Object::setup_Joywin32(char *&pch, char *line,
 }
 
 //================================
-int vrpn_Generic_Server_Object::setup_Tng3(char *&pch, char *line,
+int vrpn_Generic_Server_Object::setup_StreamingArduino(char *&pch, char *line,
                                            FILE * /*config_file*/)
 {
     char s2[LINESIZE], s3[LINESIZE];
-    int i1, i2;
+    int i1;
     VRPN_CONFIG_NEXT();
-    // Get the arguments (class, tng3_name, port, numdig, numana)
-    if (sscanf(pch, "%511s%511s%d%d", s2, s3, &i1, &i2) != 4) {
-        fprintf(stderr, "Bad vrpn_Tng3 line: %s\n", line);
+    // Get the arguments (class, tng3_name, port, numana)
+    if (sscanf(pch, "%511s%511s%d%d", s2, s3, &i1) != 3) {
+        fprintf(stderr, "Bad vrpn_Streaming_Arduino line: %s\n", line);
         return -1;
     }
-    // Open the box
+    // Open the device
     if (verbose)
-        printf("Opening vrpn_Tng3: %s on port %s, baud %d, %d digital, "
+        printf("Opening vrpn_Streaming_Arduino: %s on port %s, baud %d, "
                " %d analog\n",
-               s2, s3, 19200, i1, i2);
-    _devices->add(new vrpn_Tng3(s2, connection, s3, 19200, i1, i2));
+               s2, s3, 115200, i1);
+    _devices->add(new vrpn_Streaming_Arduino(s2, connection, s3, i1, 115200));
     return 0;
+}
+
+//================================
+int vrpn_Generic_Server_Object::setup_Tng3(char *&pch, char *line,
+  FILE * /*config_file*/)
+{
+  char s2[LINESIZE], s3[LINESIZE];
+  int i1, i2;
+  VRPN_CONFIG_NEXT();
+  // Get the arguments (class, tng3_name, port, numdig, numana)
+  if (sscanf(pch, "%511s%511s%d%d", s2, s3, &i1, &i2) != 4) {
+    fprintf(stderr, "Bad vrpn_Tng3 line: %s\n", line);
+    return -1;
+  }
+  // Open the box
+  if (verbose)
+    printf("Opening vrpn_Tng3: %s on port %s, baud %d, %d digital, "
+    " %d analog\n",
+    s2, s3, 19200, i1, i2);
+  _devices->add(new vrpn_Tng3(s2, connection, s3, 19200, i1, i2));
+  return 0;
 }
 
 //================================
@@ -5022,6 +5044,9 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(
             }
             else if (VRPN_ISIT("vrpn_DevInput")) {
                 VRPN_CHECK(setup_DevInput);
+            }
+            else if (VRPN_ISIT("vrpn_Streaming_Arduino")) {
+              VRPN_CHECK(setup_StreamingArduino);
             }
             else if (VRPN_ISIT("vrpn_Tng3")) {
                 VRPN_CHECK(setup_Tng3);
