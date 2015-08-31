@@ -30,3 +30,11 @@ profile
 /pc_win32/
 pc_cygwin
 .depend
+
+# Visual Studio
+UpgradeLog*
+Debug/
+Release/
+_UpgradeReport_Files/
+*.sln.cache
+*.tmp*.vcproj

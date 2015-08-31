@@ -117,7 +117,7 @@ bool  vrpn_BiosciencesTools::set_reference_temperature(unsigned channel, float v
   sprintf(command, "S%d %03d%d\r", channel+1, whole,dec);
 
   // Send the command to the serial port
-  return (vrpn_write_characters(serial_fd, (unsigned char *)(command), strlen(command)) == strlen(command));
+  return (static_cast<size_t>(vrpn_write_characters(serial_fd, (unsigned char *)(command), strlen(command))) == strlen(command));
 }
 
 // Command format:
@@ -135,7 +135,7 @@ bool  vrpn_BiosciencesTools::set_control_status(bool on)
   }
 
   // Send the command to the serial port
-  return (vrpn_write_characters(serial_fd, (unsigned char *)(command), strlen(command)) == strlen(command));
+  return (static_cast<size_t>(vrpn_write_characters(serial_fd, (unsigned char *)(command), strlen(command))) == strlen(command));
 }
 
 // Command format:
@@ -157,7 +157,7 @@ bool  vrpn_BiosciencesTools::request_temperature(unsigned channel)
 #endif
 
   // Send the command to the serial port
-  return (vrpn_write_characters(serial_fd, (unsigned char *)(command), strlen(command)) == strlen(command));
+  return (static_cast<size_t>(vrpn_write_characters(serial_fd, (unsigned char *)(command), strlen(command))) == strlen(command));
 }
 
 // Convert the four bytes that have been read into a signed integer value.

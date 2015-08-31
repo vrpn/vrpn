@@ -85,9 +85,6 @@ public:
   void copyLatLonCoord (const LatLonCoord& other);
   void copyOtherCoord (const TypedCoord& other);
   virtual const std::string& createCoordString (std::string& coordString) const;
-  virtual void createDisplayStrings (std::string& topLeftString,
-                                     std::string& topRightString, std::string& bottomLeftString,
-                                     std::string& bottomRightString) const;
   virtual void createXYCoordStrings (std::string& xString, std::string& yString)
     const;
   virtual COORD_TYPE getCoordType () const {return COORD_LATLON;}

@@ -64,9 +64,9 @@ vrpn_Analog_USDigital_A2::vrpn_Analog_USDigital_A2 (const char * name,
                                                     vrpn_int32 reportOnChangeOnly) :
 vrpn_Analog (name, c),
 _SEIopened(vrpn_false),
-_numDevices(0),
 _devAddr(NULL),
-_reportChange(reportOnChangeOnly!=0)
+_reportChange(reportOnChangeOnly!=0),
+_numDevices(0)
 {
 #ifdef VRPN_USE_USDIGITAL
     this->_devAddr = new long[vrpn_Analog_USDigital_A2::vrpn_Analog_USDigital_A2_CHANNEL_MAX] ;
@@ -144,6 +144,11 @@ _reportChange(reportOnChangeOnly!=0)
     }
 #else
     fprintf(stderr,"vrpn_Analog_USDigital_A2::vrpn_Analog_USDigital_A2(): Not compiled in; define VRPN_USE_USDIGITAL in vrpn_Configure.h and recompile VRPN\n");
+    portNum = portNum + 1; // Remove unused parameter warning.
+    numChannels = numChannels + 1; // Remove unused parameter warning.
+    _SEIopened = !_SEIopened; // Removed unused variable warning.
+    _devAddr = _devAddr + 1; // Removed unused variable warning.
+    _numDevices = _numDevices + 1; // Removed unused variable warning.
 #endif
 }    //  constructor
 

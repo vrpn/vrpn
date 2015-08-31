@@ -17,12 +17,12 @@ vrpn_Tracker_ButtonFly::vrpn_Tracker_ButtonFly
           vrpn_Tracker_ButtonFlyParam * params, float update_rate,
 	  bool reportChanges) :
 	vrpn_Tracker (name, trackercon),
+	d_update_interval (update_rate ? (1/update_rate) : 1.0),
+        d_reportChanges (reportChanges),
 	d_vel_scale(NULL),
 	d_vel_scale_value(1.0),
 	d_rot_scale(NULL),
-	d_rot_scale_value(1.0),
-	d_update_interval (update_rate ? (1/update_rate) : 1.0),
-        d_reportChanges (reportChanges)
+        d_rot_scale_value(1.0)
 {
   int i;
 

@@ -23,7 +23,6 @@ class VRPN_API vrpn_VPJoystick : public vrpn_Button_Filter {
    
  private:
   int serial_fd;
-  unsigned char buffer[VRPN_BUTTON_BUF_SIZE];
 
   unsigned char message_buffer[ vrpn_VPJOY_MESSAGE_LENGTH ];
   unsigned int bytes_read;

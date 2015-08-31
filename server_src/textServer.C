@@ -8,7 +8,7 @@
 #include <vrpn_Connection.h>
 #include "vrpn_Text.h"
 
-#define MAX 1024
+#define VRPN_MAX_SIZE 1024
 
 int main (int argc, char* argv[])
 {
@@ -16,7 +16,7 @@ int main (int argc, char* argv[])
 		fprintf(stderr, "Must pass a device name as the sole argument\n");
 		return 1;
 	}
-	char msg[MAX];
+    char msg[VRPN_MAX_SIZE];
 	vrpn_Connection *sc = vrpn_create_server_connection();
 	vrpn_Text_Sender *s = new vrpn_Text_Sender(argv[1], sc);
 	

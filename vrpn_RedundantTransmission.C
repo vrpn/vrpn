@@ -80,7 +80,7 @@ void vrpn_RedundantTransmission::mainloop(void)
     while (qm) {
         if (!qm->remainingTransmissions) {
             *snitch = qm->next;
-            delete[](char *)qm -> p.buffer;
+            delete[]qm -> p.buffer;
             delete qm;
             qm = *snitch;
             d_numMessagesQueued--;
@@ -194,7 +194,7 @@ int vrpn_RedundantTransmission::pack_message(
                 "Out of memory;  can't queue message for retransmission.\n");
         return ret;
     }
-    memcpy((char *)qm->p.buffer, buffer, len);
+    memcpy(const_cast<char *>(qm->p.buffer), buffer, len);
 
     qm->remainingTransmissions = numTransmissions;
     qm->transmissionInterval = *transmissionInterval;
@@ -456,12 +456,6 @@ int vrpn_RedundantReceiver::register_handler(vrpn_int32 type,
                                              void *userdata, vrpn_int32 sender)
 {
     vrpnMsgCallbackEntry *ce = new vrpnMsgCallbackEntry;
-    if (!ce) {
-        fprintf(stderr, "vrpn_RedundantReceiver::register_handler:  "
-                        "Out of memory.\n");
-        return -1;
-    }
-
     ce->handler = handler;
     ce->userdata = userdata;
     ce->sender = sender;
@@ -470,13 +464,12 @@ int vrpn_RedundantReceiver::register_handler(vrpn_int32 type,
         ce->next = d_generic.cb;
         d_generic.cb = ce;
         return 0;
-    }
-    else if (type < 0) {
+    } else if (type < 0) {
         fprintf(stderr, "vrpn_RedundantReceiver::register_handler:  "
                         "Negative type passed in.\n");
+        delete ce;
         return -1;
-    }
-    else {
+    } else {
         ce->next = d_records[type].cb;
         d_records[type].cb = ce;
     }

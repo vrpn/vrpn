@@ -65,19 +65,13 @@ static void normalize_axes(const unsigned int x, const unsigned int y, const sho
 	normalize_axis(y, deadzone, scale, channelY, wordSize);
 }
 
-static vrpn_float64 normalize_trigger(unsigned int trigger)
-{
-	// Filter out low-intensity signals
-	int value = trigger - 0x80;
-	return ((fabs(static_cast<double>(value)) < GAMEPAD_TRIGGER_THRESHOLD) ? 0.0f : (value * 2.0f / 255.0f));
-}
-
 //////////////////////////////////////////////////////////////////////////
 // Common base class
 //////////////////////////////////////////////////////////////////////////
-vrpn_CHProducts_Controller_Raw::vrpn_CHProducts_Controller_Raw(vrpn_HidAcceptor *filter, const char *name, vrpn_Connection *c) :
-	vrpn_HidInterface(filter)
-	, vrpn_BaseClass(name, c)
+vrpn_CHProducts_Controller_Raw::vrpn_CHProducts_Controller_Raw(vrpn_HidAcceptor *filter, const char *name, vrpn_Connection *c,
+    vrpn_uint16 vendor, vrpn_uint16 product) :
+	vrpn_BaseClass(name, c)
+	, vrpn_HidInterface(filter, vendor, product)
 	, _filter(filter)
 {
 	init_hid();
@@ -100,15 +94,13 @@ void vrpn_CHProducts_Controller_Raw::on_data_received(size_t bytes, vrpn_uint8 *
 	decodePacket(bytes, buffer);
 }
 
-int vrpn_CHProducts_Controller_Raw::on_last_disconnect(void *thisPtr, vrpn_HANDLERPARAM /*p*/)
+int vrpn_CHProducts_Controller_Raw::on_last_disconnect(void* /* thisPtr */, vrpn_HANDLERPARAM /*p*/)
 {
-	vrpn_CHProducts_Controller_Raw* me = static_cast<vrpn_CHProducts_Controller_Raw*>(thisPtr);
 	return (0);
 }
 
-int vrpn_CHProducts_Controller_Raw::on_connect(void* thisPtr, vrpn_HANDLERPARAM /*p*/)
+int vrpn_CHProducts_Controller_Raw::on_connect(void* /* thisPtr */, vrpn_HANDLERPARAM /*p*/)
 {
-	vrpn_CHProducts_Controller_Raw* me = static_cast<vrpn_CHProducts_Controller_Raw*>(thisPtr);
 	return (0);
 }
 
@@ -116,8 +108,8 @@ int vrpn_CHProducts_Controller_Raw::on_connect(void* thisPtr, vrpn_HANDLERPARAM 
 // ST290 Pro Joystick
 //////////////////////////////////////////////////////////////////////////
 vrpn_CHProducts_Fighterstick_USB::vrpn_CHProducts_Fighterstick_USB(const char *name, vrpn_Connection *c) :
-	vrpn_CHProducts_Controller_Raw(_filter = new vrpn_HidProductAcceptor(CHPRODUCTS_VENDOR, FIGHTERSTICK_USB), name, c),
-	vrpn_Button_Filter(name, c), vrpn_Analog(name, c), vrpn_Dial(name, c)
+vrpn_CHProducts_Controller_Raw(_filter = new vrpn_HidProductAcceptor(CHPRODUCTS_VENDOR, FIGHTERSTICK_USB), name, c, CHPRODUCTS_VENDOR, FIGHTERSTICK_USB),
+	vrpn_Analog(name, c), vrpn_Button_Filter(name, c), vrpn_Dial(name, c)
 {
 	vrpn_Analog::num_channel = 8;
 	vrpn_Dial::num_dials = 0;

@@ -11,41 +11,48 @@
 #endif
 
 // Accessor for USB vendor ID of connected device
-vrpn_uint16 vrpn_HidInterface::vendor() const { return _vendor; }
+vrpn_uint16 vrpn_HidInterface::vendor() const { return m_vendor; }
 
 // Accessor for USB product ID of connected device
-vrpn_uint16 vrpn_HidInterface::product() const { return _product; }
+vrpn_uint16 vrpn_HidInterface::product() const { return m_product; }
 
 // Accessor for USB interface number of connected device
-int vrpn_HidInterface::interface_number() const { return _interface; }
+int vrpn_HidInterface::interface_number() const { return m_interface; }
 
 // Returns true iff everything was working last time we checked
-bool vrpn_HidInterface::connected() const { return _working; }
+bool vrpn_HidInterface::connected() const { return m_working; }
 
-vrpn_HidInterface::vrpn_HidInterface(vrpn_HidAcceptor *acceptor)
-    : _acceptor(acceptor)
-    , _device(NULL)
-    , _working(false)
-    , _vendor(0)
-    , _product(0)
-    , _interface(0)
+vrpn_HidInterface::vrpn_HidInterface(vrpn_HidAcceptor *acceptor
+    , vrpn_uint16 vendor
+    , vrpn_uint16 product
+    )
+    : m_acceptor(acceptor)
 {
-    if (_acceptor == NULL) {
+    // Move initialization inside function so it happens in the order specified.
+    m_device = NULL;
+    m_working = false;
+    m_vendor = 0;
+    m_product = 0;
+    m_interface = 0;
+    m_vendor_sought = vendor;
+    m_product_sought = product;
+
+    if (m_acceptor == NULL) {
         fprintf(stderr,
                 "vrpn_HidInterface::vrpn_HidInterface(): NULL acceptor\n");
         return;
     }
 
     // Reset the acceptor and then attempt to connect to a device.
-    _acceptor->reset();
+    m_acceptor->reset();
     reconnect();
 }
 
 vrpn_HidInterface::~vrpn_HidInterface()
 {
-    if (_device) {
-        hid_close(_device);
-        _device = NULL;
+    if (m_device) {
+        hid_close(m_device);
+        m_device = NULL;
     }
 }
 
@@ -56,7 +63,7 @@ bool vrpn_HidInterface::reconnect()
 {
     // Enumerate all devices and pass each one to the acceptor to see if it
     // is the one that we want.
-    struct hid_device_info *devs = hid_enumerate(0, 0);
+    struct hid_device_info *devs = hid_enumerate(m_vendor_sought, m_product_sought);
     struct hid_device_info *loop = devs;
     bool found = false;
     const wchar_t *serial;
@@ -73,10 +80,10 @@ bool vrpn_HidInterface::reconnect()
         // (unsigned)(loop->vendor_id), (unsigned)(loop->product_id),
         // (int)(loop->interface_number) );
 
-        if (_acceptor->accept(device_info)) {
-            _vendor = loop->vendor_id;
-            _product = loop->product_id;
-            _interface = loop->interface_number;
+        if (m_acceptor->accept(device_info)) {
+            m_vendor = loop->vendor_id;
+            m_product = loop->product_id;
+            m_interface = loop->interface_number;
             serial = loop->serial_number;
             path = loop->path;
             found = true;
@@ -84,22 +91,23 @@ bool vrpn_HidInterface::reconnect()
             fprintf(stderr, "vrpn_HidInterface::reconnect(): Found %ls %ls "
                             "(%04hx:%04hx) at path %s - will attempt to "
                             "open.\n",
-                    loop->manufacturer_string, loop->product_string, _vendor,
-                    _product, loop->path);
+                            loop->manufacturer_string, loop->product_string, m_vendor,
+                            m_product, loop->path);
 #endif
         }
         loop = loop->next;
     }
     if (!found) {
-        fprintf(stderr, "vrpn_HidInterface::reconnect(): Device not found\n");
+        //fprintf(stderr, "vrpn_HidInterface::reconnect(): Device not found\n");
         hid_free_enumeration(devs);
         devs = NULL;
         return false;
     }
 
+
     // Initialize the HID interface and open the device.
-    _device = hid_open_path(path);
-    if (_device == NULL) {
+    m_device = hid_open_path(path);
+    if (m_device == NULL) {
         fprintf(stderr,
                 "vrpn_HidInterface::reconnect(): Could not open device %s\n",
                 path);
@@ -120,7 +128,7 @@ bool vrpn_HidInterface::reconnect()
     }
 
     // Set the device to non-blocking mode.
-    if (hid_set_nonblocking(_device, 1) != 0) {
+    if (hid_set_nonblocking(m_device, 1) != 0) {
         fprintf(stderr, "vrpn_HidInterface::reconnect(): Could not set device "
                         "to nonblocking\n");
         return false;
@@ -130,8 +138,8 @@ bool vrpn_HidInterface::reconnect()
     fprintf(stderr,
             "vrpn_HidInterface::reconnect(): Device successfully opened.\n");
 #endif
-    _working = true;
-    return _working;
+    m_working = true;
+    return m_working;
 }
 
 // Check for incoming characters.  If we get some, pass them on to the handler
@@ -139,7 +147,7 @@ bool vrpn_HidInterface::reconnect()
 
 void vrpn_HidInterface::update()
 {
-    if (!_working) {
+    if (!m_working) {
         // fprintf(stderr,"vrpn_HidInterface::update(): Interface not currently
         // working\n");
         return;
@@ -152,7 +160,7 @@ void vrpn_HidInterface::update()
     // one report per loop cycle, we can accumulate latency.
     int ret;
     do {
-        ret = hid_read(_device, inbuf, sizeof(inbuf));
+        ret = hid_read(m_device, inbuf, sizeof(inbuf));
         if (ret < 0) {
             fprintf(stderr, "vrpn_HidInterface::update(): Read error\n");
 #if !defined(_WIN32) && !defined(__APPLE__)
@@ -160,13 +168,14 @@ void vrpn_HidInterface::update()
                             "not having libusb-devel installed when "
                             "configuring in CMake.)\n");
 #endif
-            const wchar_t *errmsg = hid_error(_device);
+            const wchar_t *errmsg = hid_error(m_device);
             if (errmsg) {
                 fprintf(
                     stderr,
                     "vrpn_HidInterface::update(): error message: %ls\n",
                     errmsg);
             }
+            m_working = false;
             return;
         }
 
@@ -186,14 +195,14 @@ void vrpn_HidInterface::update()
 
 void vrpn_HidInterface::send_data(size_t bytes, const vrpn_uint8 *buffer)
 {
-    if (!_working) {
+    if (!m_working) {
         fprintf(stderr, "vrpn_HidInterface::send_data(): Interface not "
                         "currently working\n");
         return;
     }
     int ret;
-    if ((ret = hid_write(_device, const_cast<vrpn_uint8 *>(buffer), bytes)) !=
-        bytes) {
+    if ((ret = hid_write(m_device, const_cast<vrpn_uint8 *>(buffer), bytes)) !=
+        static_cast<int>(bytes)) {
         fprintf(stderr, "vrpn_HidInterface::send_data(): hid_interrupt_write() "
                         "failed with code %d\n",
                 ret);
@@ -203,17 +212,17 @@ void vrpn_HidInterface::send_data(size_t bytes, const vrpn_uint8 *buffer)
 void vrpn_HidInterface::send_feature_report(size_t bytes,
                                             const vrpn_uint8 *buffer)
 {
-    if (!_working) {
+    if (!m_working) {
         fprintf(stderr, "vrpn_HidInterface::send_feature_report(): Interface "
                         "not currently working\n");
         return;
     }
 
-    int ret = hid_send_feature_report(_device, buffer, bytes);
+    int ret = hid_send_feature_report(m_device, buffer, bytes);
     if (ret == -1) {
         fprintf(stderr, "vrpn_HidInterface::send_feature_report(): failed to "
                         "send feature report\n");
-        const wchar_t *errmsg = hid_error(_device);
+        const wchar_t *errmsg = hid_error(m_device);
         if (errmsg) {
             fprintf(stderr, "vrpn_HidInterface::send_feature_report(): error "
                             "message: %ls\n",
@@ -228,17 +237,17 @@ void vrpn_HidInterface::send_feature_report(size_t bytes,
 
 int vrpn_HidInterface::get_feature_report(size_t bytes, vrpn_uint8 *buffer)
 {
-    if (!_working) {
+    if (!m_working) {
         fprintf(stderr, "vrpn_HidInterface::get_feature_report(): Interface "
                         "not currently working\n");
         return -1;
     }
 
-    int ret = hid_get_feature_report(_device, buffer, bytes);
+    int ret = hid_get_feature_report(m_device, buffer, bytes);
     if (ret == -1) {
         fprintf(stderr, "vrpn_HidInterface::get_feature_report(): failed to "
                         "get feature report\n");
-        const wchar_t *errmsg = hid_error(_device);
+        const wchar_t *errmsg = hid_error(m_device);
         if (errmsg) {
             fprintf(
                 stderr,

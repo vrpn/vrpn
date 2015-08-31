@@ -20,7 +20,7 @@ int rel (void *) {
   return 0;
 }
 
-int main (int argc, char ** argv) {
+int main (int, char ** argv) {
 
   vrpn_Mutex_Remote * me;
   char inputLine [100];

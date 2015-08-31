@@ -90,6 +90,8 @@ find_library(OVR_LIBRARY_RELEASE
 	NAMES
 	ovr${_ovr_libname_bitsuffix}
 	libovr${_ovr_libname_bitsuffix}
+	OVR
+	libOVR
 	PATHS
 	"${OVR_ROOT_DIR}"
 	"${OVR_ROOT_DIR}/LibOVR"
@@ -103,6 +105,8 @@ find_library(OVR_LIBRARY_DEBUG
 	NAMES
 	ovr${_ovr_libname_bitsuffix}d
 	libovr${_ovr_libname_bitsuffix}d
+	OVR
+	libOVR
 	PATHS
 	"${OVR_ROOT_DIR}"
 	"${OVR_ROOT_DIR}/LibOVR"
@@ -206,7 +210,7 @@ find_package_handle_standard_args(OVR
 	)
 
 if(OVR_FOUND)
-	set(OVR_LIBRARIES ${OVR_LIBRARY} ${_ovr_dependency_libraries})
+	set(OVR_LIBRARIES ${OVR_LIBRARY} ${_ovr_dependency_libraries} dl)
 	set(OVR_INCLUDE_DIRS ${OVR_INCLUDE_DIR} ${OVR_SOURCE_DIR} ${_ovr_dependency_includes})
 	mark_as_advanced(OVR_ROOT_DIR)
 endif()

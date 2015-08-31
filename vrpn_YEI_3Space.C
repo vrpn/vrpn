@@ -27,13 +27,7 @@ static const int REPORT_LENGTH = 16 + 16 + 12 + 36 + 4 + 4 + 1;
  ******************************************************************************/
 vrpn_YEI_3Space::vrpn_YEI_3Space (const char * p_name
                                   , vrpn_Connection * p_c
-                                  , bool calibrate_gyros_on_setup
-                                  , bool tare_on_setup
                                   , double frames_per_second
-                                  , double red_LED_color
-                                  , double green_LED_color
-                                  , double blue_LED_color
-                                  , int LED_mode
                                   , const char *reset_commands[])
   : vrpn_Tracker_Server (p_name, p_c, 2)
   , vrpn_Analog (p_name, p_c)
@@ -106,7 +100,6 @@ vrpn_YEI_3Space::~vrpn_YEI_3Space()
  ******************************************************************************/
 void vrpn_YEI_3Space::init (bool calibrate_gyros_on_setup
                        , bool tare_on_setup
-                       , double frames_per_second
                        , double red_LED_color
                        , double green_LED_color
                        , double blue_LED_color
@@ -288,7 +281,8 @@ void vrpn_YEI_3Space::handle_report(unsigned char *report)
   unsigned char *bufptr = report;
 
   // Read the two orientations and report them
-  q_vec_type  pos = {0};
+  q_vec_type  pos;
+  pos[Q_X] = pos[Q_Y] = pos[Q_Z] = 0;
   q_type  quat;
 
   for (int i = 0; i < 2; i++) {
@@ -302,7 +296,7 @@ void vrpn_YEI_3Space::handle_report(unsigned char *report)
     quat[Q_W] = value;
     if (0 != report_pose(i, timestamp, pos, quat)) {
         VRPN_MSG_ERROR ("vrpn_YEI_3Space::handle_report(): Error sending sensor report");
-        d_sensor = STATUS_RESETTING;
+        d_status = STATUS_RESETTING;
     }
   }
 
@@ -325,13 +319,22 @@ void vrpn_YEI_3Space::handle_report(unsigned char *report)
   double interval = 1;
   if (0 != report_pose_acceleration(sensor, timestamp, acc, acc_quat, interval)) {
       VRPN_MSG_ERROR ("vrpn_YEI_3Space::handle_report(): Error sending acceleration report");
-      d_sensor = STATUS_RESETTING;
+      d_status = STATUS_RESETTING;
   }
 
   // Read the analog values and put them into the channels.
   for (int i = 0; i < vrpn_Analog::getNumChannels(); i++) {
     vrpn_unbuffer(&bufptr, &value);
     channel[i] = value;
+  }
+
+  // Check the confidence factor to make sure it is between 0 and 1.
+  // If not, there is trouble parsing the report.  Sometimes the wired
+  // unit gets the wrong number of bytes in the report, causing things
+  // to wrap around.  This catches that case.
+  if ((channel[10] < 0) || (channel[10] > 1)) {
+	  VRPN_MSG_ERROR("vrpn_YEI_3Space::handle_report(): Invalid confidence, resetting");
+      d_status = STATUS_RESETTING;
   }
 
   // Read the button values and put them into the buttons.
@@ -454,10 +457,7 @@ vrpn_YEI_3Space_Sensor::vrpn_YEI_3Space_Sensor (const char * p_name
                                   , double blue_LED_color
                                   , int LED_mode
                                   , const char *reset_commands[])
-  : vrpn_YEI_3Space (p_name, p_c, calibrate_gyros_on_setup
-                     , tare_on_setup, frames_per_second, red_LED_color
-                     , green_LED_color, blue_LED_color, LED_mode
-                     , reset_commands)
+  : vrpn_YEI_3Space (p_name, p_c, frames_per_second, reset_commands)
 {
   // Open the serial port we're going to use to talk with the device.
   if ((d_serial_fd = vrpn_open_commport(p_port, p_baud,
@@ -469,7 +469,7 @@ vrpn_YEI_3Space_Sensor::vrpn_YEI_3Space_Sensor (const char * p_name
   // Initialize the state of the device, now that we've established a
   // way to talk with it.
   init(calibrate_gyros_on_setup
-       , tare_on_setup, frames_per_second, red_LED_color
+       , tare_on_setup, red_LED_color
        , green_LED_color, blue_LED_color, LED_mode);
 }
 
@@ -560,7 +560,7 @@ bool vrpn_YEI_3Space_Sensor::send_ascii_command (const char *p_cmd)
   }
 
   // Allocate space for the command plus padding and zero terminator
-  int buflen = strlen(p_cmd) + 3;
+  int buflen = static_cast<int>(strlen(p_cmd) + 3);
   unsigned char *buffer = new unsigned char[buflen];
   if (buffer == NULL) {
     return false;
@@ -716,7 +716,6 @@ void vrpn_YEI_3Space_Sensor::flush_input(void)
 vrpn_YEI_3Space_Sensor_Wireless::vrpn_YEI_3Space_Sensor_Wireless (const char * p_name
                                   , vrpn_Connection * p_c
                                   , int logical_id
-                                  , int serial_number
                                   , const char * p_port
                                   , int p_baud
                                   , bool calibrate_gyros_on_setup
@@ -727,10 +726,7 @@ vrpn_YEI_3Space_Sensor_Wireless::vrpn_YEI_3Space_Sensor_Wireless (const char * p
                                   , double blue_LED_color
                                   , int LED_mode
                                   , const char *reset_commands[])
-  : vrpn_YEI_3Space (p_name, p_c, calibrate_gyros_on_setup
-                     , tare_on_setup, frames_per_second, red_LED_color
-                     , green_LED_color, blue_LED_color, LED_mode
-                     , reset_commands)
+  : vrpn_YEI_3Space (p_name, p_c, frames_per_second, reset_commands)
   , d_i_am_first(true)
   , d_logical_id(-1)
 {
@@ -756,11 +752,6 @@ vrpn_YEI_3Space_Sensor_Wireless::vrpn_YEI_3Space_Sensor_Wireless (const char * p
   printf("Dongle configured\n");
 #endif
 
-  // Set our serial number in the specified logical-ID slot.
-  if (!set_logical_id(static_cast<vrpn_uint8>(logical_id), serial_number)) {
-    fprintf(stderr,"vrpn_YEI_3Space_Sensor_Wireless::vrpn_YEI_3Space_Sensor_Wireless: Could not set logical ID\n");
-    return;
-  }
   d_logical_id = logical_id;
 
 #ifdef  VERBOSE
@@ -769,7 +760,7 @@ vrpn_YEI_3Space_Sensor_Wireless::vrpn_YEI_3Space_Sensor_Wireless (const char * p
   // Initialize the state of the device, now that we've established a
   // way to talk with it.
   init(calibrate_gyros_on_setup
-       , tare_on_setup, frames_per_second, red_LED_color
+       , tare_on_setup, red_LED_color
        , green_LED_color, blue_LED_color, LED_mode);
 #ifdef  VERBOSE
   printf("Constructor done\n");
@@ -787,7 +778,6 @@ vrpn_YEI_3Space_Sensor_Wireless::vrpn_YEI_3Space_Sensor_Wireless (const char * p
 vrpn_YEI_3Space_Sensor_Wireless::vrpn_YEI_3Space_Sensor_Wireless (const char * p_name
                                   , vrpn_Connection * p_c
                                   , int logical_id
-                                  , int serial_number
                                   , int serial_file_descriptor
                                   , bool calibrate_gyros_on_setup
                                   , bool tare_on_setup
@@ -797,25 +787,17 @@ vrpn_YEI_3Space_Sensor_Wireless::vrpn_YEI_3Space_Sensor_Wireless (const char * p
                                   , double blue_LED_color
                                   , int LED_mode
                                   , const char *reset_commands[])
-  : vrpn_YEI_3Space (p_name, p_c, calibrate_gyros_on_setup
-                     , tare_on_setup, frames_per_second, red_LED_color
-                     , green_LED_color, blue_LED_color, LED_mode
-                     , reset_commands)
+  : vrpn_YEI_3Space (p_name, p_c, frames_per_second, reset_commands)
   , d_i_am_first(false)
   , d_serial_fd(serial_file_descriptor)
   , d_logical_id(-1)
 {
-  // Set our serial number in the specified logical-ID slot.
-  if (!set_logical_id(static_cast<vrpn_uint8>(logical_id), serial_number)) {
-    fprintf(stderr,"vrpn_YEI_3Space_Sensor_Wireless::vrpn_YEI_3Space_Sensor_Wireless: Could not set logical ID\n");
-    return;
-  }
   d_logical_id = logical_id;
 
   // Initialize the state of the device, now that we've established a
   // way to talk with it.
   init(calibrate_gyros_on_setup
-       , tare_on_setup, frames_per_second, red_LED_color
+       , tare_on_setup, red_LED_color
        , green_LED_color, blue_LED_color, LED_mode);
 }
 
@@ -1034,7 +1016,7 @@ bool vrpn_YEI_3Space_Sensor_Wireless::send_ascii_command (const char *p_cmd)
   sprintf(buffer, ">%d,%s\n", d_logical_id, p_cmd);
 
   // Send the command and see if it worked.
-  int buflen = strlen(buffer) + 1;
+  int buflen = static_cast<int>(strlen(buffer) + 1);
   unsigned char *bufptr = static_cast<unsigned char *>(
     static_cast<void*>(buffer));
   int l_ret = vrpn_write_characters(d_serial_fd, bufptr, buflen);
@@ -1121,8 +1103,6 @@ bool vrpn_YEI_3Space_Sensor_Wireless::receive_LED_values_response (struct timeva
   d_LED_color[2] = value;
   return true;
 }
-
-// XXXX Fix things below here.
 
 /******************************************************************************
  * NAME      : vrpn_YEI_3Space_Sensor_Wireless::get_report

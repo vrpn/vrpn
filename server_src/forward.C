@@ -24,7 +24,7 @@ void Usage (char * s) {
 
 // Catch control-C and shut down our network connections nicely.
 
-void sighandler (int signal) {
+void sighandler (int /*signal*/) {
   delete forwarder;
   delete server_connection;
   delete client_connection;

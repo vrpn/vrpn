@@ -31,7 +31,7 @@ static	void  fill_buffer(vrpn_uint8 *buffer,
 #ifndef min
 #define	min(a,b) ( (a) < (b) ? (a) : (b) )
 #endif
-int main (int argc, char * argv[])
+int main (int, char *[])
 {
   static  int frame_number = 0;
   static  vrpn_uint8 buffer[g_size*g_size];

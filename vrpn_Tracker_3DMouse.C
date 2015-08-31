@@ -48,7 +48,7 @@ void vrpn_Tracker_3DMouse::reset()
 	clear_values();
 
 	fprintf(stderr, "Resetting the 3DMouse...\n");
-	if (vrpn_write_characters(serial_fd, (unsigned char*)"*R", 2) == 2)
+	if (vrpn_write_characters(serial_fd, (const unsigned char*)"*R", 2) == 2)
 	{
 		fprintf(stderr,".");
 		vrpn_SleepMsecs(1000.0*2);  // Wait after each character to give it time to respond

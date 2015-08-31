@@ -26,8 +26,8 @@
 
 // These must match definitions in eu.ensam.ii.vrpn.Vrpn
 static const char* const MSG_KEY_TYPE =				"type";
-static const char* const MSG_KEY_SEQUENCE_NUMBER =	"sn";
-static const char* const MSG_KEY_TIMESTAMP =		"ts";
+//static const char* const MSG_KEY_SEQUENCE_NUMBER =	"sn";
+//static const char* const MSG_KEY_TIMESTAMP =		"ts";
 	
 static const char* const MSG_KEY_TRACKER_ID =		"id";
 static const char* const MSG_KEY_TRACKER_QUAT =		"quat";
@@ -53,8 +53,8 @@ vrpn_Tracker_JsonNet::vrpn_Tracker_JsonNet(const char* name,vrpn_Connection* c,i
 	vrpn_Analog(name, c),
 	vrpn_Text_Sender(name, c),
 	_socket(INVALID_SOCKET),
-	_pJsonReader(0),
-	_do_tracker_report(false)
+	_do_tracker_report(false),
+	_pJsonReader(0)
 {
 	fprintf(stderr, "vrpn_Tracker_JsonNet : Device %s listen on port udp port %d\n", name, udp_port);
 	if (! _network_init(udp_port)) {
@@ -79,7 +79,8 @@ vrpn_Tracker_JsonNet::~vrpn_Tracker_JsonNet(void)
 }
 
 
-void vrpn_Tracker_JsonNet::mainloop() {
+void vrpn_Tracker_JsonNet::mainloop()
+{
 	server_mainloop();
 	/*
 	 * The original Dtrack code uses blocking call to select() in _network_receive with 
@@ -106,7 +107,7 @@ void vrpn_Tracker_JsonNet::mainloop() {
 	// report trackerchanges
 	// TODO really use timestamps
 	struct timeval ts ;
-    vrpn_gettimeofday(&ts, NULL);
+	vrpn_gettimeofday(&ts, NULL);
 	// from vrpn_Tracker_DTrack::dtrack2vrpnbody
 	if (d_connection && _do_tracker_report) {
 		char msgbuf[1000];
@@ -121,10 +122,10 @@ void vrpn_Tracker_JsonNet::mainloop() {
 
 	vrpn_Button::report_changes();
 	vrpn_Analog::report_changes();
-
 }
 
-bool vrpn_Tracker_JsonNet::_parse(const char* buffer, int length) {
+bool vrpn_Tracker_JsonNet::_parse(const char* buffer, int /*length*/)
+{
 	Json::Value root;							// will contains the root value after parsing.
 	// Beware collectcomment = true crashes
 	bool parsingSuccessful = _pJsonReader->parse( buffer, root , false);
@@ -162,11 +163,9 @@ bool vrpn_Tracker_JsonNet::_parse(const char* buffer, int length) {
 			return _parse_text(root);
 			break;
 		default:
-			;
+			break;
 	}
 	return false;
-
-	
 }
 
 /**
@@ -177,7 +176,8 @@ bool vrpn_Tracker_JsonNet::_parse(const char* buffer, int length) {
  * @param root the JSON message
  * @returns false if any error, true otherwise.
  */
-bool vrpn_Tracker_JsonNet::_parse_tracker_data(const Json::Value& root) {
+bool vrpn_Tracker_JsonNet::_parse_tracker_data(const Json::Value& root)
+{
 	const Json::Value& constRoot = root;
 
 	// Id of the current tracker
@@ -226,9 +226,9 @@ bool vrpn_Tracker_JsonNet::_parse_tracker_data(const Json::Value& root) {
  * @param root the JSON message
  * @returns false if any error, true otherwise.
  */
-bool vrpn_Tracker_JsonNet::_parse_text(const Json::Value& root) {
+bool vrpn_Tracker_JsonNet::_parse_text(const Json::Value& root)
+{
 	const Json::Value& valueTextStatus = root[MSG_KEY_TEXT_DATA];
-	const char *msg = "";
 	if (!valueTextStatus.empty() && valueTextStatus.isConvertibleTo(Json::stringValue)) {
 		send_text_message(vrpn_TEXT_NORMAL) << valueTextStatus.asString();
 		return true;
@@ -244,7 +244,8 @@ bool vrpn_Tracker_JsonNet::_parse_text(const Json::Value& root) {
  * @param root the JSON message
  * @returns false if any error, true otherwise.
  */
-bool vrpn_Tracker_JsonNet::_parse_button(const Json::Value& root) {
+bool vrpn_Tracker_JsonNet::_parse_button(const Json::Value& root)
+{
 	const Json::Value& valueButtonStatus = root[MSG_KEY_BUTTON_STATUS]; 
 	bool buttonStatus;
 	if (!valueButtonStatus.empty() && valueButtonStatus.isConvertibleTo(Json::booleanValue)) {
@@ -280,7 +281,8 @@ bool vrpn_Tracker_JsonNet::_parse_button(const Json::Value& root) {
  * @returns false if any error, true otherwise.
  */
 
-bool vrpn_Tracker_JsonNet::_parse_analog(const Json::Value& root) {
+bool vrpn_Tracker_JsonNet::_parse_analog(const Json::Value& root)
+{
 	const Json::Value& valueData = root[MSG_KEY_ANALOG_DATA]; 
 	double data;
 	if (!valueData.empty() && valueData.isConvertibleTo(Json::realValue)) {
@@ -289,7 +291,6 @@ bool vrpn_Tracker_JsonNet::_parse_analog(const Json::Value& root) {
 		fprintf(stderr, "vrpn_Tracker_JsonNet::_parse_analog parse error : missing status");
 		return false;
 	}
-	
 
 	const Json::Value& channelNumberId = root[MSG_KEY_ANALOG_CHANNEL]; 
 	int channelNumber;
@@ -310,10 +311,11 @@ bool vrpn_Tracker_JsonNet::_parse_analog(const Json::Value& root) {
 }
 
 /**
- * Initilises the listening socket
+ * Initialises the listening socket
  * @param udp_port the UDP listening port  
  */
-bool vrpn_Tracker_JsonNet::_network_init(int udp_port) {
+bool vrpn_Tracker_JsonNet::_network_init(int udp_port)
+{
 	int iResult;
 #ifdef _WIN32
 	{
@@ -353,6 +355,7 @@ bool vrpn_Tracker_JsonNet::_network_init(int udp_port) {
 	}
 #endif
 	struct sockaddr_in localSocketAddress;
+        memset((void *)&localSocketAddress, 0, sizeof(localSocketAddress));
 	localSocketAddress.sin_family = AF_INET;
 	localSocketAddress.sin_addr.s_addr = htonl(INADDR_ANY);
 	localSocketAddress.sin_port = htons(udp_port);
@@ -441,7 +444,8 @@ int vrpn_Tracker_JsonNet::_network_receive(void *buffer, int maxlen, int tout_us
 /**
  * Cleanup the network resources
  */
-void vrpn_Tracker_JsonNet::_network_release() {
+void vrpn_Tracker_JsonNet::_network_release()
+{
 #ifdef _WIN32
 	closesocket(_socket);
 	WSACleanup();

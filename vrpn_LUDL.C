@@ -49,8 +49,8 @@ vrpn_LUDL_USBMAC6000::vrpn_LUDL_USBMAC6000(const char *name, vrpn_Connection *c,
   : vrpn_Analog(name, c)
   , vrpn_Analog_Output(name, c)
   , _device_handle(NULL)
-  , _incount(0)
   , _endpoint(2)  // All communications is with Endpoint 2 for the MAC6000
+  , _incount(0)
 {
   // Open and claim a device with the expected vendor and product ID.
   if ( libusb_init(&_context) != 0) {

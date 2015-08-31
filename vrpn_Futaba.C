@@ -36,9 +36,10 @@ static void normalize_axes(const unsigned int x, const unsigned int y, const sho
 	normalize_axis(y, deadzone, scale, channelY);
 }
 
-vrpn_Futaba::vrpn_Futaba(vrpn_HidAcceptor *filter, const char *name, vrpn_Connection *c)
-  : vrpn_HidInterface(filter)
-  , vrpn_BaseClass(name, c)
+vrpn_Futaba::vrpn_Futaba(vrpn_HidAcceptor *filter, const char *name, vrpn_Connection *c,
+    vrpn_uint16 vendor, vrpn_uint16 product)
+  : vrpn_BaseClass(name, c)
+  , vrpn_HidInterface(filter, vendor, product)
   , _filter(filter)
 {
 	init_hid();
@@ -60,22 +61,20 @@ void vrpn_Futaba::on_data_received(size_t bytes, vrpn_uint8 *buffer)
   decodePacket(bytes, buffer);
 }
 
-int vrpn_Futaba::on_last_disconnect(void *thisPtr, vrpn_HANDLERPARAM /*p*/)
+int vrpn_Futaba::on_last_disconnect(void* /*thisPtr*/, vrpn_HANDLERPARAM /*p*/)
 {
-	vrpn_Futaba *me = static_cast<vrpn_Futaba *>(thisPtr);
 	return 0;
 }
 
-int vrpn_Futaba::on_connect(void *thisPtr, vrpn_HANDLERPARAM /*p*/)
+int vrpn_Futaba::on_connect(void* /*thisPtr*/, vrpn_HANDLERPARAM /*p*/)
 {
-	vrpn_Futaba *me = static_cast<vrpn_Futaba *>(thisPtr);
 	return 0;
 }
 
 vrpn_Futaba_InterLink_Elite::vrpn_Futaba_InterLink_Elite(const char *name, vrpn_Connection *c)
-  : vrpn_Futaba(_filter = new vrpn_HidProductAcceptor(FUTABA_VENDOR, FUTABA_ELITE), name, c)
-  , vrpn_Button_Filter(name, c)
+    : vrpn_Futaba(_filter = new vrpn_HidProductAcceptor(FUTABA_VENDOR, FUTABA_ELITE), name, c, FUTABA_VENDOR, FUTABA_ELITE)
   , vrpn_Analog(name, c)
+  , vrpn_Button_Filter(name, c)
   , vrpn_Dial(name, c)
 {
   vrpn_Analog::num_channel = 5;

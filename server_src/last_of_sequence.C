@@ -37,7 +37,7 @@ static vrpn_int32 g_bar_type;
 
 int VRPN_CALLBACK handle_real_foo (void * userdata, vrpn_HANDLERPARAM p);
 
-int VRPN_CALLBACK handle_anything_but_foo (void * userdata, vrpn_HANDLERPARAM p) {
+int VRPN_CALLBACK handle_anything_but_foo (void *, vrpn_HANDLERPARAM p) {
   int retval = 0;
 
   if (p.type == g_foo_type) {
@@ -52,7 +52,7 @@ int VRPN_CALLBACK handle_anything_but_foo (void * userdata, vrpn_HANDLERPARAM p)
   return retval;
 }
 
-int VRPN_CALLBACK handle_bar (void * userdata, vrpn_HANDLERPARAM p) {
+int VRPN_CALLBACK handle_bar (void *, vrpn_HANDLERPARAM p) {
 
   printf("BAR!  At time %ld.%ld.\n", static_cast<long>(p.msg_time.tv_sec),
          static_cast<long>(p.msg_time.tv_usec));
@@ -76,14 +76,14 @@ int VRPN_CALLBACK handle_potential_foo (void * userdata, vrpn_HANDLERPARAM p) {
     fprintf(stderr, "handle_potential_foo:  out of memory!\n");
     return -1;
   }
-  memcpy((void *) g_fooStore.buffer, p.buffer, p.payload_len);
+  memcpy(const_cast<char *>(g_fooStore.buffer), p.buffer, p.payload_len);
 
   g_fooData = userdata;
 
   return 0;
 }
 
-int VRPN_CALLBACK handle_real_foo (void * userdata, vrpn_HANDLERPARAM p) {
+int VRPN_CALLBACK handle_real_foo (void *, vrpn_HANDLERPARAM p) {
 
   printf("FOO!  At time %ld.%ld.\n", static_cast<long>(p.msg_time.tv_sec),
          static_cast<long>(p.msg_time.tv_usec));
@@ -91,7 +91,7 @@ int VRPN_CALLBACK handle_real_foo (void * userdata, vrpn_HANDLERPARAM p) {
   return 0;
 }
 
-int main (int argc, char ** argv) {
+int main (int, char **) {
 
   vrpn_Connection * c;
   vrpn_int32 myId;

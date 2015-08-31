@@ -16,7 +16,8 @@
 
 class vrpn_Retrolink: public vrpn_BaseClass, protected vrpn_HidInterface {
 public:
-	vrpn_Retrolink(vrpn_HidAcceptor *filter, const char *name, vrpn_Connection *c = 0);
+	vrpn_Retrolink(vrpn_HidAcceptor *filter, const char *name, vrpn_Connection *c = 0,
+        vrpn_uint16 vendor = 0, vrpn_uint16 product = 0);
 	virtual ~vrpn_Retrolink(void);
 
   virtual void mainloop(void) = 0;
@@ -77,8 +78,45 @@ protected:
   void decodePacket(size_t bytes, vrpn_uint8 *buffer);
 };
 
+//--------------------------------------------------------------------------------
+// For Genesis :
+//	Analog channel assignments :
+// 0 = Rocker switch angle in degrees(-1 if nothing is pressed)
+//	Button number assignments :
+// 0 = A
+// 1 = B
+// 2 = C
+// 3 = X
+// 4 = Y
+// 5 = Z
+// 6 = Mode
+// 7 = Start
+// Buttons 8 - 11 are duplicate mappings for the rocker - switch; both
+// these and the analog angle in degrees will change as they are pressed
+// 8 = up
+// 9 = right
+// 10 = down
+// 11 = left
+
+class vrpn_Retrolink_Genesis : protected vrpn_Retrolink, public vrpn_Analog, public vrpn_Button_Filter {
+public:
+	vrpn_Retrolink_Genesis(const char *name, vrpn_Connection *c = 0);
+	virtual ~vrpn_Retrolink_Genesis(void) {};
+
+  virtual void mainloop(void);
+
+protected:
+  // Send report iff changed
+  void report_changes (vrpn_uint32 class_of_service = vrpn_CONNECTION_LOW_LATENCY);
+  // Send report whether or not changed
+  void report (vrpn_uint32 class_of_service = vrpn_CONNECTION_LOW_LATENCY);
+
+  void decodePacket(size_t bytes, vrpn_uint8 *buffer);
+};
+
 // end of VRPN_USE_HID
 #else
 class VRPN_API vrpn_Retrolink;
 class VRPN_API vrpn_Retrolink_GameCube;
+class VRPN_API vrpn_Retrolink_Genesis;
 #endif

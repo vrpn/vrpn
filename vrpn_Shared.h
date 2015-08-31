@@ -11,6 +11,7 @@
 
 #include "vrpn_Configure.h" // for VRPN_API
 #include "vrpn_Types.h"     // for vrpn_int32, vrpn_float64, etc
+#include "vrpn_Thread.h"
 #include <string.h>         // for memcpy()
 #include <stdio.h>          // for fprintf()
 
@@ -181,7 +182,7 @@ extern VRPN_API bool vrpn_TimevalEqual(const struct timeval &tv1,
 extern VRPN_API double vrpn_TimevalMsecs(const struct timeval &tv1);
 
 extern VRPN_API struct timeval vrpn_MsecsTimeval(const double dMsecs);
-extern VRPN_API void vrpn_SleepMsecs(double dMsecs);
+extern VRPN_API void vrpn_SleepMsecs(double dMilliSecs);
 
 //--------------------------------------------------------------
 // vrpn_* buffer util functions and endian-ness related
@@ -201,7 +202,7 @@ extern VRPN_API vrpn_float64 vrpn_ntohd(vrpn_float64 d);
 
 static const int vrpn_int_data_for_endian_test = 1;
 static const char *vrpn_char_data_for_endian_test =
-    (char *)(void *)(&vrpn_int_data_for_endian_test);
+    (const char *)(const void *)(&vrpn_int_data_for_endian_test);
 static const bool vrpn_big_endian = (vrpn_char_data_for_endian_test[0] != 1);
 
 // Read and write strings (not single items).
@@ -404,6 +405,49 @@ template <typename T, typename ByteT> inline T vrpn_unbuffer(ByteT *&input)
     return ntoh(value.typed);
 }
 
+/// Function template to buffer values to a buffer stored in little-
+/// endian order. Specify the type to buffer T as a template parameter.
+/// The templated buffer type ByteT will be deduced automatically.
+/// The input pointer will be advanced past the unbuffered value.
+template <typename T, typename ByteT>
+inline int vrpn_buffer_to_little_endian(ByteT **insertPt, vrpn_int32 *buflen, const T inVal)
+{
+    using namespace vrpn_byte_order;
+
+    VRPN_STATIC_ASSERT(sizeof(ByteT) == 1, SIZE_OF_BUFFER_ITEM_IS_NOT_ONE_BYTE);
+
+    if ((insertPt == NULL) || (buflen == NULL)) {
+        fprintf(stderr, "vrpn_buffer: NULL pointer\n");
+        return -1;
+    }
+
+    if (sizeof(T) > static_cast<size_t>(*buflen)) {
+        fprintf(stderr, "vrpn_buffer: buffer not large enough\n");
+        return -1;
+    }
+
+    /// Union to allow type-punning and ensure alignment
+    union {
+        typename ::vrpn_detail::remove_const<ByteT>::type bytes[sizeof(T)];
+        T typed;
+    } value;
+
+    /// Populate union in network byte order
+    value.typed = hton(inVal);
+
+    /// Swap known big-endian (aka network byte order) into little-endian
+    for (unsigned int i = 0, j = sizeof(T) - 1; i < sizeof(T); ++i, --j) {
+        (*insertPt)[i] = value.bytes[j];
+    }
+
+    /// Advance insert pointer
+    *insertPt += sizeof(T);
+    /// Decrement buffer length
+    *buflen -= sizeof(T);
+
+    return 0;
+}
+
 /// Function template to buffer values to a buffer stored in network
 /// byte order. Specify the type to buffer T as a template parameter.
 /// The templated buffer type ByteT will be deduced automatically.
@@ -452,164 +496,5 @@ inline int vrpn_unbuffer(ByteT **input, T *lvalue)
     return 0;
 }
 
-// Semaphore and Thread classes derived from Hans Weber's classes from UNC.
-// Don't let the existence of a Thread class fool you into thinking
-// that VRPN is thread-safe.  This and the Semaphore are included as
-// building blocks towards making your own code thread-safe.  They are
-// here to enable the vrpn_Imager_Logger class to do its thing.
-
-#if defined(sgi) || (defined(_WIN32) && !defined(__CYGWIN__)) ||               \
-    defined(linux) || defined(__APPLE__)
-#define vrpn_THREADS_AVAILABLE
-#else
-#undef vrpn_THREADS_AVAILABLE
-#endif
-
-// multi process stuff
-#ifdef sgi
-#include <task.h>
-#include <ulocks.h>
-#elif defined(_WIN32)
-#include <process.h>
-#else
-#include <pthread.h>   // for pthread_t
-#include <semaphore.h> // for sem_t
-#endif
-
-// make the SGI compile without tons of warnings
-#ifdef sgi
-#pragma set woff 1110, 1424, 3201
-#endif
-
-// and reset the warnings
-#ifdef sgi
-#pragma reset woff 1110, 1424, 3201
-#endif
-
-class VRPN_API vrpn_Semaphore {
-public:
-    // mutex by default (0 is a sync primitive)
-    vrpn_Semaphore(int cNumResources = 1);
-
-    // This does not copy the state of the semaphore, just creates
-    // a new one with the same resource count
-    vrpn_Semaphore(const vrpn_Semaphore &s);
-    ~vrpn_Semaphore();
-
-    // routine to reset it (true on success, false on failure)
-    // (may create new semaphore)
-    bool reset(int cNumResources = 1);
-
-    // routines to use it (p blocks, condP does not)
-    // p returns 1 when it has acquired the resource, -1 on fail
-    // v returns 0 when it has released the resource, -1 on fail
-    // condP returns 0 if it could not access the resource
-    // and 1 if it could (-1 on fail)
-    int p();
-    int v();
-    int condP();
-
-    // read values
-    int numResources();
-
-protected:
-    // common init and destroy routines
-    bool init();
-    bool destroy();
-
-    int cResources;
-
-// arch specific details
-#ifdef sgi
-    // single mem area for dynamically alloced shared mem
-    static usptr_t *ppaArena;
-    static void allocArena();
-
-    // the semaphore struct in the arena
-    usema_t *ps;
-    ulock_t l;
-    bool fUsingLock;
-#elif defined(_WIN32)
-    HANDLE hSemaphore;
-#else
-    sem_t *semaphore; // Posix
-#endif
-};
-
-// A ptr to this struct will be passed to the
-// thread function.  The user data ptr will be in pvUD.
-// (There used to be a non-functional semaphore object
-// also in this structure, but it was removed.  This leaves
-// a struct with only one element, which is a pain but
-// at least it doesn't break existing code.  If we need
-// to add something else later, there is a place for it.
-
-// The user should create and manage any semaphore needed
-// to handle access control to the userdata.
-
-struct VRPN_API vrpn_ThreadData {
-    void *pvUD;
-};
-
-typedef void (*vrpn_THREAD_FUNC)(vrpn_ThreadData &threadData);
-
-// Don't let the existence of a Thread class fool you into thinking
-// that VRPN is thread-safe.  This and the Semaphore are included as
-// building blocks towards making your own code thread-safe.  They are
-// here to enable the vrpn_Imager_Stream_Buffer class to do its thing.
-class VRPN_API vrpn_Thread {
-public:
-    // args are the routine to run in the thread
-    // a ThreadData struct which will be passed into
-    // the thread (it will be passed as a void *).
-    vrpn_Thread(vrpn_THREAD_FUNC pfThread, vrpn_ThreadData td);
-    ~vrpn_Thread();
-
-#if defined(sgi)
-    typedef unsigned long thread_t;
-#elif defined(_WIN32)
-    typedef uintptr_t thread_t;
-#else
-    typedef pthread_t thread_t;
-#endif
-
-    // start/kill the thread (true on success, false on failure)
-    bool go();
-    bool kill();
-
-    // thread info: check if running, get proc id
-    bool running();
-    thread_t pid();
-
-    // run-time user function to test if threads are available
-    // (same value as #ifdef THREADS_AVAILABLE)
-    static bool available();
-
-    // Number of processors available on this machine.
-    static unsigned number_of_processors();
-
-    // This can be used to change the ThreadData user data ptr
-    // between calls to go (ie, when a thread object is used
-    // many times with different args).  This will take
-    // effect the next time go() is called.
-    void userData(void *pvNewUserData);
-    void *userData();
-
-protected:
-    // user func and data ptrs
-    void (*pfThread)(vrpn_ThreadData &ThreadData);
-    vrpn_ThreadData td;
-
-    // utility func for calling the specified function.
-    static void threadFuncShell(void *pvThread);
-
-    // Posix version of the utility function, makes the
-    // function prototype match.
-    static void *threadFuncShellPosix(void *pvThread);
-
-    // the process id
-    thread_t threadID;
-};
-
-// Returns true if they work and false if they do not.
-extern bool vrpn_test_threads_and_semaphores(void);
+// Returns true if tests work and false if they do not.
+extern bool vrpn_test_pack_unpack(void);

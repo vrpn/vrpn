@@ -24,7 +24,8 @@
 
 class vrpn_Saitek_Controller_Raw: public vrpn_BaseClass, protected vrpn_HidInterface {
 public:
-	vrpn_Saitek_Controller_Raw(vrpn_HidAcceptor *filter, const char *name, vrpn_Connection *c = 0);
+	vrpn_Saitek_Controller_Raw(vrpn_HidAcceptor *filter, const char *name, vrpn_Connection *c = 0,
+        vrpn_uint16 vendor = 0, vrpn_uint16 product = 0);
 	virtual ~vrpn_Saitek_Controller_Raw(void);
 
 	virtual void mainloop(void) = 0;

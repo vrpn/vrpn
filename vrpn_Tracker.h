@@ -298,7 +298,7 @@ typedef struct _vrpn_TRACKERVELCB {
     struct timeval msg_time;  // Time of the report
     vrpn_int32 sensor;        // Which sensor is reporting
     vrpn_float64 vel[3];      // Velocity of the sensor
-    vrpn_float64 vel_quat[4]; // Future Orientation of the sensor
+    vrpn_float64 vel_quat[4]; // Rotation of the sensor per vel_quat_dt
     vrpn_float64 vel_quat_dt; // delta time (in secs) for vel_quat
 } vrpn_TRACKERVELCB;
 typedef void(VRPN_CALLBACK *vrpn_TRACKERVELCHANGEHANDLER)(
@@ -312,7 +312,7 @@ typedef struct _vrpn_TRACKERACCCB {
     struct timeval msg_time;  // Time of the report
     vrpn_int32 sensor;        // Which sensor is reporting
     vrpn_float64 acc[3];      // Acceleration of the sensor
-    vrpn_float64 acc_quat[4]; // ?????
+    vrpn_float64 acc_quat[4]; // Change in vel_quat of the sensor per acc_quat_dt
     vrpn_float64 acc_quat_dt; // delta time (in secs) for acc_quat
 
 } vrpn_TRACKERACCCB;

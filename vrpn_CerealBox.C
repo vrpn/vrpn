@@ -224,7 +224,7 @@ int	vrpn_CerealBox::reset(void)
 
 	//-----------------------------------------------------------------------
 	// Ask the box to send a report, and go into SYNCING mode to get it.
-	vrpn_write_characters(serial_fd, (unsigned char *)"pE", 2);
+	vrpn_write_characters(serial_fd, (const unsigned char *)"pE", 2);
 	status = STATUS_SYNCING;
 	printf("CerealBox reset complete.\n");
 
@@ -349,7 +349,7 @@ int vrpn_CerealBox::get_report(void)
    // after the report has come in.
    //--------------------------------------------------------------------
 
-   vrpn_write_characters(serial_fd, (unsigned char *)"pE", 2);
+   vrpn_write_characters(serial_fd, (const unsigned char *)"pE", 2);
 
    //--------------------------------------------------------------------
    // Decode the report and store the values in it into the parent classes

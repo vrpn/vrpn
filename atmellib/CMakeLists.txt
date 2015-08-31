@@ -24,14 +24,8 @@ set_property(TARGET
 if(VRPN_INSTALL)
 	install(TARGETS
 		vrpn_atmel
-		ARCHIVE
-		DESTINATION
-		lib
-		COMPONENT
-		serversdk
-		PUBLIC_HEADER
-		DESTINATION
-		include
-		COMPONENT
-		serversdk)
+		RUNTIME DESTINATION bin COMPONENT serversdk
+		LIBRARY DESTINATION lib${LIB_SUFFIX} COMPONENT serversdk
+		ARCHIVE DESTINATION lib${LIB_SUFFIX} COMPONENT serversdk
+		PUBLIC_HEADER DESTINATION include COMPONENT serversdk)
 endif()

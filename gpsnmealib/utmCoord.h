@@ -56,11 +56,6 @@ public:
   UTMCoord& operator= (const UTMCoord& other);
   UTMCoord& operator= (const TypedCoord& other);
   virtual const std::string& createCoordString (std::string& coordString) const;
-  virtual void createDisplayStrings (std::string& topLeftString,
-                                     std::string& topRightString, std::string& bottomLeftString,
-                                     std::string& bottomRightString) const;
-  virtual void createXYCoordStrings (std::string& xString, std::string& yString)
-    const;
   virtual COORD_TYPE getCoordType () const {return COORD_UTM;}
   virtual void getLatLonCoord (double& lat, double& lon) const;
   virtual void getUTMCoord (int& utmXZone, char& utmYZone,

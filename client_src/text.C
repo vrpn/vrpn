@@ -26,11 +26,11 @@ void handle_cntl_c (int) {
   exit(0);
 }
 
-void  VRPN_CALLBACK my_handler(void * userdata, const vrpn_TEXTCB info){
+void  VRPN_CALLBACK my_handler(void *, const vrpn_TEXTCB info){
 	printf("%d %d %s\n", info.type, info.level, info.message);
 }
 
-int main(int argc, char* argv[])
+int main(int, char* argv[])
 {
 	vrpn_Text_Receiver * r = new vrpn_Text_Receiver (argv[1]);
 

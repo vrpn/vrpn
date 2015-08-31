@@ -1351,7 +1351,7 @@ void vrpn_Sound_Client::receiveTextMessage(const char *message, vrpn_uint32,
 #ifndef VRPN_CLIENT_ONLY
 vrpn_Sound_Server::vrpn_Sound_Server(const char *name, vrpn_Connection *c)
     : vrpn_Sound(name, c)
-    , vrpn_Text_Sender((char *)name, c)
+    , vrpn_Text_Sender(name, c)
 {
     /*Register the handlers*/
     register_autodeleted_handler(load_sound_local, handle_loadSoundLocal, this,
@@ -1425,7 +1425,7 @@ int vrpn_Sound_Server::handle_loadSoundLocal(void *userdata,
     vrpn_SoundDef soundDef;
     char *filename;
 
-    me->decodeSound_local((char *)p.buffer, &filename, &id, &soundDef,
+    me->decodeSound_local(p.buffer, &filename, &id, &soundDef,
                           p.payload_len);
     me->loadSoundLocal(filename, id, soundDef);
     delete[] filename;
@@ -1433,8 +1433,8 @@ int vrpn_Sound_Server::handle_loadSoundLocal(void *userdata,
 }
 
 /* not supported */
-int vrpn_Sound_Server::handle_loadSoundRemote(void *userdata,
-                                              vrpn_HANDLERPARAM p)
+int vrpn_Sound_Server::handle_loadSoundRemote(void *,
+                                              vrpn_HANDLERPARAM)
 {
     return 0;
 }
@@ -1446,7 +1446,7 @@ int vrpn_Sound_Server::handle_playSound(void *userdata, vrpn_HANDLERPARAM p)
     vrpn_SoundDef soundDef;
     vrpn_int32 repeat;
 
-    me->decodeSoundDef((char *)p.buffer, &soundDef, &id, &repeat);
+    me->decodeSoundDef(p.buffer, &soundDef, &id, &repeat);
     me->playSound(id, repeat, soundDef);
     return 0;
 }
@@ -1456,7 +1456,7 @@ int vrpn_Sound_Server::handle_stopSound(void *userdata, vrpn_HANDLERPARAM p)
     vrpn_Sound_Server *me = (vrpn_Sound_Server *)userdata;
     vrpn_SoundID id;
 
-    me->decodeSoundID((char *)p.buffer, &id);
+    me->decodeSoundID(p.buffer, &id);
     me->stopSound(id);
     return 0;
 }
@@ -1466,7 +1466,7 @@ int vrpn_Sound_Server::handle_unloadSound(void *userdata, vrpn_HANDLERPARAM p)
     vrpn_Sound_Server *me = (vrpn_Sound_Server *)userdata;
     vrpn_SoundID id;
 
-    me->decodeSoundID((char *)p.buffer, &id);
+    me->decodeSoundID(p.buffer, &id);
     me->unloadSound(id);
     return 0;
 }
@@ -1479,7 +1479,7 @@ int vrpn_Sound_Server::handle_changeSoundStatus(void *userdata,
     vrpn_SoundDef soundDef;
     vrpn_int32 repeat;
 
-    me->decodeSoundDef((char *)p.buffer, &soundDef, &id, &repeat);
+    me->decodeSoundDef(p.buffer, &soundDef, &id, &repeat);
     me->changeSoundStatus(id, soundDef);
     return 0;
 }
@@ -1490,7 +1490,7 @@ int vrpn_Sound_Server::handle_setListenerPose(void *userdata,
     vrpn_Sound_Server *me = (vrpn_Sound_Server *)userdata;
     vrpn_PoseDef pose;
 
-    me->decodeListenerPose((char *)p.buffer, &pose);
+    me->decodeListenerPose(p.buffer, &pose);
     me->setListenerPose(pose);
     return 0;
 }
@@ -1501,7 +1501,7 @@ int vrpn_Sound_Server::handle_setListenerVelocity(void *userdata,
     vrpn_Sound_Server *me = (vrpn_Sound_Server *)userdata;
     vrpn_float64 velocity[4];
 
-    me->decodeListenerVelocity((char *)p.buffer, velocity);
+    me->decodeListenerVelocity(p.buffer, velocity);
     me->setListenerVelocity(velocity);
     return 0;
 }
@@ -1512,7 +1512,7 @@ int vrpn_Sound_Server::handle_setSoundPose(void *userdata, vrpn_HANDLERPARAM p)
     vrpn_PoseDef pose;
     vrpn_int32 id;
 
-    me->decodeSoundPose((char *)p.buffer, &pose, &id);
+    me->decodeSoundPose(p.buffer, &pose, &id);
     me->setSoundPose(id, pose);
     return 0;
 }
@@ -1524,7 +1524,7 @@ int vrpn_Sound_Server::handle_setSoundVelocity(void *userdata,
     vrpn_float64 velocity[4];
     vrpn_int32 id;
 
-    me->decodeSoundVelocity((char *)p.buffer, velocity, &id);
+    me->decodeSoundVelocity(p.buffer, velocity, &id);
     me->setSoundVelocity(id, velocity);
     return 0;
 }
@@ -1536,7 +1536,7 @@ int vrpn_Sound_Server::handle_setSoundDistanceinfo(void *userdata,
     vrpn_float64 dist[4];
     vrpn_int32 id;
     /* order is min_back, max_back, min_front, max_front */
-    me->decodeSoundDistInfo((char *)p.buffer, &dist[0], &dist[1], &dist[2],
+    me->decodeSoundDistInfo(p.buffer, &dist[0], &dist[1], &dist[2],
                             &dist[3], &id);
     me->setSoundDistInfo(id, dist);
     return 0;
@@ -1549,7 +1549,7 @@ int vrpn_Sound_Server::handle_setSoundConeinfo(void *userdata,
     vrpn_float64 cinfo[3];
     vrpn_int32 id;
 
-    me->decodeSoundConeInfo((char *)p.buffer, &cinfo[0], &cinfo[1], &cinfo[2],
+    me->decodeSoundConeInfo(p.buffer, &cinfo[0], &cinfo[1], &cinfo[2],
                             &id);
     me->setSoundConeInfo(id, cinfo);
     return 0;
@@ -1562,7 +1562,7 @@ int vrpn_Sound_Server::handle_setSoundDoplerfactor(void *userdata,
     vrpn_float64 df;
     vrpn_int32 id;
 
-    me->decodeSoundDoplerScale((char *)p.buffer, &df, &id);
+    me->decodeSoundDoplerScale(p.buffer, &df, &id);
     me->setSoundDoplerFactor(id, df);
     return 0;
 }
@@ -1574,7 +1574,7 @@ int vrpn_Sound_Server::handle_setSoundEqvalue(void *userdata,
     vrpn_float64 val;
     vrpn_int32 id;
 
-    me->decodeSoundEqFactor((char *)p.buffer, &val, &id);
+    me->decodeSoundEqFactor(p.buffer, &val, &id);
     me->setSoundEqValue(id, val);
     return 0;
 }
@@ -1585,7 +1585,7 @@ int vrpn_Sound_Server::handle_setSoundPitch(void *userdata, vrpn_HANDLERPARAM p)
     vrpn_float64 pitch;
     vrpn_int32 id;
 
-    me->decodeSoundPitch((char *)p.buffer, &pitch, &id);
+    me->decodeSoundPitch(p.buffer, &pitch, &id);
     me->setSoundPitch(id, pitch);
     return 0;
 }
@@ -1597,7 +1597,7 @@ int vrpn_Sound_Server::handle_setSoundVolume(void *userdata,
     vrpn_float64 vol;
     vrpn_int32 id;
 
-    me->decodeSoundVolume((char *)p.buffer, &vol, &id);
+    me->decodeSoundVolume(p.buffer, &vol, &id);
     me->setSoundVolume(id, vol);
     return 0;
 }
@@ -1608,15 +1608,15 @@ int vrpn_Sound_Server::handle_loadModelLocal(void *userdata,
     vrpn_Sound_Server *me = (vrpn_Sound_Server *)userdata;
     char *filename;
 
-    me->decodeLoadModel_local((char *)p.buffer, &filename, p.payload_len);
+    me->decodeLoadModel_local(p.buffer, &filename, p.payload_len);
     me->loadModelLocal(filename);
     delete[] filename;
     return 0;
 }
 
 /* not handled yet */
-int vrpn_Sound_Server::handle_loadModelRemote(void *userdata,
-                                              vrpn_HANDLERPARAM p)
+int vrpn_Sound_Server::handle_loadModelRemote(void *,
+                                              vrpn_HANDLERPARAM)
 {
     return 0;
 }
@@ -1626,7 +1626,7 @@ int vrpn_Sound_Server::handle_loadPolyquad(void *userdata, vrpn_HANDLERPARAM p)
     vrpn_Sound_Server *me = (vrpn_Sound_Server *)userdata;
     vrpn_QuadDef quad;
 
-    me->decodeLoadPolyQuad((char *)p.buffer, &quad);
+    me->decodeLoadPolyQuad(p.buffer, &quad);
     me->loadPolyQuad(&quad);
     return 0;
 }
@@ -1636,7 +1636,7 @@ int vrpn_Sound_Server::handle_loadPolytri(void *userdata, vrpn_HANDLERPARAM p)
     vrpn_Sound_Server *me = (vrpn_Sound_Server *)userdata;
     vrpn_TriDef tri;
 
-    me->decodeLoadPolyTri((char *)p.buffer, &tri);
+    me->decodeLoadPolyTri(p.buffer, &tri);
     me->loadPolyTri(&tri);
     return 0;
 }
@@ -1647,7 +1647,7 @@ int vrpn_Sound_Server::handle_loadMaterial(void *userdata, vrpn_HANDLERPARAM p)
     vrpn_MaterialDef material;
     vrpn_int32 id;
 
-    me->decodeLoadMaterial((char *)p.buffer, &material, &id);
+    me->decodeLoadMaterial(p.buffer, &material, &id);
 
     me->loadMaterial(&material, id);
     return 0;
@@ -1660,7 +1660,7 @@ int vrpn_Sound_Server::handle_setPolyquadVertices(void *userdata,
     vrpn_float64(*vertices)[4][3] = NULL;
     vrpn_int32 id;
 
-    me->decodeSetQuadVert((char *)p.buffer, vertices, &id);
+    me->decodeSetQuadVert(p.buffer, vertices, &id);
     me->setPolyQuadVertices(*vertices, id);
     return 0;
 }
@@ -1672,7 +1672,7 @@ int vrpn_Sound_Server::handle_setPolytriVertices(void *userdata,
     vrpn_float64(*vertices)[3][3] = NULL;
     vrpn_int32 id;
 
-    me->decodeSetTriVert((char *)p.buffer, vertices, &id);
+    me->decodeSetTriVert(p.buffer, vertices, &id);
     me->setPolyTriVertices(*vertices, id);
     return 0;
 }
@@ -1684,7 +1684,7 @@ int vrpn_Sound_Server::handle_setPolyOpeningfactor(void *userdata,
     vrpn_float64 of;
     vrpn_int32 id;
 
-    me->decodeSetPolyOF((char *)p.buffer, &of, &id);
+    me->decodeSetPolyOF(p.buffer, &of, &id);
     me->setPolyOF(of, id);
     return 0;
 }
@@ -1696,7 +1696,7 @@ int vrpn_Sound_Server::handle_setPolyMaterial(void *userdata,
     char **material = NULL;
     vrpn_int32 id;
 
-    me->decodeSetPolyMaterial((char *)p.buffer, material, &id, p.payload_len);
+    me->decodeSetPolyMaterial(p.buffer, material, &id, p.payload_len);
     me->setPolyMaterial(*material, id);
     return 0;
 }

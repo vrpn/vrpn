@@ -36,14 +36,14 @@ vrpn_Tracker_Fastrak::vrpn_Tracker_Fastrak(const char *name, vrpn_Connection *c,
     vrpn_Tracker_Serial(name,c,port,baud),
     do_filter(enable_filtering),
     num_stations(numstations>vrpn_FASTRAK_MAX_STATIONS ? vrpn_FASTRAK_MAX_STATIONS : numstations),
-    do_is900_timestamps(is900_timestamps),
-    num_resets(0)
+    num_resets(0),
+    do_is900_timestamps(is900_timestamps)
 {
 	int i;
 
 	reset_time.tv_sec = reset_time.tv_usec = 0;
 	if (additional_reset_commands == NULL) {
-		sprintf(add_reset_cmd, "");
+		add_reset_cmd[0] = '\0';
 	} else {
 		strncpy(add_reset_cmd, additional_reset_commands, sizeof(add_reset_cmd)-1);
 	}

@@ -60,7 +60,7 @@
 #include "vrpn_Poser.h"                 // for vrpn_Poser
 #include "vrpn_Poser_Tek4662.h"         // for vrpn_Poser_Tek4662
 #include "vrpn_raw_sgibox.h"            // for vrpn_raw_SGIBox, for access to the SGI button & dial box connected to the serial port of an linux PC
-#include "vrpn_Retrolink.h"             // for vrpn_Retolink_GameCube, etc.
+#include "vrpn_Retrolink.h"             // for vrpn_Retrolink_GameCube, etc.
 #include "vrpn_Saitek_Controller_Raw.h" // for vrpn_Saitek_ST290_Pro, etc.
 #include "vrpn_sgibox.h" //for access to the B&D box connected to an SGI via the IRIX GL drivers
 #include "vrpn_Sound.h"             // for vrpn_Sound
@@ -90,7 +90,9 @@
 #include "vrpn_Tracker_RazerHydra.h"      // for vrpn_Tracker_RazerHydra
 #include "vrpn_Tracker_Filter.h"          // for vrpn_Tracker_FilterOneEuro
 #include "vrpn_Tracker_SpacePoint.h"      // for vrpn_Tracker_SpacePoint
+#include "vrpn_Tracker_ThalmicLabsMyo.h"  // for vrpn_Tracker_ThalmicLabsMyo
 #include "vrpn_Tracker_TrivisioColibri.h" // added by David Borland
+#include "vrpn_Tracker_Colibri.h"         // added by Dmitry Mastykin
 #include "vrpn_Tracker_ViewPoint.h"       // added by David Borland
 #include "vrpn_Tracker_WiimoteHead.h"     // for vrpn_Tracker_WiimoteHead
 #include "vrpn_Tracker_Wintracker.h"      // for vrpn_Tracker_Wintracker
@@ -2427,7 +2429,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_InterSense(char *&pch, char *line,
     // at the ends, we add them to the command string to send. Note
     // that there is a newline at the end of the line, following the
     // backslash.
-    sprintf(rcmd, "");
+    rcmd[0] = '\0';
     while (line[strlen(line) - 2] == '\\') {
         // Read the next line
         if (fgets(line, LINESIZE, config_file) == NULL) {
@@ -3354,7 +3356,7 @@ int vrpn_Generic_Server_Object::setup_Button_NI_DIO24(char *&pch, char *line,
 
 int vrpn_Generic_Server_Object::setup_Tracker_OSVRHackerDevKit(char *&pch, char
                                                                *line, FILE
-                                                               *config_file)
+                                                               *)
 {
     char s2[LINESIZE];
 
@@ -3365,7 +3367,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_OSVRHackerDevKit(char *&pch, char
         return -1;
     }
 
-    // Open the Razer Hydra
+    // Open the OSVR Hacker Dev Kit
     if (verbose) {
         printf("Opening vrpn_Tracker_OSVRHackerDevKit\n");
     }
@@ -3380,10 +3382,9 @@ int vrpn_Generic_Server_Object::setup_Tracker_OSVRHackerDevKit(char *&pch, char
     return 0; // successful completion
 }
 
-int vrpn_Generic_Server_Object::setup_Tracker_PhaseSpace(char *&pch, char *line,
+int vrpn_Generic_Server_Object::setup_Tracker_PhaseSpace(char *&, char *line,
                                                          FILE *config_file)
 {
-
     char trackerName[LINESIZE];
     char device[LINESIZE];
     float framerate = 0;
@@ -3500,12 +3501,13 @@ int vrpn_Generic_Server_Object::setup_Tracker_PhaseSpace(char *&pch, char *line,
     fprintf(stderr, "vrpn_server: Can't open PhaseSpace OWL server: "
                     "VRPN_INCLUDE_PHASESPACE not defined in "
                     "vrpn_Configure.h!\n");
+    config_file = config_file + 1; // Unused parameter, avoid warning.
     return -1;
 #endif
 }
 
 int vrpn_Generic_Server_Object::setup_Tracker_RazerHydra(char *&pch, char *line,
-                                                         FILE *config_file)
+                                                         FILE *)
 {
     char s2[LINESIZE];
 
@@ -3531,7 +3533,36 @@ int vrpn_Generic_Server_Object::setup_Tracker_RazerHydra(char *&pch, char *line,
     return 0; // successful completion
 }
 
-int vrpn_Generic_Server_Object::setup_Tracker_NDI_Polaris(char *&pch,
+//================================
+int vrpn_Generic_Server_Object::setup_Tracker_ThalmicLabsMyo(char * &pch, char * line, FILE *)
+{
+  char s2[LINESIZE];
+  int useLockI;
+  int armSide;
+  
+  VRPN_CONFIG_NEXT();
+  int ret = sscanf (pch, "%511s %d %d", s2,&useLockI, &armSide);
+  if (ret != 3) {
+      fprintf(stderr, "Bad ThalmicLabsMyo line: %s\n", line);
+      return -1;
+  }
+  bool useLock = useLockI > 0;
+#ifdef VRPN_INCLUDE_THALMICLABSMYO
+  // Open the Myo
+  if (verbose) {
+      printf ("Opening vrpn_Tracker_ThalmicLabsMyo %s, use lock is %n", s2,useLock);
+  }
+  // Open the tracker
+  _devices->add(new vrpn_Tracker_ThalmicLabsMyo(s2, connection,useLock,(vrpn_Tracker_ThalmicLabsMyo::ARMSIDE)armSide));
+#else
+  fprintf(stderr,
+          "ThalmicLabsMyo driver works only with VRPN_INCLUDE_THALMICLABSMYO defined!\n");
+  useLock = !useLock;	// Unused parameter, removing warning.
+#endif
+  return 0;  // successful completion
+}
+
+int vrpn_Generic_Server_Object::setup_Tracker_NDI_Polaris(char *&,
                                                           char *line,
                                                           FILE *config_file)
 {
@@ -3994,6 +4025,36 @@ int vrpn_Generic_Server_Object::setup_Tracker_TrivisioColibri(
 #endif
 }
 
+int vrpn_Generic_Server_Object::setup_Tracker_Colibri (char * & pch, char * line, FILE * /*config_file*/)
+{
+  char s2 [LINESIZE];
+  char s3 [LINESIZE];
+  int Hz;
+  int report_a_w;
+
+  VRPN_CONFIG_NEXT();
+  // Get the arguments
+  if (sscanf (pch, "%511s%511s%d%d", s2, s3, &Hz, &report_a_w) != 4) {
+    fprintf (stderr, "Bad vrpn_Tracker_Colibri line: %s\n", line);
+    return -1;
+  }
+
+#ifdef VRPN_USE_COLIBRIAPI
+  // Open the Trivisio Colibri if we can.
+  if (verbose) {
+    printf ("Opening vrpn_Tracker_Colibri: %s with %d Hz", s2, Hz);
+  }
+
+  _devices->add(new vrpn_Tracker_Colibri(s2, connection,
+                s3[0] == '*' ? NULL : s3, Hz, report_a_w));
+
+  return 0;
+#else
+  fprintf (stderr, "vrpn_server: Can't open vrpn_Tracker_Colibri: VRPN_USE_COLIBRIAPI not defined in vrpn_Configure.h!\n");
+  return -1;
+#endif
+}
+
 int vrpn_Generic_Server_Object::setup_LUDL_USBMAC6000(char *&pch, char *line,
                                                       FILE * /*config_file*/)
 {
@@ -4306,7 +4367,6 @@ int vrpn_Generic_Server_Object::setup_Tracker_G4(char *&pch, char *line,
 int vrpn_Generic_Server_Object::setup_Tracker_FastrakPDI(char *&pch, char *line,
                                                          FILE *config_file)
 {
-#ifdef VRPN_USE_PDI
     char name[LINESIZE];
     int Hz = 10;
     char rcmd[5000]; // reset commands to send to Liberty
@@ -4343,7 +4403,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_FastrakPDI(char *&pch, char *line,
         if (strncmp(line, "PDIStylus", strlen("PDIStylus")) == 0) {
             int nStylus = 0;
             sscanf(line, "PDIStylus %d", &nStylus);
-            if (!((nStylus > 0) && (nStylus <= FT_MAX_SENSORS))) {
+            if (!(nStylus > 0)) {
                 fprintf(stderr,
                         "PDIStylus command invalid station number: %s\r\n",
                         line);
@@ -4365,6 +4425,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_FastrakPDI(char *&pch, char *line,
         printf(" no additional commands found\r\n");
     }
 
+#ifdef VRPN_USE_PDI
     _devices->add(
         new vrpn_Tracker_FastrakPDI(name, connection, Hz, rcmd, nStylusMap));
 
@@ -4379,7 +4440,6 @@ int vrpn_Generic_Server_Object::setup_Tracker_FastrakPDI(char *&pch, char *line,
 int vrpn_Generic_Server_Object::setup_Tracker_LibertyPDI(char *&pch, char *line,
                                                          FILE *config_file)
 {
-#ifdef VRPN_USE_PDI
     char name[LINESIZE];
     int Hz = 10;
     unsigned int nStylusMap = 0;
@@ -4417,7 +4477,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_LibertyPDI(char *&pch, char *line,
         if (strncmp(line, "PDIStylus", strlen("PDIStylus")) == 0) {
             int nStylus = 0;
             sscanf(line, "PDIStylus %d", &nStylus);
-            if (!((nStylus > 0) && (nStylus <= LIBERTY_MAX_SENSORS))) {
+            if (!(nStylus > 0)) {
                 fprintf(stderr,
                         "PDIStylus command invalid station number: %s\r\n",
                         line);
@@ -4439,6 +4499,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_LibertyPDI(char *&pch, char *line,
         printf(" no additional commands found\r\n");
     }
 
+#ifdef VRPN_USE_PDI
     _devices->add(
         new vrpn_Tracker_LibertyPDI(name, connection, Hz, rcmd, nStylusMap));
 
@@ -4469,6 +4530,18 @@ int vrpn_Generic_Server_Object::setup_YEI_3Space_Sensor(char *&pch, char *line,
         return -1;
     }
 
+    std::string port = device;
+#ifdef _WIN32
+    // Use the Win32 device namespace for COM ports, if they aren't already.
+    // This is because devices with port numbers greater than 9 must have names
+    // like \\.\COM14. This same name type can be used for lower-numbered ports
+    // as well, so we go ahead and put it in no matter what.
+    // Have to double the backslashes because they're escape characters.
+    if (port.find('\\') == std::string::npos) {
+        port = "\\\\.\\" + port;
+    }
+#endif
+
     // Allocate space to store pointers to reset commands.  Initialize
     // all of them to NULL pointers, indicating no commands.
     const int MAX_RESET_COMMANDS = 1024;
@@ -4477,7 +4550,7 @@ int vrpn_Generic_Server_Object::setup_YEI_3Space_Sensor(char *&pch, char *line,
     for (int i = 0; i < MAX_RESET_COMMANDS; i++) {
       reset_commands[i] = NULL;
     }
-    
+
     // If the last character in the line is a backslash, '\', then
     // the following line is an additional command to send to the
     // YEI at reset time. So long as we find lines with backslashes
@@ -4512,7 +4585,7 @@ int vrpn_Generic_Server_Object::setup_YEI_3Space_Sensor(char *&pch, char *line,
     // Open the device
     if (verbose) {
         printf("Opening vrpn_YEI_3Space_Sensor: %s on port %s, baud %d\n", name,
-               device, baud_rate);
+               port.c_str(), baud_rate);
         if (num_reset_commands > 0) {
           printf("... additional reset commands follow:\n");
           for (int i = 0; i < num_reset_commands; i++) {
@@ -4521,7 +4594,7 @@ int vrpn_Generic_Server_Object::setup_YEI_3Space_Sensor(char *&pch, char *line,
         }
     }
     _devices->add(new vrpn_YEI_3Space_Sensor(
-        name, connection, device, baud_rate, calibrate_gyros != 0, tare != 0,
+        name, connection, port.c_str(), baud_rate, calibrate_gyros != 0, tare != 0,
         frames_per_second, red_LED, green_LED, blue_LED, LED_mode,
         reset_commands));
 
@@ -4540,7 +4613,7 @@ int vrpn_Generic_Server_Object::setup_YEI_3Space_Sensor_Wireless(char *&pch, cha
                                                         FILE *config_file)
 {
     char name[LINESIZE], device[LINESIZE];
-    int logical_id, serial_number, baud_rate, calibrate_gyros, tare;
+    int logical_id, baud_rate, calibrate_gyros, tare;
     double frames_per_second;
     float red_LED, green_LED, blue_LED;
     int LED_mode;
@@ -4548,13 +4621,25 @@ int vrpn_Generic_Server_Object::setup_YEI_3Space_Sensor_Wireless(char *&pch, cha
     VRPN_CONFIG_NEXT();
     // Get the arguments (class, name, port, baud, calibrate_gyros, tare,
     // frames_per_second
-    if (sscanf(pch, "%511s%d%x%511s%d%d%d%lf%f%f%f%d", name, &logical_id,
-               &serial_number, device, &baud_rate,
+    if (sscanf(pch, "%511s%d%511s%d%d%d%lf%f%f%f%d", name, &logical_id,
+               device, &baud_rate,
                &calibrate_gyros, &tare, &frames_per_second, &red_LED,
-               &green_LED, &blue_LED, &LED_mode) != 12) {
+               &green_LED, &blue_LED, &LED_mode) != 11) {
         fprintf(stderr, "Bad setup_YEI_3Space_Sensor_Wireless line: %s\n", line);
         return -1;
     }
+
+    std::string port = device;
+#ifdef _WIN32
+    // Use the Win32 device namespace for COM ports, if they aren't already.
+    // This is because devices with port numbers greater than 9 must have names
+    // like \\.\COM14. This same name type can be used for lower-numbered ports
+    // as well, so we go ahead and put it in no matter what.
+    // Have to double the backslashes because they're escape characters.
+    if (port.find('\\') == std::string::npos) {
+        port = "\\\\.\\" + port;
+    }
+#endif
 
     // Allocate space to store pointers to reset commands.  Initialize
     // all of them to NULL pointers, indicating no commands.
@@ -4599,7 +4684,7 @@ int vrpn_Generic_Server_Object::setup_YEI_3Space_Sensor_Wireless(char *&pch, cha
     // Open the device
     if (verbose) {
         printf("Opening setup_YEI_3Space_Sensor_Wireless: %s on port %s, baud %d\n", name,
-               device, baud_rate);
+            port.c_str(), baud_rate);
         if (num_reset_commands > 0) {
           printf("... additional reset commands follow:\n");
           for (int i = 0; i < num_reset_commands; i++) {
@@ -4609,7 +4694,7 @@ int vrpn_Generic_Server_Object::setup_YEI_3Space_Sensor_Wireless(char *&pch, cha
     }
     vrpn_YEI_3Space_Sensor_Wireless *dev = new vrpn_YEI_3Space_Sensor_Wireless(
         name, connection,
-        logical_id, serial_number, device, baud_rate, calibrate_gyros != 0, tare != 0,
+        logical_id, port.c_str(), baud_rate, calibrate_gyros != 0, tare != 0,
         frames_per_second, red_LED, green_LED, blue_LED, LED_mode,
         reset_commands);
     _devices->add(dev);
@@ -4641,10 +4726,9 @@ int vrpn_Generic_Server_Object::setup_YEI_3Space_Sensor_Wireless(char *&pch, cha
       // Get the arguments (class, name, port, baud, calibrate_gyros, tare,
       // frames_per_second.
       char classname[LINESIZE]; // We need to read the class, since we've not pre-parsed
-      if (sscanf(line, "%511s%511s%d%x%d%d%lf%f%f%f%d", classname, name, &logical_id,
-                 &serial_number,
+      if (sscanf(line, "%511s%511s%d%d%d%lf%f%f%f%d", classname, name, &logical_id,
                  &calibrate_gyros, &tare, &frames_per_second, &red_LED,
-                 &green_LED, &blue_LED, &LED_mode) != 11) {
+                 &green_LED, &blue_LED, &LED_mode) != 10) {
           fprintf(stderr, "Bad setup_YEI_3Space_Sensor_Wireless line: %s\n", line);
           return -1;
       }
@@ -4683,8 +4767,8 @@ int vrpn_Generic_Server_Object::setup_YEI_3Space_Sensor_Wireless(char *&pch, cha
 
       // Open the device
       if (verbose) {
-          printf("Opening setup_YEI_3Space_Sensor_Wireless: %s on port %s, baud %d\n", name,
-                 device, baud_rate);
+          printf("Opening setup_YEI_3Space_Sensor_Wireless: %s on the same port, baud %d\n",
+              name, baud_rate);
           if (num_reset_commands > 0) {
             printf("... additional reset commands follow:\n");
             for (int i = 0; i < num_reset_commands; i++) {
@@ -4694,7 +4778,7 @@ int vrpn_Generic_Server_Object::setup_YEI_3Space_Sensor_Wireless(char *&pch, cha
       }
       _devices->add(new vrpn_YEI_3Space_Sensor_Wireless(
           name, connection,
-          logical_id, serial_number, serial_fd, calibrate_gyros != 0, tare != 0,
+          logical_id, serial_fd, calibrate_gyros != 0, tare != 0,
           frames_per_second, red_LED, green_LED, blue_LED, LED_mode,
           reset_commands));
 
@@ -4710,10 +4794,34 @@ int vrpn_Generic_Server_Object::setup_YEI_3Space_Sensor_Wireless(char *&pch, cha
     return 0;
 }
 
+int vrpn_Generic_Server_Object::setup_Tracker_DeadReckoning_Rotation(char *&pch, char *line,
+    FILE * /*config_file*/)
+{
+    char name[LINESIZE], origName[LINESIZE];
+    int numSensors;
+    float predictionTime;
+
+    VRPN_CONFIG_NEXT();
+    // Get the arguments (tracker_name, sensors, rate)
+    if (sscanf(pch, "%511s%511s%d%g", name, origName, &numSensors, &predictionTime) != 4) {
+        fprintf(stderr, "Bad vrpn_Tracker_DeadReckoning_Rotation line: %s\n", line);
+        return -1;
+    }
+
+    // Open the tracker
+    if (verbose)
+        printf("Opening vrpn_Tracker_DeadReckoning_Rotation: %s from %s with %d sensors, prediction time %f\n", name,
+        origName, numSensors, predictionTime);
+    _devices->add(new vrpn_Tracker_DeadReckoning_Rotation(name, connection, origName,
+        numSensors, predictionTime));
+
+    return 0;
+}
+
 #undef VRPN_CONFIG_NEXT
 
 vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(
-    vrpn_Connection *connection_to_use, const char *config_file_name, int port,
+    vrpn_Connection *connection_to_use, const char *config_file_name,
     bool be_verbose, bool bail_on_open_error)
     : connection(connection_to_use)
     , d_doing_okay(true)
@@ -4722,7 +4830,6 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(
     , _devices(new vrpn_MainloopContainer)
 
 {
-    /// @todo warning: unused parameter 'port' [-Wunused-parameter]
     FILE *config_file;
 
     // Open the configuration file
@@ -5032,9 +5139,17 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(
                     VRPN_CHECK(templated_setup_HID_device_name_only<
                         vrpn_Contour_ShuttleXpress>);
                 }
-                else if (VRPN_ISIT("vrpn_Retrolink_GameCube")) {
+				else if (VRPN_ISIT("vrpn_Contour_ShuttlePROv2")) {
+					VRPN_CHECK(templated_setup_HID_device_name_only<
+						vrpn_Contour_ShuttlePROv2>);
+				}
+				else if (VRPN_ISIT("vrpn_Retrolink_GameCube")) {
                     VRPN_CHECK(templated_setup_HID_device_name_only<
                         vrpn_Retrolink_GameCube>);
+                }
+                else if (VRPN_ISIT("vrpn_Retrolink_Genesis")) {
+                    VRPN_CHECK(templated_setup_HID_device_name_only<
+                        vrpn_Retrolink_Genesis>);
                 }
                 else if (VRPN_ISIT("vrpn_Contour_ShuttleXpress")) {
                     VRPN_CHECK(templated_setup_HID_device_name_only<
@@ -5060,9 +5175,21 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(
                     VRPN_CHECK(templated_setup_HID_device_name_only<
                         vrpn_Xkeys_Joystick>);
                 }
+                else if (VRPN_ISIT("vrpn_Xkeys_Joystick12")) {
+                    VRPN_CHECK(templated_setup_HID_device_name_only<
+                        vrpn_Xkeys_Joystick12>);
+                }
                 else if (VRPN_ISIT("vrpn_Xkeys_Jog_And_Shuttle")) {
                     VRPN_CHECK(templated_setup_HID_device_name_only<
                         vrpn_Xkeys_Jog_And_Shuttle>);
+                }
+                else if (VRPN_ISIT("vrpn_Xkeys_Jog_And_Shuttle12")) {
+                    VRPN_CHECK(templated_setup_HID_device_name_only<
+                        vrpn_Xkeys_Jog_And_Shuttle12>);
+                }
+                else if (VRPN_ISIT("vrpn_Xkeys_Jog_And_Shuttle68")) {
+                    VRPN_CHECK(templated_setup_HID_device_name_only<
+                        vrpn_Xkeys_Jog_And_Shuttle68>);
                 }
                 else if (VRPN_ISIT("vrpn_Xkeys_XK3")) {
                     VRPN_CHECK(
@@ -5133,6 +5260,10 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(
                     VRPN_CHECK(templated_setup_HID_device_name_only<
                         vrpn_Microsoft_Controller_Raw_Xbox_360>);
                 }
+                else if (VRPN_ISIT("vrpn_Microsoft_Controller_Raw_Xbox_360_Wireless")) {
+                    VRPN_CHECK(templated_setup_HID_device_name_only<
+                        vrpn_Microsoft_Controller_Raw_Xbox_360_Wireless>);
+                }
                 else if (VRPN_ISIT("vrpn_Afterglow_Ax1_For_Xbox_360")) {
                     VRPN_CHECK(templated_setup_HID_device_name_only<
                         vrpn_Afterglow_Ax1_For_Xbox_360>);
@@ -5157,6 +5288,9 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(
                 }
                 else if (VRPN_ISIT("vrpn_Tracker_TrivisioColibri")) {
                     VRPN_CHECK(setup_Tracker_TrivisioColibri);
+                }
+                else if (VRPN_ISIT ("vrpn_Tracker_Colibri")) {
+                    VRPN_CHECK (setup_Tracker_Colibri);
                 }
                 else if (VRPN_ISIT("vrpn_Tracker_SpacePoint")) {
                     VRPN_CHECK(setup_SpacePoint);
@@ -5207,6 +5341,9 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(
                 else if (VRPN_ISIT("vrpn_Tracker_OculusRift")) {
                     VRPN_CHECK(setup_Tracker_OculusRift);
                 }
+                else if (VRPN_ISIT ("vrpn_Tracker_ThalmicLabsMyo")) {
+                    VRPN_CHECK(setup_Tracker_ThalmicLabsMyo);
+                }
                 else if (VRPN_ISIT("vrpn_Tracker_zSight")) {
                     VRPN_CHECK(setup_Tracker_zSight);
                 }
@@ -5230,6 +5367,9 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(
                 }
                 else if (VRPN_ISIT("vrpn_YEI_3Space_Sensor_Wireless")) {
                     VRPN_CHECK(setup_YEI_3Space_Sensor_Wireless);
+                }
+                else if (VRPN_ISIT("vrpn_Tracker_DeadReckoning_Rotation")) {
+                    VRPN_CHECK(setup_Tracker_DeadReckoning_Rotation);
                 }
                 else {                         // Never heard of it
                     sscanf(line, "%511s", s1); // Find out the class name

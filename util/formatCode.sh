@@ -11,7 +11,7 @@ cd $(dirname $0) && cd ..
 cat $filelist | while read module; do
     for ext in C h h.cmake_in; do
         if [ -f ${module}.${ext} ]; then
-            ${stylescript} ${module}.${ext}
+            "${stylescript}" ${module}.${ext}
         fi
     done
 done

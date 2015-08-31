@@ -41,8 +41,8 @@
 vrpn_Radamec_SPI::vrpn_Radamec_SPI (const char * name, vrpn_Connection * c,
 			const char * port, int baud):
 		vrpn_Serial_Analog(name, c, port, baud, 8, vrpn_SER_PARITY_ODD),
-		_numchannels(4),	// This is an estimate; will change when reports come
-		_camera_id(-1)		// Queried from the controller during reset
+		_camera_id(-1),		// Queried from the controller during reset
+		_numchannels(4)	// This is an estimate; will change when reports come
 {
 	// Set the parameters in the parent classes
 	vrpn_Analog::num_channel = _numchannels;

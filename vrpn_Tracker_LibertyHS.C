@@ -24,9 +24,9 @@ VRPN_SUPPRESS_EMPTY_OBJECT_WARNING()
 #include <libusb.h>                     // for libusb_bulk_transfer, etc
 
 #define	INCHES_TO_METERS	(2.54f/100.0f)
-const bool METRIC_UNITS = true;
-const bool DEBUG = false;  // General Debug Messages
-const bool DEBUGA = false; // Only errors
+static const bool VRPN_LIBERTYHS_METRIC_UNITS = true;
+static const bool VRPN_LIBERTYHS_DEBUG = false;  // General Debug Messages
+static const bool VRPN_LIBERTYHS_DEBUGA = false; // Only errors
 
 vrpn_Tracker_LibertyHS::vrpn_Tracker_LibertyHS(const char *name, vrpn_Connection *c, 
 		      long baud, int enable_filtering, int numstations,
@@ -37,15 +37,15 @@ vrpn_Tracker_LibertyHS::vrpn_Tracker_LibertyHS(const char *name, vrpn_Connection
     receptor_index(receptoridx),
     num_resets(0),
     whoami_len(whoamilen>vrpn_LIBERTYHS_MAX_WHOAMI_LEN ? vrpn_LIBERTYHS_MAX_WHOAMI_LEN : whoamilen),
-    sync_index(-1), read_len(0)
+    read_len(0), sync_index(-1)
 {
 	if (additional_reset_commands == NULL) {
-		sprintf(add_reset_cmd, "");
+		add_reset_cmd[0] = '\0';
 	} else {
 		strncpy(add_reset_cmd, additional_reset_commands, sizeof(add_reset_cmd)-1);
 	}
 
-	if (DEBUG) fprintf(stderr,"[DEBUG] Constructed LibertyHS Object\n");
+	if (VRPN_LIBERTYHS_DEBUG) fprintf(stderr,"[DEBUG] Constructed LibertyHS Object\n");
 }
 
 vrpn_Tracker_LibertyHS::~vrpn_Tracker_LibertyHS()
@@ -84,7 +84,7 @@ int vrpn_Tracker_LibertyHS::set_sensor_output_format(int sensor)
     int len = strlen(outstring);
     int ret;
  
-    if (DEBUG)     fprintf(stderr,"[DEBUG]: %s \n",outstring);
+    if (VRPN_LIBERTYHS_DEBUG)     fprintf(stderr,"[DEBUG]: %s \n",outstring);
     if ( (ret = write_usb_data(outstring,len)) != len) {
 #ifdef libusb_strerror
           fprintf(stderr,"vrpn_Tracker_LibertyHS::libusb_bulk_transfer(): Could not send: %s\n",
@@ -197,7 +197,7 @@ void vrpn_Tracker_LibertyHS::reset()
    // Then put in a carriage return to try and break it out of
    // a query mode if it is in one. These additions are cumulative: by the
    // end, we're doing them all.
-   if (DEBUG) fprintf(stderr,"[DEBUG] Beginning Reset");
+   if (VRPN_LIBERTYHS_DEBUG) fprintf(stderr,"[DEBUG] Beginning Reset");
    resetLen = 0;
    num_resets++;		  	// We're trying another reset
 
@@ -312,16 +312,16 @@ void vrpn_Tracker_LibertyHS::reset()
    // LibertyHS manual.
 
    if (do_filter) {
-     if (DEBUG) fprintf(stderr,"[DEBUG]: Enabling filtering\n");
+     if (VRPN_LIBERTYHS_DEBUG) fprintf(stderr,"[DEBUG]: Enabling filtering\n");
 
-     if (write_usb_data((void*)"X0.2,0.2,0.8,0.8\015", 17) == 17) {
+     if (write_usb_data(const_cast<char*>("X0.2,0.2,0.8,0.8\015"), 17) == 17) {
 	vrpn_SleepMsecs(1000.0*1); // Sleep for a second to let it respond
      } else {
 	perror("  LibertyHS write position filter failed");
 	status = vrpn_TRACKER_FAIL;
 	return;
      }
-     if (write_usb_data((void*)"Y0.2,0.2,0.8,0.8\015", 17) == 17) {
+     if (write_usb_data(const_cast<char*>("Y0.2,0.2,0.8,0.8\015"), 17) == 17) {
 	vrpn_SleepMsecs(1000.0*1); // Sleep for a second to let it respond
      } else {
 	perror("  LibertyHS write orientation filter failed");
@@ -329,16 +329,16 @@ void vrpn_Tracker_LibertyHS::reset()
 	return;
      }
    } else {
-     if (DEBUG) fprintf(stderr,"[DEBUG]: Disabling filtering\n");
+     if (VRPN_LIBERTYHS_DEBUG) fprintf(stderr,"[DEBUG]: Disabling filtering\n");
 
-     if (write_usb_data((void*)"X0,1,0,0\015", 9) == 9) {
+     if (write_usb_data(const_cast<char*>("X0,1,0,0\015"), 9) == 9) {
 	vrpn_SleepMsecs(1000.0*1); // Sleep for a second to let it respond
      } else {
 	perror("  LibertyHS write position filter failed");
 	status = vrpn_TRACKER_FAIL;
 	return;
      }
-     if (write_usb_data((void*)"Y0,1,0,0\015", 9) == 9) {
+     if (write_usb_data(const_cast<char*>("Y0,1,0,0\015"), 9) == 9) {
 	vrpn_SleepMsecs(1000.0*1); // Sleep for a second to let it respond
      } else {
 	perror("  LibertyHS write orientation filter failed");
@@ -401,7 +401,7 @@ void vrpn_Tracker_LibertyHS::reset()
    vrpn_SleepMsecs(1000.0);
 
    // Set METRIC units
-   if (METRIC_UNITS) {
+   if (VRPN_LIBERTYHS_METRIC_UNITS) {
         sprintf(outstring2, "U1\r");
         if (write_usb_data(outstring2, strlen(outstring2)) == (int)strlen(outstring2)) {
               fprintf(stderr, "  LibertyHS set to metric units\n");
@@ -499,7 +499,7 @@ int vrpn_Tracker_LibertyHS::get_report(void)
        read_len = read_usb_data(buffer, VRPN_TRACKER_USB_BUF_SIZE);
 
        if (read_len < 1) {
-         if (DEBUG) fprintf(stderr,"[DEBUG]: Missed First Sync Char, read_len = %i\n",read_len);
+         if (VRPN_LIBERTYHS_DEBUG) fprintf(stderr,"[DEBUG]: Missed First Sync Char, read_len = %i\n",read_len);
          return 0;
        }
 
@@ -517,12 +517,12 @@ int vrpn_Tracker_LibertyHS::get_report(void)
        // need to look at the next one, so just keep reading the buffer
        // and stay in Syncing mode until we find them.
        if ((buffer[sync_index] == 'L') && (buffer[sync_index + 1] == 'U')) {
-         if (DEBUG) fprintf(stderr,"[DEBUG]: Getting Report - Got LU\n");
+         if (VRPN_LIBERTYHS_DEBUG) fprintf(stderr,"[DEBUG]: Getting Report - Got LU\n");
          bufcount = 2;
          break;
        }
 
-       if (DEBUG) fprintf(stderr,"[DEBUGA] While syncing: Getting Report - Not LU, Got Character %c \n",buffer[sync_index]);
+       if (VRPN_LIBERTYHS_DEBUG) fprintf(stderr,"[DEBUGA] While syncing: Getting Report - Not LU, Got Character %c \n",buffer[sync_index]);
        sync_index++;
      
      }
@@ -533,7 +533,7 @@ int vrpn_Tracker_LibertyHS::get_report(void)
      }
 
      // Get sensor number
-     if (DEBUG) fprintf(stderr,"[DEBUG]: Awaiting Station - Got Station (%i) \n",buffer[sync_index + bufcount]);
+     if (VRPN_LIBERTYHS_DEBUG) fprintf(stderr,"[DEBUG]: Awaiting Station - Got Station (%i) \n",buffer[sync_index + bufcount]);
      d_sensor = buffer[sync_index + bufcount] - 1;	// Convert ASCII 1 to sensor 0 and so on.
      if ( (d_sensor < 0) || (d_sensor >= vrpn_LIBERTYHS_MAX_STATIONS) ) {
        sprintf(errmsg,"Bad sensor # (%d) in record, re-syncing", d_sensor + 1);
@@ -559,7 +559,7 @@ int vrpn_Tracker_LibertyHS::get_report(void)
      //--------------------------------------------------------------------
 
      if (read_len - sync_index < static_cast<vrpn_int32>(REPORT_LEN)) {
-       if (DEBUG) fprintf(stderr,"[DEBUG]: Don't have full report (%i of %i)\n",
+       if (VRPN_LIBERTYHS_DEBUG) fprintf(stderr,"[DEBUG]: Don't have full report (%i of %i)\n",
                           read_len - sync_index,REPORT_LEN);
        return 0;
      }
@@ -575,10 +575,10 @@ int vrpn_Tracker_LibertyHS::get_report(void)
      // first characters 'LU', the next character is the ASCII station
      // number, and the third character is either a space or a letter.
      //--------------------------------------------------------------------
-     if (DEBUG)	fprintf(stderr,"[DEBUG]: Got full report\n");
+     if (VRPN_LIBERTYHS_DEBUG)	fprintf(stderr,"[DEBUG]: Got full report\n");
 
      if ((buffer[sync_index] != 'L') || (buffer[sync_index + 1] != 'U')) {
-       if (DEBUGA)	fprintf(stderr,"[DEBUG]: Don't have 'LU' at beginning");
+       if (VRPN_LIBERTYHS_DEBUGA)	fprintf(stderr,"[DEBUG]: Don't have 'LU' at beginning");
        VRPN_MSG_INFO("Not 'LU' in record, re-syncing");
        status = vrpn_TRACKER_PARTIAL;
        sync_index++;
@@ -587,7 +587,7 @@ int vrpn_Tracker_LibertyHS::get_report(void)
 
      if (buffer[sync_index + bufcount - 1] != ' ') {
        VRPN_MSG_INFO("No space character at end of report, re-syncing\n");
-       if (DEBUGA) fprintf(stderr,"[DEBUG]: Don't have space at end of report, got (%c) sensor %i\n",
+       if (VRPN_LIBERTYHS_DEBUGA) fprintf(stderr,"[DEBUG]: Don't have space at end of report, got (%c) sensor %i\n",
                            buffer[sync_index + bufcount - 1], d_sensor);
        status = vrpn_TRACKER_PARTIAL;
        sync_index++;
@@ -598,7 +598,7 @@ int vrpn_Tracker_LibertyHS::get_report(void)
 
      if (buffer[sync_index + 4] != ' ') {
        // An error has been flagged
-       if (DEBUGA) fprintf(stderr,"[DEBUG]:Error Flag %i\n",buffer[sync_index + 4]);
+       if (VRPN_LIBERTYHS_DEBUGA) fprintf(stderr,"[DEBUG]:Error Flag %i\n",buffer[sync_index + 4]);
      }
 
      //--------------------------------------------------------------------
@@ -620,7 +620,7 @@ int vrpn_Tracker_LibertyHS::get_report(void)
 
      // When copying the positions, convert from inches to meters, since the
      // LibertyHS reports in inches and VRPN reports in meters.
-     float convFactor = METRIC_UNITS ? 1.0f : INCHES_TO_METERS;
+     float convFactor = VRPN_LIBERTYHS_METRIC_UNITS ? 1.0f : INCHES_TO_METERS;
      pos[0] = vrpn_unbuffer_from_little_endian<vrpn_float32>(bufptr) * convFactor;
      pos[1] = vrpn_unbuffer_from_little_endian<vrpn_float32>(bufptr) * convFactor;
      pos[2] = vrpn_unbuffer_from_little_endian<vrpn_float32>(bufptr) * convFactor;

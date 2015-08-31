@@ -982,10 +982,10 @@ vrpn_Tracker_USB::vrpn_Tracker_USB(const char *name, vrpn_Connection *c,
                                    vrpn_uint16 vendor, vrpn_uint16 product,
                                    long baud)
     : vrpn_Tracker(name, c)
+    , _device_handle(NULL)
     , _vendor(vendor)
     , _product(product)
     , _baudrate(baud)
-    , _device_handle(NULL)
 {
     // Register handlers
     register_server_handlers();
@@ -1334,20 +1334,13 @@ int vrpn_Tracker_Remote::request_workspace(void)
 
 int vrpn_Tracker_Remote::set_update_rate(vrpn_float64 samplesPerSecond)
 {
-    char *msgbuf;
-    vrpn_int32 len;
+    char msgbuf[sizeof(vrpn_float64)];
+    char *bufptr = msgbuf;
+    vrpn_int32 len = sizeof(vrpn_float64);
     struct timeval now;
 
-    len = sizeof(vrpn_float64);
-    msgbuf = new char[len];
-    if (!msgbuf) {
-        fprintf(stderr, "vrpn_Tracker_Remote::set_update_rate:  "
-                        "Out of memory!\n");
-        return -1;
-    }
-
-	vrpn_int32 buflen = len;
-	vrpn_buffer(&msgbuf, &buflen, samplesPerSecond);
+    vrpn_int32 buflen = len;
+    vrpn_buffer(&bufptr, &buflen, samplesPerSecond);
 
     vrpn_gettimeofday(&now, NULL);
     timestamp.tv_sec = now.tv_sec;

@@ -30,7 +30,7 @@ class VRPN_API vrpn_Connection;
 vrpn_Tracker_Dyna::vrpn_Tracker_Dyna(
 		      char *name, vrpn_Connection *c, int cSensors,
 		      const char *port, long baud ) :
-vrpn_Tracker_Serial(name,c,port,baud), cSensors(cSensors), cResets(0)
+vrpn_Tracker_Serial(name,c,port,baud), cResets(0), cSensors(cSensors)
 {
     if (cSensors>VRPN_DYNA_MAX_SENSORS) {
       fprintf(stderr, "\nvrpn_Tracker_Dyna: too many sensors requested ... only %d allowed (%d specified)", VRPN_DYNA_MAX_SENSORS, cSensors );
@@ -105,7 +105,7 @@ void vrpn_Tracker_Dyna::reset() {
   static const char T_PDYN_C_CTL_C[4] ="\003\003\003";
   static const int T_PDYN_RECORD_LENGTH = 8;
 
-  vrpn_write_characters(serial_fd, (unsigned char*)T_PDYN_C_CTL_C, strlen(T_PDYN_C_CTL_C));
+  vrpn_write_characters(serial_fd, (const unsigned char*)T_PDYN_C_CTL_C, strlen(T_PDYN_C_CTL_C));
   vrpn_write_characters(serial_fd,(const unsigned char *) "4", 1); // set to polling mode;
       
   /* pause 1 second to allow the Dynasight buffer to stabilize	*/
@@ -133,7 +133,7 @@ void vrpn_Tracker_Dyna::reset() {
    my_flush();
 
    /* set the Dynasight to continuous mode    */
-   vrpn_write_characters(serial_fd, (unsigned char*)T_PDYN_C_CTL_C, strlen(T_PDYN_C_CTL_C));
+   vrpn_write_characters(serial_fd, (const unsigned char*)T_PDYN_C_CTL_C, strlen(T_PDYN_C_CTL_C));
    //vrpn_write_characters(serial_fd, (const unsigned char *)"V", 1);
    vrpn_write_characters(serial_fd, (const unsigned char *)"0", 1);
    //T_PDYN_C_CONTINUOUS = "V"

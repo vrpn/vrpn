@@ -14,12 +14,9 @@
 #include "vrpn_Button.h"                // for vrpn_Button_Filter
 #include "vrpn_Configure.h"             // for VRPN_API
 
-class VRPN_API vrpn_Connection;
-
-
 class VRPN_API vrpn_Joylin :public vrpn_Analog, public vrpn_Button_Filter {
 public:
-  vrpn_Joylin(char * name, vrpn_Connection * c, char * portname);
+  vrpn_Joylin(const char * name, vrpn_Connection * c, const char * portname);
   ~vrpn_Joylin();
 
   void mainloop(void);
@@ -27,14 +24,14 @@ public:
 #ifdef VRPN_USE_JOYLIN
 protected:
   int init();
-#endif
 private:
   int namelen;
   int fd;
   int version;
   char *devname;
   char *device;
+#endif
 };
 
-
 #endif
+

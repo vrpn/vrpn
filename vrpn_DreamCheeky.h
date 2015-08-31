@@ -25,7 +25,8 @@
 
 class VRPN_API vrpn_DreamCheeky: public vrpn_BaseClass, protected vrpn_HidInterface {
 public:
-  vrpn_DreamCheeky(vrpn_HidAcceptor *filter, const char *name, vrpn_Connection *c = 0);
+  vrpn_DreamCheeky(vrpn_HidAcceptor *filter, const char *name, vrpn_Connection *c = 0,
+      vrpn_uint16 vendor = 0, vrpn_uint16 product = 0);
   virtual ~vrpn_DreamCheeky();
 
   virtual void mainloop() = 0;

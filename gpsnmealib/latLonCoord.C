@@ -3,7 +3,6 @@
 // Written by Jason Bevins in 1998.  File is in the public domain.
 //
 
-
 #include "gpsnmealib/typedCoord.h"      // for TypedCoord
 #include "latLonCoord.h"
 
@@ -127,64 +126,6 @@ const std::string& LatLonCoord::createCoordString(std::string& coordString) cons
   degreeToString (lonString, m_lon, HEMISPHERE_EW);
   coordString = latString + ", " + lonString;
   return coordString;
-}
-
-
-void LatLonCoord::createDisplayStrings (std::string& topLeftString,
-                                        std::string& topRightString, std::string& bottomLeftString,
-                                        std::string& bottomRightString) const
-  // Purpose:
-  //  This function creates four strings that can be used for display; these
-  //  strings contain coordinate data.  The four strings are for the top left,
-  //  top right, bottom left, and bottom right text of a display; each string
-  //  is specified as follows:
-  //  - top left:     North/south hemisphere character
-  //  - top right:    Latitude
-  //  - bottom left:  East/west hemisphere character
-  //  - bottom right: Longitude
-  // Notes:
-  //  It is up to the calling function to write these strings to the display.
-{
-  std::string coordString;
-  createCoordString (coordString);
-
-#if 0
-  // Extract the elements of the coordinate string.
-  switch (getLatLonFormat ()) {
-  case FORMAT_D:
-    topLeftString = coordString.Mid (LAT_D_HPPEMISPHERE_POS,
-                                     LAT_D_HPPEMISPHERE_LEN);
-    topRightString = coordString.Mid (LAT_D_DEGREE_POS,
-                                      LAT_D_DEGREE_LEN);
-    bottomLeftString = coordString.Mid (LON_D_HPPEMISPHERE_POS,
-                                        LON_D_HPPEMISPHERE_LEN);
-    bottomRightString = coordString.Mid (LON_D_DEGREE_POS,
-                                         LON_D_DEGREE_LEN);
-    break;
-  case FORMAT_DM:
-    topLeftString = coordString.Mid (LAT_DM_HPPEMISPHERE_POS,
-                                     LAT_DM_HPPEMISPHERE_LEN);
-    topRightString = coordString.Mid (LAT_DM_DEGREE_POS,
-                                      LAT_DM_DEGREE_LEN);
-    bottomLeftString = coordString.Mid (LON_DM_HPPEMISPHERE_POS,
-                                        LON_DM_HPPEMISPHERE_LEN);
-    bottomRightString = coordString.Mid (LON_DM_DEGREE_POS,
-                                         LON_DM_DEGREE_LEN);
-    break;
-  case FORMAT_DMS:
-    topLeftString = coordString.Mid (LAT_DMS_HPPEMISPHERE_POS,
-                                     LAT_DMS_HPPEMISPHERE_LEN);
-    topRightString = coordString.Mid (LAT_DMS_DEGREE_POS,
-                                      LAT_DMS_DEGREE_LEN);
-    bottomLeftString = coordString.Mid (LON_DMS_HPPEMISPHERE_POS,
-                                        LON_DMS_HPPEMISPHERE_LEN);
-    bottomRightString = coordString.Mid (LON_DMS_DEGREE_POS,
-                                         LON_DMS_DEGREE_LEN);
-    break;
-  default:
-    ASSERT (FALSE);
-  }
-#endif
 }
 
 

@@ -10,6 +10,7 @@
 #include <stdio.h>
 #include <fcntl.h>
 #include <stdlib.h>
+#include <math.h>
 #include "quat.h"
 
 #define DEGREES_PER_RADIAN (180 / acos(-1))

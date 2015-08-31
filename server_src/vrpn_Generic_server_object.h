@@ -18,7 +18,6 @@ class vrpn_Generic_Server_Object {
 public:
     vrpn_Generic_Server_Object(vrpn_Connection *connection_to_use,
                                const char *config_file_name = "vrpn.cfg",
-                               int port = vrpn_DEFAULT_LISTEN_PORT_NO,
                                bool be_verbose = false,
                                bool bail_on_open_error = false);
     ~vrpn_Generic_Server_Object();
@@ -93,6 +92,7 @@ protected:
     int setup_GlobalHapticsOrb(char *&pch, char *line, FILE * /*config_file*/);
     int setup_ADBox(char *&pch, char *line, FILE *config_file);
     int setup_VPJoystick(char *&pch, char *line, FILE *config_file);
+    int setup_Tracker_DeadReckoning_Rotation(char *&pch, char *line, FILE *config_file);
     int setup_DTrack(char *&pch, char *line, FILE *config_file);
     int setup_Poser_Analog(char *&pch, char *line, FILE *config_file);
     int setup_nikon_controls(char *&pch, char *line, FILE * /*config_file*/);
@@ -130,6 +130,7 @@ protected:
                                    FILE * /*config_file*/);
     int setup_Tracker_TrivisioColibri(char *&pch, char *line,
                                       FILE * /*config_file*/);
+    int setup_Tracker_Colibri (char * &pch, char * line, FILE * /*config_file*/);
     int setup_Tracker_GameTrak(char *pch, char *line, FILE *config_file);
     int setup_LUDL_USBMAC6000(char *&pch, char *line, FILE * /*config_file*/);
     int setup_Analog_5dtUSB_Glove5Left(char *&pch, char *line,
@@ -155,6 +156,7 @@ protected:
     int setup_Tracker_RazerHydra(char *&pch, char *line, FILE *config_file);
     int setup_YEI_3Space_Sensor(char *&pch, char *line, FILE *config_file);
     int setup_YEI_3Space_Sensor_Wireless(char *&pch, char *line, FILE *config_file);
+    int setup_Tracker_ThalmicLabsMyo(char * &pch, char *line, FILE * config_file);
     int setup_Tracker_OculusRift(char *&pch, char *line, FILE *config_file);
 
     template <typename T>

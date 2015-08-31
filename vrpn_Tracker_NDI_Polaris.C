@@ -178,8 +178,8 @@ void vrpn_Tracker_NDI_Polaris::send_report(void) // called from get_report()
 // WITHOUT CRC checksums
 
 void vrpn_Tracker_NDI_Polaris::sendCommand(const char* commandString ){
-	vrpn_write_characters(serialFd,(unsigned char* )commandString,strlen(commandString));
-	vrpn_write_characters(serialFd,(unsigned char* )"\r",1); //send the CR
+	vrpn_write_characters(serialFd,(const unsigned char* )commandString,strlen(commandString));
+	vrpn_write_characters(serialFd,(const unsigned char* )"\r",1); //send the CR
 	vrpn_flush_output_buffer(serialFd);
 }
 
@@ -221,9 +221,8 @@ int vrpn_Tracker_NDI_Polaris::readResponse(){
 //
 // RETURNS the number of bytes represented in the string (which is half the number of ASCII characters)
 // , or -1 on failure
-int vrpn_Tracker_NDI_Polaris::convertBinaryFileToAsciiEncodedHex(const char* filename, char *asciiEncodedHexStr) {
-	
-	
+int vrpn_Tracker_NDI_Polaris::convertBinaryFileToAsciiEncodedHex(const char* filename, char *asciiEncodedHexStr)
+{
 	FILE* fptr=fopen(filename,"rb");
 	if (fptr==NULL) {
 		fprintf(stderr,"vrpn_Tracker_NDI_Polaris: can't open NDI .rom file %s\n",filename);
@@ -238,6 +237,7 @@ int vrpn_Tracker_NDI_Polaris::convertBinaryFileToAsciiEncodedHex(const char* fil
 	if (fileSizeInBytes>MAX_NDI_ROM_FILE_SIZE_IN_BYTES) {
 		fprintf(stderr,"vrpn_Tracker_NDI_Polaris: file is %ld bytes long - which is larger than expected NDI ROM file size of %d bytes.\n",
 			fileSizeInBytes,MAX_NDI_ROM_FILE_SIZE_IN_BYTES);
+		fclose(fptr);
 		return (-1);
 	}
 	
@@ -248,12 +248,12 @@ int vrpn_Tracker_NDI_Polaris::convertBinaryFileToAsciiEncodedHex(const char* fil
 	size_t result = fread (rawBytesFromRomFile,1,fileSizeInBytes,fptr);
 	if (result != (unsigned int) fileSizeInBytes) {
 		fprintf(stderr,"vrpn_Tracker_NDI_Polaris: error while reading .rom file!\n");
+		delete rawBytesFromRomFile;
 		fclose(fptr);
 		return(-1);
 	}
 	fclose(fptr);
-	
-	
+
 	// init array with "_" for debugging
 	for (int i=0; i<MAX_NDI_ROM_FILE_SIZE_IN_BYTES; i++) {
 		asciiEncodedHexStr[i]='_';
@@ -279,7 +279,7 @@ int vrpn_Tracker_NDI_Polaris::convertBinaryFileToAsciiEncodedHex(const char* fil
 	asciiEncodedHexStr[byteIndex*2]='\0'; //end of string marker, which is used just for debugging
 	
 	//printf("DEBUG: >>%s<<\n",asciiEncodedHexStr);
-	delete (rawBytesFromRomFile);
+	delete rawBytesFromRomFile;
 	
 	return paddedFileSizeInBytes;
 }

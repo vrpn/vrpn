@@ -68,7 +68,7 @@ int main (int argc, char ** argv) {
   }
 
   retval = static_cast<int>(fwrite(magicbuf, 1, vrpn_cookie_size(), f_out));
-  if (retval != vrpn_cookie_size()) {
+  if (retval != static_cast<int>(vrpn_cookie_size())) {
     fprintf(stderr, "vrpn_Connection::close_log:  "
                     "Couldn't write magic cookie to log file "
                     "(got %d, expected %d).\n",

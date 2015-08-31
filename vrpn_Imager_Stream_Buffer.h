@@ -136,16 +136,14 @@ public:
     // read by the logging thread.
     bool time_to_exit(void)
     {
-        d_sem.p();
+        vrpn::SemaphoreGuard guard(d_sem);
         bool ret = d_time_to_exit;
-        d_sem.v();
         return ret;
     }
     void time_to_exit(bool do_exit)
     {
-        d_sem.p();
+        vrpn::SemaphoreGuard guard(d_sem);
         d_time_to_exit = do_exit;
-        d_sem.v();
     }
 
     // Accessors for the parameters stored based on the
@@ -157,7 +155,7 @@ public:
                                 vrpn_int32 &nDepth, vrpn_int32 &nChannels,
                                 const char **channelBuffer)
     {
-        d_sem.p();
+        vrpn::SemaphoreGuard guard(d_sem);
         bool ret = d_description_updated;
         if (d_description_updated) {
             nRows = d_nRows;
@@ -167,38 +165,35 @@ public:
             *channelBuffer = d_channel_buffer;
         }
         d_description_updated = false;
-        d_sem.v();
         return ret;
     }
     bool set_imager_description(vrpn_int32 nRows, vrpn_int32 nCols,
                                 vrpn_int32 nDepth, vrpn_int32 nChannels,
                                 const char *channelBuffer)
     {
-        d_sem.p();
+        vrpn::SemaphoreGuard guard(d_sem);
         d_nRows = nRows;
         d_nCols = nCols;
         d_nDepth = nDepth;
         d_nChannels = nChannels;
         d_channel_buffer = channelBuffer;
         d_description_updated = true;
-        d_sem.v();
         return true;
     }
 
     // Accessors for the initial thread to pass new logfile names down to the
     // logging thread, which will cause it to initiate a changeover of logging
     // connections.  Space for the return strings will be allocated in these
-    // functions
-    // and must be deleted by the logging thread ONLY IF the get function fills
-    // the
-    // values in (it returns true if it does).
+    // functions and must be deleted by the logging thread ONLY IF the get
+    // function fills the values in (it returns true if it does).
+    //
     // NOTE:  this is used to query BOTH the presence of new logfile names
     // AS WELL AS the names themselves.  this function will only return values
     // if new logfile names have been requested since the last time this
     // function was called.
     bool get_logfile_request(char **lil, char **lol, char **ril, char **rol)
     {
-        d_sem.p();
+        vrpn::SemaphoreGuard guard(d_sem);
         bool ret = d_new_log_request;
         if (d_new_log_request) {
             // Allocate space to return the names in the handles passed in.
@@ -227,14 +222,13 @@ public:
             d_request_rol = NULL;
         }
         d_new_log_request = false;
-        d_sem.v();
         return ret;
     }
 
     void set_logfile_request(const char *lil, const char *lol, const char *ril,
                              const char *rol)
     {
-        d_sem.p();
+        vrpn::SemaphoreGuard guard(d_sem);
 
         // delete file names, in case the logging thread hasn't had a chance to
         //  honor the request yet.
@@ -278,7 +272,6 @@ public:
         }
 
         d_new_log_request = true;
-        d_sem.v();
     }
 
     // Accessors for the logfile thread to pass new logfile names back up to the
@@ -293,7 +286,7 @@ public:
     // changed since the last time this function was called).
     bool get_logfile_result(char **lil, char **lol, char **ril, char **rol)
     {
-        d_sem.p();
+        vrpn::SemaphoreGuard guard(d_sem);
         bool ret = d_new_log_result;
         if (d_new_log_result) {
             // Allocate space to return the names in the handles passed in.
@@ -331,14 +324,13 @@ public:
             // someone may request the filenames later.
         }
         d_new_log_result = false;
-        d_sem.v();
         return ret;
     }
 
     void set_logfile_result(const char *lil, const char *lol, const char *ril,
                             const char *rol)
     {
-        d_sem.p();
+        vrpn::SemaphoreGuard guard(d_sem);
 
         if (d_result_lil) delete[] d_result_lil;
         d_result_lil = NULL;
@@ -372,7 +364,6 @@ public:
         }
 
         d_new_log_result = true;
-        d_sem.v();
     }
 
     // fills in the arguments with the logfile names currently in use
@@ -384,7 +375,7 @@ public:
     void get_logfile_names(char **local_in, char **local_out, char **remote_in,
                            char **remote_out)
     {
-        d_sem.p();
+        vrpn::SemaphoreGuard guard(d_sem);
         if (d_result_lil == NULL)
             *local_in = NULL;
         else {
@@ -409,28 +400,25 @@ public:
             *remote_out = new char[strlen(d_result_rol) + 1];
             strcpy(*remote_out, d_result_rol);
         }
-        d_sem.v();
     }
 
     // Accessors for the initial thread to pass new throttle values down to the
     // logging thread, which will cause it to throttle as needed.
     bool get_throttle_request(vrpn_int32 *throttle_count)
     {
-        d_sem.p();
+        vrpn::SemaphoreGuard guard(d_sem);
         bool ret = d_new_throttle_request;
         if (d_new_throttle_request) {
             *throttle_count = d_throttle_count;
         }
         d_new_throttle_request = false;
-        d_sem.v();
         return ret;
     }
     void set_throttle_request(vrpn_int32 throttle_count)
     {
-        d_sem.p();
+        vrpn::SemaphoreGuard guard(d_sem);
         d_throttle_count = throttle_count;
         d_new_throttle_request = true;
-        d_sem.v();
     }
 
     // Accessors for the logging thread to increment and read the number of
@@ -439,25 +427,22 @@ public:
     // increment/decrement routines return the new value.
     vrpn_int32 get_frames_in_queue(void)
     {
-        d_sem.p();
+        vrpn::SemaphoreGuard guard(d_sem);
         vrpn_int32 ret = d_frames_in_queue;
-        d_sem.v();
         return ret;
     }
     vrpn_int32 increment_frames_in_queue(void)
     {
-        d_sem.p();
+        vrpn::SemaphoreGuard guard(d_sem);
         d_frames_in_queue++;
         vrpn_int32 ret = d_frames_in_queue;
-        d_sem.v();
         return ret;
     }
     vrpn_int32 decrement_frames_in_queue(void)
     {
-        d_sem.p();
+        vrpn::SemaphoreGuard guard(d_sem);
         d_frames_in_queue--;
         vrpn_int32 ret = d_frames_in_queue;
-        d_sem.v();
         return ret;
     }
 
@@ -465,23 +450,20 @@ public:
     // and for the initial thread to retrieve and count them.
     vrpn_int32 get_logger_to_client_queue_size(void)
     {
-        d_sem.p();
+        vrpn::SemaphoreGuard guard(d_sem);
         vrpn_int32 ret = d_logger_to_client_messages.size();
-        d_sem.v();
         return ret;
     }
     bool insert_logger_to_client_message(const vrpn_HANDLERPARAM &p)
     {
-        d_sem.p();
+        vrpn::SemaphoreGuard guard(d_sem);
         bool ret = d_logger_to_client_messages.insert_back(p);
-        d_sem.v();
         return ret;
     }
     bool retrieve_logger_to_client_message(vrpn_HANDLERPARAM *p)
     {
-        d_sem.p();
+        vrpn::SemaphoreGuard guard(d_sem);
         bool ret = d_logger_to_client_messages.retrieve_front(p);
-        d_sem.v();
         return ret;
     }
 

@@ -53,7 +53,7 @@ protected:
   int fd;
 
   // maximal number of event structs read at once
-  int max_num_events;
+  unsigned long max_num_events;
 
   // container for the event structs read
   event_vector_t  event_data;

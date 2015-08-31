@@ -4,7 +4,26 @@
 
 set(HIDAPI_BACKEND_FOUND NO)
 # Local HIDAPI requirements
-if(WIN32)
+if(ANDROID)
+	find_package(Libusb1)
+
+	# Check to see if our submodule is new enough.
+	if(EXISTS "${VRPN_SOURCE_DIR}/submodules/hidapi/android/jni/Android.mk")
+		set(VRPN_HIDAPI_SOURCE_ROOT "${VRPN_SOURCE_DIR}/submodules/hidapi")
+	endif()
+
+	if(NOT LIBUSB1_FOUND)
+		message(STATUS "Android 'Local' HIDAPI: Requires Libusb1.0, not found")
+	elseif(NOT VRPN_HIDAPI_SOURCE_ROOT OR NOT EXISTS "${VRPN_HIDAPI_SOURCE_ROOT}")
+		message(STATUS "Android 'Local' HIDAPI: Requires a separate, recent HIDAPI source tree, none specified in VRPN_HIDAPI_SOURCE_ROOT")
+	elseif(NOT EXISTS "${VRPN_HIDAPI_SOURCE_ROOT}/android/jni/Android.mk")
+		message(STATUS "Android 'Local' HIDAPI: Requires a separate, recent HIDAPI source tree (with an android directory), but VRPN_HIDAPI_SOURCE_ROOT doesn't have that")
+	else()
+		set(HIDAPI_BACKEND_FOUND YES)
+		set(LOCAL_HIDAPI_SUBMODULE_RETRIEVED TRUE) # close enough - we have the source, though it's not necessarily a local submodule.
+	endif()
+
+elseif(WIN32)
 	set(HIDAPI_BACKEND_FOUND YES)
 
 elseif(APPLE)
@@ -37,7 +56,9 @@ endif()
 
 if(EXISTS "${VRPN_SOURCE_DIR}/submodules/hidapi/hidapi/hidapi.h")
 	set(LOCAL_HIDAPI_SUBMODULE_RETRIEVED TRUE)
-else()
+endif()
+
+if(NOT LOCAL_HIDAPI_SUBMODULE_RETRIEVED)
 	message(STATUS
 		"Local HIDAPI submodule not found. To download with Git, run git submodule update --init")
 endif()
@@ -48,9 +69,14 @@ option_requires(VRPN_USE_LOCAL_HIDAPI
 	HIDAPI_BACKEND_FOUND)
 
 if(VRPN_USE_LOCAL_HIDAPI)
-	set(HIDAPI_INCLUDE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/hidapi/hidapi")
-	set(HIDAPI_SOURCES
-		"${CMAKE_CURRENT_SOURCE_DIR}/hidapi/hidapi/hidapi.h")
+	if(ANDROID)
+		set(HIDAPI_SOURCE_DIR "${VRPN_HIDAPI_SOURCE_ROOT}")
+	else()
+		set(HIDAPI_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/hidapi")
+	endif()
+
+	set(HIDAPI_INCLUDE_DIRS "${HIDAPI_SOURCE_DIR}/hidapi")
+	set(HIDAPI_SOURCES "${HIDAPI_SOURCE_DIR}/hidapi/hidapi.h")
 	set(HIDAPI_FOUND TRUE)
 
 	set(VRPN_HIDAPI_USE_LINUXUDEV NO)
@@ -74,20 +100,20 @@ if(VRPN_USE_LOCAL_HIDAPI)
 	if(APPLE)
 		list(APPEND
 			HIDAPI_SOURCES
-			"${CMAKE_CURRENT_SOURCE_DIR}/hidapi/mac/hid.c")
+			"${HIDAPI_SOURCE_DIR}/mac/hid.c")
 		set(HIDAPI_LIBRARIES ${MACHID_LIBRARIES})
 
 	elseif(WIN32)
-		if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/hidapi/windows/hid.cpp)
+		if(EXISTS "${HIDAPI_SOURCE_DIR}/windows/hid.cpp")
 			# Old hidapi
 			list(APPEND
 				HIDAPI_SOURCES
 				"${PROJECT_SOURCE_DIR}/vrpn_Local_HIDAPI.C")
-		elseif(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/hidapi/windows/hid.c")
+		elseif(EXISTS "${HIDAPI_SOURCE_DIR}/windows/hid.c")
 			# New hidapi
 			list(APPEND
 				HIDAPI_SOURCES
-				"${CMAKE_CURRENT_SOURCE_DIR}/hidapi/windows/hid.c")
+				"${HIDAPI_SOURCE_DIR}/windows/hid.c")
 		else()
 			message(STATUS
 				"ERROR: Can't use local HIDAPI - can't find the source file!  Perhaps an unknown upstream version?")
@@ -96,16 +122,16 @@ if(VRPN_USE_LOCAL_HIDAPI)
 		set(HIDAPI_LIBRARIES setupapi)
 
 	elseif(VRPN_HIDAPI_USE_LIBUSB)
-		if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/hidapi/libusb/hid.c")
+		if(EXISTS "${HIDAPI_SOURCE_DIR}/libusb/hid.c")
 			# Newest version - FreeBSD-compatible libusb backend
 			list(APPEND
 				HIDAPI_SOURCES
-				"${CMAKE_CURRENT_SOURCE_DIR}/hidapi/libusb/hid.c")
-		elseif(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/hidapi/linux/hid-libusb.c")
+				"${HIDAPI_SOURCE_DIR}/libusb/hid.c")
+		elseif(EXISTS "${HIDAPI_SOURCE_DIR}/linux/hid-libusb.c")
 			# Earlier version - before FreeBSD support
 			list(APPEND
 				HIDAPI_SOURCES
-				"${CMAKE_CURRENT_SOURCE_DIR}/hidapi/linux/hid-libusb.c")
+				"${HIDAPI_SOURCE_DIR}/linux/hid-libusb.c")
 		else()
 			message(STATUS
 				"ERROR: Can't use local HIDAPI - can't find the source file!  Perhaps an unknown upstream version?")
@@ -117,7 +143,7 @@ if(VRPN_USE_LOCAL_HIDAPI)
 	elseif(VRPN_HIDAPI_USE_LINUXUDEV)
 		list(APPEND
 			HIDAPI_SOURCES
-			"${CMAKE_CURRENT_SOURCE_DIR}/hidapi/linux/hid.c")
+			"${HIDAPI_SOURCE_DIR}/linux/hid.c")
 		set(HIDAPI_LIBRARIES ${HIDAPI_LIBUDEV})
 		list(APPEND
 			HIDAPI_INCLUDE_DIRS
