@@ -109,13 +109,13 @@ void vrpn_Tracker_OSVRHackerDevKit::on_data_received(std::size_t bytes,
         typedef vrpn::FixedPoint<6,9> VelFixedPoint;
         q_vec_type angVel;
         angVel[0] =
-            VelFixedPoint(vrpn_unbuffer_from_little_endian<vrpn_uint16>(buffer))
+            VelFixedPoint(vrpn_unbuffer_from_little_endian<vrpn_int16>(buffer))
                 .get<vrpn_float64>();
         angVel[1] =
-            VelFixedPoint(vrpn_unbuffer_from_little_endian<vrpn_uint16>(buffer))
+            VelFixedPoint(vrpn_unbuffer_from_little_endian<vrpn_int16>(buffer))
                 .get<vrpn_float64>();
         angVel[2] =
-            VelFixedPoint(vrpn_unbuffer_from_little_endian<vrpn_uint16>(buffer))
+            VelFixedPoint(vrpn_unbuffer_from_little_endian<vrpn_int16>(buffer))
                 .get<vrpn_float64>();
         //fprintf(stderr, " %f, %f, %f\n", angVel[0], angVel[1], angVel[2]);
         //double r2 = q_vec_dot_product(angVel, angVel);
