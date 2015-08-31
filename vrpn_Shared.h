@@ -200,7 +200,7 @@ extern VRPN_API vrpn_float64 vrpn_ntohd(vrpn_float64 d);
 
 static const int vrpn_int_data_for_endian_test = 1;
 static const char *vrpn_char_data_for_endian_test =
-    (const char *)(const void *)(&vrpn_int_data_for_endian_test);
+    static_cast<const char*>(static_cast<const void *>((&vrpn_int_data_for_endian_test)));
 static const bool vrpn_big_endian = (vrpn_char_data_for_endian_test[0] != 1);
 
 // Read and write strings (not single items).
@@ -496,3 +496,4 @@ inline int vrpn_unbuffer(ByteT **input, T *lvalue)
 
 // Returns true if tests work and false if they do not.
 extern bool vrpn_test_pack_unpack(void);
+
