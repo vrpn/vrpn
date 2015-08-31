@@ -12,7 +12,7 @@
 #include "vrpn_Types.h"                 // for vrpn_float64
 
 #ifndef M_PI
-#define M_PI  (2*asin(0.0))
+#define M_PI  (2*acos(0.0))
 #endif
 
 #define PHANTOM_SERVER "Tracker0@localhost"
@@ -23,7 +23,7 @@
  *
  *****************************************************************************/
 
-void    VRPN_CALLBACK handle_force_change(void *userdata, const vrpn_FORCECB f)
+void    VRPN_CALLBACK handle_force_change(void *, const vrpn_FORCECB f)
 {
   static vrpn_FORCECB lr;        // last report
   static int first_report_done = 0;

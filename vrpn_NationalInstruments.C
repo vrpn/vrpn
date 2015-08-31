@@ -12,22 +12,22 @@
 
 vrpn_National_Instruments_Server::vrpn_National_Instruments_Server (const char* name, vrpn_Connection * c, 
                              const char *boardName,
-						     int numInChannels, int numOutChannels,
+                             int numInChannels, int numOutChannels,
                              double minInputReportDelaySecs,
                              bool inBipolar, int inputMode, int inputRange, bool driveAIS, int inputGain,
                              bool outBipolar, double minOutVoltage, double maxOutVoltage) :
         vrpn_Analog(name, c),
-		vrpn_Analog_Output(name, c),
+        vrpn_Analog_Output(name, c),
 #if defined(VRPN_USE_NATIONAL_INSTRUMENTS_MX)
-		d_analog_task_handle(0),
-		d_analog_out_task_handle(0),
+        d_analog_task_handle(0),
+        d_analog_out_task_handle(0),
 #else
-		d_device_number(-1),
+        d_device_number(-1),
 #endif
-		d_out_min_voltage(minOutVoltage),
-		d_out_max_voltage(maxOutVoltage),
+        d_in_gain(inputGain),
         d_in_min_delay(minInputReportDelaySecs),
-        d_in_gain(inputGain)
+        d_out_min_voltage(minOutVoltage),
+        d_out_max_voltage(maxOutVoltage)
 {
   // Set the polarity.  0 is bipolar, 1 is unipolar.
   if (inBipolar) {
@@ -197,6 +197,12 @@ vrpn_National_Instruments_Server::vrpn_National_Instruments_Server (const char* 
 
 #else
   fprintf(stderr,"vrpn_National_Instruments_Server: Support for NI not compiled in, edit vrpn_Configure.h and recompile VRPN\n");
+  // Handle parameters that are not used, avoiding compiler warnings.
+  const char *unused = boardName;
+  unused++;
+  inputMode = inputMode + 1;
+  inputRange = inputRange + 1;
+  driveAIS = !driveAIS;
 #endif
 
   // Check if we have a connection
@@ -522,9 +528,9 @@ vrpn_Analog_Output_Server_NI::vrpn_Analog_Output_Server_NI(const char* name, vrp
 						     double minVoltage, double maxVoltage) :
 	vrpn_Analog_Output(name, c),
 	NI_device_number(-1),
+	NI_num_channels(numChannels),
 	min_voltage(minVoltage),
-	max_voltage(maxVoltage),
-	NI_num_channels(numChannels)
+	max_voltage(maxVoltage)
 {
 #ifdef	VRPN_USE_NATIONAL_INSTRUMENTS
   short i;
@@ -587,6 +593,9 @@ vrpn_Analog_Output_Server_NI::vrpn_Analog_Output_Server_NI(const char* name, vrp
   }
 #else
   fprintf(stderr,"vrpn_Analog_Output_Server_NI: Support for NI not compiled in, edit vrpn_Configure.h and recompile\n");
+  const char *unused = boardName;
+  unused++;
+  bipolar = !bipolar;
 #endif
 }
 

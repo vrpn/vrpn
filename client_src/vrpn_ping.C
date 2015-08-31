@@ -26,7 +26,7 @@ struct timeval last_ping;
 
 void handle_cntl_c(int) { exit(0); }
 
-int VRPN_CALLBACK my_pong_handler(void *userdata, vrpn_HANDLERPARAM p)
+int VRPN_CALLBACK my_pong_handler(void *, vrpn_HANDLERPARAM)
 {
     static int count = 0;
     static double min = 10000, max = 0, sum = 0;
@@ -67,7 +67,7 @@ int VRPN_CALLBACK my_pong_handler(void *userdata, vrpn_HANDLERPARAM p)
     return 0;
 }
 
-int main(int argc, char *argv[])
+int main(int , char *argv[])
 {
     // Declare a new text receiver (all objects are text senders)
     // and find out what connection it is using.

@@ -34,6 +34,7 @@
 #include "vrpn_Text.h"                  // for vrpn_Text_Receiver, etc
 #include "vrpn_Tracker.h"               // for vrpn_Tracker_Remote, etc
 #include "vrpn_Types.h"                 // for vrpn_float64
+#include "vrpn_Tracker_Filter.h"        // for vrpn_Tracker_DeadReckoning_Rotation
 
 const char	*DIAL_NAME = "Dial0@localhost";
 const char	*TRACKER_NAME = "Tracker0@localhost";
@@ -355,7 +356,14 @@ int main (int argc, char * argv [])
 		return -1;
 	}
 
-	//---------------------------------------------------------------------
+    //---------------------------------------------------------------------
+    // test the packing and unpacking routines
+    if (!vrpn_test_pack_unpack()) {
+        fprintf(stderr, "vrpn_test_pack_unpack() failed!\n");
+        return -1;
+    }
+
+    //---------------------------------------------------------------------
 	// test the thread library
 	if (!vrpn_test_threads_and_semaphores()) {
 		fprintf(stderr, "vrpn_test_threads_and_semaphores() failed!\n");
@@ -364,7 +372,7 @@ int main (int argc, char * argv [])
 		printf("Thread code passes tests (not using for the following though)\n");
 	}
 
-	//---------------------------------------------------------------------
+    //---------------------------------------------------------------------
 	// explicitly open the connection
 	connection = vrpn_create_server_connection(CONNECTION_PORT);
 
@@ -379,8 +387,60 @@ int main (int argc, char * argv [])
         return -1;
     }
 
+    //---------------------------------------------------------------------
+    // This test must be done while the connection is connected, or else it
+    // will just drop the messages on the floor.
+    // Try defining a sender and type and packing a message into the connection.
+    // Try packing two messages that should not both fit to make sure that
+    // it properly purges the first one and can pack the second.
+    // Then try packing a message that is too large to fit and make sure it
+    // does not succeed.
 
-	//---------------------------------------------------------------------
+    // Set up the type and sender.
+    vrpn_int32 my_sender = connection->register_sender("test");
+    if (my_sender < 0) {
+        fprintf(stderr, "Could not register sender\n");
+        return -1;
+    }
+    vrpn_int32 my_type = connection->register_message_type("test");
+    if (my_type < 0) {
+        fprintf(stderr, "Could not register type\n");
+        return -1;
+    }
+
+    // Get the connection connected.  We use a bogus receiver type.
+    vrpn_Tracker_Remote test_remote("test@localhost");
+    do {
+        connection->mainloop();
+        test_remote.mainloop();
+    } while (!connection->connected());
+
+    // Try packing the smaller message.
+    char test_buffer[vrpn_CONNECTION_TCP_BUFLEN + 2];
+    struct timeval test_now;
+    vrpn_gettimeofday(&test_now, NULL);
+    if (0 != connection->pack_message(vrpn_CONNECTION_TCP_BUFLEN / 2, test_now, my_type,
+            my_sender, test_buffer, vrpn_CONNECTION_RELIABLE)) {
+        fprintf(stderr, "Could not pack initial half-sized buffer\n");
+        return -1;
+    }
+
+    // Try packing the second message that should fit by itself, but
+    // not along with the first message.
+    if (0 != connection->pack_message(vrpn_CONNECTION_TCP_BUFLEN / 2 + 2, test_now, my_type,
+        my_sender, test_buffer, vrpn_CONNECTION_RELIABLE)) {
+        fprintf(stderr, "Could not pack second half-sized++ buffer\n");
+        return -1;
+    }
+
+    // Try packing the message that should not fit.  It should not work.
+    if (0 == connection->pack_message(vrpn_CONNECTION_TCP_BUFLEN + 2, test_now, my_type,
+        my_sender, test_buffer, vrpn_CONNECTION_RELIABLE)) {
+        fprintf(stderr, "Could pack too-large message.\n");
+        return -1;
+    }
+
+    //---------------------------------------------------------------------
 	// Open the tracker server, using this connection, 2 sensors, update 1 times/sec
 	stkr = new vrpn_Tracker_NULL(TRACKER_NAME, connection, 2, 1.0);
 	printf("Tracker's name is %s.\n", TRACKER_NAME);
@@ -536,17 +596,26 @@ int main (int argc, char * argv [])
 	delete b1;
 	delete b2;
 
-        printf("Deleting servers and connection\n");
-        delete stkr;
-        delete sbtn;
-        delete sdial;
-        delete stext;
-        delete sana;
-        delete sanaout;
-        delete sposer;
-        connection->removeReference();
+    printf("Deleting servers and connection\n");
+    delete stkr;
+    delete sbtn;
+    delete sdial;
+    delete stext;
+    delete sana;
+    delete sanaout;
+    delete sposer;
+    connection->removeReference();
 
-        printf("Success!\n");
+    //---------------------------------------------------------------------
+    // test various system objects that have defined test methods.
+    if (vrpn_Tracker_DeadReckoning_Rotation::test() != 0) {
+        fprintf(stderr, "Test of vrpn_Tracker_DeadReckoning_Rotation failed!\n");
+        return -1;
+    } else {
+        printf("vrpn_Tracker_DeadReckoning_Rotation::test() passes\n");
+    }
+
+    printf("Success!\n");
 	return 0;
 
 }   /* main */

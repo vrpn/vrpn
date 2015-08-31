@@ -576,6 +576,7 @@ $(SOBJECT_DIR)/vrpn_Local_HIDAPI.o : vrpn_Local_HIDAPI.C $(SLIB_INCLUDES) $(MAKE
 
 # files to be compiled into the client library
 
+# Please keep sorted (case-sensitive)!
 LIB_FILES =  \
 	vrpn_Analog.C \
 	vrpn_Analog_Output.C \
@@ -584,6 +585,7 @@ LIB_FILES =  \
 	vrpn_Button.C \
 	vrpn_Connection.C \
 	vrpn_Dial.C \
+	vrpn_EndpointContainer.C \
 	vrpn_FileConnection.C \
 	vrpn_FileController.C \
 	vrpn_ForceDevice.C \
@@ -599,37 +601,43 @@ LIB_FILES =  \
 	vrpn_SharedObject.C \
 	vrpn_Sound.C \
 	vrpn_Text.C \
+	vrpn_Thread.C \
 	vrpn_Tracker.C
 
 LIB_OBJECTS = $(patsubst %,$(OBJECT_DIR)/%,$(LIB_FILES:.C=.o))
 
+# Please keep sorted (case-sensitive)!
 LIB_INCLUDES = \
-	vrpn_Connection.h \
-	vrpn_Tracker.h \
-	vrpn_Button.h \
-	vrpn_Sound.h \
-	vrpn_ForceDevice.h \
-	vrpn_Shared.h \
 	vrpn_Analog.h \
+	vrpn_Analog_Output.h \
+	vrpn_Auxiliary_Logger.h \
+	vrpn_BaseClass.h \
+	vrpn_BufferUtils.h \
+	vrpn_Button.h \
+	vrpn_Connection.h \
+	vrpn_Dial.h \
+	vrpn_EndpointContainer.h \
 	vrpn_FileConnection.h \
 	vrpn_FileController.h \
+	vrpn_ForceDevice.h \
 	vrpn_Forwarder.h \
-	vrpn_Text.h \
 	vrpn_ForwarderController.h \
-	vrpn_Serial.h \
-	vrpn_Dial.h \
-	vrpn_SharedObject.h \
-	vrpn_LamportClock.h \
-	vrpn_Mutex.h \
-	vrpn_BaseClass.h \
 	vrpn_Imager.h \
-	vrpn_Analog_Output.h \
-	vrpn_Poser.h \
-	vrpn_Auxiliary_Logger.h \
-	vrpn_MainloopObject.h \
+	vrpn_LamportClock.h \
 	vrpn_MainloopContainer.h \
-	vrpn_BufferUtils.h \
-	vrpn_SendTextMessageStreamProxy.h
+	vrpn_MainloopObject.h \
+	vrpn_Mutex.h \
+	vrpn_Poser.h \
+	vrpn_SendTextMessageStreamProxy.h \
+	vrpn_Serial.h \
+	vrpn_Shared.h \
+	vrpn_SharedObject.h \
+	vrpn_Sound.h \
+	vrpn_Text.h \
+	vrpn_Thread.h \
+	vrpn_Tracker.h \
+	vrpn_WindowsH.h \
+
 
 $(LIB_OBJECTS):
 $(OBJECT_DIR)/libvrpn.a: $(MAKEFILE) $(LIB_OBJECTS)
@@ -640,6 +648,7 @@ $(OBJECT_DIR)/libvrpn.a: $(MAKEFILE) $(LIB_OBJECTS)
 # If vrpn_sgibox isn't supposed to be compiled on any other architecture,
 # then put all of it inside "#ifdef sgi"!
 
+# Please keep sorted (case-sensitive)!
 SLIB_FILES =  $(LIB_FILES) \
 	vrpn_3DConnexion.C \
 	vrpn_3DMicroscribe.C \
@@ -653,13 +662,13 @@ SLIB_FILES =  $(LIB_FILES) \
 	vrpn_Atmel.C \
 	vrpn_BiosciencesTools.C \
 	vrpn_Button_NI_DIO24.C \
-	vrpn_CerealBox.C \
 	vrpn_CHProducts_Controller_Raw.C \
+	vrpn_CerealBox.C \
 	vrpn_Contour.C \
-	vrpn_Dyna.C \
 	vrpn_DreamCheeky.C \
-	vrpn_Event_Analog.C \
+	vrpn_Dyna.C \
 	vrpn_Event.C \
+	vrpn_Event_Analog.C \
 	vrpn_Event_Mouse.C \
 	vrpn_Flock.C \
 	vrpn_Flock_Parallel.C \
@@ -673,25 +682,21 @@ SLIB_FILES =  $(LIB_FILES) \
 	vrpn_IDEA.C \
 	vrpn_Imager_Stream_Buffer.C \
 	vrpn_ImmersionBox.C \
-	vrpn_inertiamouse.C \
 	vrpn_JoyFly.C \
 	vrpn_Joylin.C \
 	vrpn_Keyboard.C \
+	vrpn_LUDL.C \
 	vrpn_Local_HIDAPI.C \
 	vrpn_Logitech_Controller_Raw.C \
-	vrpn_LUDL.C \
 	vrpn_Magellan.C \
 	vrpn_Microsoft_Controller_Raw.C \
 	vrpn_Mouse.C \
 	vrpn_NationalInstruments.C \
-	vrpn_nikon_controls.C \
 	vrpn_OmegaTemperature.C \
 	vrpn_Poser_Analog.C \
 	vrpn_Poser_Tek4662.C \
-	vrpn_raw_sgibox.C \
 	vrpn_Retrolink.C \
 	vrpn_Saitek_Controller_Raw.C \
-	vrpn_sgibox.C \
 	vrpn_Spaceball.C \
 	vrpn_Tng3.C \
 	vrpn_Tracker_3DMouse.C \
@@ -701,34 +706,41 @@ SLIB_FILES =  $(LIB_FILES) \
 	vrpn_Tracker_DTrack.C \
 	vrpn_Tracker_Fastrak.C \
 	vrpn_Tracker_Filter.C \
+	vrpn_Tracker_GPS.C \
 	vrpn_Tracker_GameTrak.C \
-	vrpn_Tracker_isense.C \
 	vrpn_Tracker_Isotrak.C \
 	vrpn_Tracker_Liberty.C \
-	vrpn_Tracker_PDI.C \
+	vrpn_Tracker_LibertyHS.C \
 	vrpn_Tracker_MotionNode.C \
 	vrpn_Tracker_NDI_Polaris.C \
+	vrpn_Tracker_NovintFalcon.C \
 	vrpn_Tracker_OculusRift.C \
+	vrpn_Tracker_OSVRHackerDevKit.C \
+	vrpn_Tracker_PDI.C \
 	vrpn_Tracker_PhaseSpace.C \
 	vrpn_Tracker_RazerHydra.C \
+	vrpn_Tracker_SpacePoint.C \
 	vrpn_Tracker_TrivisioColibri.C \
 	vrpn_Tracker_ViewPoint.C \
-	vrpn_Tracker_NovintFalcon.C \
-	vrpn_Tracker_SpacePoint.C \
-	vrpn_Tracker_Wintracker.C \
 	vrpn_Tracker_WiimoteHead.C \
-	vrpn_Tracker_GPS.C \
+	vrpn_Tracker_Wintracker.C \
+	vrpn_Tracker_isense.C \
 	vrpn_UNC_Joystick.C \
 	vrpn_VPJoystick.C \
 	vrpn_Wanda.C \
 	vrpn_WiiMote.C \
 	vrpn_Xkeys.C \
-	vrpn_Tracker_LibertyHS.C \
 	vrpn_YEI_3Space.C \
-	vrpn_Zaber.C 
+	vrpn_Zaber.C \
+	vrpn_inertiamouse.C \
+	vrpn_nikon_controls.C \
+	vrpn_raw_sgibox.C \
+	vrpn_sgibox.C \
+
 
 SLIB_OBJECTS = $(patsubst %,$(SOBJECT_DIR)/%,$(SLIB_FILES:.C=.o))
 
+# Please keep sorted (case-sensitive)!
 SLIB_INCLUDES = $(LIB_INCLUDES) \
 	vrpn_3DConnexion.h \
 	vrpn_3DMicroscribe.h \
@@ -742,13 +754,13 @@ SLIB_INCLUDES = $(LIB_INCLUDES) \
 	vrpn_Atmel.h \
 	vrpn_BiosciencesTools.h \
 	vrpn_Button_NI_DIO24.h \
-	vrpn_CerealBox.h \
 	vrpn_CHProducts_Controller_Raw.h \
+	vrpn_CerealBox.h \
 	vrpn_Contour.h \
-	vrpn_Dyna.h \
 	vrpn_DreamCheeky.h \
-	vrpn_Event_Analog.h \
+	vrpn_Dyna.h \
 	vrpn_Event.h \
+	vrpn_Event_Analog.h \
 	vrpn_Event_Mouse.h \
 	vrpn_Flock.h \
 	vrpn_Flock_Parallel.h \
@@ -761,25 +773,21 @@ SLIB_INCLUDES = $(LIB_INCLUDES) \
 	vrpn_IDEA.h \
 	vrpn_Imager_Stream_Buffer.h \
 	vrpn_ImmersionBox.h \
-	vrpn_inertiamouse.h \
 	vrpn_JoyFly.h \
 	vrpn_Joylin.h \
 	vrpn_Keyboard.h \
-	vrpn_Logitech_Controller_Raw.h \
 	vrpn_LUDL.h \
+	vrpn_Logitech_Controller_Raw.h \
 	vrpn_Magellan.h \
 	vrpn_Microsoft_Controller_Raw.h \
 	vrpn_Mouse.h \
 	vrpn_NationalInstruments.h \
-	vrpn_nikon_controls.h \
-	vrpn_OneEuroFilter.h \
 	vrpn_OmegaTemperature.h \
+	vrpn_OneEuroFilter.h \
 	vrpn_Poser_Analog.h \
 	vrpn_Poser_Tek4662.h \
-	vrpn_raw_sgibox.h \
 	vrpn_Retrolink.h \
 	vrpn_Saitek_Controller_Raw.h \
-	vrpn_sgibox.h \
 	vrpn_Spaceball.h \
 	vrpn_Tng3.h \
 	vrpn_Tracker_3DMouse.h \
@@ -789,31 +797,36 @@ SLIB_INCLUDES = $(LIB_INCLUDES) \
 	vrpn_Tracker_DTrack.h \
 	vrpn_Tracker_Fastrak.h \
 	vrpn_Tracker_Filter.h \
+	vrpn_Tracker_GPS.h \
 	vrpn_Tracker_GameTrak.h \
-	vrpn_Tracker_isense.h \
 	vrpn_Tracker_Isotrak.h \
 	vrpn_Tracker_Liberty.h \
-	vrpn_Tracker_PDI.h \
+	vrpn_Tracker_LibertyHS.h \
 	vrpn_Tracker_MotionNode.h \
 	vrpn_Tracker_NDI_Polaris.h \
+	vrpn_Tracker_NovintFalcon.h \
 	vrpn_Tracker_OculusRift.h \
+	vrpn_Tracker_OSVRHackerDevKit.h \
+	vrpn_Tracker_PDI.h \
 	vrpn_Tracker_PhaseSpace.h \
 	vrpn_Tracker_RazerHydra.h \
 	vrpn_Tracker_SpacePoint.h \
-	vrpn_Tracker_Wintracker.h \
 	vrpn_Tracker_TrivisioColibri.h \
 	vrpn_Tracker_ViewPoint.h \
-	vrpn_Tracker_NovintFalcon.h \
 	vrpn_Tracker_WiimoteHead.h \
-	vrpn_Tracker_GPS.h \
+	vrpn_Tracker_Wintracker.h \
+	vrpn_Tracker_isense.h \
 	vrpn_UNC_Joystick.h \
 	vrpn_VPJoystick.h \
 	vrpn_Wanda.h \
 	vrpn_WiiMote.h \
 	vrpn_Xkeys.h \
-	vrpn_Tracker_LibertyHS.h \
 	vrpn_YEI_3Space.h \
-	vrpn_Zaber.h 
+	vrpn_Zaber.h \
+	vrpn_inertiamouse.h \
+	vrpn_nikon_controls.h \
+	vrpn_raw_sgibox.h \
+	vrpn_sgibox.h \
 
 ifeq ($(HW_OS), pc_linux64)
 	SLIB_FILES += vrpn_DevInput.C

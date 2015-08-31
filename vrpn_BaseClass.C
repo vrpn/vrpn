@@ -12,7 +12,11 @@
 /** Definition of the system TextPrinter object that prints messages for
     all created objects.
 */
-vrpn_TextPrinter vrpn_System_TextPrinter;
+static vrpn_TextPrinter vrpn_System_TextPrinter_instance;
+// SWIG does not like this statement
+#ifndef SWIG
+vrpn_TextPrinter &vrpn_System_TextPrinter = vrpn_System_TextPrinter_instance;
+#endif
 
 vrpn_TextPrinter::vrpn_TextPrinter()
     : d_first_watched_object(NULL)
@@ -25,13 +29,16 @@ vrpn_TextPrinter::vrpn_TextPrinter()
 /** Deletes any callbacks that are still registered. */
 vrpn_TextPrinter::~vrpn_TextPrinter()
 {
-    d_semaphore.p();
+    vrpn::SemaphoreGuard guard(d_semaphore);
 /* XXX No longer removes these.  We get into trouble with the
    system-defined vrpn_System_TextPrinter destructor because it
    may run after the vrpn_ConnectionManager destructor has run,
    which (if we have some undeleted objects) will leave objects
    that don't have a NULL connection pointer, but whose pointers
    point to already-deleted connections.  This causes a crash. */
+/* XXX Did the above change to making the vrpn_System_TextPrinter
+   static remove the race condition, so that it is safe to put
+   this back in? */
 #if 0
 
     vrpn_TextPrinter_Watch_Entry    *victim, *next;
@@ -52,7 +59,6 @@ vrpn_TextPrinter::~vrpn_TextPrinter()
 	victim = next;
     }
 #endif // XXX
-    d_semaphore.v();
 }
 
 /** Adds an object to the list of watched objects.  Returns 0 on success and
@@ -66,14 +72,13 @@ vrpn_TextPrinter::~vrpn_TextPrinter()
 */
 int vrpn_TextPrinter::add_object(vrpn_BaseClass *o)
 {
-    d_semaphore.p();
+    vrpn::SemaphoreGuard guard(d_semaphore);
     vrpn_TextPrinter_Watch_Entry *victim;
 
     // Make sure we have an actual object.
     if (o == NULL) {
         fprintf(stderr,
                 "vrpn_TextPrinter::add_object(): NULL pointer passed\n");
-        d_semaphore.v();
         return -1;
     }
 
@@ -88,7 +93,6 @@ int vrpn_TextPrinter::add_object(vrpn_BaseClass *o)
     while (victim != NULL) {
         if ((o->d_connection == victim->obj->d_connection) &&
             (strcmp(o->d_servicename, victim->obj->d_servicename) == 0)) {
-            d_semaphore.v();
             return 0;
         }
         victim = victim->next;
@@ -97,7 +101,6 @@ int vrpn_TextPrinter::add_object(vrpn_BaseClass *o)
     // Add the object to the beginning of the list.
     if ((victim = new vrpn_TextPrinter_Watch_Entry) == NULL) {
         fprintf(stderr, "vrpn_TextPrinter::add_object(): out of memory\n");
-        d_semaphore.v();
         return -1;
     }
     victim->obj = o;
@@ -113,25 +116,20 @@ int vrpn_TextPrinter::add_object(vrpn_BaseClass *o)
                 "vrpn_TextPrinter::add_object(): Can't register callback\n");
         d_first_watched_object = victim->next;
         delete victim;
-        d_semaphore.v();
         return -1;
     }
 
-    d_semaphore.v();
     return 0;
 }
 
 /** Removes an object from the list of watched objects.  Returns 0 on success
-   and
-    -1 on failure.  Unregistering a non-watched object has no effect, nor is it
-   an error.  Objects
-    are considered to be the same if they share the same connection and they
-   have
-    the same service name.
+   and -1 on failure.  Unregistering a non-watched object has no effect, nor is
+   it an error.  Objects are considered to be the same if they share the same
+   connection and they have the same service name.
 */
 void vrpn_TextPrinter::remove_object(vrpn_BaseClass *o)
 {
-    d_semaphore.p();
+    vrpn::SemaphoreGuard guard(d_semaphore);
     vrpn_TextPrinter_Watch_Entry *victim, **snitch;
 
 #ifdef VERBOSE
@@ -142,7 +140,6 @@ void vrpn_TextPrinter::remove_object(vrpn_BaseClass *o)
     if (o == NULL) {
         fprintf(stderr,
                 "vrpn_TextPrinter::remove_object(): NULL pointer passed\n");
-        d_semaphore.v();
         return;
     }
 
@@ -180,12 +177,10 @@ void vrpn_TextPrinter::remove_object(vrpn_BaseClass *o)
         delete victim;
 
         // We're done.
-        d_semaphore.v();
         return;
     }
 
     // Object not in the list, so we're done.
-    d_semaphore.v();
     return;
 }
 
@@ -205,8 +200,7 @@ int vrpn_TextPrinter::text_message_handler(void *userdata, vrpn_HANDLERPARAM p)
     vrpn_TEXT_SEVERITY severity;
     vrpn_uint32 level;
     char message[vrpn_MAX_TEXT_LEN];
-
-    me->d_semaphore.p();
+    vrpn::SemaphoreGuard guard(me->d_semaphore);
 
 #ifdef VERBOSE
     printf("vrpn_TextPrinter: text handler called\n");
@@ -223,7 +217,6 @@ int vrpn_TextPrinter::text_message_handler(void *userdata, vrpn_HANDLERPARAM p)
         fprintf(
             stderr,
             "vrpn_TextPrinter::text_message_handler(): Can't decode message\n");
-        me->d_semaphore.v();
         return -1;
     }
 
@@ -257,8 +250,6 @@ int vrpn_TextPrinter::text_message_handler(void *userdata, vrpn_HANDLERPARAM p)
         fprintf(me->d_ostream, " (%d) from %s: %s\n", level,
                 obj->d_connection->sender_name(p.sender), message);
     }
-
-    me->d_semaphore.v();
     return 0;
 }
 
@@ -267,19 +258,17 @@ int vrpn_TextPrinter::text_message_handler(void *userdata, vrpn_HANDLERPARAM p)
 void vrpn_TextPrinter::set_min_level_to_print(vrpn_TEXT_SEVERITY severity,
                                               vrpn_uint32 level)
 {
-    d_semaphore.p();
+    vrpn::SemaphoreGuard guard(d_semaphore);
     d_severity_to_print = severity;
     d_level_to_print = level;
-    d_semaphore.v();
 }
 
 /// Change the ostream that will be used to print messages.  Setting a
 /// NULL ostream results in no printing.
 void vrpn_TextPrinter::set_ostream_to_use(FILE *o)
 {
-    d_semaphore.p();
+    vrpn::SemaphoreGuard guard(d_semaphore);
     d_ostream = o;
-    d_semaphore.v();
 }
 
 /** Assigns the connection passed in to the object, or else tries to
@@ -289,24 +278,17 @@ void vrpn_TextPrinter::set_ostream_to_use(FILE *o)
     the "@" sign in the name.
 
     vrpn_BaseClassUnique is a virtual base class so it will only be called once,
-   while
-    vrpn_BaseClass may be called multiple times.
-    Setting d_connection and d_servicename, only needs to be done once
-    for each object (even if it inherits from multiple device classes).  So
-   these
-    things should technically go into the vrpn_BaseClassUnique constructor,
-   except that
-    it is unable to accept parameters.  If the vrpn_BaseClassUnique constructor
-    *did* take the service-name, connnection, and use-ref-count parameters
-    then every derived class (not just those at the top level) would have to
-   make
-    an explicit call to the vrpn_BaseClassUnique constructor.  As it stands,
-   these
-    derived classes will instead use the 0-parameter version of the
-   vrpn_BaseClassUnique
-    constructor implicitly.
-    As a result, this constructor must make sure that it only executes the code
-   therein once.
+   while vrpn_BaseClass may be called multiple times. Setting d_connection and
+   d_servicename, only needs to be done once for each object (even if it
+   inherits from multiple device classes).  So these things should technically
+   go into the vrpn_BaseClassUnique constructor, except that it is unable to
+   accept parameters.  If the vrpn_BaseClassUnique constructor *did* take the
+   service-name, connnection, and use-ref-count parameters then every derived
+   class (not just those at the top level) would have to make an explicit call
+   to the vrpn_BaseClassUnique constructor.  As it stands, these derived classes
+   will instead use the 0-parameter version of the vrpn_BaseClassUnique
+   constructor implicitly. As a result, this constructor must make sure that it
+   only executes the code therein once.
 */
 
 vrpn_BaseClass::vrpn_BaseClass(const char *name, vrpn_Connection *c)
@@ -318,18 +300,15 @@ vrpn_BaseClass::vrpn_BaseClass(const char *name, vrpn_Connection *c)
 
     if (firstTimeCalled) {
         // Get the connection for this object established. If the user passed in
-        // a
-        // NULL connection object, then we determine the connection from the
-        // name of
-        // the object itself (for example, Tracker0@mumble.cs.unc.edu will make
-        // a
-        // connection to the machine mumble on the standard VRPN port).
+        // a NULL connection object, then we determine the connection from the
+        // name of the object itself (for example, Tracker0@mumble.cs.unc.edu
+        // will make a connection to the machine mumble on the standard VRPN
+        // port).
         //
         // The vrpn_BaseClassUnique destructor handles telling the connection we
         // are no longer referring to it.  Since we only add the reference once
         // here (when d_connection is NULL), it is okay for the unique
-        // destructor
-        // to remove the reference.
+        // destructor to remove the reference.
         if (c) { // using existing connection.
             d_connection = c;
             d_connection->addReference();

@@ -30,6 +30,11 @@ static const vrpn_uint16 vrpn_OSVR_HACKER_DEV_KIT_HMD = 0x0b00;
 static const vrpn_uint16 vrpn_OSVR_ALT_VENDOR = 0x03EB;
 static const vrpn_uint16 vrpn_OSVR_ALT_HACKER_DEV_KIT_HMD = 0x2421;
 
+// NOTE: Cannot use the vendor-and-product parameters in the
+// vrpn_HidInterface because there are one of two possible
+// vendor/product pairs.  The Acceptor will still correctly
+// work, it will just do more work during the enumeration phase
+// because it will have to check all devices in the system.
 vrpn_Tracker_OSVRHackerDevKit::vrpn_Tracker_OSVRHackerDevKit(const char *name,
                                                              vrpn_Connection *c)
     : vrpn_Tracker(name, c)
@@ -52,16 +57,17 @@ vrpn_Tracker_OSVRHackerDevKit::vrpn_Tracker_OSVRHackerDevKit(const char *name,
 
 vrpn_Tracker_OSVRHackerDevKit::~vrpn_Tracker_OSVRHackerDevKit()
 {
-    delete _acceptor;
+    delete m_acceptor;
 }
 
 void vrpn_Tracker_OSVRHackerDevKit::on_data_received(std::size_t bytes,
                                                      vrpn_uint8 *buffer)
 {
-    if (bytes != 32) {
+    if (bytes != 32 && bytes != 16) {
         send_text_message(vrpn_TEXT_WARNING)
             << "Received a report " << bytes
-            << " in length, but expected it to be 32 bytes. Discarding.";
+            << " in length, but expected it to be 32 or 16 bytes. Discarding. "
+               "(May indicate issues with HID!)";
         return;
     }
 
@@ -107,7 +113,13 @@ void vrpn_Tracker_OSVRHackerDevKit::mainloop()
     }
     _wasConnected = connected();
 
+    if (!_wasConnected) {
+        m_acceptor->reset();
+        reconnect();
+    }
+
     server_mainloop();
 }
 
 #endif
+

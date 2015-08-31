@@ -35,11 +35,12 @@ static const vrpn_uint16 vrpn_3DCONNEXION_SPACEBALL5000 = 0xc621;   // 50721;
 static const vrpn_uint16 vrpn_3DCONNEXION_SPACEPILOT =  0xc625;
 
 vrpn_3DConnexion::vrpn_3DConnexion(vrpn_HidAcceptor *filter, unsigned num_buttons,
-                                   const char *name, vrpn_Connection *c)
+                                   const char *name, vrpn_Connection *c,
+                                   vrpn_uint16 vendor, vrpn_uint16 product)
   : vrpn_Button_Filter(name, c)
   , vrpn_Analog(name, c)
 #if defined(VRPN_USE_HID)
-  , vrpn_HidInterface(filter)
+  , vrpn_HidInterface(filter, vendor, product)
 #endif
   , _filter(filter)
 {
@@ -311,46 +312,46 @@ void vrpn_3DConnexion::decodePacket(size_t bytes, vrpn_uint8 *buffer)
 #endif
 
 vrpn_3DConnexion_Navigator::vrpn_3DConnexion_Navigator(const char *name, vrpn_Connection *c)
-  : vrpn_3DConnexion(_filter = new vrpn_HidProductAcceptor(vrpn_3DCONNEXION_VENDOR, vrpn_3DCONNEXION_NAVIGATOR), 2, name, c)
+    : vrpn_3DConnexion(_filter = new vrpn_HidProductAcceptor(vrpn_3DCONNEXION_VENDOR, vrpn_3DCONNEXION_NAVIGATOR), 2, name, c, vrpn_3DCONNEXION_VENDOR, vrpn_3DCONNEXION_NAVIGATOR)
 {
 }
 
 vrpn_3DConnexion_Navigator_for_Notebooks::vrpn_3DConnexion_Navigator_for_Notebooks(const char *name, vrpn_Connection *c)
-  : vrpn_3DConnexion(_filter = new vrpn_HidProductAcceptor(vrpn_3DCONNEXION_VENDOR, vrpn_3DCONNEXION_NAVIGATOR_FOR_NOTEBOOKS), 2, name, c)
+    : vrpn_3DConnexion(_filter = new vrpn_HidProductAcceptor(vrpn_3DCONNEXION_VENDOR, vrpn_3DCONNEXION_NAVIGATOR_FOR_NOTEBOOKS), 2, name, c, vrpn_3DCONNEXION_VENDOR, vrpn_3DCONNEXION_NAVIGATOR_FOR_NOTEBOOKS)
 {
 }
 
 vrpn_3DConnexion_Traveler::vrpn_3DConnexion_Traveler(const char *name, vrpn_Connection *c)
-  : vrpn_3DConnexion(_filter = new vrpn_HidProductAcceptor(vrpn_3DCONNEXION_VENDOR, vrpn_3DCONNEXION_TRAVELER), 8, name, c)
+    : vrpn_3DConnexion(_filter = new vrpn_HidProductAcceptor(vrpn_3DCONNEXION_VENDOR, vrpn_3DCONNEXION_TRAVELER), 8, name, c, vrpn_3DCONNEXION_VENDOR, vrpn_3DCONNEXION_TRAVELER)
 {
 }
 
 vrpn_3DConnexion_SpaceMouse::vrpn_3DConnexion_SpaceMouse(const char *name, vrpn_Connection *c)
-  : vrpn_3DConnexion(_filter = new vrpn_HidProductAcceptor(vrpn_3DCONNEXION_VENDOR, vrpn_3DCONNEXION_SPACEMOUSE), 11, name, c)
+    : vrpn_3DConnexion(_filter = new vrpn_HidProductAcceptor(vrpn_3DCONNEXION_VENDOR, vrpn_3DCONNEXION_SPACEMOUSE), 11, name, c, vrpn_3DCONNEXION_VENDOR, vrpn_3DCONNEXION_SPACEMOUSE)
 {
 }
 
 vrpn_3DConnexion_SpaceMousePro::vrpn_3DConnexion_SpaceMousePro(const char *name, vrpn_Connection *c)
-: vrpn_3DConnexion(_filter = new vrpn_HidProductAcceptor(vrpn_3DCONNEXION_VENDOR, vrpn_3DCONNEXION_SPACEMOUSEPRO), 27, name, c)
+    : vrpn_3DConnexion(_filter = new vrpn_HidProductAcceptor(vrpn_3DCONNEXION_VENDOR, vrpn_3DCONNEXION_SPACEMOUSEPRO), 27, name, c, vrpn_3DCONNEXION_VENDOR, vrpn_3DCONNEXION_SPACEMOUSEPRO)
 {	// 15 physical buttons are numbered: 0-2, 4-5, 8, 12-15, 22-26
 }
 
 vrpn_3DConnexion_SpaceMouseWireless::vrpn_3DConnexion_SpaceMouseWireless(const char *name, vrpn_Connection *c)
-	: vrpn_3DConnexion(_filter = new vrpn_HidProductAcceptor(vrpn_SPACEMOUSEWIRELESS_VENDOR, vrpn_3DCONNEXION_SPACEMOUSEWIRELESS), 2, name, c)
+    : vrpn_3DConnexion(_filter = new vrpn_HidProductAcceptor(vrpn_SPACEMOUSEWIRELESS_VENDOR, vrpn_3DCONNEXION_SPACEMOUSEWIRELESS), 2, name, c, vrpn_SPACEMOUSEWIRELESS_VENDOR, vrpn_3DCONNEXION_SPACEMOUSEWIRELESS)
 {
 }
 
 vrpn_3DConnexion_SpaceExplorer::vrpn_3DConnexion_SpaceExplorer(const char *name, vrpn_Connection *c)
-  : vrpn_3DConnexion(_filter = new vrpn_HidProductAcceptor(vrpn_3DCONNEXION_VENDOR, vrpn_3DCONNEXION_SPACEEXPLORER), 15, name, c)
+    : vrpn_3DConnexion(_filter = new vrpn_HidProductAcceptor(vrpn_3DCONNEXION_VENDOR, vrpn_3DCONNEXION_SPACEEXPLORER), 15, name, c, vrpn_3DCONNEXION_VENDOR, vrpn_3DCONNEXION_SPACEEXPLORER)
 {
 }
 
 vrpn_3DConnexion_SpaceBall5000::vrpn_3DConnexion_SpaceBall5000(const char *name, vrpn_Connection *c)
-  : vrpn_3DConnexion(_filter = new vrpn_HidProductAcceptor(vrpn_3DCONNEXION_VENDOR, vrpn_3DCONNEXION_SPACEBALL5000), 12, name, c)
+    : vrpn_3DConnexion(_filter = new vrpn_HidProductAcceptor(vrpn_3DCONNEXION_VENDOR, vrpn_3DCONNEXION_SPACEBALL5000), 12, name, c, vrpn_3DCONNEXION_VENDOR, vrpn_3DCONNEXION_SPACEBALL5000)
 {
 }
 
 vrpn_3DConnexion_SpacePilot::vrpn_3DConnexion_SpacePilot(const char *name, vrpn_Connection *c)
-  : vrpn_3DConnexion(_filter = new vrpn_HidProductAcceptor(vrpn_3DCONNEXION_VENDOR, vrpn_3DCONNEXION_SPACEPILOT), 21, name, c)
+    : vrpn_3DConnexion(_filter = new vrpn_HidProductAcceptor(vrpn_3DCONNEXION_VENDOR, vrpn_3DCONNEXION_SPACEPILOT), 21, name, c, vrpn_3DCONNEXION_VENDOR, vrpn_3DCONNEXION_SPACEPILOT)
 {
 }

@@ -4,7 +4,8 @@
 #endif
 #include <string.h> // for strncpy
 
-#if defined(linux) && !defined(VRPN_CLIENT_ONLY)
+#if defined(linux) && !defined(VRPN_CLIENT_ONLY) && !defined(__ANDROID__)
+#define VRPN_USE_LINUX_PARALLEL_SUPPORT
 #include <linux/lp.h>  // for LPGETSTATUS
 #include <sys/ioctl.h> // for ioctl
 #endif
@@ -110,7 +111,7 @@ int vrpn_Button::register_types(void)
     states_message_id =
         d_connection->register_message_type("vrpn_Button States");
 
-    // to handle button state changes -- see Buton_Filter should register a
+    // to handle button state changes -- see Button_Filter should register a
     // handler
     // for this ID -- ideally the message will be ignored otherwise
     admin_message_id = d_connection->register_message_type("vrpn_Button Admin");
@@ -541,7 +542,7 @@ vrpn_Button_Parallel::vrpn_Button_Parallel(const char *name, vrpn_Connection *c,
                                            int portno, unsigned porthex)
     : vrpn_Button_Filter(name, c)
 {
-#ifdef linux
+#if defined(VRPN_USE_LINUX_PARALLEL_SUPPORT)
     const char *portname;
     switch (portno) {
     case 1:
@@ -572,7 +573,7 @@ vrpn_Button_Parallel::vrpn_Button_Parallel(const char *name, vrpn_Connection *c,
         status = BUTTON_FAIL;
         return;
     }
-#elif _WIN32
+#elif defined(_WIN32)
     // if on NT we need a device driver to do direct reads
     // from the parallel port
     if (!openGiveIO()) {
@@ -604,14 +605,15 @@ vrpn_Button_Parallel::vrpn_Button_Parallel(const char *name, vrpn_Connection *c,
         }
     }
     fprintf(stderr, "vrpn_Button_Parallel: Using port %x\n", port);
-#else // _WIN32
+#else // not linux or _WIN32
     fprintf(stderr, "vrpn_Button_Parallel: not supported on this platform\n?");
     status = BUTTON_FAIL;
-    portno = portno; // unused argument
+    portno = portno + 1; // unused argument if we don't do something with it
+    porthex = porthex + 1; // unused argument if we don't do something with it
     return;
 #endif
 
-#if defined(linux) || defined(_WIN32)
+#if defined(VRPN_USE_LINUX_PARALLEL_SUPPORT) || defined(_WIN32)
 // Set the INIT line on the device to provide power to the python
 //  update: don't need this for builtin LPT1 on DELLs, but do need it
 //    for warp9 PCI parallel port. Added next lines.  BCE Nov07.00
@@ -640,7 +642,7 @@ vrpn_Button_Parallel::vrpn_Button_Parallel(const char *name, vrpn_Connection *c,
 
 vrpn_Button_Parallel::~vrpn_Button_Parallel()
 {
-#ifdef linux
+#ifdef VRPN_USE_LINUX_PARALLEL_SUPPORT
     if (port >= 0) {
         close(port);
     }
@@ -696,34 +698,34 @@ void vrpn_Button_Python::read(void)
     }
 
 // Read from the status register, read 3 times to debounce noise.
-#ifdef linux
+#if defined(VRPN_USE_LINUX_PARALLEL_SUPPORT)
     for (i = 0; i < debounce_count; i++)
         if (ioctl(port, LPGETSTATUS, &status_register[i]) == -1) {
             perror("vrpn_Button_Python::read(): ioctl() failed");
             return;
         }
 
-#elif _WIN32
+#elif defined(_WIN32)
 #ifndef __CYGWIN__
     const unsigned short STATUS_REGISTER_OFFSET = 1;
     for (i = 0; i < debounce_count; i++) {
 #ifdef _inp
         status_register[i] =
             _inp((unsigned short)(port + STATUS_REGISTER_OFFSET));
-#else
+#else // !_inp
         status_register[i] = 0;
-#endif
+#endif // _inp
     }
-#else
+#else // __CYGWIN__
     for (i = 0; i < debounce_count; i++) {
         status_register[i] = 0;
     }
-#endif
-#else
+#endif // __CYGWIN
+#else // not _WIN32 or VRPN_USE_LINUX_PARALLEL_SUPPORT
     for (i = 0; i < debounce_count; i++) {
         status_register[i] = 0;
     }
-#endif
+#endif // _WIN32, VRPN_USE_LINUX_PARALLEL_SUPPORT
     for (i = 0; i < debounce_count; i++) {
         status_register[i] = status_register[i] & BIT_MASK;
     }
@@ -903,7 +905,7 @@ void vrpn_Button_PinchGlove::report_no_timestamp()
     // read until correct reply is received
     do {
         vrpn_flush_input_buffer(serial_fd);
-        vrpn_write_characters(serial_fd, (unsigned char *)"T0", 2);
+        vrpn_write_characters(serial_fd, (const unsigned char *)"T0", 2);
         vrpn_drain_output_buffer(serial_fd);
         timeout_to_pass.tv_sec = timeout.tv_sec;
         timeout_to_pass.tv_usec = timeout.tv_usec;

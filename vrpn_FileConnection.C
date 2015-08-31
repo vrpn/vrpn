@@ -82,13 +82,13 @@ vrpn_File_Connection::vrpn_File_Connection(const char *station_name,
 
     // Because we are a file connection, our status should be CONNECTED
     // Later set this to BROKEN if there is a problem opening/reading the file.
-    if (d_endpoints[0] == NULL) {
+    if (!d_endpoints.is_valid(0)) {
         fprintf(stderr, "vrpn_File_Connection::vrpn_File_Connection(): NULL "
                         "zeroeth endpoint\n");
     }
     else {
         connectionStatus = CONNECTED;
-        d_endpoints[0]->status = CONNECTED;
+        d_endpoints.front()->status = CONNECTED;
     }
 
     // If we are preloading, then we must accumulate messages.
@@ -218,7 +218,7 @@ vrpn_File_Connection::~vrpn_File_Connection(void)
     while (d_logHead) {
         np = d_logHead->next;
         if (d_logHead->data.buffer) {
-            delete[](char *)d_logHead -> data.buffer;
+            delete[]d_logHead -> data.buffer;
         }
         delete d_logHead;
         d_logHead = np;
@@ -652,7 +652,7 @@ int vrpn_File_Connection::playone()
 //    1 if we hit end_filetime
 int vrpn_File_Connection::playone_to_filetime(timeval end_filetime)
 {
-    vrpn_Endpoint *endpoint = d_endpoints[0];
+    vrpn_Endpoint *endpoint = d_endpoints.front();
     timeval now;
     int retval;
 
@@ -850,7 +850,7 @@ vrpn_File_Connection::vrpn_FileBookmark::~vrpn_FileBookmark()
 {
     if (oldCurrentLogEntryCopy == NULL) return;
     if (oldCurrentLogEntryCopy->data.buffer != NULL)
-        delete[](char *)(oldCurrentLogEntryCopy->data.buffer);
+        delete[](oldCurrentLogEntryCopy->data.buffer);
     delete oldCurrentLogEntryCopy;
 }
 
@@ -876,8 +876,7 @@ bool vrpn_File_Connection::store_stream_bookmark()
         {
             if (d_bookmark.oldCurrentLogEntryCopy != NULL) {
                 if (d_bookmark.oldCurrentLogEntryCopy->data.buffer != NULL)
-                    delete[](
-                        char *)(d_bookmark.oldCurrentLogEntryCopy->data.buffer);
+                    delete[](d_bookmark.oldCurrentLogEntryCopy->data.buffer);
                 delete d_bookmark.oldCurrentLogEntryCopy;
             }
             d_bookmark.oldCurrentLogEntryCopy = NULL;
@@ -907,7 +906,7 @@ bool vrpn_File_Connection::store_stream_bookmark()
             d_bookmark.oldCurrentLogEntryCopy->data.payload_len =
                 d_currentLogEntry->data.payload_len;
             if (d_bookmark.oldCurrentLogEntryCopy->data.buffer != NULL) {
-                delete[](char *)d_bookmark.oldCurrentLogEntryCopy->data.buffer;
+                delete[]d_bookmark.oldCurrentLogEntryCopy->data.buffer;
             }
             d_bookmark.oldCurrentLogEntryCopy->data.buffer =
                 new char[d_currentLogEntry->data.payload_len];
@@ -915,7 +914,7 @@ bool vrpn_File_Connection::store_stream_bookmark()
                 d_bookmark.valid = false;
                 return false;
             }
-            memcpy((char *)d_bookmark.oldCurrentLogEntryCopy->data.buffer,
+            memcpy(const_cast<char *>(d_bookmark.oldCurrentLogEntryCopy->data.buffer),
                    d_currentLogEntry->data.buffer,
                    d_currentLogEntry->data.payload_len);
         }
@@ -970,9 +969,9 @@ bool vrpn_File_Connection::return_to_bookmark()
                 d_bookmark.oldCurrentLogEntryCopy->data.msg_time;
             d_currentLogEntry->data.payload_len =
                 d_bookmark.oldCurrentLogEntryCopy->data.payload_len;
-            char *temp = (char *)d_currentLogEntry->data.buffer;
+            const char *temp = d_currentLogEntry->data.buffer;
             d_currentLogEntry->data.buffer = newBuffer;
-            memcpy((char *)d_currentLogEntry->data.buffer,
+            memcpy(const_cast<char *>(d_currentLogEntry->data.buffer),
                    d_bookmark.oldCurrentLogEntryCopy->data.buffer,
                    d_currentLogEntry->data.payload_len);
             if (temp) delete[] temp;
@@ -1018,7 +1017,7 @@ vrpn_File_Connection *vrpn_File_Connection::get_File_Connection(void)
 // virtual
 int vrpn_File_Connection::read_cookie(void)
 {
-    char readbuf[2048]; // HACK!
+    char readbuf[128]; // XXX HACK!
     size_t bytes = fread(readbuf, vrpn_cookie_size(), 1, d_file);
     if (bytes == 0) {
         fprintf(stderr, "vrpn_File_Connection::read_cookie:  "
@@ -1026,6 +1025,7 @@ int vrpn_File_Connection::read_cookie(void)
                         "run add_vrpn_cookie on it and try again.\n");
         return -1;
     }
+    readbuf[vrpn_cookie_size()] = '\0';
 
     int retval = check_vrpn_file_cookie(readbuf);
     if (retval < 0) {
@@ -1033,12 +1033,12 @@ int vrpn_File_Connection::read_cookie(void)
     }
 
     // TCH July 2001
-    if (!d_endpoints[0]) {
+    if (!d_endpoints.is_valid(0)) {
         fprintf(stderr, "vrpn_File_Connection::read_cookie:  "
                         "No endpoints[0].  Internal failure.\n");
         return -1;
     }
-    d_endpoints[0]->d_inLog->setCookie(readbuf);
+    d_endpoints.front()->d_inLog->setCookie(readbuf);
 
     return 0;
 }
@@ -1105,7 +1105,7 @@ int vrpn_File_Connection::read_entry(void)
             return -1;
         }
 
-        retval = fread((char *)header.buffer, 1, header.payload_len, d_file);
+        retval = fread(const_cast<char *>(header.buffer), 1, header.payload_len, d_file);
     }
 
     // return 1 if nothing to read OR end-of-file;
@@ -1143,7 +1143,7 @@ int vrpn_File_Connection::read_entry(void)
         // to the same message.
         if (d_logTail) {
             if (d_logTail->data.buffer) {
-                delete[](char *)d_logTail -> data.buffer;
+                delete[]d_logTail -> data.buffer;
             }
             delete d_logTail;
         }
@@ -1174,7 +1174,7 @@ int vrpn_File_Connection::close_file()
 int vrpn_File_Connection::reset()
 {
     // make it as if we never saw any messages from our previous activity
-    d_endpoints[0]->drop_connection();
+    d_endpoints.front()->drop_connection();
 
     // If we are accumulating, reset us back to the beginning of the memory
     // buffer chain. Otherwise, go back to the beginning of the file and
@@ -1234,8 +1234,8 @@ int vrpn_File_Connection::handle_play_to_time(void *userdata,
     vrpn_File_Connection *me = (vrpn_File_Connection *)userdata;
     timeval newtime;
 
-    newtime.tv_sec = ((vrpn_int32 *)(p.buffer))[0];
-    newtime.tv_usec = ((vrpn_int32 *)(p.buffer))[1];
+    newtime.tv_sec = ((const vrpn_int32 *)(p.buffer))[0];
+    newtime.tv_usec = ((const vrpn_int32 *)(p.buffer))[1];
 
     return me->play_to_time(newtime);
 }
@@ -1245,7 +1245,7 @@ int vrpn_File_Connection::send_pending_reports(void)
     // Do nothing except clear the buffer -
     // file connections aren't really connected to anything.
 
-    d_endpoints[0]->clearBuffers(); // Clear the buffer for the next time
+    d_endpoints.front()->clearBuffers(); // Clear the buffer for the next time
     return 0;
 }
 

@@ -67,7 +67,10 @@ typedef struct hid_device_ hid_device;
 // Main VRPN API for HID devices
 class VRPN_API vrpn_HidInterface {
 public:
-    vrpn_HidInterface(vrpn_HidAcceptor *acceptor);
+    vrpn_HidInterface(vrpn_HidAcceptor *acceptor    //!< Determines which device we want
+                      , vrpn_uint16 vendor = 0      //!< Default vendor is "any"
+                      , vrpn_uint16 product = 0     //!< Default product is "any"
+                      );
     virtual ~vrpn_HidInterface();
 
     /// Returns true iff the last device I/O succeeded
@@ -124,15 +127,26 @@ protected:
        any longer!
        Thus, always use "new" to make your acceptors.
     */
-    vrpn_HidAcceptor *_acceptor;
+    vrpn_HidAcceptor *m_acceptor;
 
-    bool _working;
-    vrpn_uint16 _vendor;
-    vrpn_uint16 _product;
-    int _interface;
+    bool m_working;
+    vrpn_uint16 m_vendor;
+    vrpn_uint16 m_product;
+    int m_interface;
+
+    // These are passed in the constructor and kept for use by the
+    // reconnect() method.  Strictly speaking, they are redundant
+    // because you can put an acceptor that only matches the given
+    // vendor and product ID.  However, at least one HID device on at
+    // least one server times out when repeatedly polled for its
+    // info during hid_enumerate() if we don't check for the correct
+    // vendor and product ID and ignore it, so we made this an optional
+    // setting in the constructor.
+    vrpn_uint16 m_vendor_sought;    //!< What vendor we want
+    vrpn_uint16 m_product_sought;   //!< What product we want
 
 private:
-    hid_device *_device; ///< The HID device to use.
+    hid_device *m_device; ///< The HID device to use.
 };
 
 #endif // VRPN_USE_HID
@@ -237,12 +251,20 @@ public:
         , second(q)
     {
     }
+
+    virtual ~vrpn_HidBooleanAndAcceptor()
+    {
+        delete first;
+        delete second;
+    }
+
     bool accept(const vrpn_HIDDEVINFO &device)
     {
         bool p = first->accept(device);
         bool q = second->accept(device);
         return p && q;
     }
+
     void reset()
     {
         first->reset();
@@ -250,7 +272,8 @@ public:
     }
 
 private:
-    vrpn_HidAcceptor *first, *second;
+    vrpn_HidAcceptor *first;
+    vrpn_HidAcceptor *second;
 };
 
 /// Accepts devices meeting at least one of two criteria. NOT SHORT-CIRCUIT.
@@ -262,12 +285,20 @@ public:
         , second(q)
     {
     }
+
+    virtual ~vrpn_HidBooleanOrAcceptor()
+    {
+        delete first;
+        delete second;
+    }
+
     bool accept(const vrpn_HIDDEVINFO &device)
     {
         bool p = first->accept(device);
         bool q = second->accept(device);
         return p || q;
     }
+
     void reset()
     {
         first->reset();
@@ -275,7 +306,8 @@ public:
     }
 
 private:
-    vrpn_HidAcceptor *first, *second;
+    vrpn_HidAcceptor *first;
+    vrpn_HidAcceptor *second;
 };
 
 /// @todo Operators for these acceptors (really predicates) ?

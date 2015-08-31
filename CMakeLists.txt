@@ -33,13 +33,6 @@ else()
 	set(TRUE_UNLESS_SUBPROJECT TRUE)
 endif()
 
-# TODO Remove the following when it is fixed in the Android CMake.
-if(BUILD_WITH_ANDROID_NDK)
-	set(CMAKE_CXX_FLAGS
-		"--sysroot=${ANDROID_NDK_SYSROOT} ${CMAKE_CXX_FLAGS}")
-	set(CMAKE_C_FLAGS "--sysroot=${ANDROID_NDK_SYSROOT} ${CMAKE_C_FLAGS}")
-endif()
-
 ###
 # On Windows 7, it does not work to install in the default location,
 # which is the Program Files directory, because you have to not only have
@@ -214,9 +207,8 @@ list(APPEND EXTRA_LIBS quat)
 
 ###
 # Threading (not on win32)
-# Remove the test for Android when threads are fixed in the Android CMake.
 ###
-if(NOT WIN32 AND NOT BUILD_WITH_ANDROID_NDK)
+if(NOT WIN32)
 	find_package(Threads REQUIRED)
 	list(APPEND EXTRA_LIBS ${CMAKE_THREAD_LIBS_INIT})
 endif()
@@ -297,6 +289,7 @@ endif()
 
 # Passing just the major version works with as desired multi-python-capable find module such
 # as in latest CMake (2.8.9)
+set(Python_ADDITIONAL_VERSIONS 3.4)
 find_package(PythonLibs ${_VRPN_PYTHON_VERSIONSEARCH})
 if(PYTHONLIBS_FOUND)
 	if(PYTHONLIBS_VERSION_STRING)
@@ -353,17 +346,15 @@ option_requires(VRPN_BUILD_PYTHON_HANDCODED_3X
 ###
 # javac, jar, and javah (for java wrapper)
 ###
-if(BUILD_WITH_ANDROID_NDK)
-	set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
-	set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY NEVER)
-	set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE NEVER)
-	find_package(Java COMPONENTS Development REQUIRED)
-	find_package(JNI REQUIRED)
+if(ANDROID)
+	find_host_package(Java COMPONENTS Development)
+	find_host_package(JNI)
+	find_host_program(JAVAH_EXECUTABLE NAMES javah)
 else()
 	find_package(Java COMPONENTS Development)
 	find_package(JNI)
+	find_program(JAVAH_EXECUTABLE NAMES javah)
 endif()
-find_program(JAVAH_EXECUTABLE NAMES javah)
 mark_as_advanced(JAVAH_EXECUTABLE)
 option_requires(VRPN_BUILD_JAVA
 	"Build VRPN Java bindings"
@@ -372,12 +363,6 @@ option_requires(VRPN_BUILD_JAVA
 	Java_JAR_EXECUTABLE
 	JNI_FOUND
 	JAVAH_EXECUTABLE)
-
-if(BUILD_WITH_ANDROID_NDK)
-	set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM ONLY)
-	set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
-	set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
-endif()
 
 ###
 # MPI
@@ -678,6 +663,22 @@ if(VRPN_INCLUDE_INTERSENSE)
 endif()
 
 ###
+# THALMICLABSMYO
+###
+if(WIN32)
+	find_package(ThalmicLabsMyo)
+	option_requires(VRPN_INCLUDE_THALMICLABSMYO
+		"Build with Thalmic Labs' Myo support"
+		${DEFAULT_OFF_IF_SUBPROJECT}
+		THALMICLABSMYO_FOUND)
+	if(VRPN_INCLUDE_THALMICLABSMYO)
+		include_directories(${THALMICLABSMYO_INCLUDE_DIRS})
+		list(APPEND SERVER_EXTRA_LIBS ${THALMICLABSMYO_LIBRARIES})
+		add_definitions(-DVRPN_INCLUDE_THALMICLABSMYO)
+	endif()
+endif()
+
+###
 # NIDAQMX
 ###
 find_package(NIDAQmx)
@@ -837,7 +838,32 @@ option_requires(VRPN_USE_OVR
 
 if(VRPN_USE_OVR)
 	include_directories(${OVR_INCLUDE_DIRS})
-	list(APPEND SERVER_EXTRA_LIBS ${OVR_LIBRARIES} dl)
+	list(APPEND SERVER_EXTRA_LIBS ${OVR_LIBRARIES})
+endif()
+
+###
+
+###
+# MotionNode tracker support. Loads shared library dynamically if available
+###
+option(VRPN_USE_MOTIONNODE
+	"Build with MotionNode tracker support"
+	OFF)
+if(VRPN_USE_MOTIONNODE)
+	list(APPEND SERVER_EXTRA_LIBS ${CMAKE_DL_LIBS})
+endif()
+
+###
+# Trivisio ColibriAPI
+###
+find_package(ColibriApi)
+option_requires(VRPN_USE_COLIBRIAPI
+	"Build with Trivisio ColibriAPI support"
+	OFF_BY_DEFAULT
+	COLIBRIAPI_FOUND)
+if(VRPN_USE_COLIBRIAPI)
+	include_directories(${COLIBRIAPI_INCLUDE_DIR})
+	list(APPEND SERVER_EXTRA_LIBS ${COLIBRIAPI_LIBRARIES})
 endif()
 
 ###
@@ -846,7 +872,6 @@ endif()
 # National Instruments Nidaq traditional
 # US Digital SEI/A2
 # microscribe3D library
-# GLI Interactive LLC MotionNode library
 #
 # All include paths should be moved out of at least vrpn_Configure.h.cmake_in
 # as well as all #pragma comment (lib, "" ) lines, since cmake replaces
@@ -867,11 +892,8 @@ option(VRPN_USE_USDIGITAL
 option(VRPN_USE_MICROSCRIBE
 	"Build with MicroScribe3D library support"
 	OFF)
-option(VRPN_USE_MOTIONNODE
-	"Build with GLI Interactive LLC MotionNode library support"
-	OFF)
 option(VRPN_USE_TRIVISIOCOLIBRI
-	"Build with support for TrivisioColibri tracker"
+	"(OBSOLETE) Build with support for TrivisioColibri tracker"
 	OFF)
 if(WIN32)
 	option(VRPN_USE_WINSOCK2
@@ -964,11 +986,13 @@ endif()
 set(VRPN_CLIENT_SOURCES
 	vrpn_Analog.C
 	vrpn_Analog_Output.C
+	vrpn_Assert.C
 	vrpn_Auxiliary_Logger.C
 	vrpn_BaseClass.C
 	vrpn_Button.C
 	vrpn_Connection.C
 	vrpn_Dial.C
+	vrpn_EndpointContainer.C
 	vrpn_FileConnection.C
 	vrpn_FileController.C
 	vrpn_ForceDevice.C
@@ -986,18 +1010,21 @@ set(VRPN_CLIENT_SOURCES
 	vrpn_SharedObject.C
 	vrpn_Sound.C
 	vrpn_Text.C
+	vrpn_Thread.C
 	vrpn_Tracker.C)
 
 set(VRPN_CLIENT_PUBLIC_HEADERS
 	"${PROJECT_BINARY_DIR}/vrpn_Configure.h"
 	vrpn_Analog.h
 	vrpn_Analog_Output.h
+	vrpn_Assert.h
 	vrpn_Auxiliary_Logger.h
 	vrpn_BaseClass.h
 	vrpn_Button.h
 	vrpn_Connection.h
 	vrpn_ConnectionPtr.h
 	vrpn_Dial.h
+	vrpn_EndpointContainer.h
 	vrpn_FileConnection.h
 	vrpn_FileController.h
 	vrpn_ForceDevice.h
@@ -1018,8 +1045,10 @@ set(VRPN_CLIENT_PUBLIC_HEADERS
 	vrpn_SharedObject.h
 	vrpn_Sound.h
 	vrpn_Text.h
+	vrpn_Thread.h
 	vrpn_Tracker.h
-	vrpn_Types.h)
+	vrpn_Types.h
+	vrpn_WindowsH.h)
 
 set(VRPN_SERVER_SOURCES
 	${VRPN_CLIENT_SOURCES}
@@ -1102,8 +1131,10 @@ set(VRPN_SERVER_SOURCES
 	vrpn_Tracker_OculusRift.C
 	vrpn_Tracker_PhaseSpace.C
 	vrpn_Tracker_RazerHydra.C
+	vrpn_Tracker_ThalmicLabsMyo.C
 	vrpn_Tracker_SpacePoint.C
 	vrpn_Tracker_Wintracker.C
+	vrpn_Tracker_Colibri.C
 	vrpn_Tracker_TrivisioColibri.C
 	vrpn_Tracker_WiimoteHead.C
 	vrpn_Tracker_zSight.C
@@ -1207,8 +1238,10 @@ set(VRPN_SERVER_PUBLIC_HEADERS
 	vrpn_Tracker_OculusRift.h
 	vrpn_Tracker_PhaseSpace.h
 	vrpn_Tracker_RazerHydra.h
+	vrpn_Tracker_ThalmicLabsMyo.h
 	vrpn_Tracker_SpacePoint.h
 	vrpn_Tracker_Wintracker.h
+	vrpn_Tracker_Colibri.h
 	vrpn_Tracker_TrivisioColibri.h
 	vrpn_Tracker_WiimoteHead.h
 	vrpn_Tracker_zSight.h
@@ -1249,6 +1282,7 @@ if(VRPN_BUILD_SERVER_LIBRARY)
 		PROPERTY
 		FOLDER
 		"Library")
+	string(REPLACE ";" " " SERVER_LINK_FLAGS "${SERVER_LINK_FLAGS}")
 	set_property(TARGET
 		vrpnserver
 		PROPERTY
@@ -1265,16 +1299,10 @@ if(VRPN_BUILD_SERVER_LIBRARY)
 	if(VRPN_INSTALL)
 		install(TARGETS
 			vrpnserver
-			ARCHIVE
-			DESTINATION
-			lib
-			COMPONENT
-			serversdk
-			PUBLIC_HEADER
-			DESTINATION
-			include
-			COMPONENT
-			serversdk)
+			RUNTIME DESTINATION bin COMPONENT serversdk
+			LIBRARY DESTINATION lib${LIB_SUFFIX} COMPONENT serversdk
+			ARCHIVE DESTINATION lib${LIB_SUFFIX} COMPONENT serversdk
+			PUBLIC_HEADER DESTINATION include COMPONENT serversdk)
 	endif()
 	add_cppcheck(vrpnserver STYLE UNUSED_FUNCTIONS)
 endif()
@@ -1312,16 +1340,10 @@ if(VRPN_BUILD_CLIENT_LIBRARY)
 	if(VRPN_INSTALL)
 		install(TARGETS
 			vrpn
-			ARCHIVE
-			DESTINATION
-			lib
-			COMPONENT
-			clientsdk
-			PUBLIC_HEADER
-			DESTINATION
-			include
-			COMPONENT
-			clientsdk)
+			RUNTIME DESTINATION bin COMPONENT clientsdk
+			LIBRARY DESTINATION lib${LIB_SUFFIX} COMPONENT clientsdk
+			ARCHIVE DESTINATION lib${LIB_SUFFIX} COMPONENT clientsdk
+			PUBLIC_HEADER DESTINATION include COMPONENT clientsdk)
 	endif()
 	add_cppcheck(vrpn STYLE UNUSED_FUNCTIONS)
 endif()

@@ -6,6 +6,7 @@
 #include "vrpn_Configure.h" // for VRPN_API, VRPN_CALLBACK, etc
 #include "vrpn_Shared.h"    // for SOCKET, timeval
 #include "vrpn_Types.h"     // for vrpn_int32, vrpn_uint32, etc
+#include "vrpn_EndpointContainer.h"
 
 #if !(defined(_WIN32) && defined(VRPN_USE_WINSOCK_SOCKETS))
 #include <sys/select.h> // for fd_set
@@ -16,10 +17,6 @@ struct timeval;
 // Don't complain about using sprintf() when using Visual Studio.
 #ifdef _MSC_VER
 #pragma warning(disable : 4995 4996)
-#endif
-
-#if defined(__ANDROID__)
-#include <bitset>
 #endif
 
 /// This is the list of states that a connection can be in
@@ -164,6 +161,61 @@ struct VRPN_API vrpn_LOGLIST {
     vrpn_LOGLIST *prev;
 };
 
+class VRPN_API vrpn_Endpoint_IP;
+class VRPN_API vrpn_Connection;
+
+/// @brief Function pointer to an endpoint allocator.
+typedef vrpn_Endpoint_IP *(*vrpn_EndpointAllocator)(
+    vrpn_Connection *connection, vrpn_int32 *numActiveConnections);
+
+namespace vrpn {
+
+    /// @brief Combines the function pointer for an Endpoint Allocator with its
+    /// two arguments into a single callable object, with the ability to
+    /// override the last parameter at call time.
+    class BoundEndpointAllocator {
+    public:
+        BoundEndpointAllocator()
+            : epa_(NULL)
+            , conn_(NULL)
+            , numActiveEndpoints_(NULL)
+        {
+        }
+        BoundEndpointAllocator(vrpn_EndpointAllocator epa,
+                               vrpn_Connection *conn,
+                               vrpn_int32 *numActiveEndpoints = NULL)
+            : epa_(epa)
+            , conn_(conn)
+            , numActiveEndpoints_(numActiveEndpoints)
+        {
+        }
+
+        typedef vrpn_Endpoint_IP *return_type;
+
+        /// @brief Default, fully pre-bound
+        return_type operator()() const
+        {
+            if (!epa_) {
+                return NULL;
+            }
+            return (*epa_)(conn_, numActiveEndpoints_);
+        }
+
+        /// @brief Overload, with alternate num active connnection pointer.
+        return_type operator()(vrpn_int32 *alternateNumActiveEndpoints) const
+        {
+            if (!epa_) {
+                return NULL;
+            }
+            return (*epa_)(conn_, alternateNumActiveEndpoints);
+        }
+
+    private:
+        vrpn_EndpointAllocator epa_;
+        vrpn_Connection *conn_;
+        vrpn_int32 *numActiveEndpoints_;
+    };
+} // namespace vrpn
 /// @todo HACK
 /// These structs must be declared outside of vrpn_Connection
 /// (although we'd like to make them protected/private members)
@@ -455,6 +507,10 @@ public:
     ///< when lobbing datagrams at the server and
     ///< waiting for it to call back.
 
+    /// Socket to use to lob UDP requests asking for the server to
+    /// call us back.
+    SOCKET d_udpLobSocket;
+
     char *d_remote_machine_name;    ///< Machine to call
     int d_remote_port_number;       ///< Port to connect to on remote machine
     timeval d_last_connect_attempt; ///< When the last UDP lob occurred
@@ -512,8 +568,7 @@ protected:
     /// of arbitrary type based on a name.
     vrpn_Connection(const char *local_in_logfile_name,
                     const char *local_out_logfile_name,
-                    vrpn_Endpoint_IP *(*epa)(vrpn_Connection *,
-                                             vrpn_int32 *) = allocateEndpoint);
+                    vrpn_EndpointAllocator epa = allocateEndpoint);
 
     /// Constructor for client connection.  This cannot be called
     /// directly because vrpn_Connection is an abstract base class.
@@ -522,8 +577,7 @@ protected:
                     const char *local_out_logfile_name,
                     const char *remote_in_logfile_name,
                     const char *remote_out_logfile_name,
-                    vrpn_Endpoint_IP *(*epa)(vrpn_Connection *,
-                                             vrpn_int32 *) = allocateEndpoint);
+                    vrpn_EndpointAllocator epa = allocateEndpoint);
 
 public:
     virtual ~vrpn_Connection(void);
@@ -531,7 +585,8 @@ public:
     /// Returns vrpn_true if the connection is okay, vrpn_false if not
     virtual vrpn_bool doing_okay(void) const;
 
-    /// Returns vrpn_true if the connection has been established, vrpn_false if not
+    /// Returns vrpn_true if the connection has been established, vrpn_false if
+    /// not
     /// (For a networkless connection, this is equivalent to doing_okay()).
     virtual vrpn_bool connected(void) const;
 
@@ -648,19 +703,30 @@ protected:
 
     int connectionStatus; ///< Status of the connection
 
+    /// Redefining this and passing it to constructors
+    /// allows a subclass to use a different subclass of Endpoint.
+    /// It should do NOTHING but return an endpoint
+    /// of the appropriate class;  it may not access subclass data,
+    /// since it'll be called from a constructor
     static vrpn_Endpoint_IP *allocateEndpoint(vrpn_Connection *,
                                               vrpn_int32 *connectedEC);
-    ///< Redefining this and passing it to constructors
-    ///< allows a subclass to use a different subclass of Endpoint.
-    ///< It should do NOTHING but return an endpoint
-    ///< of the appropriate class;  it may not access subclass data,
-    ///< since it'll be called from a constructor
+
+#ifdef _MSC_VER
+#pragma warning(push)
+// Disable "need dll interface" warning on these members
+#pragma warning(disable : 4251)
+#endif
+    /// Function object wrapping an endpoint allocator and binding its
+    /// arguments.
+    vrpn::BoundEndpointAllocator d_boundEndpointAllocator;
 
     /// Sockets used to talk to remote Connection(s)
     /// and other information needed on a per-connection basis
-    vrpn_Endpoint_IP *d_endpoints[vrpn_MAX_ENDPOINTS];
-    vrpn_int32 d_numEndpoints;
+    vrpn::EndpointContainer d_endpoints;
 
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
     vrpn_int32 d_numConnectedEndpoints;
     ///< We need to track the number of connected endpoints separately
     ///< to properly send out got-first-connection/dropped-last-connection
@@ -675,9 +741,11 @@ protected:
     handle_disconnect_message(void *userdata, vrpn_HANDLERPARAM p);
     /// @}
 
-    virtual void init(void); ///< Base initialization for all constructors.
-
-    int delete_endpoint(int whichEndpoint);
+private:
+    void init(vrpn_EndpointAllocator
+                  epa); ///< Base initialization for all constructors.
+protected:
+    int delete_endpoint(vrpn_Endpoint *endpoint);
     int compact_endpoints(void);
 
     virtual int pack_sender_description(vrpn_int32 which);
@@ -747,7 +815,6 @@ protected:
     vrpn_int32 d_serverLogMode;
     char *d_serverLogName;
 
-    vrpn_Endpoint_IP *(*d_endpointAllocator)(vrpn_Connection *, vrpn_int32 *);
     vrpn_bool d_updateEndpoint;
 
     virtual void updateEndpoints(void);
@@ -779,8 +846,7 @@ protected:
                        const char *remote_in_logfile_name = NULL,
                        const char *remote_out_logfile_name = NULL,
                        const char *NIC_IPaddress = NULL,
-                       vrpn_Endpoint_IP *(*epa)(
-                           vrpn_Connection *, vrpn_int32 *) = allocateEndpoint);
+                       vrpn_EndpointAllocator epa = allocateEndpoint);
 
 public:
     /// Make a server that listens for client connections.
@@ -826,15 +892,10 @@ protected:
                                   const char *local_in_logfile_name,
                                   const char *local_out_logfile_name);
 
-/// @name Only used for a vrpn_Connection that awaits incoming connections
-/// @{
-#ifdef VRPN_USE_WINSOCK_SOCKETS
+    /// @name Only used for a vrpn_Connection that awaits incoming connections
+    /// @{
     SOCKET listen_udp_sock; ///< UDP Connect requests come here
     SOCKET listen_tcp_sock; ///< TCP Connection requests come here
-#else
-    int listen_udp_sock; ///< UDP Connect requests come here
-    int listen_tcp_sock; ///< TCP Connection requests come here
-#endif
     /// @}
 
     /// Routines that handle system messages
@@ -842,7 +903,7 @@ protected:
     handle_UDP_message(void *userdata, vrpn_HANDLERPARAM p);
 
     /// @brief Called by all constructors
-    virtual void init(void);
+    void init(void);
 
     /// @brief send pending report, clear the buffer.
     ///
@@ -859,9 +920,17 @@ protected:
     /// This routine is called by a server-side connection when a
     /// new connection has just been established, and the tcp port
     /// has been connected to it.
-    virtual void handle_connection(int whichEndpoint);
+    virtual void handle_connection(vrpn_Endpoint *endpoint);
 
-    virtual void drop_connection(int whichEndpoint);
+    /// Drops the connection with the given, non-NULL endpoint.  Depending on if
+    /// we're a server or a client, this may result in the endpoints needing
+    /// compacting once you're no longer iterating on the endpoint container.
+    virtual void drop_connection(vrpn_Endpoint *endpoint);
+
+    /// Like drop_connection, except it includes the call to compact the
+    /// endpoints. Only safe to call if you can guarantee no iterators are open
+    /// to the container, since compact invalidates them.
+    void drop_connection_and_compact(vrpn_Endpoint *endpoint);
 
     char *d_NIC_IP;
 };
@@ -880,6 +949,7 @@ protected:
     /// of 'loopback:'.
     /// For now, we don't enable logging on a Loopback connection.
     vrpn_Connection_Loopback();
+
 public:
     virtual ~vrpn_Connection_Loopback(void);
 
@@ -894,7 +964,8 @@ public:
     /// Returns vrpn_true if the connection is okay, vrpn_false if not
     virtual vrpn_bool doing_okay(void) const { return vrpn_true; }
 
-    /// Returns vrpn_true if the connection has been established, vrpn_false if not
+    /// Returns vrpn_true if the connection has been established, vrpn_false if
+    /// not
     /// (For a networkless connection, this is equivalent to doing_okay()).
     virtual vrpn_bool connected(void) const { return vrpn_true; }
 
@@ -908,7 +979,7 @@ protected:
     ///
     /// This function was protected, now is public, so we can use it
     /// to send out intermediate results without calling mainloop
-    virtual int send_pending_reports(void) {return 0;}
+    virtual int send_pending_reports(void) { return 0; }
 };
 
 /// @brief Create a client connection of arbitrary type (VRPN UDP/TCP, TCP,
@@ -1059,6 +1130,10 @@ int VRPN_API vrpn_noint_block_read(SOCKET insock, char *buffer, size_t length);
 //      The intention of this section is that it can open connections for
 // objects that are in different libraries (trackers, buttons and sound),
 // even if they all refer to the same connection.
+//	Even though each individual vrpn_Connection class is not yet thread
+// safe, so should only have its methods called from a single thread,
+// the vrpn_ConnectionManager should be thread safe to allow connections
+// to be created and destroyed by different threads.
 
 class VRPN_API vrpn_ConnectionManager {
 
@@ -1084,6 +1159,9 @@ public:
     vrpn_Connection *getByName(const char *name);
 
 private:
+    /// Mutex to ensure thread safety;
+    vrpn_Semaphore d_semaphore;
+
     struct knownConnection {
         char name[1000];
         vrpn_Connection *connection;
@@ -1101,7 +1179,7 @@ private:
     // @brief copy constructor undefined to prevent instantiations
     vrpn_ConnectionManager(const vrpn_ConnectionManager &);
 
-    static void deleteConnection(vrpn_Connection *, knownConnection **);
+    void deleteConnection(vrpn_Connection *, knownConnection **);
 };
 
 #endif // VRPN_CONNECTION_H

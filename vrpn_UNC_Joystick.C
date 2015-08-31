@@ -23,9 +23,9 @@ vrpn_Joystick::vrpn_Joystick(char * name,
   num_buttons = 2;  // Has 2 buttons
   num_channel = 7;	// Has a slider and two 3-axis joysticks
   if (update_rate != 0) {
-    MAX_TIME_INTERVAL = (long)(1000000/update_rate);
+    MAX_TIME_INTERVAL = (unsigned long)(1000000/update_rate);
   } else {
-	MAX_TIME_INTERVAL = -1;
+    MAX_TIME_INTERVAL = (unsigned long)(-1);
   }
   status = vrpn_ANALOG_RESETTING;
 }
@@ -77,8 +77,8 @@ void vrpn_Joystick::mainloop(void) {
 	// If it has been longer than the requested report interval
 	// since we sent a report, send a complete report
 	// anyway (a repeat of the previous one).
-	if ( (vrpn_TimevalDuration(current_time, vrpn_Analog::timestamp) 
-	     > MAX_TIME_INTERVAL) && (MAX_TIME_INTERVAL != -1) ) {
+	if ( (static_cast<unsigned long>(vrpn_TimevalDuration(current_time, vrpn_Analog::timestamp)) 
+	     > MAX_TIME_INTERVAL) && (MAX_TIME_INTERVAL != (unsigned long)(-1)) ) {
 
 	  // send out the last report again;
 	  report(current_time);

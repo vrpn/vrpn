@@ -261,15 +261,9 @@
 #cmakedefine VRPN_USE_GPM_MOUSE
 
 //------------------------
-// Instructs VRPN to use the GLI Interactive LLC MotionNode library to
-// interface VRPN to their tracker.  If you do this, you must edit
-// the include paths in the vrpn and vrpndll libraries to point to the
-// correct locations and the lib path in vrpn_server and any other
-// applications you build (including custom ones) to point to the right
-// location.  You also have to have Boost (www.boost.org) installed and
-// have pointed the vrpn and vrpndll project include paths to it and
-// the vrpndll and vrpn_server lib paths to it.
-// WARNING: This code does not compile under visual studio 6.0.
+// Instructs VRPN to use the Motion C API library to interface VRPN to
+// the their MotionNode tracker. Requires the shared library at run-time
+// to function. No external dependencies to build.
 #cmakedefine VRPN_USE_MOTIONNODE
 
 //------------------------
@@ -313,7 +307,7 @@
 #cmakedefine VRPN_USE_LIBNIFALCON
 
 //------------------------
-// Instructs VRPN to compile code to use Trivisio's Colibri inertial
+// (OBSOLETE) Instructs VRPN to compile code to use Trivisio's Colibri inertial
 // tracker.  You will also need the SDK, which is available at
 // http://www.trivisio.com/products/motiontracking/colibri#download
 // (tested on Windows).  VRPN_TRIVISIOCOLIBRI_H and
@@ -323,6 +317,24 @@
 // in
 // the path when running the server on Windows
 #cmakedefine VRPN_USE_TRIVISIOCOLIBRI
+
+//------------------------
+// Compiles the VRPN library with the Trivisio Colibri tracker using the
+// ColibriAPI on Linux and Windows.
+//
+// In Linux:
+// The header files (colibri_api.h, etc) and library (colibri-api)
+// should be placed in the /vrpn/trivisio directory.
+// libcolibri-api.so will need to be present in the default library path
+// such as /usr/lib
+//
+// In Windows:
+// The header files (colibri_api.h, etc) should be placed in the
+// in the \vrpn\trivisio directory.
+// colibri-api.lib will need to be located there as well.
+// colibri-api.dll will need to be in the path or with the executable
+// at run time.
+#cmakedefine VRPN_USE_COLIBRIAPI
 
 //------------------------
 // Instructs VRPN to attempt to use HID.  If you don't have libusb installed
@@ -448,10 +460,6 @@
 
 // autolinking pragma only works/makes sense with MSVC
 #ifdef _MSC_VER // [
-
-#ifdef VRPN_USE_MOTIONNODE
-#pragma comment(lib, "libMotionNodeSDK.lib")
-#endif
 
 // Load National Instruments libraries if we are using them.
 // If this doesn't match where you have installed these libraries,
