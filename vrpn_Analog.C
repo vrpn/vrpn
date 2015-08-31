@@ -151,7 +151,7 @@ vrpn_Serial_Analog::vrpn_Serial_Analog(const char *name, vrpn_Connection *c,
         status = vrpn_ANALOG_FAIL;
     }
 
-    // Reset the tracker and find out what time it is
+    // Reset the analog and find out what time it is
     status = vrpn_ANALOG_RESETTING;
     vrpn_gettimeofday(&timestamp, NULL);
 }
