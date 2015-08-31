@@ -24,7 +24,8 @@
 #if defined(VRPN_USE_HID)
 
 /** @brief OSVR Hacker Dev Kit HMD
- * The official name of the Razer/Sensics HMD (until they change it again…) is “OSVR Hacker Dev Kit.”
+ * The official name of the Razer/Sensics HMD (until they change it again...) is
+ * “OSVR Hacker Dev Kit.”
  *
  * The devkit will have a built-in head tracker.
  *
@@ -35,7 +36,7 @@
  *
  * Protocol for it is as follows (in byte offsets):
  *
- *   0: Version number, currently 1
+ *   0: Version number, currently 1 or 2
  *   1: message sequence number (8 bit)
  *
  *   2: Unit quaternion i component LSB
@@ -50,10 +51,20 @@
  *   8: Unit quaternion real component LSB
  *   9: Unit quaternion real component MSB
  *
- *   10-31: reserved for future use
+ *   10: Instantaneous angular velocity about X LSB
+ *   11: Instantaneous angular velocity about X MSB
+ *
+ *   12: Instantaneous angular velocity about Y LSB
+ *   13: Instantaneous angular velocity about Y MSB
+ *
+ *   14: Instantaneous angular velocity about Z LSB
+ *   15: Instantaneous angular velocity about Z MSB
  *
  * Each quaternion is presented as signed, 16-bit fixed point, 2’s complement
- * number with a Q point of 14.
+ * number with a Q point of 14. The components of angular velocity are signed,
+ * 16-bit fixed point, 2's complement with Q of 9. Reports are either 32 (in old
+ * firmware, early v1 reports) or 16 bytes (most firmware, both v1 and v2) long,
+ * and only v2 reports contain angular velocity data.
  */
 class VRPN_API vrpn_Tracker_OSVRHackerDevKit : public vrpn_Tracker, protected vrpn_HidInterface {
 public:

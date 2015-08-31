@@ -105,8 +105,9 @@ void vrpn_Tracker_OSVRHackerDevKit::on_data_received(std::size_t bytes,
         }
     }
     if (version >= 2) {
+        // We've got angular velocity in this message too
         // Signed Q6.9
-        typedef vrpn::FixedPoint<6,9> VelFixedPoint;
+        typedef vrpn::FixedPoint<6, 9> VelFixedPoint;
         q_vec_type angVel;
         angVel[0] =
             VelFixedPoint(vrpn_unbuffer_from_little_endian<vrpn_int16>(buffer))
@@ -117,24 +118,10 @@ void vrpn_Tracker_OSVRHackerDevKit::on_data_received(std::size_t bytes,
         angVel[2] =
             VelFixedPoint(vrpn_unbuffer_from_little_endian<vrpn_int16>(buffer))
                 .get<vrpn_float64>();
-        //fprintf(stderr, " %f, %f, %f\n", angVel[0], angVel[1], angVel[2]);
-        //double r2 = q_vec_dot_product(angVel, angVel);
 
-        
-#if 1
         // Given XYZ radians per second velocity.
         q_from_euler(vel_quat, angVel[2] * vel_quat_dt, angVel[1] * vel_quat_dt,
                      angVel[0] * vel_quat_dt);
-#endif
-
-#if 0
-        // Small angle approximation from exponential map
-        vel_quat[Q_X] = angVel[0] * 0.5 * vel_quat_dt;
-        vel_quat[Q_Y] = angVel[1] * 0.5 * vel_quat_dt;
-        vel_quat[Q_Z] = angVel[2] * 0.5 * vel_quat_dt;
-        vel_quat[Q_W] = 1.0;
-        q_normalize(vel_quat, vel_quat);
-#endif
 
         char msgbuf[512];
         int len = vrpn_Tracker::encode_vel_to(msgbuf);
