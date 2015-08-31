@@ -65,8 +65,7 @@ namespace vrpn {
         };
 
         /// @todo allow for larger types if we can establish VRPN versions of
-        /// them (e.g.,
-        /// equivalents to int64_t).
+        /// them (e.g., equivalents to uint64_t).
 
         ///@}
     } // namespace detail
@@ -75,7 +74,8 @@ namespace vrpn {
      * A fixed-point value class. All values are signed, two's-complement.
      *
      * @tparam INTEGER_BITS The number of bits devoted to the integer part.
-     * @tparam FRACTIONAL_BITS The number of bits devoted to the fractioal part.
+     * @tparam FRACTIONAL_BITS The number of bits devoted to the fractional
+     * part.
      */
     template <int INTEGER_BITS, int FRACTIONAL_BITS> class FixedPoint {
     public:
@@ -92,8 +92,7 @@ namespace vrpn {
          *
          * The bits of an integral type passed to the constructor will be
          * interpreted as as fixed-point value. A floating-point type passed to
-         *the
-         * constructor will be converted to a fixed-point value.
+         * the constructor will be converted to a fixed-point value.
          */
         //@{
         FixedPoint()
