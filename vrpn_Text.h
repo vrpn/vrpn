@@ -62,7 +62,7 @@ protected:
     virtual int register_types(void) { return 0; };
 };
 
-/// Allows a user to handle text messages directly, in addition too having the
+/// Allows a user to handle text messages directly, in addition to having the
 // standard VRPN printing functions handle them.
 
 class VRPN_API vrpn_Text_Receiver : public vrpn_BaseClass {
