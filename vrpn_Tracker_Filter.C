@@ -119,14 +119,11 @@ void vrpn_Tracker_FilterOneEuro::mainloop()
   vrpn_Tracker::server_mainloop();
 }
 
-
 vrpn_Tracker_DeadReckoning_Rotation::vrpn_Tracker_DeadReckoning_Rotation(
-    std::string myName
-    , vrpn_Connection *c
-    , std::string origTrackerName
-    , vrpn_int32 numSensors
-    , vrpn_float64 predictionTime
-    ) : vrpn_Tracker_Server(myName.c_str(), c, numSensors)
+    std::string myName, vrpn_Connection *c, std::string origTrackerName,
+    vrpn_int32 numSensors, vrpn_float64 predictionTime, bool estimateVelocity)
+    : vrpn_Tracker_Server(myName.c_str(), c, numSensors)
+    , d_estimateVelocity(estimateVelocity)
 {
     // Do the things all tracker servers need to do.
     num_sensors = numSensors;
@@ -201,6 +198,15 @@ void vrpn_Tracker_DeadReckoning_Rotation::sendNewPrediction(vrpn_int32 sensor)
     }
 
     //========================================================================
+    // If we don't have permission to estimate velocity and haven't gotten it
+    // either, then we just pass along the report.
+    if (!state.d_receivedAngularVelocityReport && !d_estimateVelocity) {
+        report_pose(sensor, state.d_lastReportTime, state.d_lastPosition,
+                    state.d_lastOrientation);
+        return;
+    }
+
+    //========================================================================
     // Estimate the future orientation based on the current angular velocity
     // estimate and the last reported orientation.  Predict it into the future
     // the amount we've been asked to.
@@ -257,14 +263,14 @@ void vrpn_Tracker_DeadReckoning_Rotation::handle_tracker_report(void *userdata,
     vrpn_Tracker_DeadReckoning_Rotation::RotationState &state =
         me->d_rotationStates[info.sensor];
 
-    // If we have not received any velocity reports, then we estimate
-    // the angular velocity using the last report (if any).  The new
-    // combined rotation T3 = T2 * T1, where T2 is the difference in
-    // rotation between the last time (T1) and now (T3).  We want to
-    // solve for T2 (so we can keep applying it going forward).  We
-    // find it by right-multiuplying both sides of the equation by
-    // T1i (inverse of T1): T3 * T1i = T2.
-    if (!state.d_receivedAngularVelocityReport) {
+    if (!state.d_receivedAngularVelocityReport && me->d_estimateVelocity) {
+        // If we have not received any velocity reports, then we estimate
+        // the angular velocity using the last report (if any).  The new
+        // combined rotation T3 = T2 * T1, where T2 is the difference in
+        // rotation between the last time (T1) and now (T3).  We want to
+        // solve for T2 (so we can keep applying it going forward).  We
+        // find it by right-multiuplying both sides of the equation by
+        // T1i (inverse of T1): T3 * T1i = T2.
         if (state.d_lastReportTime.tv_sec != 0) {
             q_type inverted;
             q_invert(inverted, state.d_lastOrientation);

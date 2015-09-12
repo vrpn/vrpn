@@ -51,6 +51,9 @@ vrpn_Tracker_OSVRHackerDevKit::vrpn_Tracker_OSVRHackerDevKit(const char *name,
     std::memset(d_quat, 0, sizeof(d_quat));
     d_quat[Q_W] = 1.0;
 
+    // Arbitrary dt that will be less than a full rotation.
+    vel_quat_dt = 1.0 / 400.0;
+
     // Set the timestamp
     vrpn_gettimeofday(&_timestamp, NULL);
 }
@@ -63,10 +66,11 @@ vrpn_Tracker_OSVRHackerDevKit::~vrpn_Tracker_OSVRHackerDevKit()
 void vrpn_Tracker_OSVRHackerDevKit::on_data_received(std::size_t bytes,
                                                      vrpn_uint8 *buffer)
 {
-    if (bytes != 32) {
+    if (bytes != 32 && bytes != 16) {
         send_text_message(vrpn_TEXT_WARNING)
             << "Received a report " << bytes
-            << " in length, but expected it to be 32 bytes. Discarding.";
+            << " in length, but expected it to be 32 or 16 bytes. Discarding. "
+               "(May indicate issues with HID!)";
         return;
     }
 
@@ -90,13 +94,43 @@ void vrpn_Tracker_OSVRHackerDevKit::on_data_received(std::size_t bytes,
             .get<vrpn_float64>();
 
     vrpn_Tracker::timestamp = _timestamp;
-    char msgbuf[512];
-    int len = vrpn_Tracker::encode_to(msgbuf);
-    if (d_connection->pack_message(len, _timestamp, position_m_id, d_sender_id,
-                                   msgbuf, vrpn_CONNECTION_LOW_LATENCY)) {
-        fprintf(
-            stderr,
-            "vrpn_Tracker_OSVRHackerDevKit: cannot write message: tossing\n");
+    {
+        char msgbuf[512];
+        int len = vrpn_Tracker::encode_to(msgbuf);
+        if (d_connection->pack_message(len, _timestamp, position_m_id,
+                                       d_sender_id, msgbuf,
+                                       vrpn_CONNECTION_LOW_LATENCY)) {
+            fprintf(stderr, "vrpn_Tracker_OSVRHackerDevKit: cannot write "
+                            "message: tossing\n");
+        }
+    }
+    if (version >= 2) {
+        // We've got angular velocity in this message too
+        // Signed Q6.9
+        typedef vrpn::FixedPoint<6, 9> VelFixedPoint;
+        q_vec_type angVel;
+        angVel[0] =
+            VelFixedPoint(vrpn_unbuffer_from_little_endian<vrpn_int16>(buffer))
+                .get<vrpn_float64>();
+        angVel[1] =
+            VelFixedPoint(vrpn_unbuffer_from_little_endian<vrpn_int16>(buffer))
+                .get<vrpn_float64>();
+        angVel[2] =
+            VelFixedPoint(vrpn_unbuffer_from_little_endian<vrpn_int16>(buffer))
+                .get<vrpn_float64>();
+
+        // Given XYZ radians per second velocity.
+        q_from_euler(vel_quat, angVel[2] * vel_quat_dt, angVel[1] * vel_quat_dt,
+                     angVel[0] * vel_quat_dt);
+
+        char msgbuf[512];
+        int len = vrpn_Tracker::encode_vel_to(msgbuf);
+        if (d_connection->pack_message(len, _timestamp, velocity_m_id,
+                                       d_sender_id, msgbuf,
+                                       vrpn_CONNECTION_LOW_LATENCY)) {
+            fprintf(stderr, "vrpn_Tracker_OSVRHackerDevKit: cannot write "
+                            "message: tossing\n");
+        }
     }
 }
 
@@ -121,4 +155,3 @@ void vrpn_Tracker_OSVRHackerDevKit::mainloop()
 }
 
 #endif
-

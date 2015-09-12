@@ -63,64 +63,81 @@ namespace vrpn {
         template <> struct IntegerOfSize<64> {
             typedef IntegerOfSize type;
         };
+        template <int NUM_BITS> struct UnsignedIntegerOfSize {
+            // An integer requiring n bits can be represented by an integer of
+            // size n+1 bits.
+            typedef typename UnsignedIntegerOfSize<NUM_BITS + 1>::type type;
+        };
+
+        template <> struct UnsignedIntegerOfSize<8> {
+            typedef vrpn_uint8 type;
+        };
+
+        template <> struct UnsignedIntegerOfSize<16> {
+            typedef vrpn_uint16 type;
+        };
+
+        template <> struct UnsignedIntegerOfSize<32> {
+            typedef vrpn_uint32 type;
+        };
 
         /// @todo allow for larger types if we can establish VRPN versions of
-        /// them (e.g.,
-        /// equivalents to int64_t).
+        /// them (e.g., equivalents to uint64_t).
 
         ///@}
+        template <int BITS, bool SIGNED = true>
+        struct IntegerOfSizeAndSignedness : IntegerOfSize<BITS> {
+        };
+        template <int BITS>
+        struct IntegerOfSizeAndSignedness<BITS, false>
+            : UnsignedIntegerOfSize<BITS> {
+        };
     } // namespace detail
 
     /**
-     * A fixed-point value class. All values are signed, two's-complement.
+     * A fixed-point value class. All values are signed, two's-complement, by
+     * default.
      *
      * @tparam INTEGER_BITS The number of bits devoted to the integer part.
-     * @tparam FRACTIONAL_BITS The number of bits devoted to the fractioal part.
+     * @tparam FRACTIONAL_BITS The number of bits devoted to the fractional
+     * part.
      */
-    template <int INTEGER_BITS, int FRACTIONAL_BITS> class FixedPoint {
+    template <int INTEGER_BITS, int FRACTIONAL_BITS, bool SIGNED = true>
+    class FixedPoint {
     public:
         /**
          * Find an integer type large enough to hold INTEGER_BITS.
          */
-        typedef typename detail::IntegerOfSize<INTEGER_BITS>::type IntegerType;
+        typedef typename detail::IntegerOfSizeAndSignedness<
+            INTEGER_BITS, SIGNED>::type IntegerType;
 
-        typedef typename detail::IntegerOfSize<INTEGER_BITS +
-                                               FRACTIONAL_BITS>::type RawType;
+        typedef typename detail::IntegerOfSizeAndSignedness<
+            INTEGER_BITS + FRACTIONAL_BITS, SIGNED>::type RawType;
 
         /**
          * \name Constructors.
          *
          * The bits of an integral type passed to the constructor will be
          * interpreted as as fixed-point value. A floating-point type passed to
-         *the
-         * constructor will be converted to a fixed-point value.
+         * the constructor will be converted to a fixed-point value.
          */
         //@{
         FixedPoint()
             : value_(0)
         {
         }
-        explicit FixedPoint(vrpn_int8 x)
+        explicit FixedPoint(
+            typename detail::IntegerOfSizeAndSignedness<8, SIGNED>::type x)
             : value_(x)
         {
         }
-        explicit FixedPoint(vrpn_int16 x)
+        explicit FixedPoint(
+            typename detail::IntegerOfSizeAndSignedness<16, SIGNED>::type x)
             : value_(x)
         {
         }
-        explicit FixedPoint(vrpn_int32 x)
-            : value_(x)
-        {
-        }
-        explicit FixedPoint(vrpn_uint8 x)
-            : value_(x)
-        {
-        }
-        explicit FixedPoint(vrpn_uint16 x)
-            : value_(x)
-        {
-        }
-        explicit FixedPoint(vrpn_uint32 x)
+        explicit FixedPoint(
+            typename detail::IntegerOfSizeAndSignedness<32, SIGNED>::type x)
             : value_(x)
         {
         }

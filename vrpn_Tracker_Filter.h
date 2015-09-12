@@ -76,9 +76,11 @@ class VRPN_API vrpn_Tracker_DeadReckoning_Rotation : public vrpn_Tracker_Server
     vrpn_Tracker_DeadReckoning_Rotation(
         std::string myName      //< Name of the tracking device we're exposing
         , vrpn_Connection *c    //< Connection to use to send reports on
-        , std::string origTrackerName  //< Name of tracker to predict (*Name for one using our connection, Name@URL for one we should connect to
+        , std::string origTrackerName  //< Name of tracker to predict (*Name for one using our connection, Name@URL for one we should connect to)
         , vrpn_int32 numSensors = 1    //< How many sensors to predict for?
         , vrpn_float64 predictionTime = 1.0 / 60.0   //< How far to predict into the future?
+        , bool estimateVelocity = true //< Should we estimate angular velocity if we don't get it?
+                                       //< If false, this is basically just a pass-through filter, but estimating velocity can be choppy.
         );
 
     ~vrpn_Tracker_DeadReckoning_Rotation();
@@ -116,5 +118,7 @@ class VRPN_API vrpn_Tracker_DeadReckoning_Rotation : public vrpn_Tracker_Server
     // prediction in the future from the original message by the prediction
     // interval.
     void sendNewPrediction(vrpn_int32 sensor);
+
+    bool d_estimateVelocity;
 };
 
