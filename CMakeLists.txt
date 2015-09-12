@@ -1098,6 +1098,7 @@ set(VRPN_SERVER_SOURCES
 	vrpn_Saitek_Controller_Raw.C
 	vrpn_sgibox.C
 	vrpn_Spaceball.C
+	vrpn_Streaming_Arduino.C
 	vrpn_Tng3.C
 	vrpn_Tracker_3DMouse.C
 	vrpn_Tracker_AnalogFly.C
@@ -1204,6 +1205,7 @@ set(VRPN_SERVER_PUBLIC_HEADERS
 	vrpn_Saitek_Controller_Raw.h
 	vrpn_sgibox.h
 	vrpn_Spaceball.h
+	vrpn_Streaming_Arduino.h
 	vrpn_Tng3.h
 	vrpn_Tracker_3DMouse.h
 	vrpn_Tracker_AnalogFly.h

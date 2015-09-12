@@ -84,6 +84,7 @@ protected:
     int setup_Button_PinchGlove(char *&pch, char *line, FILE *config_file);
     int setup_Joylin(char *&pch, char *line, FILE * /*config_file*/);
     int setup_Joywin32(char *&pch, char *line, FILE * /*config_file*/);
+    int setup_StreamingArduino(char *&pch, char *line, FILE * /*config_file*/);
     int setup_Tng3(char *&pch, char *line, FILE * /*config_file*/);
     int setup_Tracker_InterSense(char *&pch, char *line, FILE *config_file);
     int setup_DirectXFFJoystick(char *&pch, char *line, FILE * /*config_file*/);

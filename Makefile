@@ -698,6 +698,7 @@ SLIB_FILES =  $(LIB_FILES) \
 	vrpn_Retrolink.C \
 	vrpn_Saitek_Controller_Raw.C \
 	vrpn_Spaceball.C \
+	vrpn_Streaming_Arduino.C \
 	vrpn_Tng3.C \
 	vrpn_Tracker_3DMouse.C \
 	vrpn_Tracker_AnalogFly.C \
@@ -788,6 +789,7 @@ SLIB_INCLUDES = $(LIB_INCLUDES) \
 	vrpn_Retrolink.h \
 	vrpn_Saitek_Controller_Raw.h \
 	vrpn_Spaceball.h \
+	vrpn_Streaming_Arduino.h \
 	vrpn_Tng3.h \
 	vrpn_Tracker_3DMouse.h \
 	vrpn_Tracker_AnalogFly.h \
