@@ -257,7 +257,6 @@ void vrpn_Streaming_Arduino::mainloop(void)
               << ", timestamp="
               << m_timestamp.tv_sec << ":" << m_timestamp.tv_usec
               << " (resetting)" << std::endl;
-					    current_time.tv_sec, static_cast<long>(current_time.tv_usec),
 		        send_text_message("Too long since last report, resetting", current_time, vrpn_TEXT_ERROR);
 		        status = STATUS_RESETTING;
 	        }

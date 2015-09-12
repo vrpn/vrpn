@@ -2220,7 +2220,7 @@ int vrpn_Generic_Server_Object::setup_StreamingArduino(char *&pch, char *line,
     int i1;
     VRPN_CONFIG_NEXT();
     // Get the arguments (class, tng3_name, port, numana)
-    if (sscanf(pch, "%511s%511s%d%d", s2, s3, &i1) != 3) {
+    if (sscanf(pch, "%511s%511s%d", s2, s3, &i1) != 3) {
         fprintf(stderr, "Bad vrpn_Streaming_Arduino line: %s\n", line);
         return -1;
     }
