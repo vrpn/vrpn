@@ -856,6 +856,19 @@ if(VRPN_USE_COLIBRIAPI)
 endif()
 
 ###
+# UIforETW's ETWProviders event tracing/instrumentation Library
+# No finder here - only likely to get turned on if there is a
+if(ETWPROVIDERS_FOUND)
+	option_requires(VRPN_USE_ETWPROVIDERS
+	"Build with Event Tracing for Windows support"
+	OFF_BY_DEFAULT
+	ETWPROVIDERS_FOUND)
+endif()
+if(VRPN_USE_ETWPROVIDERS)
+	list(APPEND EXTRA_LIBS ${ETWPROVIDERS_LIBRARY})
+endif()
+
+###
 # XXX Other libraries needing detection and handling (TODO)
 ###
 # National Instruments Nidaq traditional

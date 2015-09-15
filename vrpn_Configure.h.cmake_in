@@ -56,6 +56,10 @@
 #cmakedefine VRPN_USE_STATIC_ASSERTIONS
 
 //-----------------------
+// Use UIforETW's ETWProviders functionality
+#cmakedefine VRPN_USE_ETWPROVIDERS
+
+//-----------------------
 // Use Winsock2 library rather than Winsock.
 #cmakedefine VRPN_USE_WINSOCK2
 

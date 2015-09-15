@@ -26,6 +26,8 @@
 #include "vrpn_Connection.h"
 #include <string>
 
+#include "vrpn_Tracing.h"
+
 #ifdef VRPN_USE_WINSOCK_SOCKETS
 
 // A socket in Windows can not be closed like it can in unix-land
@@ -1425,8 +1427,14 @@ void vrpn_TypeDispatcher::clear(void)
     }
 }
 
+static inline void vrpn_deleteConnection(vrpn_Connection * conn) {
+    vrpn::tracing::markConnectionManagerDeletingConnection(conn);
+    delete conn;
+}
+
 vrpn_ConnectionManager::~vrpn_ConnectionManager(void)
 {
+    vrpn::tracing::markConnectionManagerDestructor();
     vrpn::SemaphoreGuard guard(d_semaphore);
     // fprintf(stderr, "In ~vrpn_ConnectionManager:  tearing down the list.\n");
 
@@ -1434,16 +1442,17 @@ vrpn_ConnectionManager::~vrpn_ConnectionManager(void)
     // That destructor will call vrpn_ConnectionManager::deleteConnection()
     // to remove itself from d_kcList.
     while (d_kcList) {
-        delete d_kcList->connection;
+        vrpn_deleteConnection(d_kcList->connection);
     }
     while (d_anonList) {
-        delete d_anonList->connection;
+        vrpn_deleteConnection(d_anonList->connection);
     }
 }
 
 // static
 vrpn_ConnectionManager &vrpn_ConnectionManager::instance(void)
 {
+    vrpn::tracing::markConnectionManagerGetInstance();
     // We have a separate semaphore for this static function to
     // make sure it is only entered by one thread at a time.
     // This avoids a race on the constructor of the static
@@ -1456,6 +1465,8 @@ vrpn_ConnectionManager &vrpn_ConnectionManager::instance(void)
 
 void vrpn_ConnectionManager::addConnection(vrpn_Connection *c, const char *name)
 {
+    vrpn::tracing::markConnectionManagerAddConnection(c, name);
+    fprintf(stderr, "vrpn_ConnectionManager::addConnection for %x - %s\n", c, name);
     vrpn::SemaphoreGuard guard(d_semaphore);
     {
         knownConnection *p;
@@ -1502,6 +1513,8 @@ void vrpn_ConnectionManager::deleteConnection(vrpn_Connection *c,
     }
     else {
         *snitch = victim->next;
+        vrpn_deleteConnection(victim->connection);
+        victim->connection = NULL;
         delete victim;
     }
 }
@@ -5255,6 +5268,7 @@ vrpn_Connection *vrpn_get_connection_by_name(
     const char *remote_out_logfile_name, const char *NIC_IPaddress,
     bool force_connection)
 {
+    vrpn::tracing::markGetConnectionByName(cname, force_connection);
     if (cname == NULL) {
         fprintf(stderr, "vrpn_get_connection_by_name(): NULL name\n");
         return NULL;
