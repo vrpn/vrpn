@@ -116,24 +116,25 @@ namespace vrpn {
 #endif
         }
 
-        inline void markRequestSemaphore(void* semaphorePtr)
+        inline void markRequestSemaphore(void* guardPtr, void* semaphorePtr)
         {
 #ifdef VRPN_USE_ETWPROVIDERS
-            ETWMark1I("SemaphoreGuard: attempting to lock",
+            ETWMark2I("SemaphoreGuard: attempting to lock",
+                      shovePointerIntoInt(guardPtr),
                       shovePointerIntoInt(semaphorePtr));
 #endif
         }
-        inline void markAcquiredSemaphore(void* semaphorePtr)
+        inline void markAcquiredSemaphore(void* guardPtr, void* semaphorePtr)
         {
 #ifdef VRPN_USE_ETWPROVIDERS
-            ETWMark1I("SemaphoreGuard: locked",
+            ETWMark2I("SemaphoreGuard: locked", shovePointerIntoInt(guardPtr),
                       shovePointerIntoInt(semaphorePtr));
 #endif
         }
-        inline void markReleasedSemaphore(void* semaphorePtr)
+        inline void markReleasedSemaphore(void* guardPtr, void* semaphorePtr)
         {
 #ifdef VRPN_USE_ETWPROVIDERS
-            ETWMark1I("SemaphoreGuard: unlocked",
+            ETWMark2I("SemaphoreGuard: unlocked", shovePointerIntoInt(guardPtr),
                       shovePointerIntoInt(semaphorePtr));
 #endif
         }

@@ -443,7 +443,7 @@ namespace vrpn {
         if (locked_) {
             return;
         }
-        vrpn::tracing::markRequestSemaphore(this);
+        vrpn::tracing::markRequestSemaphore(this, &sem_);
         int result = sem_.p();
         handleLockResult_(result);
     }
@@ -454,7 +454,7 @@ namespace vrpn {
         if (locked_) {
             return true;
         }
-        vrpn::tracing::markRequestSemaphore(this);
+        vrpn::tracing::markRequestSemaphore(this, &sem_);
         int result = sem_.condP();
         handleLockResult_(result);
         return locked_;
@@ -465,7 +465,7 @@ namespace vrpn {
     {
         if (locked_) {
             int result = sem_.v();
-            vrpn::tracing::markReleasedSemaphore(this);
+            vrpn::tracing::markReleasedSemaphore(this, &sem_);
             ALL_ASSERT(result == 0, "failed to unlock semaphore!");
             locked_ = false;
         }
@@ -474,7 +474,7 @@ namespace vrpn {
     {
         ALL_ASSERT(result >= 0, "Lock error!");
         if (result == 1) {
-            vrpn::tracing::markAcquiredSemaphore(this);
+            vrpn::tracing::markAcquiredSemaphore(this, &sem_);
             locked_ = true;
         }
     }
