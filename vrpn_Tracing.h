@@ -115,6 +115,28 @@ namespace vrpn {
                           (force ? "true" : "false"));
 #endif
         }
+
+        inline void markRequestSemaphore(void* semaphorePtr)
+        {
+#ifdef VRPN_USE_ETWPROVIDERS
+            ETWMark1I("SemaphoreGuard: attempting to lock",
+                      shovePointerIntoInt(semaphorePtr));
+#endif
+        }
+        inline void markAcquiredSemaphore(void* semaphorePtr)
+        {
+#ifdef VRPN_USE_ETWPROVIDERS
+            ETWMark1I("SemaphoreGuard: locked",
+                      shovePointerIntoInt(semaphorePtr));
+#endif
+        }
+        inline void markReleasedSemaphore(void* semaphorePtr)
+        {
+#ifdef VRPN_USE_ETWPROVIDERS
+            ETWMark1I("SemaphoreGuard: unlocked",
+                      shovePointerIntoInt(semaphorePtr));
+#endif
+        }
     } // namespace tracing
 } // namespace vrpn
 

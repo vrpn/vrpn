@@ -8,7 +8,6 @@
     <http://sensics.com/osvr>
 */
 
-
 // Copyright 2015 Sensics, Inc.
 // Distributed under the Boost Software License, Version 1.0.
 //    (See accompanying file LICENSE_1_0.txt or copy at
@@ -17,6 +16,7 @@
 // Internal Includes
 #include "vrpn_Thread.h"
 #include "vrpn_Shared.h"
+#include "vrpn_Tracing.h"
 
 // Library/third-party includes
 // - none
@@ -443,6 +443,7 @@ namespace vrpn {
         if (locked_) {
             return;
         }
+        vrpn::tracing::markRequestSemaphore(this);
         int result = sem_.p();
         handleLockResult_(result);
     }
@@ -453,6 +454,7 @@ namespace vrpn {
         if (locked_) {
             return true;
         }
+        vrpn::tracing::markRequestSemaphore(this);
         int result = sem_.condP();
         handleLockResult_(result);
         return locked_;
@@ -463,6 +465,7 @@ namespace vrpn {
     {
         if (locked_) {
             int result = sem_.v();
+            vrpn::tracing::markReleasedSemaphore(this);
             ALL_ASSERT(result == 0, "failed to unlock semaphore!");
             locked_ = false;
         }
@@ -471,6 +474,7 @@ namespace vrpn {
     {
         ALL_ASSERT(result >= 0, "Lock error!");
         if (result == 1) {
+            vrpn::tracing::markAcquiredSemaphore(this);
             locked_ = true;
         }
     }
