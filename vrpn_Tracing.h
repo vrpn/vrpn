@@ -66,6 +66,7 @@ namespace vrpn {
                         reinterpret_cast<const char*>(&ptr),
                         sizeof(int) < sizeof(void*) ? sizeof(int)
                                                     : sizeof(void*));
+            return ret;
         }
 #else
         class Region {
