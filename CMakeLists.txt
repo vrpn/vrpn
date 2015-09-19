@@ -239,6 +239,7 @@ endif()
 # Submodules - bundled libraries/sources
 ###
 add_subdirectory(submodules)
+list(APPEND EXTRA_LIBS jsoncpp_lib)
 
 ###
 # SWIG and Python Libs (for python wrappers)
@@ -1139,7 +1140,6 @@ set(VRPN_SERVER_SOURCES
 	vrpn_Zaber.C
 	server_src/vrpn_Generic_server_object.C
 	${HIDAPI_SOURCES}
-	${JSONCPP_SOURCES}
 	${PDI_SOURCES})
 
 set(VRPN_SERVER_PUBLIC_HEADERS
