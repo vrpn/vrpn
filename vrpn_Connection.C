@@ -1432,12 +1432,19 @@ vrpn_ConnectionManager::~vrpn_ConnectionManager(void)
 
     // Call the destructor of every known connection.
     // That destructor will call vrpn_ConnectionManager::deleteConnection()
-    // to remove itself from d_kcList.
+    // to remove itself from d_kcList, so we need to free up the semaphore
+    // during the call to delete it).
     while (d_kcList) {
-        delete d_kcList->connection;
+        vrpn_Connection *ptr = d_kcList->connection;
+        d_semaphore.v();
+        delete ptr;
+        d_semaphore.p();
     }
     while (d_anonList) {
-        delete d_anonList->connection;
+        vrpn_Connection *ptr = d_anonList->connection;
+        d_semaphore.v();
+        delete ptr;
+        d_semaphore.p();
     }
 }
 
@@ -4972,6 +4979,10 @@ vrpn_Connection::vrpn_Connection(const char *local_in_logfile_name,
 
 vrpn_Connection::~vrpn_Connection(void)
 {
+    // Remove myself from the "known connections" list
+    //   (or the "anonymous connections" list).
+    vrpn_ConnectionManager::instance().deleteConnection(this);
+
     // Clean up the endpoints before the dispatcher
     d_endpoints.clear();
 
@@ -4983,6 +4994,7 @@ vrpn_Connection::~vrpn_Connection(void)
 
     if (d_references > 0) {
         fprintf(stderr,
+                "vrpn_Connection::~vrpn_Connection: "
                 "Connection was deleted while %d references still remain.\n",
                 d_references);
     }
@@ -5004,7 +5016,8 @@ void vrpn_Connection::removeReference()
     }
     else if (d_references < 0) { // this shouldn't happen.
         // sanity check
-        fprintf(stderr, "Negative reference count.  This shouldn't happen.");
+        fprintf(stderr, "vrpn_Connection::removeReference: "
+          "Negative reference count.  This shouldn't happen.");
     }
 }
 
@@ -6212,10 +6225,6 @@ vrpn_Connection_IP::vrpn_Connection_IP(
 
 vrpn_Connection_IP::~vrpn_Connection_IP(void)
 {
-    // Remove myself from the "known connections" list
-    //   (or the "anonymous connections" list).
-    vrpn_ConnectionManager::instance().deleteConnection(this);
-
     // Send any pending messages
     send_pending_reports();
 
@@ -6259,9 +6268,6 @@ vrpn_Connection_Loopback::vrpn_Connection_Loopback()
 
 vrpn_Connection_Loopback::~vrpn_Connection_Loopback(void)
 {
-    // Remove myself from the "known connections" list
-    //   (or the "anonymous connections" list).
-    vrpn_ConnectionManager::instance().deleteConnection(this);
 }
 
 int vrpn_Connection_Loopback::mainloop(const timeval * /*timeout*/)
