@@ -159,7 +159,6 @@ int vrpn_Streaming_Arduino::get_report(void)
     timeout.tv_usec = 0;
     int result = vrpn_read_available_characters(serial_fd, 
 		  buffer, sizeof(buffer)-1, &timeout);    
-
     if (result < 0) {
       VRPN_MSG_WARNING("Bad read, resetting");
       reset();
@@ -180,10 +179,19 @@ int vrpn_Streaming_Arduino::get_report(void)
         int val = 0;
         char comma;
         s >> val;
-        if (i < m_numchannels - 1) { s >> comma; }
         if (s.fail()) {
           std::cerr << "vrpn_Streaming_Arduino: Can't parse "
             << s.str() << " for value " << i << std::endl;
+          std::cerr << " Report was: " << m_buffer << std::endl;
+          VRPN_MSG_WARNING("Bad value, resetting");
+          reset();
+          return 0;
+        }
+        if (i < m_numchannels - 1) { s >> comma; }
+        if (s.fail()) {
+          std::cerr << "vrpn_Streaming_Arduino: Can't read comma "
+            "for value " << i << " (value parsed was " << val << ")" << std::endl;
+          std::cerr << " Report was: " << m_buffer << std::endl;
           VRPN_MSG_WARNING("Bad value, resetting");
           reset();
           return 0;
