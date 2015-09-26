@@ -205,9 +205,12 @@ int vrpn_Streaming_Arduino::get_report(void)
       // Gobble up the first report and see if there is another.
       m_buffer.erase(0, cr + 1);
       cr = m_buffer.find('\n');
+
+      // Report any changes.
+      vrpn_gettimeofday(&m_timestamp, NULL);
+      report_changes();
     }
 
-    report_changes();
     vrpn_gettimeofday(&m_timestamp, NULL);	// Set watchdog now
 
     status = STATUS_SYNCING;
