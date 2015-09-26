@@ -158,7 +158,7 @@ int vrpn_Streaming_Arduino::get_report(void)
     timeout.tv_sec = 0;
     timeout.tv_usec = 0;
     int result = vrpn_read_available_characters(serial_fd, 
-		  buffer, sizeof(buffer), &timeout);    
+		  buffer, sizeof(buffer)-1, &timeout);    
 
     if (result < 0) {
       VRPN_MSG_WARNING("Bad read, resetting");
@@ -171,7 +171,7 @@ int vrpn_Streaming_Arduino::get_report(void)
 
     // See if there is a carriage return in the buffer.  If so, we can parse
     // the report ahead of it and then remove it from the buffer.
-    size_t cr = m_buffer.find("\n");
+    size_t cr = m_buffer.find('\n');
     while (cr != std::string::npos) {
 
       // Parse the report.
@@ -196,7 +196,7 @@ int vrpn_Streaming_Arduino::get_report(void)
 
       // Gobble up the first report and see if there is another.
       m_buffer.erase(0, cr + 1);
-      cr = m_buffer.find("\n");
+      cr = m_buffer.find('\n');
     }
 
     report_changes();
