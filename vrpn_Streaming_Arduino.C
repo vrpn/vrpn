@@ -150,11 +150,13 @@ int vrpn_Streaming_Arduino::get_report(void)
     	return 0;
     }
 
+    // Find out the time of the read.
+    struct timeval read_time;
+    vrpn_gettimeofday(&read_time, NULL);
+
     // We're reading now.  Look for a large number of characters and see
     // what we get.
     unsigned char buffer[1024];
-
-    // get the expected number of data record bytes
     timeout.tv_sec = 0;
     timeout.tv_usec = 0;
     int result = vrpn_read_available_characters(serial_fd, 
@@ -202,12 +204,24 @@ int vrpn_Streaming_Arduino::get_report(void)
 
       // @todo parse any markers and put them into button reports.
 
+      // Back-date the reports based on the transmission rate of the
+      // characters from the Arduino -- the number of characters in
+      // the buffer while we're parsing tells how many characters
+      // arrived since that reading was taken.
+      // The bit rate is 115200, with 10 bits/character making our
+      // byte rate 11520 per second, resulting in around 87 micro-
+      // seconds per character (a little under a tenth of a milli-
+      // second).  So we get about 1ms of delay for every 10
+      // characters.
+      long offset_usec = 87 * m_buffer.size();
+      struct timeval offset = { 0 , offset_usec };
+      m_timestamp = vrpn_TimevalDiff(read_time, offset);
+
       // Gobble up the first report and see if there is another.
       m_buffer.erase(0, cr + 1);
       cr = m_buffer.find('\n');
 
       // Report any changes.
-      vrpn_gettimeofday(&m_timestamp, NULL);
       report_changes();
     }
 
