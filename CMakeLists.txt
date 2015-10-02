@@ -904,6 +904,10 @@ if(UNIX)
 
 endif()
 
+# This will only work on compilers that support C++-11.
+# We could check for this and turn it on by default.
+option(VRPN_USE_STD_CHRONO "Use the std::chrono class for time" OFF)
+
 option(VRPN_USE_STATIC_ASSERTIONS "Use some compile-time assertions" ON)
 option(VRPN_BUILD_EXTRA_COMPILER_WARNINGS
 	"Build with flags to enable extra warnings."

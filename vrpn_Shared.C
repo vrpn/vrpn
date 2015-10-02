@@ -375,6 +375,55 @@ VRPN_API int vrpn_unbuffer(const char **buffer, char *string, vrpn_int32 length)
     return 0;
 }
 
+//=====================================================================
+// This section contains various implementations of vrpn_gettimeofday().
+//   Which one is selected depends on various #defines.  There is a second
+// section that deals with handling various configurations on Windows.
+//   The first section deals with the fact that we may want to use the
+// std::chrono classes introduced in C++-11 as a cross-platform (even
+// Windows) solution to timing.  If VRPN_USE_STD_CHRONO is defined, then
+// we do this -- converting from chrono epoch and interval into the
+// gettimeofday() standard tick of microseconds and epoch start of
+// midnight, January 1, 1910.
+
+///////////////////////////////////////////////////////////////
+// Implementation with std::chrono follows, and overrides any of
+// the Windows-specific definitions if it is present.
+///////////////////////////////////////////////////////////////
+
+#ifdef VRPN_USE_STD_CHRONO
+#include <chrono>
+#include <ctime>
+
+extern "C" VRPN_API int vrpn_gettimeofday(struct timeval *tp, void *tzp)
+{
+  // If we have nothing to fill in, don't try.
+  if (tp == NULL) { return 0; }
+
+  std::chrono::system_clock::time_point epoch;
+  std::chrono::system_clock::time_point now =
+    std::chrono::system_clock::now();
+  std::time_t secs = std::chrono::duration_cast<std::chrono::seconds>(
+    now.time_since_epoch()).count();
+  std::chrono::system_clock::time_point fractional_secs =
+    now - std::chrono::seconds(secs);
+
+  std::time_t now_secs_t = std::chrono::system_clock::to_time_t(now);
+  tp->tv_sec = static_cast<unsigned long>(now_secs);
+  tp->tv_usec = std::chrono::duration_cast<std::chrono::seconds>(fractional_secs).count();
+
+  // @todo
+
+  // @todo Fill in timezone structure.
+  return 0;
+}
+
+#else // VRPN_USE_STD_CHRONO
+
+///////////////////////////////////////////////////////////////
+// Implementation without std::chrono follows.
+///////////////////////////////////////////////////////////////
+
 ///////////////////////////////////////////////////////////////
 // More accurate gettimeofday() on some Windows operating systems
 // and machines can be gotten by using the Performance Counter
@@ -840,6 +889,11 @@ static timeval __tv;
 static int __iTrash = vrpn_gettimeofday(&__tv, (struct timezone *)NULL);
 
 #endif // VRPN_UNSAFE_WINDOWS_CLOCK
+
+#endif // VRPN_USE_STD_CHRONO
+
+// End of the section dealing with vrpn_gettimeofday()
+//=====================================================================
 
 bool vrpn_test_pack_unpack(void)
 {
