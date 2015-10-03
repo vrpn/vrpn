@@ -104,24 +104,28 @@ int main(int argc, char *argv[]) {
 		printf("  Converted to secs and usecs: %6lu:%6lu\n", sec, usec);
 	}
 
-    /* Checking the vrpn_gettimeofday() function for monotonicity and step size */
-    struct timeval last_time, this_time;
-    double skip;
-    vrpn_gettimeofday(&last_time, NULL);
-    printf("Should be no further output if things are working\n");
-    while (true) {
-      vrpn_gettimeofday(&this_time, NULL);
-	  skip = vrpn_TimevalDurationSeconds(this_time, last_time);
-      if (skip > 200e-6) {
-        printf("Skipped forward %lg microseconds\n", skip*1e6);
-      }
-      if (skip < 0) {
-		  printf("** Backwards %lg microseconds\n", skip*1e6);
-      }
-      last_time = this_time;
+  /* Checking the vrpn_gettimeofday() function for monotonicity and step size */
+  struct timeval last_time, this_time;
+  double skip;
+  vrpn_gettimeofday(&last_time, NULL);
+  printf("Checking for monotonicity and step size\n");
+  printf(" (should be no further output if things are working)\n");
+  while (true) {
+    vrpn_gettimeofday(&this_time, NULL);
+	skip = vrpn_TimevalDurationSeconds(this_time, last_time);
+    if (skip > 200e-6) {
+      printf("Skipped forward %lg microseconds\n", skip*1e6);
     }
+    if (skip < 0) {
+  		printf("** Backwards %lg microseconds\n", skip*1e6);
+    }
+    if (skip == 0) {
+      printf("** Repeated time\n");
+    }
+    last_time = this_time;
+  }
 
-    return 0;
+  return 0;
 }
 
 #else

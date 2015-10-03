@@ -395,24 +395,36 @@ VRPN_API int vrpn_unbuffer(const char **buffer, char *string, vrpn_int32 length)
 #include <chrono>
 #include <ctime>
 
+///////////////////////////////////////////////////////////////
+// With Visual Studio 2013, this produces a clock that has a
+// tick interval of around 15.6 MILLIseconds, repeating the same
+// time between them.
+///////////////////////////////////////////////////////////////
+
 extern "C" VRPN_API int vrpn_gettimeofday(struct timeval *tp, void *tzp)
 {
   // If we have nothing to fill in, don't try.
   if (tp == NULL) { return 0; }
 
-  std::chrono::system_clock::time_point epoch;
-  std::chrono::system_clock::time_point now =
-    std::chrono::system_clock::now();
+  // Find out the time, and how long it has been in seconds since the
+  // epoch.
+  std::chrono::high_resolution_clock::time_point now =
+    std::chrono::high_resolution_clock::now();
   std::time_t secs = std::chrono::duration_cast<std::chrono::seconds>(
     now.time_since_epoch()).count();
-  std::chrono::system_clock::time_point fractional_secs =
+
+  // Subtract the time in seconds from the full time to get a
+  // remainder that is a fraction of a second since the epoch.
+  std::chrono::high_resolution_clock::time_point fractional_secs =
     now - std::chrono::seconds(secs);
 
-  std::time_t now_secs_t = std::chrono::system_clock::to_time_t(now);
-  tp->tv_sec = static_cast<unsigned long>(now_secs);
-  tp->tv_usec = std::chrono::duration_cast<std::chrono::seconds>(fractional_secs).count();
-
-  // @todo
+  // Store the seconds and the fractional seconds as microseconds into
+  // the timeval structure.
+  tp->tv_sec = static_cast<unsigned long>(secs);
+  tp->tv_usec = static_cast<unsigned long>(
+      std::chrono::duration_cast<std::chrono::microseconds>(
+        fractional_secs.time_since_epoch()).count()
+    );
 
   // @todo Fill in timezone structure.
   return 0;
