@@ -396,9 +396,12 @@ VRPN_API int vrpn_unbuffer(const char **buffer, char *string, vrpn_int32 length)
 #include <ctime>
 
 ///////////////////////////////////////////////////////////////
-// With Visual Studio 2013, this produces a clock that has a
+// With Visual Studio 2013 64-bit, this produces a clock that has a
 // tick interval of around 15.6 MILLIseconds, repeating the same
 // time between them.
+///////////////////////////////////////////////////////////////
+// With Visual Studio 2015 64-bit, this produces a good, high-
+// resolution clock with no blips.
 ///////////////////////////////////////////////////////////////
 
 extern "C" VRPN_API int vrpn_gettimeofday(struct timeval *tp, void *tzp)
