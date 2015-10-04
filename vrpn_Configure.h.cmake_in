@@ -52,6 +52,10 @@
 #define vrpn_DEFAULT_LISTEN_PORT_NO (3883)
 
 //-----------------------
+// Use the std::chrono library for time, rather than gettimeofday.
+#cmakedefine VRPN_USE_STD_CHRONO
+
+//-----------------------
 // Use compile-time static asserts.
 #cmakedefine VRPN_USE_STATIC_ASSERTIONS
 

@@ -375,6 +375,70 @@ VRPN_API int vrpn_unbuffer(const char **buffer, char *string, vrpn_int32 length)
     return 0;
 }
 
+//=====================================================================
+// This section contains various implementations of vrpn_gettimeofday().
+//   Which one is selected depends on various #defines.  There is a second
+// section that deals with handling various configurations on Windows.
+//   The first section deals with the fact that we may want to use the
+// std::chrono classes introduced in C++-11 as a cross-platform (even
+// Windows) solution to timing.  If VRPN_USE_STD_CHRONO is defined, then
+// we do this -- converting from chrono epoch and interval into the
+// gettimeofday() standard tick of microseconds and epoch start of
+// midnight, January 1, 1910.
+
+///////////////////////////////////////////////////////////////
+// Implementation with std::chrono follows, and overrides any of
+// the Windows-specific definitions if it is present.
+///////////////////////////////////////////////////////////////
+
+#ifdef VRPN_USE_STD_CHRONO
+#include <chrono>
+#include <ctime>
+
+///////////////////////////////////////////////////////////////
+// With Visual Studio 2013 64-bit, this produces a clock that has a
+// tick interval of around 15.6 MILLIseconds, repeating the same
+// time between them.
+///////////////////////////////////////////////////////////////
+// With Visual Studio 2015 64-bit, this produces a good, high-
+// resolution clock with no blips.
+///////////////////////////////////////////////////////////////
+
+extern "C" VRPN_API int vrpn_gettimeofday(struct timeval *tp, void *tzp)
+{
+  // If we have nothing to fill in, don't try.
+  if (tp == NULL) { return 0; }
+
+  // Find out the time, and how long it has been in seconds since the
+  // epoch.
+  std::chrono::high_resolution_clock::time_point now =
+    std::chrono::high_resolution_clock::now();
+  std::time_t secs = std::chrono::duration_cast<std::chrono::seconds>(
+    now.time_since_epoch()).count();
+
+  // Subtract the time in seconds from the full time to get a
+  // remainder that is a fraction of a second since the epoch.
+  std::chrono::high_resolution_clock::time_point fractional_secs =
+    now - std::chrono::seconds(secs);
+
+  // Store the seconds and the fractional seconds as microseconds into
+  // the timeval structure.
+  tp->tv_sec = static_cast<unsigned long>(secs);
+  tp->tv_usec = static_cast<unsigned long>(
+      std::chrono::duration_cast<std::chrono::microseconds>(
+        fractional_secs.time_since_epoch()).count()
+    );
+
+  // @todo Fill in timezone structure.
+  return 0;
+}
+
+#else // VRPN_USE_STD_CHRONO
+
+///////////////////////////////////////////////////////////////
+// Implementation without std::chrono follows.
+///////////////////////////////////////////////////////////////
+
 ///////////////////////////////////////////////////////////////
 // More accurate gettimeofday() on some Windows operating systems
 // and machines can be gotten by using the Performance Counter
@@ -840,6 +904,11 @@ static timeval __tv;
 static int __iTrash = vrpn_gettimeofday(&__tv, (struct timezone *)NULL);
 
 #endif // VRPN_UNSAFE_WINDOWS_CLOCK
+
+#endif // VRPN_USE_STD_CHRONO
+
+// End of the section dealing with vrpn_gettimeofday()
+//=====================================================================
 
 bool vrpn_test_pack_unpack(void)
 {

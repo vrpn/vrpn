@@ -904,6 +904,10 @@ if(UNIX)
 
 endif()
 
+# This will only work on compilers that support C++-11.
+# We could check for this and turn it on by default.
+option(VRPN_USE_STD_CHRONO "Use the std::chrono class for time" OFF)
+
 option(VRPN_USE_STATIC_ASSERTIONS "Use some compile-time assertions" ON)
 option(VRPN_BUILD_EXTRA_COMPILER_WARNINGS
 	"Build with flags to enable extra warnings."
@@ -1396,7 +1400,7 @@ endif()
 
 #-----------------------------------------------------------------------------
 # Testing applications that live in the main directory.
-if(VRPN_BUILD_SERVERS AND VRPN_BUILD_SERVER_LIBRARY AND BUILD_TESTING AND WIN32)
+if(BUILD_TESTING)
 	foreach(SOURCE time_test.cpp)
 		get_filename_component(APP ${SOURCE} NAME_WE)
 		add_executable(${APP} ${SOURCE})

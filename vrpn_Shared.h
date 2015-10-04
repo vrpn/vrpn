@@ -87,7 +87,14 @@
 
 #if (!defined(VRPN_USE_WINSOCK_SOCKETS))
 #include <sys/time.h> // for timeval, timezone, gettimeofday
-#define vrpn_gettimeofday gettimeofday
+// If we're using std::chrono, then we implement a new
+// vrpn_gettimeofday() on top of it in a platform-independent
+// manner.  Otherwise, we just use the system call.
+#ifdef VRPN_USE_STD_CHRONO
+  extern "C" VRPN_API int vrpn_gettimeofday(struct timeval *tp, void *tzp);
+#else
+  #define vrpn_gettimeofday gettimeofday
+#endif
 #else // winsock sockets
 
 // These are a pair of horrible hacks that instruct Windows include
@@ -114,7 +121,7 @@
 #endif
 
 // Whether or not we export gettimeofday, we declare the
-// vrpn_gettimeofday() function.
+// vrpn_gettimeofday() function on Windows.
 extern "C" VRPN_API int vrpn_gettimeofday(struct timeval *tp, void *tzp);
 
 // If compiling under Cygnus Solutions Cygwin then these get defined by
