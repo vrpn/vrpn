@@ -384,7 +384,7 @@ VRPN_API int vrpn_unbuffer(const char **buffer, char *string, vrpn_int32 length)
 // Windows) solution to timing.  If VRPN_USE_STD_CHRONO is defined, then
 // we do this -- converting from chrono epoch and interval into the
 // gettimeofday() standard tick of microseconds and epoch start of
-// midnight, January 1, 1910.
+// midnight, January 1, 1970.
 
 ///////////////////////////////////////////////////////////////
 // Implementation with std::chrono follows, and overrides any of
@@ -396,15 +396,99 @@ VRPN_API int vrpn_unbuffer(const char **buffer, char *string, vrpn_int32 length)
 #include <ctime>
 
 ///////////////////////////////////////////////////////////////
-// With Visual Studio 2013 64-bit, this produces a clock that has a
+// With Visual Studio 2013 64-bit, the hires clock produces a clock that has a
 // tick interval of around 15.6 MILLIseconds, repeating the same
 // time between them.
 ///////////////////////////////////////////////////////////////
-// With Visual Studio 2015 64-bit, this produces a good, high-
-// resolution clock with no blips.
+// With Visual Studio 2015 64-bit, the hires clock produces a good, high-
+// resolution clock with no blips.  However, its epoch seems to
+// restart when the machine boots, whereas the system clock epoch
+// starts at the standard midnight January 1, 1970.
 ///////////////////////////////////////////////////////////////
 
-extern "C" VRPN_API int vrpn_gettimeofday(struct timeval *tp, void *tzp)
+///////////////////////////////////////////////////////////////
+// Helper function to convert from the high-resolution clock
+// time to the equivalent system clock time (assuming no clock
+// adjustment on the system clock since program start).
+//  To make this thread safe, we semaphore the determination of
+// the offset to be applied.  To handle a slow-ticking system
+// clock, we repeatedly sample it until we get a change.
+//  This assumes that the high-resolution clock on different
+// threads has the same epoch.
+///////////////////////////////////////////////////////////////
+
+static bool hr_offset_determined = false;
+static vrpn_Semaphore hr_offset_semaphore;
+static struct timeval hr_offset;
+
+static struct timeval high_resolution_time_to_system_time(
+    struct timeval hi_res_time  //< Time computed from high-resolution clock
+  )
+{
+  // If we haven't yet determined the offset between the high-resolution
+  // clock and the system clock, do so now.  Avoid a race between threads
+  // using the semaphore and checking the boolean both before and after
+  // grabbing the semaphore (in case someone beat us to it).
+  if (!hr_offset_determined) {
+    hr_offset_semaphore.p();
+    // Someone else who had the semaphore may have beaten us to this.
+    if (!hr_offset_determined) {
+      // Watch the system clock until it changes; this will put us
+      // at a tick boundary.  On many systems, this will change right
+      // away, but on Windows 8 it will only tick every 16ms or so.
+      std::chrono::system_clock::time_point pre =
+        std::chrono::system_clock::now();
+      std::chrono::system_clock::time_point post;
+      // On Windows 8.1, this took from 1-16 ticks, and seemed to
+      // get offsets to the epoch that were consistent to within
+      // around 1ms.
+      do {
+        post = std::chrono::system_clock::now();
+      } while (pre == post);
+
+      // Now read the high-resolution timer to find out the time
+      // equivalent to the post time on the system clock.
+      std::chrono::high_resolution_clock::time_point high =
+        std::chrono::high_resolution_clock::now();
+
+      // Now convert both the hi-resolution clock time and the
+      // post-tick system clock time into struct timevals and
+      // store the difference between them as the offset.
+      std::time_t high_secs = std::chrono::duration_cast<std::chrono::seconds>(
+        high.time_since_epoch()).count();
+      std::chrono::high_resolution_clock::time_point fractional_high_secs =
+        high - std::chrono::seconds(high_secs);
+      struct timeval high_time;
+      high_time.tv_sec = static_cast<unsigned long>(high_secs);
+      high_time.tv_usec = static_cast<unsigned long>(
+        std::chrono::duration_cast<std::chrono::microseconds>(
+          fractional_high_secs.time_since_epoch()).count()
+        );
+
+      std::time_t post_secs = std::chrono::duration_cast<std::chrono::seconds>(
+        post.time_since_epoch()).count();
+      std::chrono::system_clock::time_point fractional_post_secs =
+        post - std::chrono::seconds(post_secs);
+      struct timeval post_time;
+      post_time.tv_sec = static_cast<unsigned long>(post_secs);
+      post_time.tv_usec = static_cast<unsigned long>(
+        std::chrono::duration_cast<std::chrono::microseconds>(
+          fractional_post_secs.time_since_epoch()).count()
+        );
+
+      hr_offset = vrpn_TimevalDiff(post_time, high_time);
+
+      // We've found our offset ... re-use it from here on.
+      hr_offset_determined = true;
+    }
+    hr_offset_semaphore.v();
+  }
+
+  // The offset has been determined, by us or someone else.  Apply it.
+  return vrpn_TimevalSum(hi_res_time, hr_offset);
+}
+
+extern "C" VRPN_API int vrpn_gettimeofday(struct timeval *tp, struct timezone *tzp)
 {
   // If we have nothing to fill in, don't try.
   if (tp == NULL) { return 0; }
@@ -422,14 +506,22 @@ extern "C" VRPN_API int vrpn_gettimeofday(struct timeval *tp, void *tzp)
     now - std::chrono::seconds(secs);
 
   // Store the seconds and the fractional seconds as microseconds into
-  // the timeval structure.
-  tp->tv_sec = static_cast<unsigned long>(secs);
-  tp->tv_usec = static_cast<unsigned long>(
+  // the timeval structure.  Then convert from the hi-res clock time
+  // to system clock time.
+  struct timeval hi_res_time;
+  hi_res_time.tv_sec = static_cast<unsigned long>(secs);
+  hi_res_time.tv_usec = static_cast<unsigned long>(
       std::chrono::duration_cast<std::chrono::microseconds>(
         fractional_secs.time_since_epoch()).count()
     );
+  *tp = high_resolution_time_to_system_time(hi_res_time);
 
-  // @todo Fill in timezone structure.
+  // @todo Fill in timezone structure with relevant info.
+  if (tzp != NULL) {
+    tzp->tz_minuteswest = 0;
+    tzp->tz_dsttime = 0;
+  }
+
   return 0;
 }
 

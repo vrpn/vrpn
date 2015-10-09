@@ -2,7 +2,7 @@
 #include <stdio.h>
 
 // Avoid warning on the call of _ftime()
-#ifdef  _WIN32
+#if defined(_WIN32) && !defined(VRPN_USE_STD_CHRONO)
 #define _CRT_SECURE_NO_WARNINGS
 
 #include <winbase.h>
@@ -129,15 +129,20 @@ int main(int argc, char *argv[]) {
 #else
 int main(void)
 {
-  /* Checking the vrpn_gettimeofday() function for monotonicity and step size */
   struct timeval last_time, this_time;
   double skip;
   vrpn_gettimeofday(&last_time, NULL);
+  printf("Current time in seconds:microseconds = %lu:%lu\n", 
+    last_time.tv_sec, last_time.tv_usec);
+  
   printf("Checking for monotonicity and step size\n");
   printf(" (should be no further output if things are working perfectly)\n");
+  fflush(stdout);
+
+  vrpn_gettimeofday(&last_time, NULL);
   while (true) {
     vrpn_gettimeofday(&this_time, NULL);
-	skip = vrpn_TimevalDurationSeconds(this_time, last_time);
+	  skip = vrpn_TimevalDurationSeconds(this_time, last_time);
     if (skip > 200e-6) {
       printf("Skipped forward %lg microseconds\n", skip*1e6);
     }
