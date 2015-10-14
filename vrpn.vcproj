@@ -1793,6 +1793,26 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="vrpn_Streaming_Arduino.C"
+				>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath="vrpn_Text.C"
 				>
 				<FileConfiguration
@@ -2975,6 +2995,10 @@
 			</File>
 			<File
 				RelativePath="vrpn_Spaceball.h"
+				>
+			</File>
+			<File
+				RelativePath="vrpn_Streaming_Arduino.h"
 				>
 			</File>
 			<File
