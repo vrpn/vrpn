@@ -581,17 +581,8 @@ void get_time_using_GetLocalTime(unsigned long &sec, unsigned long &usec)
 // version.  It is claimed that they have fixed it now, but
 // better check.
 ///////////////////////////////////////////////////////////////
-int vrpn_gettimeofday(timeval *tp, void *voidp)
+int vrpn_gettimeofday(timeval *tp, struct timezone *tzp)
 {
-#ifndef _STRUCT_TIMEZONE
-#define _STRUCT_TIMEZONE
-    /* from HP-UX */
-    struct timezone {
-        int tz_minuteswest; /* minutes west of Greenwich */
-        int tz_dsttime;     /* type of dst correction */
-    };
-#endif
-    struct timezone *tzp = (struct timezone *)voidp;
     if (tp != NULL) {
 #ifdef _WIN32_WCE
         unsigned long sec, usec;
@@ -780,7 +771,7 @@ static int vrpn_AdjustFrequency(void)
 // so until then, we will make it right using our solution.
 ///////////////////////////////////////////////////////////////
 #ifndef VRPN_WINDOWS_CLOCK_V2
-int vrpn_gettimeofday(timeval *tp, void *voidp)
+int vrpn_gettimeofday(timeval *tp, struct timezone *tzp)
 {
     static int fFirst = 1;
     static int fHasPerfCounter = 1;
@@ -789,16 +780,6 @@ int vrpn_gettimeofday(timeval *tp, void *voidp)
     static LARGE_INTEGER liNow;
     static LARGE_INTEGER liDiff;
     timeval tvDiff;
-
-#ifndef _STRUCT_TIMEZONE
-#define _STRUCT_TIMEZONE
-    /* from HP-UX */
-    struct timezone {
-        int tz_minuteswest; /* minutes west of Greenwich */
-        int tz_dsttime;     /* type of dst correction */
-    };
-#endif
-    struct timezone *tzp = (struct timezone *)voidp;
 
     if (!fHasPerfCounter) {
         _ftime(&tbInit);
@@ -962,7 +943,7 @@ void get_time_using_GetLocalTime(unsigned long &sec, unsigned long &usec)
     sec -= 3054524608L;
 }
 
-int vrpn_gettimeofday(timeval *tp, void *voidp)
+int vrpn_gettimeofday(timeval *tp, struct timezone *tzp)
 {
 #ifndef _STRUCT_TIMEZONE
 #define _STRUCT_TIMEZONE
@@ -972,8 +953,6 @@ int vrpn_gettimeofday(timeval *tp, void *voidp)
         int tz_dsttime;     /* type of dst correction */
     };
 #endif
-    struct timezone *tzp = (struct timezone *)voidp;
-
     unsigned long sec, usec;
     get_time_using_GetLocalTime(sec, usec);
     tp->tv_sec = sec;
