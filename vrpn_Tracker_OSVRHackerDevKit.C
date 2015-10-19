@@ -38,6 +38,8 @@ static const vrpn_uint16 vrpn_OSVR_ALT_HACKER_DEV_KIT_HMD = 0x2421;
 vrpn_Tracker_OSVRHackerDevKit::vrpn_Tracker_OSVRHackerDevKit(const char *name,
                                                              vrpn_Connection *c)
     : vrpn_Tracker(name, c)
+    , vrpn_Analog(name, c)
+    , vrpn_Button_Filter(name, c)
     , vrpn_HidInterface(new vrpn_HidBooleanOrAcceptor(
           new vrpn_HidProductAcceptor(vrpn_OSVR_VENDOR,
                                       vrpn_OSVR_HACKER_DEV_KIT_HMD),
@@ -46,14 +48,21 @@ vrpn_Tracker_OSVRHackerDevKit::vrpn_Tracker_OSVRHackerDevKit(const char *name,
     , _wasConnected(false)
     , _knownVersion(true)
 {
+    /// Tracker setup
     vrpn_Tracker::num_sensors = 1; // only orientation
-
     // Initialize the state
     std::memset(d_quat, 0, sizeof(d_quat));
     d_quat[Q_W] = 1.0;
-
     // Arbitrary dt that will be less than a full rotation.
     vel_quat_dt = 1.0 / 400.0;
+
+    /// Analog setup
+    vrpn_Analog::num_channel = 1; // just report version
+
+    /// Button setup
+    vrpn_Button::num_buttons = 8;
+    memset(buttons, 0, sizeof(buttons));
+    memset(lastbuttons, 0, sizeof(lastbuttons));
 
     // Set the timestamp
     vrpn_gettimeofday(&_timestamp, NULL);
@@ -128,6 +137,9 @@ void vrpn_Tracker_OSVRHackerDevKit::on_data_received(std::size_t bytes,
         break;
     }
 
+    // Report version as analog channel 0.
+    channel[0] = version;
+
     vrpn_uint8 msg_seq = vrpn_unbuffer_from_little_endian<vrpn_uint8>(buffer);
 
     // Signed, 16-bit, fixed-point numbers in Q1.14 format.
@@ -184,6 +196,20 @@ void vrpn_Tracker_OSVRHackerDevKit::on_data_received(std::size_t bytes,
                             "message: tossing\n");
         }
     }
+    if (version < 3) {
+        // No status info hidden in the first byte. Button values are not
+        // meaningful.
+        buttons[0] = false;
+    }
+    else {
+        // v3+: We've got status info in the upper nibble of the first byte.
+        buttons[0] = true;
+        buttons[1] = (firstByte & (0x01 << 4)) != 0; // got video?
+        buttons[2] = (firstByte & (0x01 << 5)) != 0; // portrait mode?
+    }
+
+    vrpn_Button_Filter::report_changes();
+    vrpn_Analog::report_changes();
 }
 
 void vrpn_Tracker_OSVRHackerDevKit::mainloop()
