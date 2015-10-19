@@ -64,7 +64,10 @@
  * number with a Q point of 14. The components of angular velocity are signed,
  * 16-bit fixed point, 2's complement with Q of 9. Reports are either 32 (in old
  * firmware, early v1 reports) or 16 bytes (most firmware, both v1 and v2) long,
- * and only v2 reports contain angular velocity data.
+ * and only v2+ reports contain angular velocity data.
+ *
+ * v3+ reports also contain additional data in the upper nibble of the version
+ * number that is exposed as buttons.
  */
 class VRPN_API vrpn_Tracker_OSVRHackerDevKit : public vrpn_Tracker, protected vrpn_HidInterface {
 public:

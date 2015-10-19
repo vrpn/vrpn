@@ -74,8 +74,58 @@ void vrpn_Tracker_OSVRHackerDevKit::on_data_received(std::size_t bytes,
         return;
     }
 
-    vrpn_uint8 version = vrpn_unbuffer_from_little_endian<vrpn_uint8>(buffer);
-    /// @todo Verify that version is what we expect.
+    vrpn_uint8 firstByte = vrpn_unbuffer_from_little_endian<vrpn_uint8>(buffer);
+
+    vrpn_uint8 version = vrpn_uint8(0x0f) & firstByte;
+    _reportVersion = version;
+
+    switch (version) {
+    case 1:
+        if (bytes != 32 && bytes != 16) {
+            send_text_message(vrpn_TEXT_WARNING)
+                << "Received a v1 report " << bytes
+                << " in length, but expected it to be 32 or 16 bytes. "
+                   "Discarding. "
+                   "(May indicate issues with HID!)";
+            return;
+        }
+        break;
+    case 2:
+        if (bytes != 16) {
+            send_text_message(vrpn_TEXT_WARNING)
+                << "Received a v2 report " << bytes
+                << " in length, but expected it to be 16 bytes. Discarding. "
+                   "(May indicate issues with HID!)";
+            return;
+        }
+        break;
+
+    case 3:
+        /// @todo once this report format is finalized, tighten up the
+        /// requirements.
+        if (bytes < 16) {
+            send_text_message(vrpn_TEXT_WARNING)
+                << "Received a v3 report " << bytes
+                << " in length, but expected it to be at least 16 bytes. "
+                   "Discarding. "
+                   "(May indicate issues with HID!)";
+            return;
+        }
+        break;
+    default:
+        /// Highlight that we don't know this report version well...
+        /// Do a minimal check of it.
+        if (bytes < 16) {
+            send_text_message(vrpn_TEXT_WARNING)
+                << "Received a report claiming to be version " << int(version)
+                << " that was " << bytes << " in length, but expected it to be "
+                                            "at least 16 bytes. Discarding. "
+                                            "(May indicate issues with HID!)";
+            return;
+        }
+        break;
+    }
+
     vrpn_uint8 msg_seq = vrpn_unbuffer_from_little_endian<vrpn_uint8>(buffer);
 
     // Signed, 16-bit, fixed-point numbers in Q1.14 format.
