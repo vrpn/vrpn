@@ -102,6 +102,9 @@ protected:
     /// Used to send a "normal"-severity message when we connect with info on the
     /// device.
     bool _wasConnected;
+
+    vrpn_uint8 _reportVersion;
+    bool _knownVersion;
 };
 
 #endif // VRPN_USE_HID

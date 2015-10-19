@@ -44,6 +44,7 @@ vrpn_Tracker_OSVRHackerDevKit::vrpn_Tracker_OSVRHackerDevKit(const char *name,
           new vrpn_HidProductAcceptor(vrpn_OSVR_ALT_VENDOR,
                                       vrpn_OSVR_ALT_HACKER_DEV_KIT_HMD)))
     , _wasConnected(false)
+    , _knownVersion(true)
 {
     vrpn_Tracker::num_sensors = 1; // only orientation
 
@@ -114,6 +115,7 @@ void vrpn_Tracker_OSVRHackerDevKit::on_data_received(std::size_t bytes,
         break;
     default:
         /// Highlight that we don't know this report version well...
+        _knownVersion = false;
         /// Do a minimal check of it.
         if (bytes < 16) {
             send_text_message(vrpn_TEXT_WARNING)
@@ -191,8 +193,21 @@ void vrpn_Tracker_OSVRHackerDevKit::mainloop()
     update();
 
     if (connected() && !_wasConnected) {
-        send_text_message("Successfully connected to OSVR Hacker Dev Kit HMD.",
-                          _timestamp, vrpn_TEXT_NORMAL);
+        send_text_message(vrpn_TEXT_NORMAL)
+            << "Successfully connected to OSVR Hacker Dev Kit HMD, receiving "
+               "version "
+            << int(_reportVersion) << " reports.";
+
+        if (!_knownVersion) {
+
+            send_text_message(vrpn_TEXT_WARNING)
+                << "Connected to OSVR Hacker Dev Kit HMD, receiving "
+                   "version "
+                << int(_reportVersion)
+                << " reports, newer than what is specifically recognized. You "
+                   "may want to update your server to best make use of this "
+                   "new report format.";
+        }
     }
     _wasConnected = connected();
 
