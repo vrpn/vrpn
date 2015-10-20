@@ -39,7 +39,6 @@ vrpn_Tracker_OSVRHackerDevKit::vrpn_Tracker_OSVRHackerDevKit(const char *name,
                                                              vrpn_Connection *c)
     : vrpn_Tracker(name, c)
     , vrpn_Analog(name, c)
-    , vrpn_Button_Filter(name, c)
     , vrpn_HidInterface(new vrpn_HidBooleanOrAcceptor(
           new vrpn_HidProductAcceptor(vrpn_OSVR_VENDOR,
                                       vrpn_OSVR_HACKER_DEV_KIT_HMD),
@@ -57,12 +56,7 @@ vrpn_Tracker_OSVRHackerDevKit::vrpn_Tracker_OSVRHackerDevKit(const char *name,
     vel_quat_dt = 1.0 / 400.0;
 
     /// Analog setup
-    vrpn_Analog::num_channel = 1; // just report version
-
-    /// Button setup
-    vrpn_Button::num_buttons = 8;
-    memset(buttons, 0, sizeof(buttons));
-    memset(lastbuttons, 0, sizeof(lastbuttons));
+    vrpn_Analog::num_channel = 2; // version and video input status
 
     // Set the timestamp
     vrpn_gettimeofday(&_timestamp, NULL);
@@ -197,18 +191,26 @@ void vrpn_Tracker_OSVRHackerDevKit::on_data_received(std::size_t bytes,
         }
     }
     if (version < 3) {
-        // No status info hidden in the first byte. Button values are not
-        // meaningful.
-        buttons[0] = false;
+        // No status info hidden in the first byte.
+        channel[1] = STATUS_UNKNOWN;
     }
     else {
         // v3+: We've got status info in the upper nibble of the first byte.
-        buttons[0] = true;
-        buttons[1] = (firstByte & (0x01 << 4)) != 0; // got video?
-        buttons[2] = (firstByte & (0x01 << 5)) != 0; // portrait mode?
+        bool gotVideo = (firstByte & (0x01 << 4)) != 0;    // got video?
+        bool gotPortrait = (firstByte & (0x01 << 5)) != 0; // portrait mode?
+        if (!gotVideo) {
+            channel[1] = STATUS_NO_VIDEO_INPUT;
+        }
+        else {
+            if (gotPortrait) {
+                channel[1] = STATUS_PORTRAIT_VIDEO_INPUT;
+            }
+            else {
+                channel[1] = STATUS_LANDSCAPE_VIDEO_INPUT;
+            }
+        }
     }
 
-    vrpn_Button_Filter::report_changes();
     vrpn_Analog::report_changes();
 }
 
@@ -235,6 +237,12 @@ void vrpn_Tracker_OSVRHackerDevKit::mainloop()
                    "new report format.";
         }
     }
+    if (!connected()) {
+        channel[0] = 0;
+        channel[1] = STATUS_UNKNOWN;
+        vrpn_Analog::report_changes();
+    }
+
     _wasConnected = connected();
 
     if (!_wasConnected) {

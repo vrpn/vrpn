@@ -16,7 +16,6 @@
 
 #include "vrpn_Tracker.h"        // for vrpn_Tracker
 #include "vrpn_Analog.h"         // for vrpn_Analog
-#include "vrpn_Button.h"         // for vrpn_Button_Filter
 #include "vrpn_Configure.h"      // for VRPN_API, VRPN_USE_HID
 #include "vrpn_Connection.h"     // for vrpn_Connection (ptr only), etc
 #include "vrpn_HumanInterface.h" // for vrpn_HIDDEVINFO, etc
@@ -82,11 +81,15 @@
  *    1: "pressed" if a video input signal is detected
  *    2: "pressed" if portrait mode video input, "unpressed" if landscape mode
  *
- * Report version number is exposed as an Analog channel.
+ * Report version number is exposed as Analog channel 0.
+ * Analog channel 1 should be interpreted as follows:
+ *    0: Status unknown - reports are < v3 or no connection.
+ *    1: No video input.
+ *    2: Portrait video input detected.
+ *    3: Landscape video input detected.
  */
 class VRPN_API vrpn_Tracker_OSVRHackerDevKit : public vrpn_Tracker,
                                                public vrpn_Analog,
-                                               public vrpn_Button_Filter,
                                                protected vrpn_HidInterface {
 public:
     /**
@@ -106,6 +109,13 @@ public:
      * @brief Standard VRPN mainloop method.
      */
     virtual void mainloop();
+
+    enum Status {
+        STATUS_UNKNOWN = 0,
+        STATUS_NO_VIDEO_INPUT = 1,
+        STATUS_PORTRAIT_VIDEO_INPUT = 2,
+        STATUS_LANDSCAPE_VIDEO_INPUT = 3
+    };
 
 protected:
     /// Extracts the sensor values from each report.
