@@ -73,13 +73,7 @@
  * and only v2+ reports contain angular velocity data.
  *
  * v3+ reports also contain additional data in the upper nibble of the version
- * number that is exposed as buttons.
- *
- * Button:
- *    0: whether any of the buttons convey valid information (effectively, if
- * version >= 3)
- *    1: "pressed" if a video input signal is detected
- *    2: "pressed" if portrait mode video input, "unpressed" if landscape mode
+ * number.
  *
  * Report version number is exposed as Analog channel 0.
  * Analog channel 1 should be interpreted as follows:
