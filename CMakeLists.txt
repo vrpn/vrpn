@@ -1074,6 +1074,7 @@ set(VRPN_SERVER_SOURCES
 	vrpn_NationalInstruments.C
 	vrpn_Nidaq.C
 	vrpn_nikon_controls.C
+	vrpn_Oculus.C
 	vrpn_OmegaTemperature.C
 	vrpn_Poser_Analog.C
 	vrpn_Poser_Tek4662.C
@@ -1179,6 +1180,7 @@ set(VRPN_SERVER_PUBLIC_HEADERS
 	vrpn_NationalInstruments.h
 	vrpn_Nidaq.h
 	vrpn_nikon_controls.h
+	vrpn_Oculus.h
 	vrpn_OmegaTemperature.h
 	vrpn_OneEuroFilter.h
 	vrpn_Poser_Analog.h

@@ -54,6 +54,7 @@
 #include "vrpn_Mouse.h"                    // for vrpn_Button_SerialMouse, etc
 #include "vrpn_NationalInstruments.h"
 #include "vrpn_nikon_controls.h"   // for vrpn_Nikon_Controls
+#include "vrpn_Oculus.h"           // for vrpn_Oculus_DK2
 #include "vrpn_OmegaTemperature.h" // for vrpn_OmegaTemperature
 #include "vrpn_Phantom.h"
 #include "vrpn_Poser_Analog.h"          // for vrpn_Poser_AnalogParam, etc
@@ -4808,6 +4809,32 @@ int vrpn_Generic_Server_Object::setup_Tracker_DeadReckoning_Rotation(char *&pch,
     return 0;
 }
 
+int vrpn_Generic_Server_Object::setup_Oculus_DK2(char *&pch, char *line, FILE *)
+{
+  char s2[LINESIZE];
+
+  VRPN_CONFIG_NEXT();
+  int ret = sscanf(pch, "%511s", s2);
+  if (ret != 1) {
+    fprintf(stderr, "Bad Oculus_DK2 line: %s\n", line);
+    return -1;
+  }
+
+  // Open the Oculus DK2
+  if (verbose) {
+    printf("Opening vrpn_Oculus_DK2\n");
+  }
+
+#ifdef VRPN_USE_HID
+  // Open the tracker
+  _devices->add(new vrpn_Oculus_DK2(s2, connection));
+#else
+  fprintf(stderr,
+    "Oculus_DK2 driver works only with VRPN_USE_HID defined!\n");
+#endif
+  return 0; // successful completion
+}
+
 #undef VRPN_CONFIG_NEXT
 
 vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(
@@ -5360,6 +5387,9 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(
                 }
                 else if (VRPN_ISIT("vrpn_Tracker_DeadReckoning_Rotation")) {
                     VRPN_CHECK(setup_Tracker_DeadReckoning_Rotation);
+                }
+                else if (VRPN_ISIT("vrpn_Oculus_DK2")) {
+                  VRPN_CHECK(setup_Oculus_DK2);
                 }
                 else {                         // Never heard of it
                     sscanf(line, "%511s", s1); // Find out the class name
