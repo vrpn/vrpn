@@ -45,16 +45,46 @@ vrpn_Oculus_DK2::~vrpn_Oculus_DK2()
   delete m_acceptor;
 }
 
+// Thank you to Oliver Kreylos for the info needed to write this function.
+// It is based on his OculusRiftHIDReports.cpp, used with permission.
 void vrpn_Oculus_DK2::on_data_received(std::size_t bytes,
-                                                     vrpn_uint8 *buffer)
+     vrpn_uint8 *buffer)
 {
-    if (bytes != 32 && bytes != 16) {
-      send_text_message("Unexpected report length", d_timestamp,
-        vrpn_TEXT_WARNING);
-        return;
-    }
+  /* We're getting 64-byte messages of type 11 when the example code
+     seems to suggest we want messages of type 1.  Maybe we need to
+     set the DK2 into a different mode.
+  printf("XXX Got %d bytes\n", static_cast<int>(bytes));
+  if (buffer[0] == 0x01) {
+
+  } else {
+    printf("XXX Unexpected message type: %d\n", buffer[0]);
+  }
+  */
 
     // @todo Parse the data and fill in the structures.
+
+    
+      /* Unpack the message:
+      pktBuffer.setReadPosAbs(0);
+      if (pktBuffer.read<Misc::UInt8>() == 0x01U)
+      {
+        numSamples = pktBuffer.read<Misc::UInt8>();
+        timeStamp = pktBuffer.read<Misc::UInt16>();
+        pktBuffer.skip<Misc::UInt16>(1);
+        temperature = pktBuffer.read<Misc::SInt16>();
+        for (unsigned int sample = 0; sample<numSamples&&sample<3; ++sample)
+        {
+          Misc::UInt8 bytes[16];
+          pktBuffer.read<Misc::UInt8>(bytes, 16);
+          unpackVector(bytes, samples[sample].accel);
+          unpackVector(bytes + 8, samples[sample].gyro);
+        }
+        for (unsigned int sample = numSamples; sample<3; ++sample)
+          pktBuffer.skip<Misc::UInt8>(16);
+        for (int i = 0; i<3; ++i)
+          mag[i] = pktBuffer.read<Misc::SInt16>();
+      }
+      */
 }
 
 void vrpn_Oculus_DK2::mainloop()
