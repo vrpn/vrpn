@@ -396,11 +396,11 @@ void vrpn_3DConnexionWireless::decodePacket(size_t bytes, vrpn_uint8 *buffer)
 						buttons[btn] = ((*location) & mask) != 0;
 					}
 					break;
-
-		case 23:
-			//No need to take action. It just indicates user has stopped using the mouse.
-			break;
 		}
+
+    case 23:
+      //No need to take action. It just indicates user has stopped using the mouse.
+      break;    
 
 		default:
 			vrpn_gettimeofday(&_timestamp, NULL);
