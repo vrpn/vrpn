@@ -313,102 +313,82 @@ void vrpn_3DConnexion::decodePacket(size_t bytes, vrpn_uint8 *buffer)
 
 void vrpn_3DConnexionWireless::decodePacket(size_t bytes, vrpn_uint8 *buffer)
 {
-	// The wireless versions send 13 bytes, not 7.
-	//We do the same check on size as the non wireless version
-	if (bytes<13) bytes=13;
-	if (bytes > 13) {
-		fprintf(stderr, "vrpn_3DConnexionWireless::decodePacket(): Long packet (%d bytes), may mis-parse\n",
-			static_cast<int>(bytes));
-	}
-	// Decode all full reports.
-	// Just like the wired the first byte is the report type.
-	// Unlike the wired the wireless mice only send report type 1 & 3 (and 23) but not 2.
-	// 23 appears to be a new report type that signals and end of mouse movement.
-	// Report type 1 is then followed by both translation and rotation.
-	for (size_t i = 0; i < bytes / 13; i++) {
-		vrpn_uint8 *report = buffer + (i * 13);
+  // The wireless versions send 13 bytes, not 7.
+  //We do the same check on size as the non wireless version
+  if (bytes<13) bytes=13;
+  if (bytes > 13) {
+    fprintf(stderr, "vrpn_3DConnexionWireless::decodePacket(): Long packet (%d bytes), may mis-parse\n",
+      static_cast<int>(bytes));
+  }
+  // Decode all full reports.
+  // Just like the wired the first byte is the report type.
+  // Unlike the wired the wireless mice only send report type 1 & 3 (and 23) but not 2.
+  // 23 appears to be a new report type that signals and end of mouse movement.
+  // Report type 1 is then followed by both translation and rotation.
+  for (size_t i = 0; i < bytes / 13; i++) {
+    vrpn_uint8 *report = buffer + (i * 13);
 
-		// There are three types of reports.  Parse whichever type this is.
-		char  report_type = report[0];
-		vrpn_uint8 *bufptr = &report[1];
-		//The wireless version reports out of 350, compared to out of 400 for the wired.
-		const float scale = 1.0f/350.0f;
-		switch (report_type)  {
-			// Report types 1 and 2 come one after the other.  Each seems
-			// to change when the puck is moved.  It looks like each pair
-			// of values records a signed value for one channel; report
-			// type 1 is translation and report type 2 is rotation.
-			// The minimum and maximum values seem to vary somewhat.
-			// They all seem to be able to get over 400, so we scale
-			// by 400 and then clamp to (-1..1).
-			// The first byte is the low-order byte and the second is the
-			// high-order byte.
-		case 1:
-			channel[0] = vrpn_unbuffer_from_little_endian<vrpn_int16>(bufptr) * scale;
-			if (channel[0] < -1.0) { channel[0] = -1.0; }
-			if (channel[0] > 1.0) { channel[0] = 1.0; }
-			channel[1] = vrpn_unbuffer_from_little_endian<vrpn_int16>(bufptr) * scale;
-			if (channel[1] < -1.0) { channel[1] = -1.0; }
-			if (channel[1] > 1.0) { channel[1] = 1.0; }
-			channel[2] = vrpn_unbuffer_from_little_endian<vrpn_int16>(bufptr) * scale;
-			if (channel[2] < -1.0) { channel[2] = -1.0; }
-			if (channel[2] > 1.0) { channel[2] = 1.0; }
-			channel[3] = vrpn_unbuffer_from_little_endian<vrpn_int16>(bufptr) * scale;
-			if (channel[3] < -1.0) { channel[3] = -1.0; }
-			if (channel[3] > 1.0) { channel[3] = 1.0; }
-			channel[4] = vrpn_unbuffer_from_little_endian<vrpn_int16>(bufptr) * scale;
-			if (channel[4] < -1.0) { channel[4] = -1.0; }
-			if (channel[4] > 1.0) { channel[4] = 1.0; }
-			channel[5] = vrpn_unbuffer_from_little_endian<vrpn_int16>(bufptr) * scale;
-			if (channel[5] < -1.0) { channel[5] = -1.0; }
-			if (channel[5] > 1.0) { channel[5] = 1.0; }
-			break;
+    // There are three types of reports.  Parse whichever type this is.
+    char  report_type = report[0];
+    vrpn_uint8 *bufptr = &report[1];
+    //The wireless version reports out of 350, compared to out of 400 for the wired.
+    const float scale = 1.0f/350.0f;
+    switch (report_type)  {
+      // Report types 1 and 2 come one after the other.  Each seems
+      // to change when the puck is moved.  It looks like each pair
+      // of values records a signed value for one channel; report
+      // type 1 is translation and report type 2 is rotation.
+      // The minimum and maximum values seem to vary somewhat.
+      // They all seem to be able to get over 400, so we scale
+      // by 400 and then clamp to (-1..1).
+      // The first byte is the low-order byte and the second is the
+      // high-order byte.
+    case 1:
+      channel[0] = vrpn_unbuffer_from_little_endian<vrpn_int16>(bufptr) * scale;
+      if (channel[0] < -1.0) { channel[0] = -1.0; }
+      if (channel[0] > 1.0) { channel[0] = 1.0; }
+      channel[1] = vrpn_unbuffer_from_little_endian<vrpn_int16>(bufptr) * scale;
+      if (channel[1] < -1.0) { channel[1] = -1.0; }
+      if (channel[1] > 1.0) { channel[1] = 1.0; }
+      channel[2] = vrpn_unbuffer_from_little_endian<vrpn_int16>(bufptr) * scale;
+      if (channel[2] < -1.0) { channel[2] = -1.0; }
+      if (channel[2] > 1.0) { channel[2] = 1.0; }
+      channel[3] = vrpn_unbuffer_from_little_endian<vrpn_int16>(bufptr) * scale;
+      if (channel[3] < -1.0) { channel[3] = -1.0; }
+      if (channel[3] > 1.0) { channel[3] = 1.0; }
+      channel[4] = vrpn_unbuffer_from_little_endian<vrpn_int16>(bufptr) * scale;
+      if (channel[4] < -1.0) { channel[4] = -1.0; }
+      if (channel[4] > 1.0) { channel[4] = 1.0; }
+      channel[5] = vrpn_unbuffer_from_little_endian<vrpn_int16>(bufptr) * scale;
+      if (channel[5] < -1.0) { channel[5] = -1.0; }
+      if (channel[5] > 1.0) { channel[5] = 1.0; }
+      break;
 
-		case 3: { // Button report
-					int btn;
+    case 3: { // Button report
+      int btn;
 
-					// Button reports are encoded as bits in the first 2 bytes
-					// after the type.  There can be more than one byte if there
-					// are more than 8 buttons such as on SpaceExplorer or SpaceBall5000.
-					// If 8 or less, we don't look at 2nd byte.
-					// SpaceExplorer buttons are (for example):
-					// Name           Number
-					// 1              0
-					// 2              1
-					// T              2
-					// L              3
-					// R              4
-					// F              5
-					// ESC            6
-					// ALT            7
-					// SHIFT          8
-					// CTRL           9
-					// FIT            10
-					// PANEL          11
-					// +              12
-					// -              13
-					// 2D             14
+      // Button reports are encoded as per non-wirless version.
 
-					for (btn = 0; btn < vrpn_Button::num_buttons; btn++) {
-						vrpn_uint8 *location, mask;
-						location = report + 1 + (btn / 8);
-						mask = 1 << (btn % 8);
-						buttons[btn] = ((*location) & mask) != 0;
-					}
-					break;
-		}
+      for (btn = 0; btn < vrpn_Button::num_buttons; btn++) {
+        vrpn_uint8 *location, mask;
+        location = report + 1 + (btn / 8);
+        mask = 1 << (btn % 8);
+        buttons[btn] = ((*location) & mask) != 0;
+      }
+      break;
+    }
 
     case 23:
       //No need to take action. It just indicates user has stopped using the mouse.
       break;    
 
-		default:
-			vrpn_gettimeofday(&_timestamp, NULL);
-			send_text_message("Unknown report type", _timestamp, vrpn_TEXT_WARNING);
-		}
-		// Report this event before parsing the next.
-		report_changes();
-	}
+    default:
+      vrpn_gettimeofday(&_timestamp, NULL);
+      send_text_message("Unknown report type", _timestamp, vrpn_TEXT_WARNING);
+    }
+    // Report this event before parsing the next.
+    report_changes();
+  }
 }
 #endif
 
