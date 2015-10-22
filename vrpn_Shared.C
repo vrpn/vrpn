@@ -422,107 +422,115 @@ static vrpn_Semaphore hr_offset_semaphore;
 static struct timeval hr_offset;
 
 static struct timeval high_resolution_time_to_system_time(
-    struct timeval hi_res_time  //< Time computed from high-resolution clock
-  )
+    struct timeval hi_res_time //< Time computed from high-resolution clock
+    )
 {
-  // If we haven't yet determined the offset between the high-resolution
-  // clock and the system clock, do so now.  Avoid a race between threads
-  // using the semaphore and checking the boolean both before and after
-  // grabbing the semaphore (in case someone beat us to it).
-  if (!hr_offset_determined) {
-    hr_offset_semaphore.p();
-    // Someone else who had the semaphore may have beaten us to this.
+    // If we haven't yet determined the offset between the high-resolution
+    // clock and the system clock, do so now.  Avoid a race between threads
+    // using the semaphore and checking the boolean both before and after
+    // grabbing the semaphore (in case someone beat us to it).
     if (!hr_offset_determined) {
-      // Watch the system clock until it changes; this will put us
-      // at a tick boundary.  On many systems, this will change right
-      // away, but on Windows 8 it will only tick every 16ms or so.
-      std::chrono::system_clock::time_point pre =
-        std::chrono::system_clock::now();
-      std::chrono::system_clock::time_point post;
-      // On Windows 8.1, this took from 1-16 ticks, and seemed to
-      // get offsets to the epoch that were consistent to within
-      // around 1ms.
-      do {
-        post = std::chrono::system_clock::now();
-      } while (pre == post);
+        hr_offset_semaphore.p();
+        // Someone else who had the semaphore may have beaten us to this.
+        if (!hr_offset_determined) {
+            // Watch the system clock until it changes; this will put us
+            // at a tick boundary.  On many systems, this will change right
+            // away, but on Windows 8 it will only tick every 16ms or so.
+            std::chrono::system_clock::time_point pre =
+                std::chrono::system_clock::now();
+            std::chrono::system_clock::time_point post;
+            // On Windows 8.1, this took from 1-16 ticks, and seemed to
+            // get offsets to the epoch that were consistent to within
+            // around 1ms.
+            do {
+                post = std::chrono::system_clock::now();
+            } while (pre == post);
 
-      // Now read the high-resolution timer to find out the time
-      // equivalent to the post time on the system clock.
-      std::chrono::high_resolution_clock::time_point high =
-        std::chrono::high_resolution_clock::now();
+            // Now read the high-resolution timer to find out the time
+            // equivalent to the post time on the system clock.
+            std::chrono::high_resolution_clock::time_point high =
+                std::chrono::high_resolution_clock::now();
 
-      // Now convert both the hi-resolution clock time and the
-      // post-tick system clock time into struct timevals and
-      // store the difference between them as the offset.
-      std::time_t high_secs = std::chrono::duration_cast<std::chrono::seconds>(
-        high.time_since_epoch()).count();
-      std::chrono::high_resolution_clock::time_point fractional_high_secs =
-        high - std::chrono::seconds(high_secs);
-      struct timeval high_time;
-      high_time.tv_sec = static_cast<unsigned long>(high_secs);
-      high_time.tv_usec = static_cast<unsigned long>(
-        std::chrono::duration_cast<std::chrono::microseconds>(
-          fractional_high_secs.time_since_epoch()).count()
-        );
+            // Now convert both the hi-resolution clock time and the
+            // post-tick system clock time into struct timevals and
+            // store the difference between them as the offset.
+            std::time_t high_secs =
+                std::chrono::duration_cast<std::chrono::seconds>(
+                    high.time_since_epoch())
+                    .count();
+            std::chrono::high_resolution_clock::time_point
+                fractional_high_secs = high - std::chrono::seconds(high_secs);
+            struct timeval high_time;
+            high_time.tv_sec = static_cast<unsigned long>(high_secs);
+            high_time.tv_usec = static_cast<unsigned long>(
+                std::chrono::duration_cast<std::chrono::microseconds>(
+                    fractional_high_secs.time_since_epoch())
+                    .count());
 
-      std::time_t post_secs = std::chrono::duration_cast<std::chrono::seconds>(
-        post.time_since_epoch()).count();
-      std::chrono::system_clock::time_point fractional_post_secs =
-        post - std::chrono::seconds(post_secs);
-      struct timeval post_time;
-      post_time.tv_sec = static_cast<unsigned long>(post_secs);
-      post_time.tv_usec = static_cast<unsigned long>(
-        std::chrono::duration_cast<std::chrono::microseconds>(
-          fractional_post_secs.time_since_epoch()).count()
-        );
+            std::time_t post_secs =
+                std::chrono::duration_cast<std::chrono::seconds>(
+                    post.time_since_epoch())
+                    .count();
+            std::chrono::system_clock::time_point fractional_post_secs =
+                post - std::chrono::seconds(post_secs);
+            struct timeval post_time;
+            post_time.tv_sec = static_cast<unsigned long>(post_secs);
+            post_time.tv_usec = static_cast<unsigned long>(
+                std::chrono::duration_cast<std::chrono::microseconds>(
+                    fractional_post_secs.time_since_epoch())
+                    .count());
 
-      hr_offset = vrpn_TimevalDiff(post_time, high_time);
+            hr_offset = vrpn_TimevalDiff(post_time, high_time);
 
-      // We've found our offset ... re-use it from here on.
-      hr_offset_determined = true;
+            // We've found our offset ... re-use it from here on.
+            hr_offset_determined = true;
+        }
+        hr_offset_semaphore.v();
     }
-    hr_offset_semaphore.v();
-  }
 
-  // The offset has been determined, by us or someone else.  Apply it.
-  return vrpn_TimevalSum(hi_res_time, hr_offset);
+    // The offset has been determined, by us or someone else.  Apply it.
+    return vrpn_TimevalSum(hi_res_time, hr_offset);
 }
 
-extern "C" VRPN_API int vrpn_gettimeofday(struct timeval *tp, struct timezone *tzp)
+extern "C" VRPN_API int vrpn_gettimeofday(struct timeval *tp,
+                                          struct timezone *tzp)
 {
-  // If we have nothing to fill in, don't try.
-  if (tp == NULL) { return 0; }
+    // If we have nothing to fill in, don't try.
+    if (tp == NULL) {
+        return 0;
+    }
 
-  // Find out the time, and how long it has been in seconds since the
-  // epoch.
-  std::chrono::high_resolution_clock::time_point now =
-    std::chrono::high_resolution_clock::now();
-  std::time_t secs = std::chrono::duration_cast<std::chrono::seconds>(
-    now.time_since_epoch()).count();
+    // Find out the time, and how long it has been in seconds since the
+    // epoch.
+    std::chrono::high_resolution_clock::time_point now =
+        std::chrono::high_resolution_clock::now();
+    std::time_t secs =
+        std::chrono::duration_cast<std::chrono::seconds>(now.time_since_epoch())
+            .count();
 
-  // Subtract the time in seconds from the full time to get a
-  // remainder that is a fraction of a second since the epoch.
-  std::chrono::high_resolution_clock::time_point fractional_secs =
-    now - std::chrono::seconds(secs);
+    // Subtract the time in seconds from the full time to get a
+    // remainder that is a fraction of a second since the epoch.
+    std::chrono::high_resolution_clock::time_point fractional_secs =
+        now - std::chrono::seconds(secs);
 
-  // Store the seconds and the fractional seconds as microseconds into
-  // the timeval structure.  Then convert from the hi-res clock time
-  // to system clock time.
-  struct timeval hi_res_time;
-  hi_res_time.tv_sec = static_cast<unsigned long>(secs);
-  hi_res_time.tv_usec = static_cast<unsigned long>(
-      std::chrono::duration_cast<std::chrono::microseconds>(
-        fractional_secs.time_since_epoch()).count()
-    );
-  *tp = high_resolution_time_to_system_time(hi_res_time);
+    // Store the seconds and the fractional seconds as microseconds into
+    // the timeval structure.  Then convert from the hi-res clock time
+    // to system clock time.
+    struct timeval hi_res_time;
+    hi_res_time.tv_sec = static_cast<unsigned long>(secs);
+    hi_res_time.tv_usec = static_cast<unsigned long>(
+        std::chrono::duration_cast<std::chrono::microseconds>(
+            fractional_secs.time_since_epoch())
+            .count());
+    *tp = high_resolution_time_to_system_time(hi_res_time);
 
-  // @todo Fill in timezone structure with relevant info.
-  if (tzp != NULL) {
-    tzp->tz_minuteswest = 0;
-    tzp->tz_dsttime = 0;
-  }
+    // @todo Fill in timezone structure with relevant info.
+    if (tzp != NULL) {
+        tzp->tz_minuteswest = 0;
+        tzp->tz_dsttime = 0;
+    }
 
-  return 0;
+    return 0;
 }
 
 #else // VRPN_USE_STD_CHRONO
@@ -1002,38 +1010,51 @@ bool vrpn_test_pack_unpack(void)
     char *bufptr = (char *)dbuffer;
     buflen = sizeof(dbuffer);
     if (vrpn_buffer_to_little_endian(&bufptr, &buflen, in_float64) != 0) {
-        fprintf(stderr, "vrpn_test_pack_unpack(): Could not buffer little endian\n");
+        fprintf(stderr,
+                "vrpn_test_pack_unpack(): Could not buffer little endian\n");
         return false;
     }
     if (vrpn_buffer_to_little_endian(&bufptr, &buflen, in_int32) != 0) {
-        fprintf(stderr, "vrpn_test_pack_unpack(): Could not buffer little endian\n");
+        fprintf(stderr,
+                "vrpn_test_pack_unpack(): Could not buffer little endian\n");
         return false;
     }
     if (vrpn_buffer_to_little_endian(&bufptr, &buflen, in_uint16) != 0) {
-        fprintf(stderr, "vrpn_test_pack_unpack(): Could not buffer little endian\n");
+        fprintf(stderr,
+                "vrpn_test_pack_unpack(): Could not buffer little endian\n");
         return false;
     }
     if (vrpn_buffer_to_little_endian(&bufptr, &buflen, in_uint8) != 0) {
-        fprintf(stderr, "vrpn_test_pack_unpack(): Could not buffer little endian\n");
+        fprintf(stderr,
+                "vrpn_test_pack_unpack(): Could not buffer little endian\n");
         return false;
     }
 
     // Test unpacking using little-endian routines.
     bufptr = (char *)dbuffer;
-    if (in_float64 != (out_float64 = vrpn_unbuffer_from_little_endian<vrpn_float64>(bufptr))) {
-        fprintf(stderr, "vrpn_test_pack_unpack(): Could not unbuffer little endian\n");
+    if (in_float64 !=
+        (out_float64 =
+             vrpn_unbuffer_from_little_endian<vrpn_float64>(bufptr))) {
+        fprintf(stderr,
+                "vrpn_test_pack_unpack(): Could not unbuffer little endian\n");
         return false;
     }
-    if (in_int32 != (out_int32 = vrpn_unbuffer_from_little_endian<vrpn_int32>(bufptr))) {
-        fprintf(stderr, "vrpn_test_pack_unpack(): Could not unbuffer little endian\n");
+    if (in_int32 !=
+        (out_int32 = vrpn_unbuffer_from_little_endian<vrpn_int32>(bufptr))) {
+        fprintf(stderr,
+                "vrpn_test_pack_unpack(): Could not unbuffer little endian\n");
         return false;
     }
-    if (in_uint16 != (out_uint16 = vrpn_unbuffer_from_little_endian<vrpn_uint16>(bufptr))) {
-        fprintf(stderr, "vrpn_test_pack_unpack(): Could not unbuffer little endian\n");
+    if (in_uint16 !=
+        (out_uint16 = vrpn_unbuffer_from_little_endian<vrpn_uint16>(bufptr))) {
+        fprintf(stderr,
+                "vrpn_test_pack_unpack(): Could not unbuffer little endian\n");
         return false;
     }
-    if (in_uint8 != (out_uint8 = vrpn_unbuffer_from_little_endian<vrpn_uint8>(bufptr))) {
-        fprintf(stderr, "vrpn_test_pack_unpack(): Could not unbuffer little endian\n");
+    if (in_uint8 !=
+        (out_uint8 = vrpn_unbuffer_from_little_endian<vrpn_uint8>(bufptr))) {
+        fprintf(stderr,
+                "vrpn_test_pack_unpack(): Could not unbuffer little endian\n");
         return false;
     }
 
@@ -1041,38 +1062,46 @@ bool vrpn_test_pack_unpack(void)
     bufptr = (char *)dbuffer;
     buflen = sizeof(dbuffer);
     if (vrpn_buffer(&bufptr, &buflen, in_float64) != 0) {
-        fprintf(stderr, "vrpn_test_pack_unpack(): Could not buffer big endian\n");
+        fprintf(stderr,
+                "vrpn_test_pack_unpack(): Could not buffer big endian\n");
         return false;
     }
     if (vrpn_buffer(&bufptr, &buflen, in_int32) != 0) {
-        fprintf(stderr, "vrpn_test_pack_unpack(): Could not buffer big endian\n");
+        fprintf(stderr,
+                "vrpn_test_pack_unpack(): Could not buffer big endian\n");
         return false;
     }
     if (vrpn_buffer(&bufptr, &buflen, in_uint16) != 0) {
-        fprintf(stderr, "vrpn_test_pack_unpack(): Could not buffer big endian\n");
+        fprintf(stderr,
+                "vrpn_test_pack_unpack(): Could not buffer big endian\n");
         return false;
     }
     if (vrpn_buffer(&bufptr, &buflen, in_uint8) != 0) {
-        fprintf(stderr, "vrpn_test_pack_unpack(): Could not buffer big endian\n");
+        fprintf(stderr,
+                "vrpn_test_pack_unpack(): Could not buffer big endian\n");
         return false;
     }
 
     // Test unpacking using big-endian routines.
     bufptr = (char *)dbuffer;
     if (in_float64 != (out_float64 = vrpn_unbuffer<vrpn_float64>(bufptr))) {
-        fprintf(stderr, "vrpn_test_pack_unpack(): Could not unbuffer big endian\n");
+        fprintf(stderr,
+                "vrpn_test_pack_unpack(): Could not unbuffer big endian\n");
         return false;
     }
     if (in_int32 != (out_int32 = vrpn_unbuffer<vrpn_int32>(bufptr))) {
-        fprintf(stderr, "vrpn_test_pack_unpack(): Could not unbuffer big endian\n");
+        fprintf(stderr,
+                "vrpn_test_pack_unpack(): Could not unbuffer big endian\n");
         return false;
     }
     if (in_uint16 != (out_uint16 = vrpn_unbuffer<vrpn_uint16>(bufptr))) {
-        fprintf(stderr, "vrpn_test_pack_unpack(): Could not unbuffer big endian\n");
+        fprintf(stderr,
+                "vrpn_test_pack_unpack(): Could not unbuffer big endian\n");
         return false;
     }
     if (in_uint8 != (out_uint8 = vrpn_unbuffer<vrpn_uint8>(bufptr))) {
-        fprintf(stderr, "vrpn_test_pack_unpack(): Could not unbuffer big endian\n");
+        fprintf(stderr,
+                "vrpn_test_pack_unpack(): Could not unbuffer big endian\n");
         return false;
     }
 
@@ -1083,12 +1112,15 @@ bool vrpn_test_pack_unpack(void)
     bufptr = (char *)dbuffer;
     buflen = sizeof(dbuffer);
     if (vrpn_buffer_to_little_endian(&bufptr, &buflen, in_float64) != 0) {
-        fprintf(stderr, "vrpn_test_pack_unpack(): Could not buffer little endian\n");
+        fprintf(stderr,
+                "vrpn_test_pack_unpack(): Could not buffer little endian\n");
         return false;
     }
     bufptr = (char *)dbuffer;
     if (in_float64 == (out_float64 = vrpn_unbuffer<vrpn_float64>(bufptr))) {
-        fprintf(stderr, "vrpn_test_pack_unpack(): Cross-packing produced same result\n");
+        fprintf(
+            stderr,
+            "vrpn_test_pack_unpack(): Cross-packing produced same result\n");
         return false;
     }
 
