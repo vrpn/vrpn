@@ -45,6 +45,7 @@ vrpn_Tracker_OSVRHackerDevKit::vrpn_Tracker_OSVRHackerDevKit(const char *name,
           new vrpn_HidProductAcceptor(vrpn_OSVR_ALT_VENDOR,
                                       vrpn_OSVR_ALT_HACKER_DEV_KIT_HMD)))
     , _wasConnected(false)
+    , _reportVersion(0)
     , _knownVersion(true)
 {
     /// Tracker setup
