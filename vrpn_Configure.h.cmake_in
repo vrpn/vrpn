@@ -66,13 +66,12 @@
 //-----------------------
 // Instructs VRPN to expose the vrpn_gettimeofday() function also
 // as gettimeofday() so that external programs can use it.  This
-// has no effect on any system that already has gettimeofday()
-// defined, and is put here for Windows.  This function should
-// not really be implemented within VRPN, but it was expedient to
-// include it when porting applications to Windows.  Turn this
-// off if you have another implementation, or if you want to call
+// is put here for Windows.  This function should not really be
+// implemented within VRPN, but it was expedient to include it
+// when porting applications to Windows.  Turn this off if you have
+// another implementation, or if you want to only call
 // vrpn_gettimeofday() directly.
-#define VRPN_EXPORT_GETTIMEOFDAY
+#cmakedefine VRPN_EXPORT_GETTIMEOFDAY
 
 //-----------------------
 // Tells VRPN to compile with support for the Message-Passing

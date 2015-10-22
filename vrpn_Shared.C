@@ -943,16 +943,16 @@ void get_time_using_GetLocalTime(unsigned long &sec, unsigned long &usec)
     sec -= 3054524608L;
 }
 
+#if !defined(_STRUCT_TIMEZONE) && !defined(_TIMEZONE_DEFINED)
+#define _STRUCT_TIMEZONE
+/* from HP-UX */
+struct timezone {
+    int tz_minuteswest; /* minutes west of Greenwich */
+    int tz_dsttime;     /* type of dst correction */
+};
+#endif
 int vrpn_gettimeofday(timeval *tp, struct timezone *tzp)
 {
-#ifndef _STRUCT_TIMEZONE
-#define _STRUCT_TIMEZONE
-    /* from HP-UX */
-    struct timezone {
-        int tz_minuteswest; /* minutes west of Greenwich */
-        int tz_dsttime;     /* type of dst correction */
-    };
-#endif
     unsigned long sec, usec;
     get_time_using_GetLocalTime(sec, usec);
     tp->tv_sec = sec;

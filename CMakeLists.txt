@@ -904,6 +904,14 @@ if(UNIX)
 
 endif()
 
+if(WIN32 AND NOT CYGWIN)
+	# Only intended for Windows, known not needed on Cygwin,
+	# but potentially hazardous on other Windows build environments.
+	option(VRPN_EXPORT_GETTIMEOFDAY "Use a #define to make gettimeofday a synonym for vrpn_gettimeofday." OFF)
+else()
+	set(VRPN_EXPORT_GETTIMEOFDAY OFF)
+endif()
+
 # This will only work on compilers that support C++-11.
 # We could check for this and turn it on by default.
 option(VRPN_USE_STD_CHRONO "Use the std::chrono class for time" OFF)
