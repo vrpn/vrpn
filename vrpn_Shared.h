@@ -90,9 +90,7 @@
 // If we're using std::chrono, then we implement a new
 // vrpn_gettimeofday() on top of it in a platform-independent
 // manner.  Otherwise, we just use the system call.
-#ifdef VRPN_USE_STD_CHRONO
-  extern "C" VRPN_API int vrpn_gettimeofday(struct timeval *tp, void *tzp);
-#else
+#ifndef VRPN_USE_STD_CHRONO
   #define vrpn_gettimeofday gettimeofday
 #endif
 #else // winsock sockets
@@ -122,7 +120,11 @@
 
 // Whether or not we export gettimeofday, we declare the
 // vrpn_gettimeofday() function on Windows.
+#ifdef VRPN_USE_STD_CHRONO
+extern "C" VRPN_API int vrpn_gettimeofday(struct timeval *tp, void *tzp);
+#else
 extern "C" VRPN_API int vrpn_gettimeofday(struct timeval *tp, struct timezone *tzp);
+#endif
 
 // If compiling under Cygnus Solutions Cygwin then these get defined by
 // including sys/time.h.  So, we will manually define only for _WIN32
