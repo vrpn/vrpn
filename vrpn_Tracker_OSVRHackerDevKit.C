@@ -30,6 +30,11 @@ static const vrpn_uint16 vrpn_OSVR_HACKER_DEV_KIT_HMD = 0x0b00;
 static const vrpn_uint16 vrpn_OSVR_ALT_VENDOR = 0x03EB;
 static const vrpn_uint16 vrpn_OSVR_ALT_HACKER_DEV_KIT_HMD = 0x2421;
 
+// Every nth report, we'll force an analog report with the status data, even if
+// no changes have occurred. 400 is the most common tracker rate (reports per
+// second) so this is about once a second.
+static const vrpn_uint16 vrpn_HDK_STATUS_STRIDE = 400;
+
 // NOTE: Cannot use the vendor-and-product parameters in the
 // vrpn_HidInterface because there are one of two possible
 // vendor/product pairs.  The Acceptor will still correctly
@@ -45,6 +50,7 @@ vrpn_Tracker_OSVRHackerDevKit::vrpn_Tracker_OSVRHackerDevKit(const char *name,
           new vrpn_HidProductAcceptor(vrpn_OSVR_ALT_VENDOR,
                                       vrpn_OSVR_ALT_HACKER_DEV_KIT_HMD)))
     , _wasConnected(false)
+    , _messageCount(0)
     , _reportVersion(0)
     , _knownVersion(true)
 {
@@ -212,7 +218,16 @@ void vrpn_Tracker_OSVRHackerDevKit::on_data_received(std::size_t bytes,
         }
     }
 
-    vrpn_Analog::report_changes();
+    if (_messageCount == 0) {
+        // When _messageCount overflows, send a report whether or not there was
+        // a change.
+        vrpn_Analog::report();
+    }
+    else {
+        // otherwise just report if we have a change.
+        vrpn_Analog::report_changes();
+    };
+    _messageCount = (_messageCount + 1) % vrpn_HDK_STATUS_STRIDE;
 }
 
 void vrpn_Tracker_OSVRHackerDevKit::mainloop()

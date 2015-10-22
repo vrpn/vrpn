@@ -124,6 +124,9 @@ protected:
     /// the device and to handle re-connecting after a USB disconnect.
     bool _wasConnected;
 
+    /// Used to forcibly send the analog update every so often
+    vrpn_uint16 _messageCount;
+
     vrpn_uint8 _reportVersion;
     bool _knownVersion;
 };
