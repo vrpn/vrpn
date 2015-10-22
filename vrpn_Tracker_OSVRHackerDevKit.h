@@ -11,15 +11,16 @@
 #ifndef VRPN_TRACKER_OSVR_HACKER_DEV_KIT_H_
 #define VRPN_TRACKER_OSVR_HACKER_DEV_KIT_H_
 
-#include <cstddef>                      // for size_t
-#include <string>                       // for string
+#include <cstddef> // for size_t
+#include <string>  // for string
 
-#include "vrpn_Tracker.h"               // for vrpn_Tracker
-#include "vrpn_Configure.h"             // for VRPN_API, VRPN_USE_HID
-#include "vrpn_Connection.h"            // for vrpn_Connection (ptr only), etc
-#include "vrpn_HumanInterface.h"        // for vrpn_HIDDEVINFO, etc
-#include "vrpn_Shared.h"                // for timeval
-#include "vrpn_Types.h"                 // for vrpn_uint16, vrpn_uint32, etc
+#include "vrpn_Tracker.h"        // for vrpn_Tracker
+#include "vrpn_Analog.h"         // for vrpn_Analog
+#include "vrpn_Configure.h"      // for VRPN_API, VRPN_USE_HID
+#include "vrpn_Connection.h"     // for vrpn_Connection (ptr only), etc
+#include "vrpn_HumanInterface.h" // for vrpn_HIDDEVINFO, etc
+#include "vrpn_Shared.h"         // for timeval
+#include "vrpn_Types.h"          // for vrpn_uint16, vrpn_uint32, etc
 
 #if defined(VRPN_USE_HID)
 
@@ -36,7 +37,12 @@
  *
  * Protocol for it is as follows (in byte offsets):
  *
- *   0: Version number, currently 1 or 2
+ *   0:
+ *      Bits 0-3: Version number, currently 1, 2, or 3
+ *      Upper nibble holds additional data for v3+:
+ *      Bit 4: 1 if video detected, 0 if not.
+ *      Bit 5: 1 if portrait, 0 if landscape
+ *
  *   1: message sequence number (8 bit)
  *
  *   2: Unit quaternion i component LSB
@@ -64,14 +70,25 @@
  * number with a Q point of 14. The components of angular velocity are signed,
  * 16-bit fixed point, 2's complement with Q of 9. Reports are either 32 (in old
  * firmware, early v1 reports) or 16 bytes (most firmware, both v1 and v2) long,
- * and only v2 reports contain angular velocity data.
+ * and only v2+ reports contain angular velocity data.
+ *
+ * v3+ reports also contain additional data in the upper nibble of the version
+ * number.
+ *
+ * Report version number is exposed as Analog channel 0.
+ * Analog channel 1 should be interpreted as follows:
+ *    0: Status unknown - reports are < v3 or no connection.
+ *    1: No video input.
+ *    2: Portrait video input detected.
+ *    3: Landscape video input detected.
  */
-class VRPN_API vrpn_Tracker_OSVRHackerDevKit : public vrpn_Tracker, protected vrpn_HidInterface {
+class VRPN_API vrpn_Tracker_OSVRHackerDevKit : public vrpn_Tracker,
+                                               public vrpn_Analog,
+                                               protected vrpn_HidInterface {
 public:
     /**
      * @brief Constructor.
      *
-     * @param filter HID acceptor.
      * @param name Name of tracker.
      * @param c Optional vrpn_Connection.
      */
@@ -87,21 +104,30 @@ public:
      */
     virtual void mainloop();
 
-protected:
+    enum Status {
+        STATUS_UNKNOWN = 0,
+        STATUS_NO_VIDEO_INPUT = 1,
+        STATUS_PORTRAIT_VIDEO_INPUT = 2,
+        STATUS_LANDSCAPE_VIDEO_INPUT = 3
+    };
 
+protected:
     /// Extracts the sensor values from each report.
     void on_data_received(std::size_t bytes, vrpn_uint8 *buffer);
 
     /// Timestamp updated during mainloop()
     struct timeval _timestamp;
 
-    /// Flag indicating whether we were connected last time through the mainloop.
-    /// Used to send a "normal"-severity message when we connect with info on the
-    /// device.
+    /// Flag indicating whether we were connected last time through the
+    /// mainloop.
+    /// Used to send a "normal"-severity message when we connect with info on
+    /// the device and to handle re-connecting after a USB disconnect.
     bool _wasConnected;
+
+    vrpn_uint8 _reportVersion;
+    bool _knownVersion;
 };
 
 #endif // VRPN_USE_HID
 
 #endif // VRPN_TRACKER_OSVR_HACKER_DEV_KIT_H_
-

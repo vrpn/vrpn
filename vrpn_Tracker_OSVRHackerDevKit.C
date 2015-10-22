@@ -38,21 +38,25 @@ static const vrpn_uint16 vrpn_OSVR_ALT_HACKER_DEV_KIT_HMD = 0x2421;
 vrpn_Tracker_OSVRHackerDevKit::vrpn_Tracker_OSVRHackerDevKit(const char *name,
                                                              vrpn_Connection *c)
     : vrpn_Tracker(name, c)
+    , vrpn_Analog(name, c)
     , vrpn_HidInterface(new vrpn_HidBooleanOrAcceptor(
           new vrpn_HidProductAcceptor(vrpn_OSVR_VENDOR,
                                       vrpn_OSVR_HACKER_DEV_KIT_HMD),
           new vrpn_HidProductAcceptor(vrpn_OSVR_ALT_VENDOR,
                                       vrpn_OSVR_ALT_HACKER_DEV_KIT_HMD)))
     , _wasConnected(false)
+    , _knownVersion(true)
 {
+    /// Tracker setup
     vrpn_Tracker::num_sensors = 1; // only orientation
-
     // Initialize the state
     std::memset(d_quat, 0, sizeof(d_quat));
     d_quat[Q_W] = 1.0;
-
     // Arbitrary dt that will be less than a full rotation.
     vel_quat_dt = 1.0 / 400.0;
+
+    /// Analog setup
+    vrpn_Analog::num_channel = 2; // version and video input status
 
     // Set the timestamp
     vrpn_gettimeofday(&_timestamp, NULL);
@@ -74,8 +78,62 @@ void vrpn_Tracker_OSVRHackerDevKit::on_data_received(std::size_t bytes,
         return;
     }
 
-    vrpn_uint8 version = vrpn_unbuffer_from_little_endian<vrpn_uint8>(buffer);
-    /// @todo Verify that version is what we expect.
+    vrpn_uint8 firstByte = vrpn_unbuffer_from_little_endian<vrpn_uint8>(buffer);
+
+    vrpn_uint8 version = vrpn_uint8(0x0f) & firstByte;
+    _reportVersion = version;
+
+    switch (version) {
+    case 1:
+        if (bytes != 32 && bytes != 16) {
+            send_text_message(vrpn_TEXT_WARNING)
+                << "Received a v1 report " << bytes
+                << " in length, but expected it to be 32 or 16 bytes. "
+                   "Discarding. "
+                   "(May indicate issues with HID!)";
+            return;
+        }
+        break;
+    case 2:
+        if (bytes != 16) {
+            send_text_message(vrpn_TEXT_WARNING)
+                << "Received a v2 report " << bytes
+                << " in length, but expected it to be 16 bytes. Discarding. "
+                   "(May indicate issues with HID!)";
+            return;
+        }
+        break;
+
+    case 3:
+        /// @todo once this report format is finalized, tighten up the
+        /// requirements.
+        if (bytes < 16) {
+            send_text_message(vrpn_TEXT_WARNING)
+                << "Received a v3 report " << bytes
+                << " in length, but expected it to be at least 16 bytes. "
+                   "Discarding. "
+                   "(May indicate issues with HID!)";
+            return;
+        }
+        break;
+    default:
+        /// Highlight that we don't know this report version well...
+        _knownVersion = false;
+        /// Do a minimal check of it.
+        if (bytes < 16) {
+            send_text_message(vrpn_TEXT_WARNING)
+                << "Received a report claiming to be version " << int(version)
+                << " that was " << bytes << " in length, but expected it to be "
+                                            "at least 16 bytes. Discarding. "
+                                            "(May indicate issues with HID!)";
+            return;
+        }
+        break;
+    }
+
+    // Report version as analog channel 0.
+    channel[0] = version;
+
     vrpn_uint8 msg_seq = vrpn_unbuffer_from_little_endian<vrpn_uint8>(buffer);
 
     // Signed, 16-bit, fixed-point numbers in Q1.14 format.
@@ -132,6 +190,28 @@ void vrpn_Tracker_OSVRHackerDevKit::on_data_received(std::size_t bytes,
                             "message: tossing\n");
         }
     }
+    if (version < 3) {
+        // No status info hidden in the first byte.
+        channel[1] = STATUS_UNKNOWN;
+    }
+    else {
+        // v3+: We've got status info in the upper nibble of the first byte.
+        bool gotVideo = (firstByte & (0x01 << 4)) != 0;    // got video?
+        bool gotPortrait = (firstByte & (0x01 << 5)) != 0; // portrait mode?
+        if (!gotVideo) {
+            channel[1] = STATUS_NO_VIDEO_INPUT;
+        }
+        else {
+            if (gotPortrait) {
+                channel[1] = STATUS_PORTRAIT_VIDEO_INPUT;
+            }
+            else {
+                channel[1] = STATUS_LANDSCAPE_VIDEO_INPUT;
+            }
+        }
+    }
+
+    vrpn_Analog::report_changes();
 }
 
 void vrpn_Tracker_OSVRHackerDevKit::mainloop()
@@ -141,9 +221,28 @@ void vrpn_Tracker_OSVRHackerDevKit::mainloop()
     update();
 
     if (connected() && !_wasConnected) {
-        send_text_message("Successfully connected to OSVR Hacker Dev Kit HMD.",
-                          _timestamp, vrpn_TEXT_NORMAL);
+        send_text_message(vrpn_TEXT_NORMAL)
+            << "Successfully connected to OSVR Hacker Dev Kit HMD, receiving "
+               "version "
+            << int(_reportVersion) << " reports.";
+
+        if (!_knownVersion) {
+
+            send_text_message(vrpn_TEXT_WARNING)
+                << "Connected to OSVR Hacker Dev Kit HMD, receiving "
+                   "version "
+                << int(_reportVersion)
+                << " reports, newer than what is specifically recognized. You "
+                   "may want to update your server to best make use of this "
+                   "new report format.";
+        }
     }
+    if (!connected()) {
+        channel[0] = 0;
+        channel[1] = STATUS_UNKNOWN;
+        vrpn_Analog::report_changes();
+    }
+
     _wasConnected = connected();
 
     if (!_wasConnected) {
