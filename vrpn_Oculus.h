@@ -41,7 +41,17 @@ public:
 protected:
   vrpn_HidAcceptor *m_filter;
 
-  /// Extracts the sensor values from each report.
+  //-------------------------------------------------------------
+  // Parsers for different report types.  The DK2 sends type-1
+  // reports in response to inertial-only keep-alive messages
+  // and type-11 reports in response to LED-enabled keep-alive
+  // messages.
+
+  /// Parse and send reports for type-11 message
+  void parse_message_type_11(std::size_t bytes, vrpn_uint8 *buffer);
+
+  /// Extracts the sensor values from each report and calls the
+  /// appropriate parser.
   void on_data_received(std::size_t bytes, vrpn_uint8 *buffer);
 
   /// Timestamp updated during mainloop()
@@ -51,26 +61,10 @@ protected:
   double d_keepAliveSeconds;
   struct timeval d_lastKeepAlive;
 
-  // Send an LED control feature report. The enable flag tells
-  // whether to turn on the LEDs (true) or not.
-  void
-    writeLEDControl(bool enable = true, vrpn_uint16 exposureLength = 350,
-      vrpn_uint16 frameInterval = 16666
-      , vrpn_uint16 vSyncOffset = 0
-      , vrpn_uint8 dutyCycle = 127 //< 255 = 100% brightness
-      , vrpn_uint8 pattern = 1
-      , bool autoIncrement = true
-      , bool useCarrier = true
-      , bool syncInput = false
-      , bool vSyncLock = false
-      , bool customPattern = false
-      , vrpn_uint16 commandId = 0 //< Should always be zero
-      );
-
   // Send a KeepAlive feature report to the DK2.  This needs to be sent
   // every keepAliveSeconds to keep the LEDs going.
   void writeKeepAlive(
-    bool keepLEDs = true //< Keep LEDs going, or only IMU?
+    bool keepLEDs = true //< Keep LEDs going, or only IMU? (Changes report type)
     , vrpn_uint16 interval = 10000 //< KeepAlive time in milliseconds
     , vrpn_uint16 commandId = 0 //< Should always be zero
     );
