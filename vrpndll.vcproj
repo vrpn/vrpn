@@ -2296,6 +2296,26 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="vrpn_Oculus.C"
+				>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath="vrpn_Tracker_OSVRHackerDevKit.C"
 				>
 				<FileConfiguration
@@ -3130,6 +3150,10 @@
 			</File>
 			<File
 				RelativePath="vrpn_Tracker_NovintFalcon.h"
+				>
+			</File>
+			<File
+				RelativePath="vrpn_Oculus.h"
 				>
 			</File>
 			<File
