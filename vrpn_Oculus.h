@@ -9,7 +9,7 @@
 */
 
 // Based on the OSVR hacker dev kit driver by Kevin Godby.
-// Based on Oliver Kreylos' OculusRiftHIDReports.cpp, used with permission.
+// Based on Oliver Kreylos' OculusRiftHIDReports.cpp.
 
 #pragma once
 
