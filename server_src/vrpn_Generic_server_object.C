@@ -4809,7 +4809,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_DeadReckoning_Rotation(char *&pch,
     return 0;
 }
 
-int vrpn_Generic_Server_Object::setup_Oculus_DK2(char *&pch, char *line, FILE *)
+int vrpn_Generic_Server_Object::setup_Oculus_DK2_LEDs(char *&pch, char *line, FILE *)
 {
   char s2[LINESIZE];
 
@@ -4827,7 +4827,7 @@ int vrpn_Generic_Server_Object::setup_Oculus_DK2(char *&pch, char *line, FILE *)
 
 #ifdef VRPN_USE_HID
   // Open the tracker
-  _devices->add(new vrpn_Oculus_DK2(s2, connection));
+  _devices->add(new vrpn_Oculus_DK2_LEDs(s2, connection));
 #else
   fprintf(stderr,
     "Oculus_DK2 driver works only with VRPN_USE_HID defined!\n");
@@ -5388,8 +5388,8 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(
                 else if (VRPN_ISIT("vrpn_Tracker_DeadReckoning_Rotation")) {
                     VRPN_CHECK(setup_Tracker_DeadReckoning_Rotation);
                 }
-                else if (VRPN_ISIT("vrpn_Oculus_DK2")) {
-                  VRPN_CHECK(setup_Oculus_DK2);
+                else if (VRPN_ISIT("vrpn_Oculus_DK2_LEDs")) {
+                  VRPN_CHECK(setup_Oculus_DK2_LEDs);
                 }
                 else {                         // Never heard of it
                     sscanf(line, "%511s", s1); // Find out the class name

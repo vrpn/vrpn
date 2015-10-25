@@ -23,13 +23,15 @@ VRPN_SUPPRESS_EMPTY_OBJECT_WARNING()
 static const vrpn_uint16 OCULUS_VENDOR = 0x2833;
 static const vrpn_uint16 DK2_PRODUCT = 0x0021;
 
-vrpn_Oculus_DK2::vrpn_Oculus_DK2(const char *name, vrpn_Connection *c,
+vrpn_Oculus_DK2::vrpn_Oculus_DK2(bool enableLEDs,
+  const char *name, vrpn_Connection *c,
   double keepAliveSeconds)
     : vrpn_Analog(name, c)
     , vrpn_HidInterface(m_filter =
       new vrpn_HidProductAcceptor(OCULUS_VENDOR, DK2_PRODUCT))
 {
   d_keepAliveSeconds = keepAliveSeconds;
+  d_enableLEDs = enableLEDs;
 
   vrpn_Analog::num_channel = 11;
   memset(channel, 0, sizeof(channel));
@@ -235,8 +237,7 @@ void vrpn_Oculus_DK2::mainloop()
 // Thank you to Oliver Kreylos for the info needed to write this function.
 // It is based on his OculusRiftHIDReports.cpp, used with permission.
 void vrpn_Oculus_DK2::writeKeepAlive(
-  bool keepLEDs
-  , vrpn_uint16 interval
+  vrpn_uint16 interval
   , vrpn_uint16 commandId)
 {
   // Buffer to store our report in.
@@ -247,7 +248,7 @@ void vrpn_Oculus_DK2::writeKeepAlive(
   vrpn_int32 buflen = sizeof(pktBuffer);
   vrpn_buffer_to_little_endian(&bufptr, &buflen, vrpn_uint8(0x11U));
   vrpn_buffer_to_little_endian(&bufptr, &buflen, commandId);
-  vrpn_uint8 flags = keepLEDs ? 0x0bU : 0x01U;
+  vrpn_uint8 flags = d_enableLEDs ? 0x0bU : 0x01U;
   vrpn_buffer_to_little_endian(&bufptr, &buflen, flags);
   vrpn_buffer_to_little_endian(&bufptr, &buflen, interval);
 

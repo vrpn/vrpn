@@ -158,7 +158,7 @@ protected:
     int setup_YEI_3Space_Sensor(char *&pch, char *line, FILE *config_file);
     int setup_YEI_3Space_Sensor_Wireless(char *&pch, char *line, FILE *config_file);
     int setup_Tracker_ThalmicLabsMyo(char * &pch, char *line, FILE * config_file);
-    int setup_Oculus_DK2(char *&pch, char *line, FILE *config_file);
+    int setup_Oculus_DK2_LEDs(char *&pch, char *line, FILE *config_file);
 
     template <typename T>
     int templated_setup_device_name_only(char *&pch, char *line, FILE *);

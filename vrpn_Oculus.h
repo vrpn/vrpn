@@ -18,19 +18,10 @@
 
 #if defined(VRPN_USE_HID)
 
-/// @brief Oculus Rift DK2 head-mounted display (inertial measurement unit only)
+/// @brief Oculus Rift DK2 head-mounted display base class for both intertial-
+/// only and LED-enabled version.
 class VRPN_API vrpn_Oculus_DK2 : public vrpn_Analog, protected vrpn_HidInterface {
 public:
-    /**
-     * @brief Constructor.
-     *
-     * @param name Name of this device.
-     * @param c Optional vrpn_Connection pointer to use as our connection.
-     * @param keepAliveSeconds How often to re-trigger the LED flashing
-     */
-    vrpn_Oculus_DK2(const char *name, vrpn_Connection *c = NULL,
-      double keepAliveSeconds = 9.0);
-
     /**
      * @brief Destructor.
      */
@@ -39,6 +30,16 @@ public:
     virtual void mainloop();
 
 protected:
+  /**
+  * @brief Protected constructor so you can't instantiate this base class.
+  *
+  * @param name Name of this device.
+  * @param c Optional vrpn_Connection pointer to use as our connection.
+  * @param keepAliveSeconds How often to re-trigger the LED flashing
+  */
+  vrpn_Oculus_DK2(bool enableLEDs, const char *name, vrpn_Connection *c = NULL,
+    double keepAliveSeconds = 9.0);
+
   vrpn_HidAcceptor *m_filter;
 
   //-------------------------------------------------------------
@@ -58,16 +59,31 @@ protected:
   struct timeval d_timestamp;
 
   /// How often to send the keepAlive message to trigger the LEDs
+  bool d_enableLEDs;
   double d_keepAliveSeconds;
   struct timeval d_lastKeepAlive;
 
   // Send a KeepAlive feature report to the DK2.  This needs to be sent
   // every keepAliveSeconds to keep the LEDs going.
   void writeKeepAlive(
-    bool keepLEDs = true //< Keep LEDs going, or only IMU? (Changes report type)
-    , vrpn_uint16 interval = 10000 //< KeepAlive time in milliseconds
+    vrpn_uint16 interval = 10000 //< KeepAlive time in milliseconds
     , vrpn_uint16 commandId = 0 //< Should always be zero
     );
+};
+
+/// @brief Oculus Rift DK2 head-mounted display (inertial measurement unit only)
+class VRPN_API vrpn_Oculus_DK2_LEDs : public vrpn_Oculus_DK2 {
+public:
+  /**
+  * @brief Constructor
+  *
+  * @param name Name of this device.
+  * @param c Optional vrpn_Connection pointer to use as our connection.
+  * @param keepAliveSeconds How often to re-trigger the LED flashing
+  */
+  vrpn_Oculus_DK2_LEDs(const char *name, vrpn_Connection *c = NULL,
+    double keepAliveSeconds = 9.0)
+    : vrpn_Oculus_DK2(true, name, c, keepAliveSeconds) {};
 };
 
 #endif // VRPN_USE_HID
