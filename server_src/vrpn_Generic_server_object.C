@@ -4816,7 +4816,7 @@ int vrpn_Generic_Server_Object::setup_Oculus_DK2_LEDs(char *&pch, char *line, FI
   VRPN_CONFIG_NEXT();
   int ret = sscanf(pch, "%511s", s2);
   if (ret != 1) {
-    fprintf(stderr, "Bad Oculus_DK2 line: %s\n", line);
+    fprintf(stderr, "Bad Oculus_DK2_LEDs line: %s\n", line);
     return -1;
   }
 
@@ -4828,6 +4828,32 @@ int vrpn_Generic_Server_Object::setup_Oculus_DK2_LEDs(char *&pch, char *line, FI
 #ifdef VRPN_USE_HID
   // Open the tracker
   _devices->add(new vrpn_Oculus_DK2_LEDs(s2, connection));
+#else
+  fprintf(stderr,
+    "Oculus_DK2 driver works only with VRPN_USE_HID defined!\n");
+#endif
+  return 0; // successful completion
+}
+
+int vrpn_Generic_Server_Object::setup_Oculus_DK2_inertial(char *&pch, char *line, FILE *)
+{
+  char s2[LINESIZE];
+
+  VRPN_CONFIG_NEXT();
+  int ret = sscanf(pch, "%511s", s2);
+  if (ret != 1) {
+    fprintf(stderr, "Bad Oculus_DK2_inertial line: %s\n", line);
+    return -1;
+  }
+
+  // Open the Oculus DK2
+  if (verbose) {
+    printf("Opening vrpn_Oculus_inertial\n");
+  }
+
+#ifdef VRPN_USE_HID
+  // Open the tracker
+  _devices->add(new vrpn_Oculus_DK2_inertial(s2, connection));
 #else
   fprintf(stderr,
     "Oculus_DK2 driver works only with VRPN_USE_HID defined!\n");
@@ -5390,6 +5416,9 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(
                 }
                 else if (VRPN_ISIT("vrpn_Oculus_DK2_LEDs")) {
                   VRPN_CHECK(setup_Oculus_DK2_LEDs);
+                }
+                else if (VRPN_ISIT("vrpn_Oculus_DK2_inertial")) {
+                  VRPN_CHECK(setup_Oculus_DK2_inertial);
                 }
                 else {                         // Never heard of it
                     sscanf(line, "%511s", s1); // Find out the class name

@@ -33,7 +33,11 @@ vrpn_Oculus_DK2::vrpn_Oculus_DK2(bool enableLEDs,
   d_keepAliveSeconds = keepAliveSeconds;
   d_enableLEDs = enableLEDs;
 
-  vrpn_Analog::num_channel = 11;
+  if (enableLEDs) {
+    vrpn_Analog::num_channel = 12;
+  } else {
+    vrpn_Analog::num_channel = 11;
+  }
   memset(channel, 0, sizeof(channel));
   memset(last, 0, sizeof(last));
 
@@ -87,6 +91,80 @@ inline void unpackVector(const vrpn_uint8 raw[8], int vector[3])
 // Thank you to Oliver Kreylos for the info needed to write this function.
 // It is based on his OculusRiftHIDReports.cpp and OculusRift.cpp.
 
+void vrpn_Oculus_DK2::parse_message_type_1(std::size_t bytes,
+  vrpn_uint8 *buffer)
+{
+  size_t num_reports = buffer[1];
+  if (num_reports > 3) { num_reports = 3; }
+
+  // Skip past the report type and num_reports bytes and
+  // start parsing there.
+  vrpn_uint8 *bufptr = &buffer[2];
+
+  // The next two bytes are an increasing counter that changes by 1 for
+  // every report.
+  vrpn_uint16 report_index;
+  report_index = vrpn_unbuffer_from_little_endian<vrpn_uint16, vrpn_uint8>(bufptr);
+  channel[1] = report_index;
+
+  // The next two bytes are zero, so we skip them
+  vrpn_uint16 skip;
+  skip = vrpn_unbuffer_from_little_endian<vrpn_uint16, vrpn_uint8>(bufptr);
+
+  // The next entry is temperature, and it may be in hundredths of a degree C
+  vrpn_uint16 temperature;
+  const double temperature_scale = 0.01;
+  temperature = vrpn_unbuffer_from_little_endian<vrpn_uint16, vrpn_uint8>(bufptr);
+  channel[0] = temperature * temperature_scale;
+
+  // The magnetometer data comes after the space to store three
+  // reports.
+  vrpn_uint8 *magnetometer_ptr = &buffer[56];
+  vrpn_int16 magnetometer_raw[3];
+  for (size_t i = 0; i < 3; i++) {
+    magnetometer_raw[i] = vrpn_unbuffer_from_little_endian
+      <vrpn_int16, vrpn_uint8>(magnetometer_ptr);
+  }
+  // Invert these to make the magnetometer direction match
+  // the sign of the gravity vector.
+  const double magnetometer_scale = -0.0001;
+  channel[8] = -magnetometer_raw[0] * magnetometer_scale;
+  channel[9] = -magnetometer_raw[1] * magnetometer_scale;
+  channel[10] = -magnetometer_raw[2] * magnetometer_scale;
+
+  // Unpack a 16-byte accelerometer/gyro report using the routines from
+  // Oliver's code.
+  for (size_t i = 0; i < num_reports; i++) {
+    vrpn_int32 accelerometer_raw[3];
+    vrpn_int32 gyroscope_raw[3];
+    unpackVector(bufptr, accelerometer_raw);
+    bufptr += 8;
+    unpackVector(bufptr, gyroscope_raw);
+    bufptr += 8;
+
+    // Compute the double values using default calibration.
+    // The accelerometer data goes into analogs 0,1,2.
+    // The gyro data goes into analogs 3,4,5.
+    // The magnetomoter data goes into analogs 6,7,8.
+    const double accelerometer_scale = 0.0001;
+    const double gyroscope_scale = 0.0001;
+    channel[2] = accelerometer_raw[0] * accelerometer_scale;
+    channel[3] = accelerometer_raw[1] * accelerometer_scale;
+    channel[4] = accelerometer_raw[2] * accelerometer_scale;
+
+    channel[5] = gyroscope_raw[0] * gyroscope_scale;
+    channel[6] = gyroscope_raw[1] * gyroscope_scale;
+    channel[7] = gyroscope_raw[2] * gyroscope_scale;
+
+    vrpn_Analog::report_changes();
+  }
+}
+
+// Thank you to Oliver Kreylos for the info needed to write this function.
+// The actual order and meaning of fields was determined by walking through
+// the packet to see what was in there, but the vector-decoding routines
+// are used to pull out the inertial sensor data.
+
 void vrpn_Oculus_DK2::parse_message_type_11(std::size_t bytes,
   vrpn_uint8 *buffer)
 {
@@ -120,10 +198,11 @@ void vrpn_Oculus_DK2::parse_message_type_11(std::size_t bytes,
   // Skip the first four bytes and start parsing the other reports from there.
   vrpn_uint8 *bufptr = &buffer[4];  // Point at the start of the report
 
-                                    // The next two bytes seem to be an increasing counter that changes by 1 for
-                                    // every report.
+  // The next two bytes seem to be an increasing counter that changes by 1 for
+  // every report.
   vrpn_uint16 report_index, temperature;
   report_index = vrpn_unbuffer_from_little_endian<vrpn_uint16, vrpn_uint8>(bufptr);
+  channel[1] = report_index;
 
   // The next entry may be temperature, and it may be in hundredths of a degree C
   const double temperature_scale = 0.01;
@@ -134,17 +213,11 @@ void vrpn_Oculus_DK2::parse_message_type_11(std::size_t bytes,
   // powered on in microseconds.  We convert to seconds and report.
   vrpn_uint32 microseconds;
   microseconds = vrpn_unbuffer_from_little_endian<vrpn_uint32, vrpn_uint8>(bufptr);
-  channel[1] = microseconds * 1e-6;
+  channel[11] = microseconds * 1e-6;
 
   // Unpack a 16-byte accelerometer/gyro report using the routines from
-  // Oliver's code.  Also what was expected to be a gravity vector, but
-  // which behaves like an Up vector perpendicular to the North vector.
-  // but which has different magnitudes for positive vs. negative on each
-  // axis, and different magnitudes between axes.  It does not vary as
-  // you shake the unit, whereas the accelerometer data does.
-  // Upack the raw reports for the accelerometer and gyroscope
-  // for each available sample.  Then convert each to a scaled
-  // double value and send a report.
+  // Oliver's code.  Also the magnetometer values(s).
+  // Then convert each to a scaled double value and send a report.
   for (size_t i = 0; i < num_reports; i++) {
     vrpn_int32 accelerometer_raw[3];
     vrpn_int32 gyroscope_raw[3];
@@ -167,20 +240,22 @@ void vrpn_Oculus_DK2::parse_message_type_11(std::size_t bytes,
     channel[6] = gyroscope_raw[1] * gyroscope_scale;
     channel[7] = gyroscope_raw[2] * gyroscope_scale;
 
-    // The up-vector data comes after the space to store two
+    // The magnetometer data comes after the space to store two
     // reports.  We don't know if there are two of them when
     // there are two reports, but there is space in the report
     // for it, so we try to decode two of them.
-    vrpn_uint8 *up_ptr = &buffer[44 + 8 * i];
-    vrpn_int16 up_raw[3];
+    vrpn_uint8 *magnetometer_ptr = &buffer[44 + 8 * i];
+    vrpn_int16 magnetometer_raw[3];
     for (size_t i = 0; i < 3; i++) {
-      up_raw[i] = vrpn_unbuffer_from_little_endian
-        <vrpn_int16, vrpn_uint8>(up_ptr);
+      magnetometer_raw[i] = vrpn_unbuffer_from_little_endian
+        <vrpn_int16, vrpn_uint8>(magnetometer_ptr);
     }
-    const double up_scale = 0.0001;
-    channel[8] = up_raw[0] * up_scale;
-    channel[9] = up_raw[1] * up_scale;
-    channel[10] = up_raw[2] * up_scale;
+    // Invert these to make the magnetometer direction match
+    // the sign of the gravity vector.
+    const double magnetometer_scale = - 0.0001;
+    channel[8] = -magnetometer_raw[0] * magnetometer_scale;
+    channel[9] = -magnetometer_raw[1] * magnetometer_scale;
+    channel[10] = -magnetometer_raw[2] * magnetometer_scale;
 
     vrpn_Analog::report_changes();
   }
@@ -209,6 +284,9 @@ void vrpn_Oculus_DK2::on_data_received(std::size_t bytes,
 
   // Call the appropriate parser
   switch (buffer[0]) {
+  case 1:
+    parse_message_type_1(bytes, buffer);
+    break;
   case 11:
     parse_message_type_11(bytes, buffer);
     break;

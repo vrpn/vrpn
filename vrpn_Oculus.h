@@ -48,6 +48,9 @@ protected:
   // and type-11 reports in response to LED-enabled keep-alive
   // messages.
 
+  /// Parse and send reports for type-1 message
+  void parse_message_type_1(std::size_t bytes, vrpn_uint8 *buffer);
+
   /// Parse and send reports for type-11 message
   void parse_message_type_11(std::size_t bytes, vrpn_uint8 *buffer);
 
@@ -72,6 +75,21 @@ protected:
 };
 
 /// @brief Oculus Rift DK2 head-mounted display (inertial measurement unit only)
+class VRPN_API vrpn_Oculus_DK2_inertial : public vrpn_Oculus_DK2 {
+public:
+  /**
+  * @brief Constructor
+  *
+  * @param name Name of this device.
+  * @param c Optional vrpn_Connection pointer to use as our connection.
+  * @param keepAliveSeconds How often to re-trigger the LED flashing
+  */
+  vrpn_Oculus_DK2_inertial(const char *name, vrpn_Connection *c = NULL,
+    double keepAliveSeconds = 9.0)
+    : vrpn_Oculus_DK2(false, name, c, keepAliveSeconds) {};
+};
+
+/// @brief Oculus Rift DK2 head-mounted display (LEDs enabled)
 class VRPN_API vrpn_Oculus_DK2_LEDs : public vrpn_Oculus_DK2 {
 public:
   /**
