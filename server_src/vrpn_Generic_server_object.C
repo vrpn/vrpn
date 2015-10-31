@@ -2,6 +2,7 @@
 #include <string.h>                 // for strcmp, strlen, strtok, etc
 #include "vrpn_MainloopContainer.h" // for vrpn_MainloopContainer
 #include <locale>                   // To enable setting parsing for .cfg file
+#include <string>
 
 #include "timecode_generator_server/vrpn_timecode_generator.h"
 #include "vrpn_3DConnexion.h" // for vrpn_3DConnexion_Navigator, etc
@@ -77,6 +78,7 @@
 #include "vrpn_Tracker_GameTrak.h"  // for vrpn_Tracker_GameTrak
 #include "vrpn_Tracker_GPS.h"       // for vrpn_Tracker_GPS
 #include "vrpn_Tracker.h"           // for vrpn_Tracker, etc
+#include "vrpn_Tracker_IMU.h"       // for vrpn_IMU_Magnetometer, etc
 #include "vrpn_Tracker_isense.h"
 #include "vrpn_Tracker_Isotrak.h" // for vrpn_Tracker_Isotrak
 #include "vrpn_Tracker_JsonNet.h"
@@ -400,14 +402,14 @@ int vrpn_Generic_Server_Object::setup_JoyFly(char *&pch, char *line,
 
 int vrpn_Generic_Server_Object::get_AFline(char *line, vrpn_TAF_axis *axis)
 {
-    char _axis_name[LINESIZE];
+    char axis_name[LINESIZE];
     char *name =
         new char[LINESIZE]; // We need this to stay around for the param
     int channel;
     float offset, thresh, power, scale;
 
     // Get the values from the line
-    if (sscanf(line, "%511s%511s%d%g%g%g%g", _axis_name, name, &channel,
+    if (sscanf(line, "%511s%511s%d%g%g%g%g", axis_name, name, &channel,
                &offset, &thresh, &scale, &power) != 7) {
         fprintf(stderr, "AnalogFly Axis: Bad axis line\n");
         delete[] name;
@@ -4861,6 +4863,104 @@ int vrpn_Generic_Server_Object::setup_Oculus_DK2_inertial(char *&pch, char *line
   return 0; // successful completion
 }
 
+// This function will read one line of the vrpn_IMU_Axis_Param configuration
+// (matching one axis) and fill in the data for that axis. The axis name,
+// the file to read from, and the axis to fill in are passed as parameters.
+// It returns 0 on success and -1 on failure.
+
+int vrpn_Generic_Server_Object::get_IMU_Param_Line(char *line, vrpn_IMU_Axis_Params *axis)
+{
+    char axis_name[LINESIZE];
+    char name[LINESIZE];
+    int channel;
+    float scale;
+
+    // Get the values from the line
+    if (sscanf(line, "%511s%511s%d%g", axis_name, name, &channel,
+               &scale) != 4) {
+        fprintf(stderr, "IMU_Param Axis: Bad axis line\n");
+        return -1;
+    }
+
+    axis->name = name;
+    axis->channel = channel;
+    axis->scale = scale;
+
+    return 0;
+}
+
+int vrpn_Generic_Server_Object::setup_IMU_Magnetometer(char *&pch, char *line,
+                                                        FILE *config_file)
+{
+    char s2[LINESIZE];
+    int i1;
+    float f1;
+    vrpn_IMU_Axis_Params x,y,z;
+
+    VRPN_CONFIG_NEXT();
+
+    if (sscanf(pch, "%511s%g", s2, &f1) != 2) {
+        fprintf(stderr, "Bad vrpn_IMU_Magnetometer line: %s\n", line);
+        return -1;
+    }
+
+    if (verbose) {
+        printf("Opening vrpn_IMU_Magnetometer: "
+               "%s with update rate %g\n",
+               s2, f1);
+    }
+
+    // Scan the following lines in the configuration file to fill
+    // in the start-up parameters for the different axis.
+
+    // parse lines until an empty line is encountered
+    while (1) {
+        char line[LINESIZE];
+
+        // Read in the line
+        if (fgets(line, LINESIZE, config_file) == NULL) {
+            perror("IMU_Magnetometer Can't read line!");
+            return -1;
+        }
+
+        // if it is an empty line, finish parsing
+        if (line[0] == '\n') {
+            break;
+        }
+
+        // get the first token
+        char tok[LINESIZE];
+        sscanf(line, "%511s", tok);
+
+        if (strcmp(tok, "X") == 0) {
+            if (get_IMU_Param_Line(line, &x)) {
+                fprintf(stderr, "Can't read X line for IMU_Magnetometer\n");
+                return -1;
+            }
+        }
+        else if (strcmp(tok, "Y") == 0) {
+            if (get_IMU_Param_Line(line, &y)) {
+                fprintf(stderr, "Can't read Y line for IMU_Magnetometer\n");
+                return -1;
+            }
+        }
+        else if (strcmp(tok, "Z") == 0) {
+            if (get_IMU_Param_Line(line, &z)) {
+                fprintf(stderr, "Can't read Z line for IMU_Magnetometer\n");
+                return -1;
+            }
+        }
+        else {
+          fprintf(stderr, "Unrecognized axis name for IMU_Magnetometer: %s\n",
+              line);
+          return -1;
+        }
+    }
+
+    _devices->add(new vrpn_IMU_Magnetometer(s2, connection, x,y,z, f1, false));
+    return 0;
+}
+
 #undef VRPN_CONFIG_NEXT
 
 vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(
@@ -5419,6 +5519,9 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(
                 }
                 else if (VRPN_ISIT("vrpn_Oculus_DK2_inertial")) {
                   VRPN_CHECK(setup_Oculus_DK2_inertial);
+                }
+                else if (VRPN_ISIT("vrpn_IMU_Magnetometer")) {
+                    VRPN_CHECK(setup_IMU_Magnetometer);
                 }
                 else {                         // Never heard of it
                     sscanf(line, "%511s", s1); // Find out the class name

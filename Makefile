@@ -710,6 +710,7 @@ SLIB_FILES =  $(LIB_FILES) \
 	vrpn_Tracker_Filter.C \
 	vrpn_Tracker_GPS.C \
 	vrpn_Tracker_GameTrak.C \
+	vrpn_Tracker_IMU.C \
 	vrpn_Tracker_Isotrak.C \
 	vrpn_Tracker_Liberty.C \
 	vrpn_Tracker_LibertyHS.C \
@@ -802,6 +803,7 @@ SLIB_INCLUDES = $(LIB_INCLUDES) \
 	vrpn_Tracker_Filter.h \
 	vrpn_Tracker_GPS.h \
 	vrpn_Tracker_GameTrak.h \
+	vrpn_Tracker_IMU.h \
 	vrpn_Tracker_Isotrak.h \
 	vrpn_Tracker_Liberty.h \
 	vrpn_Tracker_LibertyHS.h \

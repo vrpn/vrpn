@@ -12,6 +12,7 @@ const int VRPN_GSO_MAX_NDI_POLARIS_RIGIDBODIES =
     20; // FIXME find out from the NDI specs if there is a maximum;
 
 class VRPN_API vrpn_TAF_axis;
+class VRPN_API vrpn_IMU_Axis_Params;
 class VRPN_API vrpn_PA_axis;
 
 class vrpn_Generic_Server_Object {
@@ -40,6 +41,7 @@ protected:
 
     // Helper functions for the functions below
     int get_AFline(char *line, vrpn_TAF_axis *axis);
+    int get_IMU_Param_Line(char *line, vrpn_IMU_Axis_Params *axis);
     int get_poser_axis_line(FILE *config_file, const char *axis_name,
                             vrpn_PA_axis *axis, vrpn_float64 *min,
                             vrpn_float64 *max);
@@ -160,6 +162,7 @@ protected:
     int setup_Tracker_ThalmicLabsMyo(char * &pch, char *line, FILE * config_file);
     int setup_Oculus_DK2_LEDs(char *&pch, char *line, FILE *config_file);
     int setup_Oculus_DK2_inertial(char *&pch, char *line, FILE *config_file);
+    int setup_IMU_Magnetometer(char *&pch, char *line, FILE *config_file);
 
     template <typename T>
     int templated_setup_device_name_only(char *&pch, char *line, FILE *);

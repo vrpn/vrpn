@@ -1956,6 +1956,17 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="vrpn_Tracker_IMU.C"
+				>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+			<File
 				RelativePath="vrpn_Tracker_AnalogFly.C"
 				>
 				<FileConfiguration
@@ -3086,6 +3097,10 @@
 			</File>
 			<File
 				RelativePath="vrpn_Tracker_AnalogFly.h"
+				>
+			</File>
+			<File
+				RelativePath="vrpn_Tracker_IMU.h"
 				>
 			</File>
 			<File

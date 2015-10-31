@@ -1094,6 +1094,7 @@ set(VRPN_SERVER_SOURCES
 	vrpn_Tracker_Filter.C
 	vrpn_Tracker_GameTrak.C
 	vrpn_Tracker_GPS.C
+	vrpn_Tracker_IMU.C
 	vrpn_Tracker_isense.C
 	vrpn_Tracker_Isotrak.C
 	vrpn_Tracker_JsonNet.C
@@ -1202,6 +1203,7 @@ set(VRPN_SERVER_PUBLIC_HEADERS
 	vrpn_Tracker_Filter.h
 	vrpn_Tracker_GameTrak.h
 	vrpn_Tracker_GPS.h
+	vrpn_Tracker_IMU.h
 	vrpn_Tracker_isense.h
 	vrpn_Tracker_Isotrak.h
 	vrpn_Tracker_JsonNet.h
