@@ -16,31 +16,37 @@
 #include "vrpn_Analog.h"                // for vrpn_ANALOGCB, etc
 #include "vrpn_Tracker.h"               // for vrpn_Tracker
 
-/// @brief Describes information passed to the constructor for the
-/// various IMUs.
+/// @brief Describes information describing an IMU axis.
 /// It describes the analog channel to use to drive the axis
 /// as well as the scale (and polarity) of the mapping to that axis.
 
 class vrpn_IMU_Axis_Params {
-
 public:
+  VRPN_API vrpn_IMU_Axis_Params(void) {
+    for (size_t i = 0; i < 3; i++) {
+      channels[i] = 0;
+      offsets[i] = 0;
+      scales[i] = 1;
+    }
+  }
 
-  VRPN_API vrpn_IMU_Axis_Params(void) { channel = 0; scale = 1; }
+  std::string name;	  //< Name of the Analog device driving these axes
 
-  std::string name;	//< Name of the Analog device driving this axis
-  int channel;	    //< Which channel to use from the Analog device
-  double scale;     //< Scale, and positive or negative axis
+  int channels[3];	  //< Which channel to use from the Analog device for each axis
+  double offsets[3];  //< Offset to apply to the measurement (applied before scale)
+  double scales[3];   //< Scale, including positive or negative axis
 };
 
-class VRPN_API vrpn_IMU_Axis {
+class vrpn_IMU_Vector {
 public:
-  vrpn_IMU_Axis (void) { ana = NULL; value = 0.0; 
-        time.tv_sec = 0; time.tv_usec = 0; };
+  VRPN_API vrpn_IMU_Vector (void) { ana = NULL;
+      values[0] = values[1] = values[2] = 0.0;
+      time.tv_sec = 0; time.tv_usec = 0; };
 
-  vrpn_IMU_Axis_Params  params;
-  vrpn_Analog_Remote    *ana;
-  double                value;
-  struct timeval        time;
+  vrpn_IMU_Axis_Params  params;     //< Parameters used to construct values
+  vrpn_Analog_Remote    *ana;       //< Analog Remote device to listen to
+  double                values[3];  //< Vector fo values
+  struct timeval        time;       //< Time of the report used to generate value
 };
 
 /// @brief Normalizes the three directions for a magnetometer into
@@ -56,91 +62,81 @@ public:
 /// the direction of magnetic north.
 
 class vrpn_IMU_Magnetometer : public vrpn_Analog_Server {
-  public:
-    /// @brief Constructor
-    /// @param name The name to give to the Analog_Server output device.
-    /// @param output_con The connection to report on.
-    /// @param x The parameters for the X axis.
-    /// @param y The parameters for the Y axis.
-    /// @param z The parameters for the Z axis.
-    /// @param update_rate How often to send reports.  If report_changes
-    ///        is true, it will only report at most this often.  If
-    ///        report_changes is false, it will send reports at this
-    ///        rate whether it has received new values or not.
-    /// @param report_changes If true, only reports values when at least
-    ///        one of them a changed.  If false, report values at the
-    ///        specified rate whether or not they have changed.
-    VRPN_API vrpn_IMU_Magnetometer(std::string name, vrpn_Connection *output_con,
-          vrpn_IMU_Axis_Params x, vrpn_IMU_Axis_Params y, vrpn_IMU_Axis_Params z,
-          float update_rate, bool report_changes = VRPN_FALSE);
-
-    virtual VRPN_API ~vrpn_IMU_Magnetometer();
-
-    /// Override base class function.
-    void mainloop();
-
-  protected:
-    double	    d_update_interval;	//< How long to wait between sends
-    struct timeval  d_prevtime;		  //< Time of the previous report
-    bool        d_report_changes;   //< Call report_changes() or report()?
-
-    /// Axes to handle gathering and scaling the required data.
-    vrpn_IMU_Axis	d_x, d_y, d_z;
-
-    /// Minimum, maximum, and current values for each axis.
-    double d_ox, d_minx, d_maxx;
-    double d_oy, d_miny, d_maxy;
-    double d_oz, d_minz, d_maxz;
-
-    int setup_axis(vrpn_IMU_Axis *axis);
-    int teardown_axis(vrpn_IMU_Axis *axis);
-
-    /// Should we send a new report now?
-    bool should_report (double elapsedInterval) const;
-
-    static void	VRPN_CALLBACK handle_analog_update (void * userdata,
-                                      const vrpn_ANALOGCB info);
-};
-
-#if 0
-
-class VRPN_API vrpn_Tracker_IMU_Params {
-
-  public:
-
-    vrpn_Tracker_AnalogFlyParam (void) {
-        x.name = y.name = z.name =
-        sx.name = sy.name = sz.name = reset_name = clutch_name = NULL;
-    }
-
-    /// Translation along each of these three axes
-    vrpn_TAF_axis x, y, z;
-
-    /// Rotation in the positive direction about the three axes
-    vrpn_TAF_axis sx, sy, sz;
-
-    /// Button device that is used to reset the matrix to the origin
-
-    char * reset_name;
-    int reset_which;
-
-    /// Clutch device that is used to enable relative motion over
-    // large distances
-
-    char * clutch_name;
-    int clutch_which;
-};
-
-class VRPN_API vrpn_Tracker_AnalogFly;	// Forward reference
-
-class VRPN_API vrpn_TAF_fullaxis {
 public:
-        vrpn_TAF_fullaxis (void) { ana = NULL; value = 0.0; af = NULL; };
+  /// @brief Constructor
+  /// @param name The name to give to the Analog_Server output device.
+  /// @param output_con The connection to report on.
+  /// @param x The parameters for the X axis.
+  /// @param y The parameters for the Y axis.
+  /// @param z The parameters for the Z axis.
+  /// @param update_rate How often to send reports.  If report_changes
+  ///        is true, it will only report at most this often.  If
+  ///        report_changes is false, it will send reports at this
+  ///        rate whether it has received new values or not.
+  /// @param report_changes If true, only reports values when at least
+  ///        one of them a changed.  If false, report values at the
+  ///        specified rate whether or not they have changed.
+  VRPN_API vrpn_IMU_Magnetometer(std::string name, vrpn_Connection *output_con,
+        vrpn_IMU_Axis_Params params, float update_rate,
+        bool report_changes = VRPN_FALSE);
 
-	vrpn_TAF_axis axis;
-        vrpn_Analog_Remote * ana;
-	vrpn_Tracker_AnalogFly * af;
-        double value;
+  virtual VRPN_API ~vrpn_IMU_Magnetometer();
+
+  /// Override base class function.
+  void VRPN_API mainloop();
+
+protected:
+  double	    d_update_interval;	//< How long to wait between sends
+  struct timeval  d_prevtime;		  //< Time of the previous report
+  bool        d_report_changes;   //< Call report_changes() or report()?
+
+  /// Axes to handle gathering and scaling the required data.
+  vrpn_IMU_Vector	d_vector;
+
+  /// Minimum, maximum, and current values for each axis.
+  double d_mins[3], d_maxes[3];
+
+  int setup_vector(vrpn_IMU_Vector *vector);
+  int teardown_vector(vrpn_IMU_Vector *vector);
+
+  static void	VRPN_CALLBACK handle_analog_update (void *userdata,
+                                    const vrpn_ANALOGCB info);
+};
+
+# if 0
+
+class vrpn_Tracker_IMU_Params {
+public:
+  VRPN_API vrpn_Tracker_IMU_Params(void) {
+  }
+
+  std::string 
+
+  /// Translation along each of these three axes
+  vrpn_TAF_axis x, y, z;
+
+  /// Rotation in the positive direction about the three axes
+  vrpn_TAF_axis sx, sy, sz;
+
+  /// Button device that is used to reset the matrix to the origin
+
+  char * reset_name;
+  int reset_which;
+
+  /// Clutch device that is used to enable relative motion over
+  // large distances
+
+  char * clutch_name;
+  int clutch_which;
+};
+
+class vrpn_TAF_fullaxis {
+public:
+  VRPN_API vrpn_TAF_fullaxis (void) { ana = NULL; value = 0.0; af = NULL; };
+
+  vrpn_TAF_axis axis;
+  vrpn_Analog_Remote * ana;
+  double value;
 };
 
 /// This class will turn an analog device such as a joystick or a camera
@@ -222,4 +218,3 @@ class VRPN_API vrpn_Tracker_AnalogFly : public vrpn_Tracker {
 };
 
 #endif
-
