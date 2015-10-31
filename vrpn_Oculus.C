@@ -125,12 +125,12 @@ void vrpn_Oculus_DK2::parse_message_type_1(std::size_t bytes,
     magnetometer_raw[i] = vrpn_unbuffer_from_little_endian
       <vrpn_int16, vrpn_uint8>(magnetometer_ptr);
   }
-  // Invert these to make the magnetometer direction match
+  // Invert X and Y to make the magnetometer direction match
   // the sign of the gravity vector.
-  const double magnetometer_scale = -0.0001;
+  const double magnetometer_scale = 0.0001;
   channel[8] = -magnetometer_raw[0] * magnetometer_scale;
   channel[9] = -magnetometer_raw[1] * magnetometer_scale;
-  channel[10] = -magnetometer_raw[2] * magnetometer_scale;
+  channel[10] = magnetometer_raw[2] * magnetometer_scale;
 
   // Unpack a 16-byte accelerometer/gyro report using the routines from
   // Oliver's code.
@@ -276,7 +276,8 @@ void vrpn_Oculus_DK2::on_data_received(std::size_t bytes,
   vrpn_gettimeofday(&d_timestamp, NULL);
 
   // Make sure the message length and type is what we expect.
-  if (bytes != 64) {
+  // We get 64-byte responses on Windows and 62-byte responses on the mac.
+  if ( (bytes != 62) && (bytes != 64) ) {
     fprintf(stderr, "vrpn_Oculus_DK2::on_data_received(): Unexpected message length %d, ignoring\n",
       static_cast<int>(bytes));
     return;
