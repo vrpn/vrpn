@@ -1,5 +1,6 @@
 /// @file vrpn_Tracker_IMU.h
-/// @author Russ Taylor <russ@reliasolve.com>
+/// @copyright 2015 ReliaSolve.com
+/// @author ReliaSolve.com russ@reliasolve.com
 /// @license Standard VRPN license.
 
 /// This file contains classes useful in producing tracker reports
