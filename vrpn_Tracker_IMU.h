@@ -83,7 +83,7 @@ public:
   virtual VRPN_API ~vrpn_IMU_Magnetometer();
 
   /// Override base class function.
-  void VRPN_API mainloop();
+  virtual VRPN_API void mainloop();
 
 protected:
   double	    d_update_interval;	//< How long to wait between sends
@@ -103,118 +103,50 @@ protected:
                                     const vrpn_ANALOGCB info);
 };
 
-# if 0
-
 class vrpn_Tracker_IMU_Params {
 public:
-  VRPN_API vrpn_Tracker_IMU_Params(void) {
-  }
+  VRPN_API vrpn_Tracker_IMU_Params(void) {}
 
-  std::string 
-
-  /// Translation along each of these three axes
-  vrpn_TAF_axis x, y, z;
-
-  /// Rotation in the positive direction about the three axes
-  vrpn_TAF_axis sx, sy, sz;
-
-  /// Button device that is used to reset the matrix to the origin
-
-  char * reset_name;
-  int reset_which;
-
-  /// Clutch device that is used to enable relative motion over
-  // large distances
-
-  char * clutch_name;
-  int clutch_which;
+  vrpn_IMU_Axis_Params d_acceleration;     //< Acceleration input to use
+  vrpn_IMU_Axis_Params d_rotational_vel;  //< Rotational velocity input to use
+  std::string d_magnetometer_name;        //< Magnetometer to use (Empty if none)
 };
 
-class vrpn_TAF_fullaxis {
-public:
-  VRPN_API vrpn_TAF_fullaxis (void) { ana = NULL; value = 0.0; af = NULL; };
-
-  vrpn_TAF_axis axis;
-  vrpn_Analog_Remote * ana;
-  double value;
-};
-
-/// This class will turn an analog device such as a joystick or a camera
-// tracker into a tracker by interpreting the joystick
-// positions as either position or velocity inputs and "flying" the user
-// around based on analog values.
-// The "absolute" parameter tells whether the tracker integrates differential
-// changes (the default, with FALSE) or takes the analog values as absolute
-// positions or orientations.
-// The mapping from analog channels to directions (or orientation changes) is
-// described in the vrpn_Tracker_AnalogFlyParam parameter. For translations,
-// values above threshold are multiplied by the scale and then taken to the
-// power; the result is the number of meters (or meters per second) to move
-// in that direction. For rotations, the result is taken as the number of
-// revolutions (or revolutions per second) around the given axis.
-// Note that the reset button has no effect on an absolute tracker.
-// The time reported by absolute trackers is as of the last report they have
-// had from their analog devices.  The time reported by differential trackers
-// is the local time that the report was generated.  This is to allow a
-// gen-locked camera tracker to have its time values passed forward through
-// the AnalogFly class.
-
+/// This class will turn set of two or three analog devices into a tracker by
+// interpreting them as inertial-measurement report vectors.  The two required
+// inputs are an acceleration vector and a rotational velocity measurement.  There
+// is an optional magnetometer.
+// The time reported by is as of the last report received from any device.
 // If reportChanges is TRUE, updates are ONLY sent if there has been a
 // change since the last update, in which case they are generated no faster
 // than update_rate. 
 
-// If worldFrame is TRUE, then translations and rotations take place in the
-// world frame, rather than the local frame. Useful for a simulated wand
-// when doing desktop testing of immersive apps - easier to keep under control.
-
-class VRPN_API vrpn_Tracker_AnalogFly : public vrpn_Tracker {
+class vrpn_UMI_SimpleCombiner : public vrpn_Tracker {
   public:
-    vrpn_Tracker_AnalogFly (const char * name, vrpn_Connection * trackercon,
-			    vrpn_Tracker_AnalogFlyParam * params,
-                            float update_rate, bool absolute = vrpn_FALSE,
-                            bool reportChanges = VRPN_FALSE, bool worldFrame = VRPN_FALSE);
+    VRPN_API vrpn_UMI_SimpleCombiner(const char *name, vrpn_Connection *trackercon,
+      vrpn_Tracker_IMU_Params *params,
+      float update_rate, bool report_changes = VRPN_FALSE);
 
-    virtual ~vrpn_Tracker_AnalogFly (void);
+    virtual VRPN_API ~vrpn_UMI_SimpleCombiner(void);
 
-    virtual void mainloop ();
-    virtual void reset (void);
-
-    void update (q_matrix_type &);
-
-    static void VRPN_CALLBACK handle_joystick (void *, const vrpn_ANALOGCB);
-    static int VRPN_CALLBACK handle_newConnection (void *, vrpn_HANDLERPARAM);
+    virtual VRPN_API void mainloop ();
 
   protected:
 
     double	    d_update_interval;	//< How long to wait between sends
-    struct timeval  d_prevtime;		//< Time of the previous report
-    bool	    d_absolute;		//< Report absolute (vs. differential)?
-    bool       d_reportChanges;
-    bool       d_worldFrame;
+    struct timeval  d_prevtime;	  	//< Time of the previous report
+    bool       d_report_changes;    //< Report only changes, or always?
 
-    vrpn_TAF_fullaxis	d_x, d_y, d_z, d_sx, d_sy, d_sz;
-    vrpn_Button_Remote	* d_reset_button;
-    int			d_which_button;
+    vrpn_IMU_Vector d_acceleration;      //< Analog input for accelerometer
+    vrpn_IMU_Vector d_rotational_vel;    //< Analog input for rotational velocity
+    vrpn_IMU_Vector d_magnetometer;      //< Analog input for magnetometer, if present
 
-    vrpn_Button_Remote	* d_clutch_button;
-    int			d_clutch_which;
-    bool                d_clutch_engaged;
-    bool		d_clutch_was_off;
+    struct timeval d_prev_update_time;  //< Time of previous integration update
+    void    update_matrix_based_on_values(double time_interval);
 
-    q_matrix_type d_initMatrix, d_currentMatrix, d_clutchMatrix;
+    int setup_vector(vrpn_IMU_Vector *vector, vrpn_ANALOGCHANGEHANDLER f);
+    int teardown_vector(vrpn_IMU_Vector *vector, vrpn_ANALOGCHANGEHANDLER f);
 
-    void    update_matrix_based_on_values (double time_interval);
-    void    convert_matrix_to_tracker (void);
-
-    bool shouldReport (double elapsedInterval) const;
-
-    int setup_channel (vrpn_TAF_fullaxis * full);
-    int teardown_channel (vrpn_TAF_fullaxis * full);
-
-    static void	VRPN_CALLBACK handle_analog_update (void * userdata,
-                                      const vrpn_ANALOGCB info);
-    static void VRPN_CALLBACK handle_reset_press (void * userdata, const vrpn_BUTTONCB info);
-    static void VRPN_CALLBACK handle_clutch_press (void * userdata, const vrpn_BUTTONCB info);
+    static void	VRPN_CALLBACK handle_analog_update(void *userdata,
+      const vrpn_ANALOGCB info);
 };
-
-#endif

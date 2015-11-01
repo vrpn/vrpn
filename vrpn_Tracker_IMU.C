@@ -216,3 +216,243 @@ void vrpn_IMU_Magnetometer::mainloop()
     d_prevtime = now;
   }
 }
+
+vrpn_UMI_SimpleCombiner::vrpn_UMI_SimpleCombiner
+    (const char * name, vrpn_Connection * trackercon,
+      vrpn_Tracker_IMU_Params *params,
+      float update_rate, bool report_changes)
+  : vrpn_Tracker(name, trackercon),
+  d_update_interval(update_rate ? (1 / update_rate) : 1.0),
+  d_report_changes(report_changes)
+{
+  // Hook up the parameters for acceleration and rotational velocity
+  d_acceleration.params = params->d_acceleration;
+  d_rotational_vel.params = params->d_rotational_vel;
+
+  // Magetometers by definition produce unit vectors and
+  // have their axes as (x,y,z) so we just have to specify
+  // the name here and the others are all set to pass the
+  // values through.
+  d_magnetometer.params.name = params->d_magnetometer_name;
+  for (int i = 0; i < 3; i++) {
+    d_magnetometer.params.channels[i] = i;
+    d_magnetometer.params.offsets[i] = 0;
+    d_magnetometer.params.scales[i] = 1;
+  }
+
+  //--------------------------------------------------------------------
+  // Open analog remotes for any channels that have non-NULL names.
+  // If the name starts with the "*" character, use tracker
+  // connection rather than getting a new connection for it.
+  // Set up callbacks to handle updates to the analog values.
+  setup_vector(&d_acceleration, handle_analog_update);
+  setup_vector(&d_rotational_vel, handle_analog_update);
+  setup_vector(&d_magnetometer, handle_analog_update);
+
+  //--------------------------------------------------------------------
+  // Set the current timestamp to "now", the current orientation to identity
+  // and the angular rotation velocity to zero.
+  vrpn_gettimeofday(&d_prevtime, NULL);
+  d_prev_update_time = d_prevtime;
+  vrpn_Tracker::timestamp = d_prevtime;
+  q_vec_set(pos, 0, 0, 0);
+  q_from_axis_angle(d_quat, 0, 0, 1, 0);
+  q_vec_set(vel, 0, 0, 0);
+  q_from_axis_angle(vel_quat, 0, 0, 1, 0);
+  vel_quat_dt = 1;
+}
+
+vrpn_UMI_SimpleCombiner::~vrpn_UMI_SimpleCombiner(void)
+{
+  // Tear down the analog update callbacks and remotes
+  teardown_vector(&d_acceleration, handle_analog_update);
+  teardown_vector(&d_rotational_vel, handle_analog_update);
+  teardown_vector(&d_magnetometer, handle_analog_update);
+}
+
+// This routine handles updates of the analog values. The value coming in is
+// adjusted per the parameters in the axis description, and then used to
+// update the value there. The value is used by the device code in
+// mainloop() to update its internal state; that work is not done here.
+
+void	VRPN_CALLBACK vrpn_UMI_SimpleCombiner::handle_analog_update
+(void *userdata, const vrpn_ANALOGCB info)
+{
+  vrpn_IMU_Vector	*vector = (vrpn_IMU_Vector *)userdata;
+  for (size_t i = 0; i < 3; i++) {
+    vector->values[i] =
+      (info.channel[vector->params.channels[i]] - vector->params.offsets[i])
+      * vector->params.scales[i];
+  }
+
+  // Store the time we got the value.
+  vector->time = info.msg_time;
+}
+
+// This sets up the Analog Remote for one channel, setting up the callback
+// needed to adjust the value based on changes in the analog input.
+// Returns 0 on success and -1 on failure.
+
+int	vrpn_UMI_SimpleCombiner::setup_vector(vrpn_IMU_Vector *vector,
+  vrpn_ANALOGCHANGEHANDLER f)
+{
+  // If the name is empty, we're done.
+  if (vector->params.name.size() == 0) { return 0; }
+
+  // Open the analog device and point the remote at it.
+  // If the name starts with the '*' character, use the server
+  // connection rather than making a new one.
+  if (vector->params.name[0] == '*') {
+    vector->ana = new vrpn_Analog_Remote(vector->params.name.c_str() + 1,
+      d_connection);
+#ifdef	VERBOSE
+    printf("vrpn_Tracker_AnalogFly: Adding local analog %s\n",
+      vector->params.name.c_str() + 1);
+#endif
+  }
+  else {
+    vector->ana = new vrpn_Analog_Remote(vector->params.name.c_str());
+#ifdef	VERBOSE
+    printf("vrpn_Tracker_AnalogFly: Adding remote analog %s\n",
+      vector->params.name.c_str());
+#endif
+  }
+  if (vector->ana == NULL) {
+    fprintf(stderr, "vrpn_Tracker_AnalogFly: "
+      "Can't open Analog %s\n", vector->params.name.c_str());
+    return -1;
+  }
+
+  // Set up the callback handler for the channel
+  return vector->ana->register_change_handler(vector, f);
+}
+
+// This tears down the Analog Remote for one channel, undoing everything that
+// the setup did. Returns 0 on success and -1 on failure.
+
+int	vrpn_UMI_SimpleCombiner::teardown_vector(vrpn_IMU_Vector *vector,
+  vrpn_ANALOGCHANGEHANDLER f)
+{
+  int	ret;
+
+  // If the analog pointer is NULL, we're done.
+  if (vector->ana == NULL) { return 0; }
+
+  // Turn off the callback handler for the channel
+  ret = vector->ana->unregister_change_handler((void*)vector, f);
+
+  // Delete the analog device.
+  delete vector->ana;
+
+  return ret;
+}
+
+void vrpn_UMI_SimpleCombiner::mainloop()
+{
+
+  // Call generic server mainloop, since we are a server
+  server_mainloop();
+
+  // Mainloop() all of the analogs that are defined and the button
+  // so that we will get all of the values fresh.
+  if (d_acceleration.ana != NULL) { d_acceleration.ana->mainloop(); }
+  if (d_rotational_vel.ana != NULL) { d_rotational_vel.ana->mainloop(); }
+  if (d_magnetometer.ana != NULL) { d_magnetometer.ana->mainloop(); }
+
+  // Update the matrix based on the change in time since the last
+  // update and the current values.
+  struct timeval	now;
+  vrpn_gettimeofday(&now, NULL);
+  double delta_t = vrpn_TimevalDurationSeconds(now, d_prev_update_time);
+  update_matrix_based_on_values(delta_t);
+  d_prev_update_time = now;
+
+  // See if it has been long enough since our last report.
+  // If so, generate a new one.
+  double interval = vrpn_TimevalDurationSeconds(now, d_prevtime);
+  if (interval >= d_update_interval) {
+
+    // pack and deliver tracker report with info from the current matrix;
+    if (d_connection) {
+      char	msgbuf[1000];
+      int	len = encode_to(msgbuf);
+      if (d_connection->pack_message(len, vrpn_Tracker::timestamp,
+        position_m_id, d_sender_id, msgbuf,
+        vrpn_CONNECTION_LOW_LATENCY)) {
+        fprintf(stderr, "vrpn_UMI_SimpleCombiner: "
+          "cannot write pose message: tossing\n");
+      }
+      len = encode_vel_to(msgbuf);
+      if (d_connection->pack_message(len, vrpn_Tracker::timestamp,
+        velocity_m_id, d_sender_id, msgbuf,
+        vrpn_CONNECTION_LOW_LATENCY)) {
+        fprintf(stderr, "vrpn_UMI_SimpleCombiner: "
+          "cannot write velocity message: tossing\n");
+      }
+    } else {
+      fprintf(stderr, "vrpn_UMI_SimpleCombiner: "
+        "No valid connection\n");
+    }
+
+    // We just sent a report, so reset the time
+    d_prevtime = now;
+  }
+}
+
+// This routine will update the current matrix based on the current values
+// in the offsets list for each axis, and the length of time over which the
+// action is taking place (time_interval).
+
+void	vrpn_UMI_SimpleCombiner::update_matrix_based_on_values(double time_interval)
+{
+  //==================================================================
+  // Adjust the orientation based on the rotational velocity, which is
+  // measured in the rotated coordinate system.  We need to rotate the
+  // difference vector back to the canonical orientation.
+  // Be sure to scale by the time value.
+  q_type inverse;
+  q_invert(inverse, d_quat);
+  // Remember that Euler angles in Quatlib have rotation around Z in
+  // the first term.  Compute the time-scaled delta
+  q_type delta;
+  q_from_euler(delta,
+    time_interval * d_rotational_vel.values[Q_Z],
+    time_interval * d_rotational_vel.values[Q_Y],
+    time_interval * d_rotational_vel.values[Q_X]);
+  // Bring the delta back into canonical space
+  q_type canonical;
+  q_mult(canonical, inverse, delta);
+  q_mult(d_quat, canonical, d_quat);
+
+  //==================================================================
+  // To the extent that the acceleration vector's magnitude is equal
+  // to the expected gravity, rotate the orientation so that the vector
+  // points downward.  This is measured in the rotated coordinate system,
+  // so we need to rotate back to canonical orientation and apply
+  // the difference there.  The rate of rotation
+  // should be as specified in the gravity-rotation-rate parameter so
+  // we don't swing the head around too quickly by only slowly re-adjust.
+  // @todo
+
+  //==================================================================
+  // If we are getting compass data, and to the extent that the
+  // acceleration vector's magnitude is equal to the expected gravity,
+  // compute the cross product of the cross product to find the
+  // direction of north perpendicular to down.  This is measured in
+  // the rotated coordinate system, so we need to rotate back to the
+  // canonical orientation and apply the difference there.
+  // The rate of rotation should be as specified in the
+  // magnetometer-rotation-rate parameter so we don't swing the head
+  // around too quickly by only slowly re-adjust.
+  // @todo
+
+  //==================================================================
+  // Compute and store the velocity information
+  // This will be in the rotated coordinate system, so we need to
+  // rotate back to the identity orientation before storing.
+  // Convert from radians/second into a quaternion rotation as
+  // rotated in a hundredth of a second and set the rotational
+  // velocity dt to a hundredth of a second so that we don't
+  // risk wrapping.
+  // @todo
+}
