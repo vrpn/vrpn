@@ -4937,6 +4937,91 @@ int vrpn_Generic_Server_Object::setup_IMU_Magnetometer(char *&pch, char *line,
     return 0;
 }
 
+int vrpn_Generic_Server_Object::setup_IMU_SimpleCombiner(char *&pch, char *line,
+  FILE *config_file)
+{
+  char s2[LINESIZE];
+  float f1;
+  vrpn_IMU_Axis_Params accel, rotate;
+  char magname[LINESIZE];
+
+  VRPN_CONFIG_NEXT();
+
+  if (sscanf(pch, "%511s%g", s2, &f1) != 2) {
+    fprintf(stderr, "Bad vrpn_IMU_SimpleCombiner line: %s\n", line);
+    return -1;
+  }
+
+  if (verbose) {
+    printf("Opening vrpn_IMU_SimpleCombiner: "
+      "%s with update rate %g\n",
+      s2, f1);
+  }
+
+  // Scan the following line in the configuration file to fill
+  // in the start-up parameters for the accelerometer
+  {
+    char line[LINESIZE];
+
+    // Read in the line
+    if (fgets(line, LINESIZE, config_file) == NULL) {
+      perror("vrpn_IMU_SimpleCombiner Can't read axis accelerometer line!");
+      return -1;
+    }
+
+    // Parse the line
+    if (get_IMU_Param_Line(line, &accel)) {
+      fprintf(stderr, "Can't read accelerometer line for vrpn_IMU_SimpleCombiner\n");
+      return -1;
+    }
+  }
+
+  // Scan the following line in the configuration file to fill
+  // in the start-up parameters for the rotational linear measurement
+  {
+    char line[LINESIZE];
+
+    // Read in the line
+    if (fgets(line, LINESIZE, config_file) == NULL) {
+      perror("vrpn_IMU_SimpleCombiner Can't read axis rotation line!");
+      return -1;
+    }
+
+    // Parse the line
+    if (get_IMU_Param_Line(line, &rotate)) {
+      fprintf(stderr, "Can't read rotation line for vrpn_IMU_SimpleCombiner\n");
+      return -1;
+    }
+  }
+
+  // Scan the following line in the configuration file to fill
+  // in the name for the magnetometer
+  {
+    char line[LINESIZE];
+
+    // Read in the line
+    if (fgets(line, LINESIZE, config_file) == NULL) {
+      perror("vrpn_IMU_SimpleCombiner Can't read axis rotation line!");
+      return -1;
+    }
+
+    if (sscanf(line, "%511s", magname) != 1) {
+      fprintf(stderr, "Bad vrpn_IMU_SimpleCombiner magnetometer name: %s\n", line);
+      return -1;
+    }
+  }
+
+  vrpn_Tracker_IMU_Params params;
+  params.d_acceleration = accel;
+  params.d_rotational_vel = rotate;
+  params.d_magnetometer_name = magname;
+  if (params.d_magnetometer_name == "NULL") {
+    params.d_magnetometer_name.clear();
+  }
+  _devices->add(new vrpn_IMU_SimpleCombiner(s2, connection, &params, f1, false));
+  return 0;
+}
+
 #undef VRPN_CONFIG_NEXT
 
 vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(
@@ -5498,6 +5583,9 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(
                 }
                 else if (VRPN_ISIT("vrpn_IMU_Magnetometer")) {
                     VRPN_CHECK(setup_IMU_Magnetometer);
+                }
+                else if (VRPN_ISIT("vrpn_IMU_SimpleCombiner")) {
+                  VRPN_CHECK(setup_IMU_SimpleCombiner);
                 }
                 else {                         // Never heard of it
                     sscanf(line, "%511s", s1); // Find out the class name

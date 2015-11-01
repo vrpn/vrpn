@@ -217,7 +217,7 @@ void vrpn_IMU_Magnetometer::mainloop()
   }
 }
 
-vrpn_UMI_SimpleCombiner::vrpn_UMI_SimpleCombiner
+vrpn_IMU_SimpleCombiner::vrpn_IMU_SimpleCombiner
     (const char * name, vrpn_Connection * trackercon,
       vrpn_Tracker_IMU_Params *params,
       float update_rate, bool report_changes)
@@ -262,7 +262,7 @@ vrpn_UMI_SimpleCombiner::vrpn_UMI_SimpleCombiner
   vel_quat_dt = 1;
 }
 
-vrpn_UMI_SimpleCombiner::~vrpn_UMI_SimpleCombiner(void)
+vrpn_IMU_SimpleCombiner::~vrpn_IMU_SimpleCombiner(void)
 {
   // Tear down the analog update callbacks and remotes
   teardown_vector(&d_acceleration, handle_analog_update);
@@ -275,7 +275,7 @@ vrpn_UMI_SimpleCombiner::~vrpn_UMI_SimpleCombiner(void)
 // update the value there. The value is used by the device code in
 // mainloop() to update its internal state; that work is not done here.
 
-void	VRPN_CALLBACK vrpn_UMI_SimpleCombiner::handle_analog_update
+void	VRPN_CALLBACK vrpn_IMU_SimpleCombiner::handle_analog_update
 (void *userdata, const vrpn_ANALOGCB info)
 {
   vrpn_IMU_Vector	*vector = (vrpn_IMU_Vector *)userdata;
@@ -293,7 +293,7 @@ void	VRPN_CALLBACK vrpn_UMI_SimpleCombiner::handle_analog_update
 // needed to adjust the value based on changes in the analog input.
 // Returns 0 on success and -1 on failure.
 
-int	vrpn_UMI_SimpleCombiner::setup_vector(vrpn_IMU_Vector *vector,
+int	vrpn_IMU_SimpleCombiner::setup_vector(vrpn_IMU_Vector *vector,
   vrpn_ANALOGCHANGEHANDLER f)
 {
   // If the name is empty, we're done.
@@ -330,7 +330,7 @@ int	vrpn_UMI_SimpleCombiner::setup_vector(vrpn_IMU_Vector *vector,
 // This tears down the Analog Remote for one channel, undoing everything that
 // the setup did. Returns 0 on success and -1 on failure.
 
-int	vrpn_UMI_SimpleCombiner::teardown_vector(vrpn_IMU_Vector *vector,
+int	vrpn_IMU_SimpleCombiner::teardown_vector(vrpn_IMU_Vector *vector,
   vrpn_ANALOGCHANGEHANDLER f)
 {
   int	ret;
@@ -347,9 +347,8 @@ int	vrpn_UMI_SimpleCombiner::teardown_vector(vrpn_IMU_Vector *vector,
   return ret;
 }
 
-void vrpn_UMI_SimpleCombiner::mainloop()
+void vrpn_IMU_SimpleCombiner::mainloop()
 {
-
   // Call generic server mainloop, since we are a server
   server_mainloop();
 
@@ -379,18 +378,18 @@ void vrpn_UMI_SimpleCombiner::mainloop()
       if (d_connection->pack_message(len, vrpn_Tracker::timestamp,
         position_m_id, d_sender_id, msgbuf,
         vrpn_CONNECTION_LOW_LATENCY)) {
-        fprintf(stderr, "vrpn_UMI_SimpleCombiner: "
+        fprintf(stderr, "vrpn_IMU_SimpleCombiner: "
           "cannot write pose message: tossing\n");
       }
       len = encode_vel_to(msgbuf);
       if (d_connection->pack_message(len, vrpn_Tracker::timestamp,
         velocity_m_id, d_sender_id, msgbuf,
         vrpn_CONNECTION_LOW_LATENCY)) {
-        fprintf(stderr, "vrpn_UMI_SimpleCombiner: "
+        fprintf(stderr, "vrpn_IMU_SimpleCombiner: "
           "cannot write velocity message: tossing\n");
       }
     } else {
-      fprintf(stderr, "vrpn_UMI_SimpleCombiner: "
+      fprintf(stderr, "vrpn_IMU_SimpleCombiner: "
         "No valid connection\n");
     }
 
@@ -403,7 +402,7 @@ void vrpn_UMI_SimpleCombiner::mainloop()
 // in the offsets list for each axis, and the length of time over which the
 // action is taking place (time_interval).
 
-void	vrpn_UMI_SimpleCombiner::update_matrix_based_on_values(double time_interval)
+void	vrpn_IMU_SimpleCombiner::update_matrix_based_on_values(double time_interval)
 {
   //==================================================================
   // Adjust the orientation based on the rotational velocity, which is

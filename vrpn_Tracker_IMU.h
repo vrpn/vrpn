@@ -121,13 +121,13 @@ public:
 // change since the last update, in which case they are generated no faster
 // than update_rate. 
 
-class vrpn_UMI_SimpleCombiner : public vrpn_Tracker {
+class vrpn_IMU_SimpleCombiner : public vrpn_Tracker {
   public:
-    VRPN_API vrpn_UMI_SimpleCombiner(const char *name, vrpn_Connection *trackercon,
+    VRPN_API vrpn_IMU_SimpleCombiner(const char *name, vrpn_Connection *trackercon,
       vrpn_Tracker_IMU_Params *params,
       float update_rate, bool report_changes = VRPN_FALSE);
 
-    virtual VRPN_API ~vrpn_UMI_SimpleCombiner(void);
+    virtual VRPN_API ~vrpn_IMU_SimpleCombiner(void);
 
     virtual VRPN_API void mainloop ();
 

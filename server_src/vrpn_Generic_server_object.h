@@ -8,8 +8,8 @@
 
 class vrpn_MainloopContainer;
 
-const int VRPN_GSO_MAX_NDI_POLARIS_RIGIDBODIES =
-    20; // FIXME find out from the NDI specs if there is a maximum;
+/// @todo find out from the NDI specs if there is a maximum;
+const int VRPN_GSO_MAX_NDI_POLARIS_RIGIDBODIES = 20; 
 
 class VRPN_API vrpn_TAF_axis;
 class VRPN_API vrpn_IMU_Axis_Params;
@@ -163,6 +163,7 @@ protected:
     int setup_Oculus_DK2_LEDs(char *&pch, char *line, FILE *config_file);
     int setup_Oculus_DK2_inertial(char *&pch, char *line, FILE *config_file);
     int setup_IMU_Magnetometer(char *&pch, char *line, FILE *config_file);
+    int setup_IMU_SimpleCombiner(char *&pch, char *line, FILE *config_file);
 
     template <typename T>
     int templated_setup_device_name_only(char *&pch, char *line, FILE *);
