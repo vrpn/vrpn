@@ -408,12 +408,15 @@ void	vrpn_IMU_SimpleCombiner::update_matrix_based_on_values(double time_interval
   //==================================================================
   // Adjust the orientation based on the rotational velocity, which is
   // measured in the rotated coordinate system.  We need to rotate the
-  // difference vector back to the canonical orientation.
+  // difference vector back to the canonical orientation, apply the
+  // orientation change there, and then rotate back.
   // Be sure to scale by the time value.
-  q_type inverse;
-  q_invert(inverse, d_quat);
+  q_type forward, inverse;
+  q_copy(forward, d_quat);
+  q_invert(inverse, forward);
   // Remember that Euler angles in Quatlib have rotation around Z in
-  // the first term.  Compute the time-scaled delta
+  // the first term.  Compute the time-scaled delta transform in
+  // canonical space.
   q_type delta;
   q_from_euler(delta,
     time_interval * d_rotational_vel.values[Q_Z],
@@ -421,7 +424,8 @@ void	vrpn_IMU_SimpleCombiner::update_matrix_based_on_values(double time_interval
     time_interval * d_rotational_vel.values[Q_X]);
   // Bring the delta back into canonical space
   q_type canonical;
-  q_mult(canonical, inverse, delta);
+  q_mult(canonical, delta, inverse);
+  q_mult(canonical, forward, canonical);
   q_mult(d_quat, canonical, d_quat);
 
   //==================================================================
@@ -454,5 +458,16 @@ void	vrpn_IMU_SimpleCombiner::update_matrix_based_on_values(double time_interval
   // rotated in a hundredth of a second and set the rotational
   // velocity dt to a hundredth of a second so that we don't
   // risk wrapping.
-  // @todo
+  q_invert(inverse, d_quat);
+  // Remember that Euler angles in Quatlib have rotation around Z in
+  // the first term.  Compute the time-scaled delta transform in
+  // canonical space.
+  q_from_euler(delta,
+    1e-2 * d_rotational_vel.values[Q_Z],
+    1e-2 * d_rotational_vel.values[Q_Y],
+    1e-2 * d_rotational_vel.values[Q_X]);
+  // Bring the delta back into canonical space
+  q_mult(vel_quat, inverse, delta);
+  vel_quat_dt = 1e-2;
 }
+
