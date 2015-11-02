@@ -117,8 +117,10 @@ public:
 // interpreting them as inertial-measurement report vectors.  The two required
 // inputs are an acceleration vector and a rotational velocity measurement.  There
 // is an optional magnetometer.
-// The time reported by is as of the last report received from any device.
-// If reportChanges is TRUE, updates are ONLY sent if there has been a
+//  NOTE: The coordinate system of the HMD has X to the right as the device
+// is worn, Y facing up, and Z pointing out the back of the wearer's head.
+//  The time reported by is as of the last report received from any device.
+//  If reportChanges is TRUE, updates are ONLY sent if there has been a
 // change since the last update, in which case they are generated no faster
 // than update_rate. 
 
@@ -133,14 +135,16 @@ class vrpn_IMU_SimpleCombiner : public vrpn_Tracker {
     virtual VRPN_API void mainloop ();
 
   protected:
-
     double	    d_update_interval;	//< How long to wait between sends
     struct timeval  d_prevtime;	  	//< Time of the previous report
     bool       d_report_changes;    //< Report only changes, or always?
 
-    vrpn_IMU_Vector d_acceleration;      //< Analog input for accelerometer
-    vrpn_IMU_Vector d_rotational_vel;    //< Analog input for rotational velocity
-    vrpn_IMU_Vector d_magnetometer;      //< Analog input for magnetometer, if present
+    vrpn_IMU_Vector d_acceleration;     //< Analog input for accelerometer
+    vrpn_IMU_Vector d_rotational_vel;   //< Analog input for rotational velocity
+    vrpn_IMU_Vector d_magnetometer;     //< Analog input for magnetometer, if present
+
+    double  d_gravity_restore_rate;     //< Radians/second to restore gravity vector
+    double  d_north_restore_rate;       //< Radians/second to restore North vector
 
     struct timeval d_prev_update_time;  //< Time of previous integration update
     void    update_matrix_based_on_values(double time_interval);
@@ -151,3 +155,4 @@ class vrpn_IMU_SimpleCombiner : public vrpn_Tracker {
     static void	VRPN_CALLBACK handle_analog_update(void *userdata,
       const vrpn_ANALOGCB info);
 };
+

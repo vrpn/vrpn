@@ -226,6 +226,10 @@ vrpn_IMU_SimpleCombiner::vrpn_IMU_SimpleCombiner
   d_update_interval(update_rate ? (1 / update_rate) : 1.0),
   d_report_changes(report_changes)
 {
+  // Set the restoration rates for gravity and north.
+  d_gravity_restore_rate = 0.5;
+  d_north_restore_rate = 0.5;
+
   // Hook up the parameters for acceleration and rotational velocity
   d_acceleration.params = params->d_acceleration;
   d_rotational_vel.params = params->d_rotational_vel;
@@ -433,22 +437,111 @@ void	vrpn_IMU_SimpleCombiner::update_matrix_based_on_values(double time_interval
   // to the expected gravity, rotate the orientation so that the vector
   // points downward.  This is measured in the rotated coordinate system,
   // so we need to rotate back to canonical orientation and apply
-  // the difference there.  The rate of rotation
+  // the difference there and then rotate back.  The rate of rotation
   // should be as specified in the gravity-rotation-rate parameter so
   // we don't swing the head around too quickly by only slowly re-adjust.
-  // @todo
 
-  //==================================================================
-  // If we are getting compass data, and to the extent that the
-  // acceleration vector's magnitude is equal to the expected gravity,
-  // compute the cross product of the cross product to find the
-  // direction of north perpendicular to down.  This is measured in
-  // the rotated coordinate system, so we need to rotate back to the
-  // canonical orientation and apply the difference there.
-  // The rate of rotation should be as specified in the
-  // magnetometer-rotation-rate parameter so we don't swing the head
-  // around too quickly by only slowly re-adjust.
-  // @todo
+  double accel = sqrt(
+      d_acceleration.values[0] * d_acceleration.values[0] +
+      d_acceleration.values[1] * d_acceleration.values[1] +
+      d_acceleration.values[2] * d_acceleration.values[2] );
+  double diff = fabs(accel - 9.80665);
+
+  // Only adjust if we're close enough to the expected gravity
+  // @todo In a more complicated IMU tracker, base this on state and
+  // error estimates from a Kalman or other filter.
+  double scale = 1.0 - diff;
+  if (scale > 0) {
+    // Change how fast we adjust based on how close we are to the
+    // expected value of gravity.
+    double gravity_rate = scale * d_gravity_restore_rate;
+
+    // Rotate the gravity vector from the local space into the
+    // canonical orientation.
+    q_vec_type gravity_local;
+    q_vec_set(gravity_local, d_acceleration.values[0],
+      d_acceleration.values[1], d_acceleration.values[2]);
+    q_vec_type gravity_global;
+    q_mult(gravity_global, inverse, gravity_local);
+
+    // Determine the rotation needed to take negative Y and rotate
+    // it into the direction of gravity.
+    q_vec_type neg_y;
+    q_vec_set(neg_y, 0, -1, 0);
+    q_type rot;
+    q_from_two_vecs(rot, neg_y, gravity_global);
+
+    // Convert the rotation needed into an axis and an angle.
+    // Scale the rate by the amount of time we have to rotate
+    // and make sure we don't rotate further than that, and then
+    // convert back into a rotation.
+    double x,y,z, angle;
+    q_to_axis_angle(&x, &y, &z, &angle, rot);
+    double max_spin = gravity_rate * time_interval;
+    if (fabs(angle) > max_spin) {
+      angle /= fabs(angle)/max_spin;
+    }
+    q_from_axis_angle(rot, x,y,z, angle);
+
+    // Rotate by this angle.
+    q_mult(d_quat, rot, d_quat);
+
+    //==================================================================
+    // If we are getting compass data, and to the extent that the
+    // acceleration vector's magnitude is equal to the expected gravity,
+    // compute the cross product of the cross product to find the
+    // direction of north perpendicular to down.  This is measured in
+    // the rotated coordinate system, so we need to rotate back to the
+    // canonical orientation and apply the difference there and then rotate
+    // back.  The rate of rotation should be as specified in the
+    // magnetometer-rotation-rate parameter so we don't swing the head
+    // around too quickly by only slowly re-adjust.
+
+    if (d_magnetometer.ana != NULL) {
+      // Find the North vector that is perpendicular to gravity by
+      // taking the cross product of north and down (which is west).
+      // Then take the cross product of down and west, which is
+      // the projection of north perpendicular to down.
+      q_vec_type magnetometer;
+      q_vec_set(magnetometer, d_magnetometer.values[0],
+        d_magnetometer.values[1], d_magnetometer.values[2]);
+      q_vec_type west_local;
+      q_vec_cross_product(west_local, magnetometer, gravity_local);
+      q_vec_type north_local;
+      q_vec_cross_product(north_local, gravity_local, west_local);
+
+      // Rotate the north vector from the local space into the
+      // canonical orientation.
+      q_vec_type north_global;
+      q_mult(north_global, inverse, north_local);
+
+      // Determine the rotation needed to take negative Z and rotate
+      // it into the direction of north.
+      q_vec_type neg_z;
+      q_vec_set(neg_z, 0, 0, -1);
+      q_type rot;
+      q_from_two_vecs(rot, neg_z, north_global);
+
+      // Change how fast we adjust based on how close we are to the
+      // expected value of gravity.
+      double north_rate = scale * d_north_restore_rate;
+
+      // Convert the rotation needed into an axis and an angle.
+      // Scale the rate by the amount of time we have to rotate
+      // and make sure we don't rotate further than that, and then
+      // convert back into a rotation.
+      double x,y,z, angle;
+      q_to_axis_angle(&x, &y, &z, &angle, rot);
+      double max_spin = north_rate * time_interval;
+      if (fabs(angle) > max_spin) {
+        angle /= fabs(angle)/max_spin;
+      }
+      q_from_axis_angle(rot, x,y,z, angle);
+
+      // Rotate by this angle.
+      q_mult(d_quat, rot, d_quat);
+    }
+  }
 
   //==================================================================
   // Compute and store the velocity information
