@@ -452,6 +452,11 @@ void	vrpn_IMU_SimpleCombiner::update_matrix_based_on_values(double time_interval
   // error estimates from a Kalman or other filter.
   double scale = 1.0 - diff;
   if (scale > 0) {
+    // Get a new forward and inverse matrix from the current, just-
+    // rotated matrix.
+    q_copy(forward, d_quat);
+    q_invert(inverse, forward);
+
     // Change how fast we adjust based on how close we are to the
     // expected value of gravity.
     double gravity_rate = scale * d_gravity_restore_rate;
@@ -461,8 +466,10 @@ void	vrpn_IMU_SimpleCombiner::update_matrix_based_on_values(double time_interval
     q_vec_type gravity_local;
     q_vec_set(gravity_local, d_acceleration.values[0],
       d_acceleration.values[1], d_acceleration.values[2]);
+    //printf("XXX Local gravity: %lg, %lg, %lg\n", gravity_local[0], gravity_local[1], gravity_local[2]);
     q_vec_type gravity_global;
-    q_mult(gravity_global, inverse, gravity_local);
+    q_xform(gravity_global, inverse, gravity_local);
+    //printf("  XXX Global gravity: %lg, %lg, %lg\n", gravity_global[0], gravity_global[1], gravity_global[2]);
 
     // Determine the rotation needed to take negative Y and rotate
     // it into the direction of gravity.
@@ -498,6 +505,11 @@ void	vrpn_IMU_SimpleCombiner::update_matrix_based_on_values(double time_interval
     // around too quickly by only slowly re-adjust.
 
     if (d_magnetometer.ana != NULL) {
+      // Get a new forward and inverse matrix from the current, just-
+      // rotated matrix.
+      q_copy(forward, d_quat);
+      q_invert(inverse, forward);
+
       // Find the North vector that is perpendicular to gravity by
       // taking the cross product of north and down (which is west).
       // Then take the cross product of down and west, which is
@@ -513,7 +525,7 @@ void	vrpn_IMU_SimpleCombiner::update_matrix_based_on_values(double time_interval
       // Rotate the north vector from the local space into the
       // canonical orientation.
       q_vec_type north_global;
-      q_mult(north_global, inverse, north_local);
+      q_xform(north_global, inverse, north_local);
 
       // Determine the rotation needed to take negative Z and rotate
       // it into the direction of north.
