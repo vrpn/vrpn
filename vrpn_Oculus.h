@@ -2,10 +2,9 @@
 	@brief	Header for various Oculus devices.  Initially, just the DK2.
 
 	@date	2015
-
-	@author
-	Russell M. Taylor II
-	<russ@reliasolve.com>
+  @copyright 2015 ReliaSolve.com
+  @author ReliaSolve.com russ@reliasolve.com
+  @license Standard VRPN license.
 */
 
 // Based on the OSVR hacker dev kit driver by Kevin Godby.
