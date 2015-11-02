@@ -227,8 +227,8 @@ vrpn_IMU_SimpleCombiner::vrpn_IMU_SimpleCombiner
   d_report_changes(report_changes)
 {
   // Set the restoration rates for gravity and north.
-  d_gravity_restore_rate = 0.5;
-  d_north_restore_rate = 0.5;
+  d_gravity_restore_rate = 0;
+  d_north_restore_rate = 0;
 
   // Hook up the parameters for acceleration and rotational velocity
   d_acceleration.params = params->d_acceleration;
@@ -551,7 +551,6 @@ void	vrpn_IMU_SimpleCombiner::update_matrix_based_on_values(double time_interval
   // rotated in a hundredth of a second and set the rotational
   // velocity dt to a hundredth of a second so that we don't
   // risk wrapping.
-  q_invert(inverse, d_quat);
   // Remember that Euler angles in Quatlib have rotation around Z in
   // the first term.  Compute the time-scaled delta transform in
   // canonical space.
@@ -560,7 +559,8 @@ void	vrpn_IMU_SimpleCombiner::update_matrix_based_on_values(double time_interval
     1e-2 * d_rotational_vel.values[Q_Y],
     1e-2 * d_rotational_vel.values[Q_X]);
   // Bring the delta back into canonical space
-  q_mult(vel_quat, inverse, delta);
+  q_mult(canonical, delta, inverse);
+  q_mult(vel_quat, forward, canonical);
   vel_quat_dt = 1e-2;
 }
 
