@@ -17,6 +17,7 @@
 
 #include <cstring>   // for memset
 #include <stdexcept> // for logic_error
+#include <cmath>
 
 VRPN_SUPPRESS_EMPTY_OBJECT_WARNING()
 
