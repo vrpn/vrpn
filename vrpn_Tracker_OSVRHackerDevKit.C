@@ -183,11 +183,32 @@ void vrpn_Tracker_OSVRHackerDevKit::on_data_received(std::size_t bytes,
         angVel[2] =
             VelFixedPoint(vrpn_unbuffer_from_little_endian<vrpn_int16>(buffer))
                 .get<vrpn_float64>();
-
         // Given XYZ radians per second velocity.
-        q_from_euler(vel_quat, angVel[2] * vel_quat_dt, angVel[1] * vel_quat_dt,
-                     angVel[0] * vel_quat_dt);
+        // Compute magnitude of vector: speed about normalized vector axis.
+        double angularSpeedSquared = angVel[0] * angVel[0] +
+                                     angVel[1] * angVel[1] +
+                                     angVel[2] * angVel[2];
+        if (0 == angularSpeedSquared) {
+			//  Zero velocity - identity quat.
+            vel_quat[Q_X] = 0.;
+            vel_quat[Q_Y] = 0.;
+            vel_quat[Q_Z] = 0.;
+            vel_quat[Q_W] = 1.;
+        }
+        else {
+            double angularSpeed = std::sqrt(angularSpeedSquared);
+            // Incremental rotation angle given our timestep
+            double theta = vel_quat_dt * angularSpeed;
+            // Factor used to normalize angular vel to be the axis, as well as
+            // turn axis -> quat x, y, z
+            double vecFactor = std::sin(theta / 2.) / angularSpeed;
 
+            // Populate quaternion now.
+            vel_quat[Q_X] = angVel[0] * vecFactor;
+            vel_quat[Q_Y] = angVel[1] * vecFactor;
+            vel_quat[Q_Z] = angVel[2] * vecFactor;
+            vel_quat[Q_W] = std::cos(theta / 2.);
+        }
         char msgbuf[512];
         int len = vrpn_Tracker::encode_vel_to(msgbuf);
         if (d_connection->pack_message(len, _timestamp, velocity_m_id,
