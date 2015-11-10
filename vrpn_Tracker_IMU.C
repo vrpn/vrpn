@@ -9,7 +9,7 @@
 #undef VERBOSE
 
 vrpn_IMU_Magnetometer::vrpn_IMU_Magnetometer
-          (std::string name, vrpn_Connection *output_con,
+          (std::string const &name, vrpn_Connection *output_con,
             vrpn_IMU_Axis_Params params,
            float update_rate, bool report_changes) :
 	vrpn_Analog_Server(name.c_str(), output_con),
@@ -63,7 +63,7 @@ vrpn_IMU_Magnetometer::~vrpn_IMU_Magnetometer()
 void	VRPN_CALLBACK vrpn_IMU_Magnetometer::handle_analog_update
                      (void *userdata, const vrpn_ANALOGCB info)
 {
-  vrpn_IMU_Vector	*vector = (vrpn_IMU_Vector *)userdata;
+  vrpn_IMU_Vector	*vector = static_cast<vrpn_IMU_Vector *>(userdata);
   for (size_t i = 0; i < 3; i++) {
     vector->values[i] =
       (info.channel[vector->params.channels[i]] - vector->params.offsets[i])
@@ -227,8 +227,8 @@ vrpn_IMU_SimpleCombiner::vrpn_IMU_SimpleCombiner
   d_report_changes(report_changes)
 {
   // Set the restoration rates for gravity and north.
-  d_gravity_restore_rate = 0;
-  d_north_restore_rate = 0;
+  d_gravity_restore_rate = 0.0;
+  d_north_restore_rate = 0.0;
 
   // Hook up the parameters for acceleration and rotational velocity
   d_acceleration.params = params->d_acceleration;
@@ -283,7 +283,7 @@ vrpn_IMU_SimpleCombiner::~vrpn_IMU_SimpleCombiner(void)
 void	VRPN_CALLBACK vrpn_IMU_SimpleCombiner::handle_analog_update
 (void *userdata, const vrpn_ANALOGCB info)
 {
-  vrpn_IMU_Vector	*vector = (vrpn_IMU_Vector *)userdata;
+  vrpn_IMU_Vector	*vector = static_cast<vrpn_IMU_Vector *>(userdata);
   for (size_t i = 0; i < 3; i++) {
     vector->values[i] =
       (info.channel[vector->params.channels[i]] - vector->params.offsets[i])
@@ -461,22 +461,28 @@ void	vrpn_IMU_SimpleCombiner::update_matrix_based_on_values(double time_interval
     // expected value of gravity.
     double gravity_rate = scale * d_gravity_restore_rate;
 
-    // Rotate the gravity vector from the local space into the
-    // canonical orientation.
+    // Rotate the -Y vector by the inverse estimated transform.
+	// We expect this direction to match the down vector.
     q_vec_type gravity_local;
     q_vec_set(gravity_local, d_acceleration.values[0],
       d_acceleration.values[1], d_acceleration.values[2]);
+	q_vec_normalize(gravity_local, gravity_local);
     //printf("XXX Local gravity: %lg, %lg, %lg\n", gravity_local[0], gravity_local[1], gravity_local[2]);
-    q_vec_type gravity_global;
-    q_xform(gravity_global, inverse, gravity_local);
-    //printf("  XXX Global gravity: %lg, %lg, %lg\n", gravity_global[0], gravity_global[1], gravity_global[2]);
+	q_vec_type neg_y;
+	q_vec_set(neg_y, 0, -1, 0);
+	q_vec_type gravity_local_expected;
+	q_xform(gravity_local_expected, inverse, neg_y);
+    //printf("  XXX Expected gravity: %lg, %lg, %lg\n", gravity_local_expected[0], gravity_local_expected[1], gravity_local_expected[2]);
 
     // Determine the rotation needed to take negative Y and rotate
     // it into the direction of gravity.
-    q_vec_type neg_y;
-    q_vec_set(neg_y, 0, -1, 0);
-    q_type rot;
-    q_from_two_vecs(rot, neg_y, gravity_global);
+    q_type rot_local;
+    q_from_two_vecs(rot_local, neg_y, gravity_local_expected);
+
+	// Convert this from a local rotation into a global rotation.
+	q_type rot;
+	q_mult(rot, rot_local, inverse);
+	q_mult(rot, forward, rot);
 
     // Convert the rotation needed into an axis and an angle.
     // Scale the rate by the amount of time we have to rotate

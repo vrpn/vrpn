@@ -77,7 +77,7 @@ public:
   /// @param report_changes If true, only reports values when at least
   ///        one of them a changed.  If false, report values at the
   ///        specified rate whether or not they have changed.
-  VRPN_API vrpn_IMU_Magnetometer(std::string name, vrpn_Connection *output_con,
+  VRPN_API vrpn_IMU_Magnetometer(std::string const &name, vrpn_Connection *output_con,
         vrpn_IMU_Axis_Params params, float update_rate,
         bool report_changes = VRPN_FALSE);
 
