@@ -35,6 +35,7 @@ static const vrpn_uint16 vrpn_OSVR_ALT_HACKER_DEV_KIT_HMD = 0x2421;
 // no changes have occurred. 400 is the most common tracker rate (reports per
 // second) so this is about once a second.
 static const vrpn_uint16 vrpn_HDK_STATUS_STRIDE = 400;
+static const vrpn_float64 vrpn_HDK_DT = 1.0 / 400.0;
 
 // NOTE: Cannot use the vendor-and-product parameters in the
 // vrpn_HidInterface because there are one of two possible
@@ -61,7 +62,7 @@ vrpn_Tracker_OSVRHackerDevKit::vrpn_Tracker_OSVRHackerDevKit(const char *name,
     std::memset(d_quat, 0, sizeof(d_quat));
     d_quat[Q_W] = 1.0;
     // Arbitrary dt that will be less than a full rotation.
-    vel_quat_dt = 1.0 / 400.0;
+    vel_quat_dt = vrpn_HDK_DT;
 
     /// Analog setup
     vrpn_Analog::num_channel = 2; // version and video input status
@@ -172,6 +173,7 @@ void vrpn_Tracker_OSVRHackerDevKit::on_data_received(std::size_t bytes,
     }
     if (version >= 2) {
         // We've got angular velocity in this message too
+        // Given XYZ radians per second velocity.
         // Signed Q6.9
         typedef vrpn::FixedPoint<6, 9> VelFixedPoint;
         q_vec_type angVel;
@@ -184,32 +186,31 @@ void vrpn_Tracker_OSVRHackerDevKit::on_data_received(std::size_t bytes,
         angVel[2] =
             VelFixedPoint(vrpn_unbuffer_from_little_endian<vrpn_int16>(buffer))
                 .get<vrpn_float64>();
-        // Given XYZ radians per second velocity.
-        // Compute magnitude of vector: speed about normalized vector axis.
-        double angularSpeedSquared = angVel[0] * angVel[0] +
-                                     angVel[1] * angVel[1] +
-                                     angVel[2] * angVel[2];
-        if (0 == angularSpeedSquared) {
-			//  Zero velocity - identity quat.
-            vel_quat[Q_X] = 0.;
-            vel_quat[Q_Y] = 0.;
-            vel_quat[Q_Z] = 0.;
-            vel_quat[Q_W] = 1.;
-        }
-        else {
-            double angularSpeed = std::sqrt(angularSpeedSquared);
-            // Incremental rotation angle given our timestep
-            double theta = vel_quat_dt * angularSpeed;
-            // Factor used to normalize angular vel to be the axis, as well as
-            // turn axis -> quat x, y, z
-            double vecFactor = std::sin(theta / 2.) / angularSpeed;
 
-            // Populate quaternion now.
-            vel_quat[Q_X] = angVel[0] * vecFactor;
-            vel_quat[Q_Y] = angVel[1] * vecFactor;
-            vel_quat[Q_Z] = angVel[2] * vecFactor;
-            vel_quat[Q_W] = std::cos(theta / 2.);
-        }
+        //==================================================================
+        // Determine the rotational velocity, which is
+        // measured in the rotated coordinate system.  We need to rotate the
+        // difference Euler angles back to the canonical orientation, apply
+        // the change, and then rotate back to change our coordinates.
+        // Be sure to scale by the time value vrpn_HDK_DT.
+        q_type forward, inverse;
+        q_copy(forward, d_quat);
+        q_invert(inverse, forward);
+        // Remember that Euler angles in Quatlib have rotation around Z in
+        // the first term.  Compute the time-scaled delta transform in
+        // canonical space.
+        q_type delta;
+        q_from_euler(delta,
+          vrpn_HDK_DT * angVel[Q_Z],
+          vrpn_HDK_DT * angVel[Q_Y],
+          vrpn_HDK_DT * angVel[Q_X]);
+        // Bring the delta back into canonical space
+        q_type canonical;
+        q_mult(canonical, delta, inverse);
+        q_mult(vel_quat, forward, canonical);
+
+        // Send the rotational velocity information.
+        // The dt value was set once, in the constructor.
         char msgbuf[512];
         int len = vrpn_Tracker::encode_vel_to(msgbuf);
         if (d_connection->pack_message(len, _timestamp, velocity_m_id,
