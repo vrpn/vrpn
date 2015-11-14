@@ -9,6 +9,7 @@
 
 // Based on the OSVR hacker dev kit driver by Kevin Godby.
 // Based on Oliver Kreylos' OculusRiftHIDReports.cpp and OculusRift.cpp.
+// He has given permission to release this code under the VRPN license:
 
 #include "vrpn_Oculus.h"
 
@@ -50,7 +51,8 @@ vrpn_Oculus_DK2::~vrpn_Oculus_DK2()
   delete m_acceptor;
 }
 
-// Copied from Oliver Kreylos' OculusRift.cpp.
+// Copied from Oliver Kreylos' OculusRift.cpp; he has given permission
+// to release this code under the VRPN standard license.
 // Unpacks a 3D vector from 8 bytes
 inline void unpackVector(const vrpn_uint8 raw[8], int vector[3])
 {
