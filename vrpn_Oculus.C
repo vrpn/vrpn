@@ -126,12 +126,12 @@ void vrpn_Oculus_DK2::parse_message_type_1(std::size_t bytes,
     magnetometer_raw[i] = vrpn_unbuffer_from_little_endian
       <vrpn_int16, vrpn_uint8>(magnetometer_ptr);
   }
-  // Invert X and Y to make the magnetometer direction match
+  // Invert all axes to make the magnetometer direction match
   // the sign of the gravity vector.
   const double magnetometer_scale = 0.0001;
   channel[8] = -magnetometer_raw[0] * magnetometer_scale;
   channel[9] = -magnetometer_raw[1] * magnetometer_scale;
-  channel[10] = magnetometer_raw[2] * magnetometer_scale;
+  channel[10] = -magnetometer_raw[2] * magnetometer_scale;
 
   // Unpack a 16-byte accelerometer/gyro report using the routines from
   // Oliver's code.
