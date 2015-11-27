@@ -230,7 +230,7 @@ vrpn_IMU_SimpleCombiner::vrpn_IMU_SimpleCombiner
   // These are the fraction of the way to full restoration that should
   // occur over one second.
   d_gravity_restore_rate = 0.9;
-  d_north_restore_rate = 0.0;
+  d_north_restore_rate = 0.9;
 
   // Hook up the parameters for acceleration and rotational velocity
   d_acceleration.params = params->d_acceleration;
@@ -457,7 +457,6 @@ void	vrpn_IMU_SimpleCombiner::update_matrix_based_on_values(double time_interval
     // Get a new forward and inverse matrix from the current, just-
     // rotated matrix.
     q_copy(forward, d_quat);
-    q_invert(inverse, forward);
 
     // Change how fast we adjust based on how close we are to the
     // expected value of gravity.  Then further scale this by the
@@ -473,7 +472,7 @@ void	vrpn_IMU_SimpleCombiner::update_matrix_based_on_values(double time_interval
 	q_xform(gravity_global, forward, gravity_global);
 	//printf("  XXX Gravity: %lg, %lg, %lg\n", gravity_global[0], gravity_global[1], gravity_global[2]);
 
-	// Determine the rotation needed to take negative gravity and rotate
+	// Determine the rotation needed to take gravity and rotate
 	// it into the direction of -Y.
 	q_vec_type neg_y;
 	q_vec_set(neg_y, 0, -1, 0);
@@ -486,11 +485,11 @@ void	vrpn_IMU_SimpleCombiner::update_matrix_based_on_values(double time_interval
 	// correction.
 	static q_type identity = { 0, 0, 0, 1 };
 	q_type scaled_rot;
-	q_slerp(rot, identity, rot, gravity_scale);
+	q_slerp(scaled_rot, identity, rot, gravity_scale);
 	//printf("XXX Scaling gravity vector by %lg\n", gravity_scale);
 
     // Rotate by this angle.
-    q_mult(d_quat, rot, d_quat);
+    q_mult(d_quat, scaled_rot, d_quat);
 
     //==================================================================
     // If we are getting compass data, and to the extent that the
@@ -498,63 +497,49 @@ void	vrpn_IMU_SimpleCombiner::update_matrix_based_on_values(double time_interval
     // compute the cross product of the cross product to find the
     // direction of north perpendicular to down.  This is measured in
     // the rotated coordinate system, so we need to rotate back to the
-    // canonical orientation and apply the difference there and then rotate
-    // back.  The rate of rotation should be as specified in the
+    // canonical orientation and do the comparison there.
+	//  The fraction of rotation should be as specified in the
     // magnetometer-rotation-rate parameter so we don't swing the head
     // around too quickly but only slowly re-adjust.
 
-#if 0
-	//XXX
     if (d_magnetometer.ana != NULL) {
       // Get a new forward and inverse matrix from the current, just-
       // rotated matrix.
       q_copy(forward, d_quat);
-      q_invert(inverse, forward);
 
       // Find the North vector that is perpendicular to gravity by
-      // taking the cross product of north and down (which is west).
-      // Then take the cross product of down and west, which is
-      // the projection of north perpendicular to down.
-      q_vec_type magnetometer;
+      // clearing its Y axis to zero and renormalizing.
+	  q_vec_type magnetometer;
       q_vec_set(magnetometer, d_magnetometer.values[0],
         d_magnetometer.values[1], d_magnetometer.values[2]);
-      q_vec_type west_local;
-      q_vec_cross_product(west_local, magnetometer, gravity_local);
-      q_vec_type north_local;
-      q_vec_cross_product(north_local, gravity_local, west_local);
+	  q_vec_type magnetometer_global;
+	  q_xform(magnetometer_global, forward, magnetometer);
+	  magnetometer_global[Q_Y] = 0;
+	  q_vec_type north_global;
+	  q_vec_normalize(north_global, magnetometer_global);
+	  //printf("  XXX north_global: %lg, %lg, %lg\n", north_global[0], north_global[1], north_global[2]);
 
-      // Rotate the north vector from the local space into the
-      // canonical orientation.
-      q_vec_type north_global;
-      q_xform(north_global, inverse, north_local);
+      // Determine the rotation needed to take north and rotate it
+	  // into the direction of negative Z.
+	  q_vec_type neg_z;
+	  q_vec_set(neg_z, 0, 0, -1);
+	  q_from_two_vecs(rot, north_global, neg_z);
 
-      // Determine the rotation needed to take negative Z and rotate
-      // it into the direction of north.
-      q_vec_type neg_z;
-      q_vec_set(neg_z, 0, 0, -1);
-      q_type rot;
-      q_from_two_vecs(rot, neg_z, north_global);
+	  // Change how fast we adjust based on how close we are to the
+	  // expected value of gravity.  Then further scale this by the
+	  // amount of time since the last estimate.
+	  double north_rate = scale * d_north_restore_rate * time_interval;
 
-      // Change how fast we adjust based on how close we are to the
-      // expected value of gravity.
-      double north_rate = scale * d_north_restore_rate;
-
-      // Convert the rotation needed into an axis and an angle.
-      // Scale the rate by the amount of time we have to rotate
-      // and make sure we don't rotate further than that, and then
-      // convert back into a rotation.
-      double x,y,z, angle;
-      q_to_axis_angle(&x, &y, &z, &angle, rot);
-      double max_spin = north_rate * time_interval;
-      if (fabs(angle) > max_spin) {
-        angle /= fabs(angle)/max_spin;
-      }
-      q_from_axis_angle(rot, x,y,z, angle);
+	  // Scale the rotation by the fraction of the orientation we
+	  // should remove based on the time that has passed, how well our
+	  // gravity vector matches expected, and the specified rate of
+	  // correction.
+	  static q_type identity = { 0, 0, 0, 1 };
+	  q_slerp(scaled_rot, identity, rot, north_rate);
 
       // Rotate by this angle.
-      q_mult(d_quat, rot, d_quat);
+      q_mult(d_quat, scaled_rot, d_quat);
     }
-#endif
   }
 
   //==================================================================
