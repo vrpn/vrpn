@@ -227,7 +227,9 @@ vrpn_IMU_SimpleCombiner::vrpn_IMU_SimpleCombiner
   d_report_changes(report_changes)
 {
   // Set the restoration rates for gravity and north.
-  d_gravity_restore_rate = 0.0;
+  // These are the fraction of the way to full restoration that should
+  // occur over one second.
+  d_gravity_restore_rate = 0.9;
   d_north_restore_rate = 0.0;
 
   // Hook up the parameters for acceleration and rotational velocity
@@ -439,7 +441,7 @@ void	vrpn_IMU_SimpleCombiner::update_matrix_based_on_values(double time_interval
   // so we need to rotate back to canonical orientation and apply
   // the difference there and then rotate back.  The rate of rotation
   // should be as specified in the gravity-rotation-rate parameter so
-  // we don't swing the head around too quickly by only slowly re-adjust.
+  // we don't swing the head around too quickly but only slowly re-adjust.
 
   double accel = sqrt(
       d_acceleration.values[0] * d_acceleration.values[0] +
@@ -458,43 +460,34 @@ void	vrpn_IMU_SimpleCombiner::update_matrix_based_on_values(double time_interval
     q_invert(inverse, forward);
 
     // Change how fast we adjust based on how close we are to the
-    // expected value of gravity.
-    double gravity_rate = scale * d_gravity_restore_rate;
+    // expected value of gravity.  Then further scale this by the
+	// amount of time since the last estimate.
+    double gravity_scale = scale * d_gravity_restore_rate * time_interval;
 
-    // Rotate the -Y vector by the inverse estimated transform.
-	// We expect this direction to match the down vector.
-    q_vec_type gravity_local;
-    q_vec_set(gravity_local, d_acceleration.values[0],
-      d_acceleration.values[1], d_acceleration.values[2]);
-	q_vec_normalize(gravity_local, gravity_local);
-    //printf("XXX Local gravity: %lg, %lg, %lg\n", gravity_local[0], gravity_local[1], gravity_local[2]);
+	// Rotate the gravity vector by the estimated transform.
+	// We expect this direction to match the global down (-Y) vector.
+	q_vec_type gravity_global;
+	q_vec_set(gravity_global, d_acceleration.values[0],
+		d_acceleration.values[1], d_acceleration.values[2]);
+	q_vec_normalize(gravity_global, gravity_global);
+	q_xform(gravity_global, forward, gravity_global);
+	//printf("  XXX Gravity: %lg, %lg, %lg\n", gravity_global[0], gravity_global[1], gravity_global[2]);
+
+	// Determine the rotation needed to take negative gravity and rotate
+	// it into the direction of -Y.
 	q_vec_type neg_y;
 	q_vec_set(neg_y, 0, -1, 0);
-	q_vec_type gravity_local_expected;
-	q_xform(gravity_local_expected, inverse, neg_y);
-    //printf("  XXX Expected gravity: %lg, %lg, %lg\n", gravity_local_expected[0], gravity_local_expected[1], gravity_local_expected[2]);
-
-    // Determine the rotation needed to take negative Y and rotate
-    // it into the direction of gravity.
-    q_type rot_local;
-    q_from_two_vecs(rot_local, neg_y, gravity_local_expected);
-
-	// Convert this from a local rotation into a global rotation.
 	q_type rot;
-	q_mult(rot, rot_local, inverse);
-	q_mult(rot, forward, rot);
+	q_from_two_vecs(rot, gravity_global, neg_y);
 
-    // Convert the rotation needed into an axis and an angle.
-    // Scale the rate by the amount of time we have to rotate
-    // and make sure we don't rotate further than that, and then
-    // convert back into a rotation.
-    double x,y,z, angle;
-    q_to_axis_angle(&x, &y, &z, &angle, rot);
-    double max_spin = gravity_rate * time_interval;
-    if (fabs(angle) > max_spin) {
-      angle /= fabs(angle)/max_spin;
-    }
-    q_from_axis_angle(rot, x,y,z, angle);
+	// Scale the rotation by the fraction of the orientation we
+	// should remove based on the time that has passed, how well our
+	// gravity vector matches expected, and the specified rate of
+	// correction.
+	static q_type identity = { 0, 0, 0, 1 };
+	q_type scaled_rot;
+	q_slerp(rot, identity, rot, gravity_scale);
+	//printf("XXX Scaling gravity vector by %lg\n", gravity_scale);
 
     // Rotate by this angle.
     q_mult(d_quat, rot, d_quat);
@@ -508,8 +501,10 @@ void	vrpn_IMU_SimpleCombiner::update_matrix_based_on_values(double time_interval
     // canonical orientation and apply the difference there and then rotate
     // back.  The rate of rotation should be as specified in the
     // magnetometer-rotation-rate parameter so we don't swing the head
-    // around too quickly by only slowly re-adjust.
+    // around too quickly but only slowly re-adjust.
 
+#if 0
+	//XXX
     if (d_magnetometer.ana != NULL) {
       // Get a new forward and inverse matrix from the current, just-
       // rotated matrix.
@@ -559,6 +554,7 @@ void	vrpn_IMU_SimpleCombiner::update_matrix_based_on_values(double time_interval
       // Rotate by this angle.
       q_mult(d_quat, rot, d_quat);
     }
+#endif
   }
 
   //==================================================================
