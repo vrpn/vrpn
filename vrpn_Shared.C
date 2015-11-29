@@ -22,7 +22,7 @@
 #define CHECK(a) \
     if (a == -1) return -1
 
-#if !defined(timezone)
+#if defined(VRPN_USE_WINSOCK_SOCKETS)
 /* from HP-UX */
 struct timezone {
 	int tz_minuteswest; /* minutes west of Greenwich */
