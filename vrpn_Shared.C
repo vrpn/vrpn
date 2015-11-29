@@ -19,8 +19,16 @@
 #include <netinet/in.h> // for htonl, htons
 #endif
 
-#define CHECK(a)                                                               \
+#define CHECK(a) \
     if (a == -1) return -1
+
+#if !defined(timezone)
+/* from HP-UX */
+struct timezone {
+	int tz_minuteswest; /* minutes west of Greenwich */
+	int tz_dsttime;     /* type of dst correction */
+};
+#endif
 
 // perform normalization of a timeval
 // XXX this still needs to be checked for errors if the timeval
@@ -492,13 +500,13 @@ static struct timeval high_resolution_time_to_system_time(
     return vrpn_TimevalSum(hi_res_time, hr_offset);
 }
 
-extern "C" VRPN_API int vrpn_gettimeofday(struct timeval *tp,
-                                          struct timezone *tzp)
+int vrpn_gettimeofday(timeval *tp, void *tzp)
 {
     // If we have nothing to fill in, don't try.
     if (tp == NULL) {
         return 0;
     }
+	struct timezone *timeZone = reinterpret_cast<struct timezone *>(tzp);
 
     // Find out the time, and how long it has been in seconds since the
     // epoch.
@@ -525,9 +533,9 @@ extern "C" VRPN_API int vrpn_gettimeofday(struct timeval *tp,
     *tp = high_resolution_time_to_system_time(hi_res_time);
 
     // @todo Fill in timezone structure with relevant info.
-    if (tzp != NULL) {
-        tzp->tz_minuteswest = 0;
-        tzp->tz_dsttime = 0;
+    if (timeZone != NULL) {
+		timeZone->tz_minuteswest = 0;
+		timeZone->tz_dsttime = 0;
     }
 
     return 0;
@@ -589,9 +597,11 @@ void get_time_using_GetLocalTime(unsigned long &sec, unsigned long &usec)
 // version.  It is claimed that they have fixed it now, but
 // better check.
 ///////////////////////////////////////////////////////////////
-int vrpn_gettimeofday(timeval *tp, struct timezone *tzp)
+int vrpn_gettimeofday(timeval *tp, void *tzp)
 {
-    if (tp != NULL) {
+	struct timezone *timeZone = reinterpret_cast<struct timezone *>(tzp);
+
+	if (tp != NULL) {
 #ifdef _WIN32_WCE
         unsigned long sec, usec;
         get_time_using_GetLocalTime(sec, usec);
@@ -607,8 +617,8 @@ int vrpn_gettimeofday(timeval *tp, struct timezone *tzp)
     if (tzp != NULL) {
         TIME_ZONE_INFORMATION tz;
         GetTimeZoneInformation(&tz);
-        tzp->tz_minuteswest = tz.Bias;
-        tzp->tz_dsttime = (tz.StandardBias != tz.Bias);
+		timeZone->tz_minuteswest = tz.Bias;
+		timeZone->tz_dsttime = (tz.StandardBias != tz.Bias);
     }
     return 0;
 }
@@ -779,9 +789,10 @@ static int vrpn_AdjustFrequency(void)
 // so until then, we will make it right using our solution.
 ///////////////////////////////////////////////////////////////
 #ifndef VRPN_WINDOWS_CLOCK_V2
-int vrpn_gettimeofday(timeval *tp, struct timezone *tzp)
+int vrpn_gettimeofday(timeval *tp, void *tzp)
 {
-    static int fFirst = 1;
+	struct timezone *timeZone = reinterpret_cast<struct timezone *>(tzp);
+	static int fFirst = 1;
     static int fHasPerfCounter = 1;
     static struct _timeb tbInit;
     static LARGE_INTEGER liInit;
@@ -951,16 +962,9 @@ void get_time_using_GetLocalTime(unsigned long &sec, unsigned long &usec)
     sec -= 3054524608L;
 }
 
-#if !defined(_STRUCT_TIMEZONE) && !defined(_TIMEZONE_DEFINED)
-#define _STRUCT_TIMEZONE
-/* from HP-UX */
-struct timezone {
-    int tz_minuteswest; /* minutes west of Greenwich */
-    int tz_dsttime;     /* type of dst correction */
-};
-#endif
-int vrpn_gettimeofday(timeval *tp, struct timezone *tzp)
+int vrpn_gettimeofday(timeval *tp, void *tzp)
 {
+	struct timezone *timeZone = reinterpret_cast<struct timezone *>(tzp);
     unsigned long sec, usec;
     get_time_using_GetLocalTime(sec, usec);
     tp->tv_sec = sec;
@@ -968,8 +972,8 @@ int vrpn_gettimeofday(timeval *tp, struct timezone *tzp)
     if (tzp != NULL) {
         TIME_ZONE_INFORMATION tz;
         GetTimeZoneInformation(&tz);
-        tzp->tz_minuteswest = tz.Bias;
-        tzp->tz_dsttime = (tz.StandardBias != tz.Bias);
+        timeZone->tz_minuteswest = tz.Bias;
+        timeZone->tz_dsttime = (tz.StandardBias != tz.Bias);
     }
     return 0;
 }
