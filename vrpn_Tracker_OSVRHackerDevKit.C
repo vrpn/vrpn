@@ -35,7 +35,7 @@ static const vrpn_uint16 vrpn_OSVR_ALT_HACKER_DEV_KIT_HMD = 0x2421;
 // no changes have occurred. 400 is the most common tracker rate (reports per
 // second) so this is about once a second.
 static const vrpn_uint16 vrpn_HDK_STATUS_STRIDE = 400;
-static const vrpn_float64 vrpn_HDK_DT = 1.0 / 400.0;
+static const vrpn_float64 vrpn_HDK_DT = 1.0 / 50;
 
 // NOTE: Cannot use the vendor-and-product parameters in the
 // vrpn_HidInterface because there are one of two possible
@@ -200,10 +200,14 @@ void vrpn_Tracker_OSVRHackerDevKit::on_data_received(std::size_t bytes,
         // the first term.  Compute the time-scaled delta transform in
         // canonical space.
         q_type delta;
-        q_from_euler(delta,
-          vrpn_HDK_DT * angVel[Q_Z],
-          vrpn_HDK_DT * angVel[Q_Y],
-          vrpn_HDK_DT * angVel[Q_X]);
+        {
+            delta[Q_W] = 0;
+            delta[Q_X] = angVel[Q_X] * vrpn_HDK_DT * 0.5;
+            delta[Q_Y] = angVel[Q_Y] * vrpn_HDK_DT * 0.5;
+            delta[Q_Z] = angVel[Q_Z] * vrpn_HDK_DT * 0.5;
+            q_exp(delta, delta);
+            q_normalize(delta, delta);
+         }
         // Bring the delta back into canonical space
         q_type canonical;
         q_mult(canonical, delta, inverse);
