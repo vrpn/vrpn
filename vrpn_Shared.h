@@ -121,7 +121,7 @@
 // Whether or not we export gettimeofday, we declare the
 // vrpn_gettimeofday() function on Windows.
 extern "C" VRPN_API int vrpn_gettimeofday(struct timeval *tp,
-                                          struct timezone *tzp);
+                                          void *tzp = NULL);
 
 // If compiling under Cygnus Solutions Cygwin then these get defined by
 // including sys/time.h.  So, we will manually define only for _WIN32
@@ -129,17 +129,7 @@ extern "C" VRPN_API int vrpn_gettimeofday(struct timeval *tp,
 // so that application code can get at it.  All VRPN routines should be
 // calling vrpn_gettimeofday() directly.
 
-#if defined(VRPN_EXPORT_GETTIMEOFDAY) && !defined(_STRUCT_TIMEZONE) &&         \
-    !defined(_TIMEZONE_DEFINED)
-#define _TIMEZONE_DEFINED
-/* from HP-UX */
-struct timezone {
-    int tz_minuteswest; /* minutes west of Greenwich */
-    int tz_dsttime;     /* type of dst correction */
-};
-#endif
-#if defined(VRPN_EXPORT_GETTIMEOFDAY) && !defined(_STRUCT_TIMEZONE)
-#define _STRUCT_TIMEZONE
+#if defined(VRPN_EXPORT_GETTIMEOFDAY)
 
 // manually define this too.  _WIN32 sans cygwin doesn't have gettimeofday
 #define gettimeofday vrpn_gettimeofday
