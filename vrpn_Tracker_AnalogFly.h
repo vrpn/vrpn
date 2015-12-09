@@ -112,15 +112,8 @@ class VRPN_API vrpn_Tracker_AnalogFly : public vrpn_Tracker {
     virtual ~vrpn_Tracker_AnalogFly (void);
 
     virtual void mainloop ();
-    virtual void reset (void);
-
-    void update (q_matrix_type &);
-
-    static void VRPN_CALLBACK handle_joystick (void *, const vrpn_ANALOGCB);
-    static int VRPN_CALLBACK handle_newConnection (void *, vrpn_HANDLERPARAM);
 
   protected:
-
     double	    d_update_interval;	//< How long to wait between sends
     struct timeval  d_prevtime;		//< Time of the previous report
     bool	    d_absolute;		//< Report absolute (vs. differential)?
@@ -145,11 +138,13 @@ class VRPN_API vrpn_Tracker_AnalogFly : public vrpn_Tracker {
 
     int setup_channel (vrpn_TAF_fullaxis * full);
     int teardown_channel (vrpn_TAF_fullaxis * full);
+    virtual void reset(void);
 
     static void	VRPN_CALLBACK handle_analog_update (void * userdata,
                                       const vrpn_ANALOGCB info);
     static void VRPN_CALLBACK handle_reset_press (void * userdata, const vrpn_BUTTONCB info);
     static void VRPN_CALLBACK handle_clutch_press (void * userdata, const vrpn_BUTTONCB info);
+    static int VRPN_CALLBACK handle_newConnection(void *, vrpn_HANDLERPARAM);
 };
 
 #endif

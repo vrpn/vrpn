@@ -692,6 +692,7 @@ SLIB_FILES =  $(LIB_FILES) \
 	vrpn_Microsoft_Controller_Raw.C \
 	vrpn_Mouse.C \
 	vrpn_NationalInstruments.C \
+	vrpn_Oculus.C \
 	vrpn_OmegaTemperature.C \
 	vrpn_Poser_Analog.C \
 	vrpn_Poser_Tek4662.C \
@@ -709,6 +710,7 @@ SLIB_FILES =  $(LIB_FILES) \
 	vrpn_Tracker_Filter.C \
 	vrpn_Tracker_GPS.C \
 	vrpn_Tracker_GameTrak.C \
+	vrpn_Tracker_IMU.C \
 	vrpn_Tracker_Isotrak.C \
 	vrpn_Tracker_Liberty.C \
 	vrpn_Tracker_LibertyHS.C \
@@ -782,6 +784,7 @@ SLIB_INCLUDES = $(LIB_INCLUDES) \
 	vrpn_Microsoft_Controller_Raw.h \
 	vrpn_Mouse.h \
 	vrpn_NationalInstruments.h \
+	vrpn_Oculus.h \
 	vrpn_OmegaTemperature.h \
 	vrpn_OneEuroFilter.h \
 	vrpn_Poser_Analog.h \
@@ -800,6 +803,7 @@ SLIB_INCLUDES = $(LIB_INCLUDES) \
 	vrpn_Tracker_Filter.h \
 	vrpn_Tracker_GPS.h \
 	vrpn_Tracker_GameTrak.h \
+	vrpn_Tracker_IMU.h \
 	vrpn_Tracker_Isotrak.h \
 	vrpn_Tracker_Liberty.h \
 	vrpn_Tracker_LibertyHS.h \

@@ -1082,6 +1082,7 @@ set(VRPN_SERVER_SOURCES
 	vrpn_NationalInstruments.C
 	vrpn_Nidaq.C
 	vrpn_nikon_controls.C
+	vrpn_Oculus.C
 	vrpn_OmegaTemperature.C
 	vrpn_Poser_Analog.C
 	vrpn_Poser_Tek4662.C
@@ -1101,6 +1102,7 @@ set(VRPN_SERVER_SOURCES
 	vrpn_Tracker_Filter.C
 	vrpn_Tracker_GameTrak.C
 	vrpn_Tracker_GPS.C
+	vrpn_Tracker_IMU.C
 	vrpn_Tracker_isense.C
 	vrpn_Tracker_Isotrak.C
 	vrpn_Tracker_JsonNet.C
@@ -1187,6 +1189,7 @@ set(VRPN_SERVER_PUBLIC_HEADERS
 	vrpn_NationalInstruments.h
 	vrpn_Nidaq.h
 	vrpn_nikon_controls.h
+	vrpn_Oculus.h
 	vrpn_OmegaTemperature.h
 	vrpn_OneEuroFilter.h
 	vrpn_Poser_Analog.h
@@ -1208,6 +1211,7 @@ set(VRPN_SERVER_PUBLIC_HEADERS
 	vrpn_Tracker_Filter.h
 	vrpn_Tracker_GameTrak.h
 	vrpn_Tracker_GPS.h
+	vrpn_Tracker_IMU.h
 	vrpn_Tracker_isense.h
 	vrpn_Tracker_Isotrak.h
 	vrpn_Tracker_JsonNet.h

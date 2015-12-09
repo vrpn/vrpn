@@ -2,6 +2,7 @@
 #include <string.h>                 // for strcmp, strlen, strtok, etc
 #include "vrpn_MainloopContainer.h" // for vrpn_MainloopContainer
 #include <locale>                   // To enable setting parsing for .cfg file
+#include <string>
 
 #include "timecode_generator_server/vrpn_timecode_generator.h"
 #include "vrpn_3DConnexion.h" // for vrpn_3DConnexion_Navigator, etc
@@ -54,6 +55,7 @@
 #include "vrpn_Mouse.h"                    // for vrpn_Button_SerialMouse, etc
 #include "vrpn_NationalInstruments.h"
 #include "vrpn_nikon_controls.h"   // for vrpn_Nikon_Controls
+#include "vrpn_Oculus.h"           // for vrpn_Oculus_DK2
 #include "vrpn_OmegaTemperature.h" // for vrpn_OmegaTemperature
 #include "vrpn_Phantom.h"
 #include "vrpn_Poser_Analog.h"          // for vrpn_Poser_AnalogParam, etc
@@ -76,6 +78,7 @@
 #include "vrpn_Tracker_GameTrak.h"  // for vrpn_Tracker_GameTrak
 #include "vrpn_Tracker_GPS.h"       // for vrpn_Tracker_GPS
 #include "vrpn_Tracker.h"           // for vrpn_Tracker, etc
+#include "vrpn_Tracker_IMU.h"       // for vrpn_IMU_Magnetometer, etc
 #include "vrpn_Tracker_isense.h"
 #include "vrpn_Tracker_Isotrak.h" // for vrpn_Tracker_Isotrak
 #include "vrpn_Tracker_JsonNet.h"
@@ -399,14 +402,14 @@ int vrpn_Generic_Server_Object::setup_JoyFly(char *&pch, char *line,
 
 int vrpn_Generic_Server_Object::get_AFline(char *line, vrpn_TAF_axis *axis)
 {
-    char _axis_name[LINESIZE];
+    char axis_name[LINESIZE];
     char *name =
         new char[LINESIZE]; // We need this to stay around for the param
     int channel;
     float offset, thresh, power, scale;
 
     // Get the values from the line
-    if (sscanf(line, "%511s%511s%d%g%g%g%g", _axis_name, name, &channel,
+    if (sscanf(line, "%511s%511s%d%g%g%g%g", axis_name, name, &channel,
                &offset, &thresh, &scale, &power) != 7) {
         fprintf(stderr, "AnalogFly Axis: Bad axis line\n");
         delete[] name;
@@ -468,7 +471,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_AnalogFly(char *&pch, char *line,
     }
 
     // Scan the following lines in the configuration file to fill
-    // in the start-up parameters for the different axis.
+    // in the start-up parameters for the different axes.
 
     // parse lines until an empty line is encountered
     while (1) {
@@ -2991,7 +2994,7 @@ int vrpn_Generic_Server_Object::setup_Poser_Analog(char *&pch, char *line,
     }
 
     // Scan the following lines in the configuration file to fill
-    // in the start-up parameters for the different axis.
+    // in the start-up parameters for the different axes.
 
     if (get_poser_axis_line(config_file, "X", &p.x, &p.pos_min[0],
                             &p.pos_max[0])) {
@@ -4808,6 +4811,217 @@ int vrpn_Generic_Server_Object::setup_Tracker_DeadReckoning_Rotation(char *&pch,
     return 0;
 }
 
+int vrpn_Generic_Server_Object::setup_Oculus_DK2_LEDs(char *&pch, char *line, FILE *)
+{
+  char s2[LINESIZE];
+
+  VRPN_CONFIG_NEXT();
+  int ret = sscanf(pch, "%511s", s2);
+  if (ret != 1) {
+    fprintf(stderr, "Bad Oculus_DK2_LEDs line: %s\n", line);
+    return -1;
+  }
+
+  // Open the Oculus DK2
+  if (verbose) {
+    printf("Opening vrpn_Oculus_DK2\n");
+  }
+
+#ifdef VRPN_USE_HID
+  // Open the tracker
+  _devices->add(new vrpn_Oculus_DK2_LEDs(s2, connection));
+#else
+  fprintf(stderr,
+    "Oculus_DK2 driver works only with VRPN_USE_HID defined!\n");
+#endif
+  return 0; // successful completion
+}
+
+int vrpn_Generic_Server_Object::setup_Oculus_DK2_inertial(char *&pch, char *line, FILE *)
+{
+  char s2[LINESIZE];
+
+  VRPN_CONFIG_NEXT();
+  int ret = sscanf(pch, "%511s", s2);
+  if (ret != 1) {
+    fprintf(stderr, "Bad Oculus_DK2_inertial line: %s\n", line);
+    return -1;
+  }
+
+  // Open the Oculus DK2
+  if (verbose) {
+    printf("Opening vrpn_Oculus_inertial\n");
+  }
+
+#ifdef VRPN_USE_HID
+  // Open the tracker
+  _devices->add(new vrpn_Oculus_DK2_inertial(s2, connection));
+#else
+  fprintf(stderr,
+    "Oculus_DK2 driver works only with VRPN_USE_HID defined!\n");
+#endif
+  return 0; // successful completion
+}
+
+// This function will read one line of the vrpn_IMU_Axis_Param configuration
+// (matching one axis) and fill in the data for that axis. The axis name,
+// the file to read from, and the axis to fill in are passed as parameters.
+// It returns 0 on success and -1 on failure.
+
+int vrpn_Generic_Server_Object::get_IMU_Param_Line(char *line, vrpn_IMU_Axis_Params *params)
+{
+    char name[LINESIZE];
+    int channels[3];
+    float offsets[3];
+    float scales[3];
+
+    // Get the values from the line
+    if (sscanf(line, "%511s%d%g%g%d%g%g%d%g%g", name,
+               &channels[0], &offsets[0], &scales[0],
+               &channels[1], &offsets[1], &scales[1],
+               &channels[2], &offsets[2], &scales[2]
+              ) != 10) {
+        fprintf(stderr, "IMU_Param Axis: Bad param line: %s\n", line);
+        return -1;
+    }
+
+    params->name = name;
+    for (size_t i = 0; i < 3; i++) {
+      params->channels[i] = channels[i];
+      params->offsets[i] = offsets[i];
+      params->scales[i] = scales[i];
+    }
+
+    return 0;
+}
+
+int vrpn_Generic_Server_Object::setup_IMU_Magnetometer(char *&pch, char *line,
+                                                        FILE *config_file)
+{
+    char s2[LINESIZE];
+    float f1;
+    vrpn_IMU_Axis_Params params;
+
+    VRPN_CONFIG_NEXT();
+
+    if (sscanf(pch, "%511s%g", s2, &f1) != 2) {
+        fprintf(stderr, "Bad vrpn_IMU_Magnetometer line: %s\n", line);
+        return -1;
+    }
+
+    if (verbose) {
+        printf("Opening vrpn_IMU_Magnetometer: "
+               "%s with update rate %g\n",
+               s2, f1);
+    }
+
+    // Scan the following line in the configuration file to fill
+    // in the start-up parameters for the axes
+    {
+        char line[LINESIZE];
+
+        // Read in the line
+        if (fgets(line, LINESIZE, config_file) == NULL) {
+            perror("IMU_Magnetometer Can't read axis parameter line!");
+            return -1;
+        }
+
+        // Parse the line
+        if (get_IMU_Param_Line(line, &params)) {
+                fprintf(stderr, "Can't read params line for IMU_Magnetometer\n");
+                return -1;
+        }
+    }
+
+    _devices->add(new vrpn_IMU_Magnetometer(s2, connection, params, f1, false));
+    return 0;
+}
+
+int vrpn_Generic_Server_Object::setup_IMU_SimpleCombiner(char *&pch, char *line,
+  FILE *config_file)
+{
+  char s2[LINESIZE];
+  float f1;
+  vrpn_IMU_Axis_Params accel, rotate;
+  char magname[LINESIZE];
+
+  VRPN_CONFIG_NEXT();
+
+  if (sscanf(pch, "%511s%g", s2, &f1) != 2) {
+    fprintf(stderr, "Bad vrpn_IMU_SimpleCombiner line: %s\n", line);
+    return -1;
+  }
+
+  if (verbose) {
+    printf("Opening vrpn_IMU_SimpleCombiner: "
+      "%s with update rate %g\n",
+      s2, f1);
+  }
+
+  // Scan the following line in the configuration file to fill
+  // in the start-up parameters for the accelerometer
+  {
+    char line[LINESIZE];
+
+    // Read in the line
+    if (fgets(line, LINESIZE, config_file) == NULL) {
+      perror("vrpn_IMU_SimpleCombiner Can't read axis accelerometer line!");
+      return -1;
+    }
+
+    // Parse the line
+    if (get_IMU_Param_Line(line, &accel)) {
+      fprintf(stderr, "Can't read accelerometer line for vrpn_IMU_SimpleCombiner\n");
+      return -1;
+    }
+  }
+
+  // Scan the following line in the configuration file to fill
+  // in the start-up parameters for the rotational linear measurement
+  {
+    char line[LINESIZE];
+
+    // Read in the line
+    if (fgets(line, LINESIZE, config_file) == NULL) {
+      perror("vrpn_IMU_SimpleCombiner Can't read axis rotation line!");
+      return -1;
+    }
+
+    // Parse the line
+    if (get_IMU_Param_Line(line, &rotate)) {
+      fprintf(stderr, "Can't read rotation line for vrpn_IMU_SimpleCombiner\n");
+      return -1;
+    }
+  }
+
+  // Scan the following line in the configuration file to fill
+  // in the name for the magnetometer
+  {
+    char line[LINESIZE];
+
+    // Read in the line
+    if (fgets(line, LINESIZE, config_file) == NULL) {
+      perror("vrpn_IMU_SimpleCombiner Can't read axis rotation line!");
+      return -1;
+    }
+
+    if (sscanf(line, "%511s", magname) != 1) {
+      fprintf(stderr, "Bad vrpn_IMU_SimpleCombiner magnetometer name: %s\n", line);
+      return -1;
+    }
+  }
+
+  vrpn_Tracker_IMU_Params params;
+  params.d_acceleration = accel;
+  params.d_rotational_vel = rotate;
+  params.d_magnetometer_name = magname;
+  if (params.d_magnetometer_name == "NULL") {
+    params.d_magnetometer_name.clear();
+  }
+  _devices->add(new vrpn_IMU_SimpleCombiner(s2, connection, &params, f1, false));
+  return 0;
+}
+
 #undef VRPN_CONFIG_NEXT
 
 vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(
@@ -5360,6 +5574,18 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(
                 }
                 else if (VRPN_ISIT("vrpn_Tracker_DeadReckoning_Rotation")) {
                     VRPN_CHECK(setup_Tracker_DeadReckoning_Rotation);
+                }
+                else if (VRPN_ISIT("vrpn_Oculus_DK2_LEDs")) {
+                  VRPN_CHECK(setup_Oculus_DK2_LEDs);
+                }
+                else if (VRPN_ISIT("vrpn_Oculus_DK2_inertial")) {
+                  VRPN_CHECK(setup_Oculus_DK2_inertial);
+                }
+                else if (VRPN_ISIT("vrpn_IMU_Magnetometer")) {
+                    VRPN_CHECK(setup_IMU_Magnetometer);
+                }
+                else if (VRPN_ISIT("vrpn_IMU_SimpleCombiner")) {
+                  VRPN_CHECK(setup_IMU_SimpleCombiner);
                 }
                 else {                         // Never heard of it
                     sscanf(line, "%511s", s1); // Find out the class name
