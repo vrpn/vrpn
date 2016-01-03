@@ -118,8 +118,10 @@ void vrpn_nVidia_shield_USB::decodePacket(size_t bytes, vrpn_uint8 *buffer)
 {
   // There are two types of reports, type 1 is 15 bytes long (plus the
   // type byte) and type 2 is 5 bytes long (plus the type byte)
+  // (On Linux, this shows up as a 16-byte message, even when it is
+  // type 2, on the mac it shows up as 6.)
 
-  if ( (bytes == 6) && (buffer[0] == 2) ) {
+  if ( (bytes >= 6) && (buffer[0] == 2) ) {
 
     // 6-byte reports.  Thumb touch pad.
     // Byte 0 is 02 (report type 2)
