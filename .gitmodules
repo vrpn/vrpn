@@ -1,6 +1,6 @@
 [submodule "submodules/hidapi"]
 	path = submodules/hidapi
-	url = https://github.com/vrpn/hidapi.git
+	url = https://github.com/signal11/hidapi.git
 [submodule "submodules/jsoncpp"]
 	path = submodules/jsoncpp
 	url = https://github.com/vrpn/jsoncpp.git
