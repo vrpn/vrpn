@@ -1,5 +1,5 @@
 /** @file	vrpn_Oculus.C
-@brief	Drivers for various Oculus devices.  Initially, just the DK2.
+@brief	Drivers for various Oculus devices.  Initially, just the DK1 & DK2.
 
   @date 2015
   @copyright 2015 ReliaSolve.com
@@ -21,23 +21,19 @@ VRPN_SUPPRESS_EMPTY_OBJECT_WARNING()
 
 // USB vendor and product IDs for the models we support
 static const vrpn_uint16 OCULUS_VENDOR = 0x2833;
+static const vrpn_uint16 DK1_PRODUCT = 0x0001;
 static const vrpn_uint16 DK2_PRODUCT = 0x0021;
 
-vrpn_Oculus_DK2::vrpn_Oculus_DK2(bool enableLEDs,
-  const char *name, vrpn_Connection *c,
-  double keepAliveSeconds)
+vrpn_Oculus::vrpn_Oculus(vrpn_uint16 product_id, vrpn_uint8 num_channels,
+  const char *name, vrpn_Connection *c, double keepAliveSeconds)
     : vrpn_Analog(name, c)
     , vrpn_HidInterface(m_filter =
-      new vrpn_HidProductAcceptor(OCULUS_VENDOR, DK2_PRODUCT))
+      new vrpn_HidProductAcceptor(OCULUS_VENDOR, product_id))
 {
   d_keepAliveSeconds = keepAliveSeconds;
-  d_enableLEDs = enableLEDs;
 
-  if (enableLEDs) {
-    vrpn_Analog::num_channel = 12;
-  } else {
-    vrpn_Analog::num_channel = 11;
-  }
+  vrpn_Analog::num_channel = num_channels;
+
   memset(channel, 0, sizeof(channel));
   memset(last, 0, sizeof(last));
 
@@ -46,7 +42,7 @@ vrpn_Oculus_DK2::vrpn_Oculus_DK2(bool enableLEDs,
   d_lastKeepAlive = d_timestamp;
 }
 
-vrpn_Oculus_DK2::~vrpn_Oculus_DK2()
+vrpn_Oculus::~vrpn_Oculus()
 {
   delete m_acceptor;
 }
@@ -92,7 +88,7 @@ inline void unpackVector(const vrpn_uint8 raw[8], int vector[3])
 // Thank you to Oliver Kreylos for the info needed to write this function.
 // It is based on his OculusRiftHIDReports.cpp and OculusRift.cpp.
 
-void vrpn_Oculus_DK2::parse_message_type_1(std::size_t bytes,
+void vrpn_Oculus::parse_message_type_1(std::size_t bytes,
   vrpn_uint8 *buffer)
 {
   size_t num_reports = buffer[1];
@@ -159,6 +155,110 @@ void vrpn_Oculus_DK2::parse_message_type_1(std::size_t bytes,
 
     vrpn_Analog::report_changes();
   }
+}
+
+void vrpn_Oculus::mainloop()
+{
+  vrpn_gettimeofday(&d_timestamp, NULL);
+
+  // See if it has been long enough to send another keep-alive 
+  if (vrpn_TimevalDurationSeconds(d_timestamp, d_lastKeepAlive) >=
+      d_keepAliveSeconds) {
+    writeKeepAlive();
+    d_lastKeepAlive = d_timestamp;
+  }
+
+  update();
+  server_mainloop();
+}
+
+bool vrpn_Oculus::parse_message(std::size_t bytes,
+  vrpn_uint8 *buffer)
+{
+  return false;
+}
+
+void vrpn_Oculus::on_data_received(std::size_t bytes,
+  vrpn_uint8 *buffer)
+{
+  /* For debugging
+     printf("Got %d bytes:\n", static_cast<int>(bytes));
+     for (size_t i = 0; i < bytes; i++) {
+     printf("%02X ", buffer[i]);
+     }
+     printf("\n");
+     */
+
+  // Set the timestamp for all reports
+  vrpn_gettimeofday(&d_timestamp, NULL);
+
+  // Make sure the message length and type is what we expect.
+  // We get 64-byte responses on Windows and 62-byte responses on the mac.
+  if ( (bytes != 62) && (bytes != 64) ) {
+    fprintf(stderr, "vrpn_Oculus::on_data_received(): Unexpected message length %d, ignoring\n",
+        static_cast<int>(bytes));
+    return;
+  }
+
+  switch(buffer[0]) {
+    case 1:
+      parse_message_type_1(bytes, buffer);
+      break;
+    default:
+      // Delegate message type to child
+      if (!parse_message(bytes, buffer)) {
+        fprintf(stderr, "vrpn_Oculus::on_data_received(): Unexpected message type %d, ignoring\n",
+            buffer[0]);
+      }
+      break;
+  }
+}
+
+vrpn_Oculus_DK1::vrpn_Oculus_DK1(const char *name, 
+  vrpn_Connection *c, double keepAliveSeconds)
+    : vrpn_Oculus(DK1_PRODUCT, 11, 
+      name, c, keepAliveSeconds) {};
+
+// Thank you to Oliver Kreylos for the info needed to write this function.
+// It is based on his OculusRiftHIDReports.cpp, used with permission.
+void vrpn_Oculus_DK1::writeKeepAlive(
+  vrpn_uint16 interval
+  , vrpn_uint16 commandId)
+{
+  // Buffer to store our report in.
+  vrpn_uint8 pktBuffer[5];
+
+  /* Pack the packet buffer, using little-endian packing: */
+  vrpn_uint8 *bufptr = pktBuffer;
+  vrpn_int32 buflen = sizeof(pktBuffer);
+  vrpn_buffer_to_little_endian(&bufptr, &buflen, vrpn_uint8(0x08U));
+  vrpn_buffer_to_little_endian(&bufptr, &buflen, commandId);
+  vrpn_buffer_to_little_endian(&bufptr, &buflen, interval);
+
+  /* Write the feature report: */
+  send_feature_report(sizeof(pktBuffer), pktBuffer);
+}
+
+vrpn_Oculus_DK2::vrpn_Oculus_DK2(bool enableLEDs,
+  const char *name, vrpn_Connection *c,
+  double keepAliveSeconds)
+    : vrpn_Oculus(DK2_PRODUCT, enableLEDs ? 12 : 11, 
+      name, c, keepAliveSeconds)
+{
+  d_enableLEDs = enableLEDs;
+}
+
+bool vrpn_Oculus_DK2::parse_message(std::size_t bytes,
+  vrpn_uint8 *buffer)
+{
+  switch (buffer[0]) {
+    case 11:
+      parse_message_type_11(bytes, buffer);
+      break;
+    default:
+      return false;
+  }
+  return true;
 }
 
 // Thank you to Oliver Kreylos for the info needed to write this function.
@@ -262,57 +362,6 @@ void vrpn_Oculus_DK2::parse_message_type_11(std::size_t bytes,
   }
 }
 
-void vrpn_Oculus_DK2::on_data_received(std::size_t bytes,
-  vrpn_uint8 *buffer)
-{
-  /* For debugging
-  printf("Got %d bytes:\n", static_cast<int>(bytes));
-  for (size_t i = 0; i < bytes; i++) {
-    printf("%02X ", buffer[i]);
-  }
-  printf("\n");
-  */
-
-  // Set the timestamp for all reports
-  vrpn_gettimeofday(&d_timestamp, NULL);
-
-  // Make sure the message length and type is what we expect.
-  // We get 64-byte responses on Windows and 62-byte responses on the mac.
-  if ( (bytes != 62) && (bytes != 64) ) {
-    fprintf(stderr, "vrpn_Oculus_DK2::on_data_received(): Unexpected message length %d, ignoring\n",
-      static_cast<int>(bytes));
-    return;
-  }
-
-  // Call the appropriate parser
-  switch (buffer[0]) {
-  case 1:
-    parse_message_type_1(bytes, buffer);
-    break;
-  case 11:
-    parse_message_type_11(bytes, buffer);
-    break;
-  default:
-    fprintf(stderr, "vrpn_Oculus_DK2::on_data_received(): Unexpected message type %d, ignoring\n",
-      buffer[0]);
-  }
-}
-
-void vrpn_Oculus_DK2::mainloop()
-{
-    vrpn_gettimeofday(&d_timestamp, NULL);
-
-    // See if it has been long enough to send another keep-alive to
-    // the LEDs.
-    if (vrpn_TimevalDurationSeconds(d_timestamp, d_lastKeepAlive) >=
-        d_keepAliveSeconds) {
-      writeKeepAlive();
-      d_lastKeepAlive = d_timestamp;
-    }
-
-    update();
-    server_mainloop();
-}
 
 // Thank you to Oliver Kreylos for the info needed to write this function.
 // It is based on his OculusRiftHIDReports.cpp, used with permission.
