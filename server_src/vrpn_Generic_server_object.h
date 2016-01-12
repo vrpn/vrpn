@@ -160,6 +160,7 @@ protected:
     int setup_YEI_3Space_Sensor(char *&pch, char *line, FILE *config_file);
     int setup_YEI_3Space_Sensor_Wireless(char *&pch, char *line, FILE *config_file);
     int setup_Tracker_ThalmicLabsMyo(char * &pch, char *line, FILE * config_file);
+    int setup_Oculus_DK1(char *&pch, char *line, FILE *config_file);
     int setup_Oculus_DK2_LEDs(char *&pch, char *line, FILE *config_file);
     int setup_Oculus_DK2_inertial(char *&pch, char *line, FILE *config_file);
     int setup_IMU_Magnetometer(char *&pch, char *line, FILE *config_file);
