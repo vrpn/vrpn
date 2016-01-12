@@ -55,6 +55,7 @@
 #include "vrpn_Mouse.h"                    // for vrpn_Button_SerialMouse, etc
 #include "vrpn_NationalInstruments.h"
 #include "vrpn_nikon_controls.h"   // for vrpn_Nikon_Controls
+#include "vrpn_nVidia_shield_controller.h"
 #include "vrpn_Oculus.h"           // for vrpn_Oculus_DK2
 #include "vrpn_OmegaTemperature.h" // for vrpn_OmegaTemperature
 #include "vrpn_Phantom.h"
@@ -5022,6 +5023,31 @@ int vrpn_Generic_Server_Object::setup_IMU_SimpleCombiner(char *&pch, char *line,
   return 0;
 }
 
+int vrpn_Generic_Server_Object::setup_nVidia_shield_USB(char *&pch, char *line, FILE *)
+{
+  char s2[LINESIZE];
+
+  VRPN_CONFIG_NEXT();
+  int ret = sscanf(pch, "%511s", s2);
+  if (ret != 1) {
+    fprintf(stderr, "Bad nVidia_shield_USB line: %s\n", line);
+    return -1;
+  }
+
+  // Open the shield
+  if (verbose) {
+    printf("Opening vrpn_nVidia_shield_USB\n");
+  }
+
+#ifdef VRPN_USE_HID
+  _devices->add(new vrpn_nVidia_shield_USB(s2, connection));
+#else
+  fprintf(stderr,
+    "nVidia_shield_USB driver works only with VRPN_USE_HID defined!\n");
+#endif
+  return 0; // successful completion
+}
+
 #undef VRPN_CONFIG_NEXT
 
 vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(
@@ -5586,6 +5612,9 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(
                 }
                 else if (VRPN_ISIT("vrpn_IMU_SimpleCombiner")) {
                   VRPN_CHECK(setup_IMU_SimpleCombiner);
+                }
+                else if (VRPN_ISIT("vrpn_nVidia_shield_USB")) {
+                  VRPN_CHECK(setup_nVidia_shield_USB);
                 }
                 else {                         // Never heard of it
                     sscanf(line, "%511s", s1); // Find out the class name
