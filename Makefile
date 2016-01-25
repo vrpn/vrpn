@@ -692,6 +692,7 @@ SLIB_FILES =  $(LIB_FILES) \
 	vrpn_Microsoft_Controller_Raw.C \
 	vrpn_Mouse.C \
 	vrpn_NationalInstruments.C \
+	vrpn_nVidia_shield_controller.C \
 	vrpn_Oculus.C \
 	vrpn_OmegaTemperature.C \
 	vrpn_Poser_Analog.C \
@@ -784,6 +785,7 @@ SLIB_INCLUDES = $(LIB_INCLUDES) \
 	vrpn_Microsoft_Controller_Raw.h \
 	vrpn_Mouse.h \
 	vrpn_NationalInstruments.h \
+	vrpn_nVidia_shield_controller.h \
 	vrpn_Oculus.h \
 	vrpn_OmegaTemperature.h \
 	vrpn_OneEuroFilter.h \

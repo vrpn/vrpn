@@ -165,6 +165,7 @@ protected:
     int setup_Oculus_DK2_inertial(char *&pch, char *line, FILE *config_file);
     int setup_IMU_Magnetometer(char *&pch, char *line, FILE *config_file);
     int setup_IMU_SimpleCombiner(char *&pch, char *line, FILE *config_file);
+    int setup_nVidia_shield_USB(char *&pch, char *line, FILE *config_file);
 
     template <typename T>
     int templated_setup_device_name_only(char *&pch, char *line, FILE *);

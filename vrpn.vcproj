@@ -1493,6 +1493,46 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="vrpn_nVidia_shield_controller.C"
+				>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="vrpn_Oculus.C"
+				>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath="vrpn_OmegaTemperature.C"
 				>
 				<FileConfiguration
@@ -1933,26 +1973,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="vrpn_Tracker_IMU.C"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						CompileAs="2"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						CompileAs="2"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath="vrpn_Tracker_ButtonFly.C"
 				>
 				<FileConfiguration
@@ -2113,6 +2133,26 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="vrpn_Tracker_IMU.C"
+				>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath="vrpn_Tracker_isense.C"
 				>
 				<FileConfiguration
@@ -2254,26 +2294,6 @@
 			</File>
 			<File
 				RelativePath="vrpn_Tracker_NovintFalcon.C"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						CompileAs="2"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						CompileAs="2"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="vrpn_Oculus.C"
 				>
 				<FileConfiguration
 					Name="Release|Win32"
@@ -2970,6 +2990,14 @@
 				>
 			</File>
 			<File
+				RelativePath="vrpn_nVidia_shield_controller.h"
+				>
+			</File>
+			<File
+				RelativePath="vrpn_Oculus.h"
+				>
+			</File>
+			<File
 				RelativePath="vrpn_OmegaTemperature.h"
 				>
 			</File>
@@ -3066,10 +3094,6 @@
 				>
 			</File>
 			<File
-				RelativePath="vrpn_Tracker_IMU.h"
-				>
-			</File>
-			<File
 				RelativePath="vrpn_Tracker_ButtonFly.h"
 				>
 			</File>
@@ -3102,6 +3126,10 @@
 				>
 			</File>
 			<File
+				RelativePath="vrpn_Tracker_IMU.h"
+				>
+			</File>
+			<File
 				RelativePath="vrpn_Tracker_isense.h"
 				>
 			</File>
@@ -3131,10 +3159,6 @@
 			</File>
 			<File
 				RelativePath="vrpn_Tracker_NovintFalcon.h"
-				>
-			</File>
-			<File
-				RelativePath="vrpn_Oculus.h"
 				>
 			</File>
 			<File
