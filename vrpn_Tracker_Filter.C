@@ -243,7 +243,9 @@ void vrpn_Tracker_DeadReckoning_Rotation::sendNewPrediction(vrpn_int32 sensor)
     //========================================================================
     // Pack our predicted tracker report for this future time.
     // Use the position portion of the report unaltered.
-    report_pose(sensor, future_time, state.d_lastPosition, newOrientation);
+    if (0 != report_pose(sensor, future_time, state.d_lastPosition, newOrientation)) {
+      fprintf(stderr, "vrpn_Tracker_DeadReckoning_Rotation::sendNewPrediction(): Can't report pose\n");
+    }
 }
 
 void vrpn_Tracker_DeadReckoning_Rotation::handle_tracker_report(void *userdata,
