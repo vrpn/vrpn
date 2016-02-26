@@ -96,6 +96,9 @@ class VRPN_API vrpn_Tracker_RazerHydra: public vrpn_Analog, public vrpn_Button_F
         vrpn_Tracker_RazerHydra(const char* name, hid_device* ctrl_dev,
                                 hid_device* data_dev,
                                 vrpn_Connection* con = NULL);
+        vrpn_Tracker_RazerHydra(const char* name, const char* ctrl_dev_path,
+                                const char* data_dev_path,
+                                vrpn_Connection* con = NULL);
         ~vrpn_Tracker_RazerHydra();
 
         virtual void mainloop();

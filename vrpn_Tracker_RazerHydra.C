@@ -119,7 +119,14 @@ class vrpn_Tracker_RazerHydra::MyInterface : public vrpn_HidInterface
             d_my_interface = which_interface;
             d_hydra = hydra;
         }
-
+        MyInterface(unsigned which_interface, vrpn_Tracker_RazerHydra *hydra,
+            const char *path)
+            : vrpn_HidInterface(path, makeHydraInterfaceAcceptor(which_interface),
+                HYDRA_VENDOR, HYDRA_PRODUCT)
+        {
+            d_my_interface = which_interface;
+            d_hydra = hydra;
+        }
 public:
         /// Factory function: pass in the interface, yourself (the tracker - a ref
         /// because it shall never be null), and optionally the HID device
@@ -131,6 +138,12 @@ public:
                                  hid_device *dev = NULL)
         {
             return new MyInterface(which_interface, &hydra, dev);
+        }
+        static MyInterface *make(unsigned which_interface,
+                                 vrpn_Tracker_RazerHydra &hydra,
+                                 const char *path)
+        {
+            return new MyInterface(which_interface, &hydra, path);
         }
 
         void on_data_received(size_t bytes, vrpn_uint8 *buffer)
@@ -253,12 +266,14 @@ public:
         vrpn_Tracker_RazerHydra *d_hydra;
 };
 
-vrpn_Tracker_RazerHydra::vrpn_Tracker_RazerHydra(const char *name, vrpn_Connection *con)
+vrpn_Tracker_RazerHydra::vrpn_Tracker_RazerHydra(const char *name,
+                                                 vrpn_Connection *con)
     : vrpn_Analog(name, con)
     , vrpn_Button_Filter(name, con)
     , vrpn_Tracker(name, con)
     , status(HYDRA_WAITING_FOR_CONNECT)
-    , _wasInGamepadMode(false) /// assume not - if we have to send a command, then set to true
+    /// assume not - if we have to send a command, then set to true
+    , _wasInGamepadMode(false)
     , _attempt(0)
     , _docking_distance(0.1f)
 {
@@ -268,13 +283,16 @@ vrpn_Tracker_RazerHydra::vrpn_Tracker_RazerHydra(const char *name, vrpn_Connecti
     _shared_init();
 }
 
-vrpn_Tracker_RazerHydra::vrpn_Tracker_RazerHydra(const char *name, hid_device* ctrl_dev,
-    hid_device* data_dev, vrpn_Connection *con)
+vrpn_Tracker_RazerHydra::vrpn_Tracker_RazerHydra(const char *name,
+                                                 hid_device *ctrl_dev,
+                                                 hid_device *data_dev,
+                                                 vrpn_Connection *con)
     : vrpn_Analog(name, con)
     , vrpn_Button_Filter(name, con)
     , vrpn_Tracker(name, con)
     , status(HYDRA_WAITING_FOR_CONNECT)
-    , _wasInGamepadMode(false) /// assume not - if we have to send a command, then set to true
+    /// assume not - if we have to send a command, then set to true
+    , _wasInGamepadMode(false)
     , _attempt(0)
     , _docking_distance(0.1f)
 {
@@ -282,6 +300,25 @@ vrpn_Tracker_RazerHydra::vrpn_Tracker_RazerHydra(const char *name, hid_device* c
     // handles the null device cases fine.
     _ctrl.reset(MyInterface::make(HYDRA_CONTROL_INTERFACE, *this, ctrl_dev));
     _data.reset(MyInterface::make(HYDRA_INTERFACE, *this, data_dev));
+    _shared_init();
+}
+vrpn_Tracker_RazerHydra::vrpn_Tracker_RazerHydra(const char *name,
+                                                 const char *ctrl_dev_path,
+                                                 const char *data_dev_path,
+                                                 vrpn_Connection *con)
+    : vrpn_Analog(name, con)
+    , vrpn_Button_Filter(name, con)
+    , vrpn_Tracker(name, con)
+    , status(HYDRA_WAITING_FOR_CONNECT)
+    /// assume not - if we have to send a command, then set to true
+    , _wasInGamepadMode(false)
+    , _attempt(0)
+    , _docking_distance(0.1f)
+{
+    // Set up the control and data channels.
+    _ctrl.reset(
+        MyInterface::make(HYDRA_CONTROL_INTERFACE, *this, ctrl_dev_path));
+    _data.reset(MyInterface::make(HYDRA_INTERFACE, *this, data_dev_path));
     _shared_init();
 }
 
