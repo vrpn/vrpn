@@ -32,6 +32,8 @@
 
 #ifdef VRPN_USE_HID
 
+#include "vrpn_OwningPtr.h"
+
 /** @brief Device supporting the Razer Hydra game controller as a tracker,
 	analog device, and button device, using the USB HID protocol directly
 

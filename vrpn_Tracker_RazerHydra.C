@@ -79,6 +79,32 @@ static const unsigned long MAXIMUM_INITIAL_WAIT_USEC = 1000000L;
 /// after we tell it to.
 static const unsigned long MAXIMUM_WAIT_USEC = 5000000L;
 
+#ifdef _WIN32
+#define VRPN_HAVE_RELIABLE_INTERFACE_NUMBER
+#endif
+
+static vrpn_HidAcceptor * makeHydraInterfaceAcceptor(unsigned whichInterface) {
+    vrpn::OwningPtr<vrpn_HidAcceptor> productAcceptor(
+        new vrpn_HidProductAcceptor(HYDRA_VENDOR, HYDRA_PRODUCT));
+#ifdef VRPN_HAVE_RELIABLE_INTERFACE_NUMBER
+    vrpn::OwningPtr<vrpn_HidAcceptor> interfaceAcceptor(
+        new vrpn_HidInterfaceNumberAcceptor(whichInterface));
+
+    vrpn::OwningPtr<vrpn_HidAcceptor> ret(new vrpn_HidBooleanAndAcceptor(
+        interfaceAcceptor.release(), productAcceptor.release()));
+#else
+    // The InterfaceNumber is not supported on the mac and Linux versions -- it
+    // is always returned as -1.  So we need to do this based on which
+    // device shows up first and hope that it is always the same order.
+    // On my mac, the control interface shows up first on iHid, so we
+    // try this order.  If we get it wrong, then we swap things out later.
+    vrpn::OwningPtr<vrpn_HidAcceptor> ret(
+        new vrpn_HidNthMatchAcceptor(whichInterface,
+                                     productAcceptor.release()));
+#endif
+    return ret.release();
+}
+
 class vrpn_Tracker_RazerHydra::MyInterface : public vrpn_HidInterface
 {
     public:
