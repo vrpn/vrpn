@@ -31,6 +31,7 @@ VRPN_SUPPRESS_EMPTY_OBJECT_WARNING()
 // Standard includes
 #include <sstream>                      // for operator<<, basic_ostream, etc
 #include <string>                       // for char_traits, basic_string, etc
+#include <utility>
 #include <stddef.h>                     // for size_t
 #include <stdio.h>                      // for fprintf, NULL, stderr
 #include <string.h>                     // for memset
@@ -90,6 +91,7 @@ static vrpn_HidAcceptor * makeHydraInterfaceAcceptor(unsigned whichInterface) {
     vrpn::OwningPtr<vrpn_HidAcceptor> interfaceAcceptor(
         new vrpn_HidInterfaceNumberAcceptor(whichInterface));
 
+    /// Boolean AND of VID/PID and Interface number
     vrpn::OwningPtr<vrpn_HidAcceptor> ret(new vrpn_HidBooleanAndAcceptor(
         interfaceAcceptor.release(), productAcceptor.release()));
 #else
@@ -98,6 +100,8 @@ static vrpn_HidAcceptor * makeHydraInterfaceAcceptor(unsigned whichInterface) {
     // device shows up first and hope that it is always the same order.
     // On my mac, the control interface shows up first on iHid, so we
     // try this order.  If we get it wrong, then we swap things out later.
+
+    /// InterfaceNumberth match of VID/PID
     vrpn::OwningPtr<vrpn_HidAcceptor> ret(
         new vrpn_HidNthMatchAcceptor(whichInterface,
                                      productAcceptor.release()));
@@ -107,47 +111,44 @@ static vrpn_HidAcceptor * makeHydraInterfaceAcceptor(unsigned whichInterface) {
 
 class vrpn_Tracker_RazerHydra::MyInterface : public vrpn_HidInterface
 {
-    public:
-        MyInterface(unsigned which_interface, vrpn_Tracker_RazerHydra *hydra)
-#ifndef _WIN32
-			// The InterfaceNumber is not supported on the mac and Linux versions -- it
-        // is always returned as -1.  So we need to do this based on which
-        // device shows up first and hope that it is always the same order.
-        // On my mac, the control interface shows up first on iHid, so we
-        // try this order.  If we get it wrong, then we swap things out later.
-            : vrpn_HidInterface(new vrpn_HidNthMatchAcceptor(which_interface,
-#else
-            : vrpn_HidInterface(new vrpn_HidBooleanAndAcceptor(
-                                    new vrpn_HidInterfaceNumberAcceptor(which_interface),
-#endif
-                                new vrpn_HidProductAcceptor(HYDRA_VENDOR, HYDRA_PRODUCT)),
-                                HYDRA_VENDOR, HYDRA_PRODUCT)
+        MyInterface(unsigned which_interface, vrpn_Tracker_RazerHydra *hydra,
+                    hid_device *dev = NULL)
+            : vrpn_HidInterface(makeHydraInterfaceAcceptor(which_interface),
+                                HYDRA_VENDOR, HYDRA_PRODUCT, dev)
         {
             d_my_interface = which_interface;
             d_hydra = hydra;
+        }
+
+public:
+        /// Factory function: pass in the interface, yourself (the tracker - a ref
+        /// because it shall never be null), and optionally the HID device
+        /// corresponding to that interface, and you'll get
+        /// a brand new MyInterface object back - you take ownership, so an
+        /// OwningPtr is recommended.
+        static MyInterface *make(unsigned which_interface,
+                                 vrpn_Tracker_RazerHydra &hydra,
+                                 hid_device *dev = NULL)
+        {
+            return new MyInterface(which_interface, &hydra, dev);
         }
 
         void on_data_received(size_t bytes, vrpn_uint8 *buffer)
         {
             if (d_my_interface == HYDRA_CONTROL_INTERFACE)
             {
-#ifndef _WIN32
-				d_hydra->send_text_message(vrpn_TEXT_WARNING)
-                        << "Got report on controller channel.  This means that we need to swap channels. "
-                        << "Swapping channels.";
-
-                MyInterface *t = d_hydra->_ctrl;
-                d_hydra->_ctrl = d_hydra->_data;
-                d_hydra->_data = t;
-                d_hydra->_ctrl->set_interface(HYDRA_CONTROL_INTERFACE);
-                d_hydra->_data->set_interface(HYDRA_INTERFACE);
-#else
+#ifdef VRPN_HAVE_RELIABLE_INTERFACE_NUMBER
                 fprintf(stderr, "Unexpected receipt of %d bytes on Hydra control interface!\n", static_cast<int>(bytes));
                 for (size_t i = 0; i < bytes; ++i)
                 {
                     fprintf(stderr, "%x ", buffer[i]);
                 }
                 fprintf(stderr, "\n");
+#else
+                d_hydra->send_text_message(vrpn_TEXT_WARNING)
+                    << "Got report on controller channel.  This means that we need to swap channels. "
+                    << "Swapping channels.";
+                d_hydra->_swap_channels();
 #endif
             }
             else
@@ -262,9 +263,29 @@ vrpn_Tracker_RazerHydra::vrpn_Tracker_RazerHydra(const char *name, vrpn_Connecti
     , _docking_distance(0.1f)
 {
     // Set up the control and data channels
-    _ctrl = new MyInterface(HYDRA_CONTROL_INTERFACE, this);
-    _data = new MyInterface(HYDRA_INTERFACE, this);
+    _ctrl.reset(MyInterface::make(HYDRA_CONTROL_INTERFACE, *this));
+    _data.reset(MyInterface::make(HYDRA_INTERFACE, *this));
+    _shared_init();
+}
 
+vrpn_Tracker_RazerHydra::vrpn_Tracker_RazerHydra(const char *name, hid_device* ctrl_dev,
+    hid_device* data_dev, vrpn_Connection *con)
+    : vrpn_Analog(name, con)
+    , vrpn_Button_Filter(name, con)
+    , vrpn_Tracker(name, con)
+    , status(HYDRA_WAITING_FOR_CONNECT)
+    , _wasInGamepadMode(false) /// assume not - if we have to send a command, then set to true
+    , _attempt(0)
+    , _docking_distance(0.1f)
+{
+    // Set up the control and data channels. Convienently, the factory function
+    // handles the null device cases fine.
+    _ctrl.reset(MyInterface::make(HYDRA_CONTROL_INTERFACE, *this, ctrl_dev));
+    _data.reset(MyInterface::make(HYDRA_INTERFACE, *this, data_dev));
+    _shared_init();
+}
+
+void vrpn_Tracker_RazerHydra::_shared_init() {
     /// Set up sensor counts
     vrpn_Analog::num_channel = ANALOG_CHANNELS; /// 3 analog channels from each controller
     vrpn_Button::num_buttons = BUTTON_CHANNELS; /// 7 for each controller, starting at a nice number for each
@@ -301,8 +322,6 @@ vrpn_Tracker_RazerHydra::~vrpn_Tracker_RazerHydra()
         send_text_message() << "Waiting 2 seconds for mode change to complete.";
         vrpn_SleepMsecs(2000);
     }
-
-    delete _ctrl;
 }
 
 void vrpn_Tracker_RazerHydra::mainloop()
@@ -356,6 +375,14 @@ bool vrpn_Tracker_RazerHydra::reconnect()
     _data->reconnect();
     _ctrl->reset_acceptor();
     return _ctrl->reconnect();
+}
+
+/// Swap the control and data interfaces/channels: needed on some systems, we
+/// can detect if they're mixed up.
+void vrpn_Tracker_RazerHydra::_swap_channels() {
+    swap(_ctrl, _data);
+    _ctrl->set_interface(HYDRA_CONTROL_INTERFACE);
+    _data->set_interface(HYDRA_INTERFACE);
 }
 
 void vrpn_Tracker_RazerHydra::_waiting_for_connect()
@@ -421,16 +448,13 @@ void vrpn_Tracker_RazerHydra::_listening_after_set_feature()
                 << _attempt << " attempt" << (_attempt > 1 ? ". " : "s. ")
                 << " Will give it another try. "
                 << "If this doesn't work, unplug and replug device and restart the VRPN server.";
-#ifndef _WIN32
+#ifndef VRPN_HAVE_RELIABLE_INTERFACE_NUMBER
 		if ((_attempt % 2) == 0)
         {
             send_text_message(vrpn_TEXT_WARNING)
-                    << "Switching control and data interface (mac can't tell the difference).";
-            MyInterface *t = _ctrl;
-            _ctrl = _data;
-            _data = t;
-            _ctrl->set_interface(HYDRA_CONTROL_INTERFACE);
-            _data->set_interface(HYDRA_INTERFACE);
+                << "Switching control and data interface (some systems can't "
+                   "tell the difference) and trying again to wake it.";
+            _swap_channels();
         }
 #endif
         _enter_motion_controller_mode();

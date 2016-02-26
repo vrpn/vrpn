@@ -32,6 +32,7 @@
 
 #ifdef VRPN_USE_HID
 
+#include "vrpn_HumanInterface.h"
 #include "vrpn_OwningPtr.h"
 
 /** @brief Device supporting the Razer Hydra game controller as a tracker,
@@ -91,7 +92,10 @@
 class VRPN_API vrpn_Tracker_RazerHydra: public vrpn_Analog, public vrpn_Button_Filter, public vrpn_Tracker
 {
     public:
-        vrpn_Tracker_RazerHydra(const char * name, vrpn_Connection * trackercon);
+        vrpn_Tracker_RazerHydra(const char* name, vrpn_Connection* con = NULL);
+        vrpn_Tracker_RazerHydra(const char* name, hid_device* ctrl_dev,
+                                hid_device* data_dev,
+                                vrpn_Connection* con = NULL);
         ~vrpn_Tracker_RazerHydra();
 
         virtual void mainloop();
@@ -99,6 +103,7 @@ class VRPN_API vrpn_Tracker_RazerHydra: public vrpn_Analog, public vrpn_Button_F
         virtual bool reconnect();
 
     private:
+        void _shared_init();
         enum HydraStatus
         {
             HYDRA_WAITING_FOR_CONNECT,
@@ -114,6 +119,7 @@ class VRPN_API vrpn_Tracker_RazerHydra: public vrpn_Analog, public vrpn_Button_F
             POSE_CHANNELS = 2
         };
 
+        void _swap_channels();
         void _waiting_for_connect();
         void _listening_after_connect();
         void _listening_after_set_feature();
@@ -143,8 +149,8 @@ class VRPN_API vrpn_Tracker_RazerHydra: public vrpn_Analog, public vrpn_Button_F
         // is which when we open them.
         class MyInterface;
 
-        MyInterface * _ctrl;
-        MyInterface * _data;
+        vrpn::OwningPtr<MyInterface> _ctrl;
+        vrpn::OwningPtr<MyInterface> _data;
 };
 
 #else
