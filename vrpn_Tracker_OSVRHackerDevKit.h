@@ -97,6 +97,11 @@ public:
                                   vrpn_Connection *c = NULL);
 
     /**
+     * @overload
+     */
+    vrpn_Tracker_OSVRHackerDevKit(const char *name, vrpn_Connection *c);
+
+    /**
      * @brief Destructor.
      */
     virtual ~vrpn_Tracker_OSVRHackerDevKit();
@@ -116,6 +121,7 @@ public:
 protected:
     /// Extracts the sensor values from each report.
     void on_data_received(std::size_t bytes, vrpn_uint8 *buffer);
+    void shared_init();
 
     /// Timestamp updated during mainloop()
     struct timeval _timestamp;

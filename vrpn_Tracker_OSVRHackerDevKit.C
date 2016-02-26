@@ -62,6 +62,23 @@ vrpn_Tracker_OSVRHackerDevKit::vrpn_Tracker_OSVRHackerDevKit(const char *name,
     , _reportVersion(0)
     , _knownVersion(true)
 {
+    shared_init();
+}
+
+vrpn_Tracker_OSVRHackerDevKit::vrpn_Tracker_OSVRHackerDevKit(const char *name,
+                                                             vrpn_Connection *c)
+    : vrpn_Tracker(name, c)
+    , vrpn_Analog(name, c)
+    , vrpn_HidInterface(makeHDKHidAcceptor())
+    , _wasConnected(false)
+    , _messageCount(0)
+    , _reportVersion(0)
+    , _knownVersion(true)
+{
+    shared_init();
+}
+
+void vrpn_Tracker_OSVRHackerDevKit::shared_init() {
     /// Tracker setup
     vrpn_Tracker::num_sensors = 1; // only orientation
 
