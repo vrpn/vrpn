@@ -73,6 +73,45 @@ vrpn_HidInterface::vrpn_HidInterface(vrpn_HidAcceptor *acceptor,
     finish_setup();
 }
 
+vrpn_HidInterface::vrpn_HidInterface(const char *device_path,
+                                     vrpn_HidAcceptor *acceptor,
+                                     vrpn_uint16 vendor, vrpn_uint16 product)
+    : m_acceptor(acceptor)
+    , m_working(false)
+    , m_vendor(0)
+    , m_product(0)
+    , m_interface(0)
+    , m_vendor_sought(vendor)
+    , m_product_sought(product)
+    , m_device(NULL)
+{
+    if (!m_acceptor) {
+        print_error("vrpn_HidInterface", "NULL acceptor", false);
+        return;
+    }
+    if (!device_path || !(device_path[0])) {
+        /// Given a null/empty path.
+        m_acceptor->reset();
+        reconnect();
+        return;
+    }
+
+    // Initialize the HID interface and open the device.
+    m_device = hid_open_path(device_path);
+    if (m_device == NULL) {
+        fprintf(stderr, "vrpn_HidInterface::vrpn_HidInterface(): Could not "
+                        "open device %s\n",
+                device_path);
+#ifdef linux
+        fprintf(stderr, "   (Did you remember to run as root or otherwise set "
+                        "permissions?)\n");
+#endif
+        print_hidapi_error("vrpn_HidInterface");
+    }
+    // We'll let this method set m_working for us, if it is, in fact, working.
+    finish_setup();
+}
+
 vrpn_HidInterface::~vrpn_HidInterface()
 {
     if (m_device) {
@@ -163,7 +202,8 @@ bool vrpn_HidInterface::reconnect()
                 "vrpn_HidInterface::reconnect(): Could not open device %s\n",
                 path);
 #ifdef linux
-        fprintf(stderr, "   (Did you remember to run as root or otherwise set permissions?)\n");
+        fprintf(stderr, "   (Did you remember to run as root or otherwise set "
+                        "permissions?)\n");
 #endif
         print_hidapi_error("reconnect");
         return false;
@@ -249,7 +289,7 @@ void vrpn_HidInterface::send_feature_report(size_t bytes,
 {
     if (!m_working) {
         print_error("get_feature_report", "Interface not currently working",
-                      false);
+                    false);
         return;
     }
 
@@ -267,7 +307,7 @@ int vrpn_HidInterface::get_feature_report(size_t bytes, vrpn_uint8 *buffer)
 {
     if (!m_working) {
         print_error("get_feature_report", "Interface not currently working",
-                      false);
+                    false);
         return -1;
     }
 

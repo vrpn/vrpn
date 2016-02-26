@@ -94,6 +94,21 @@ public:
         /// Underlying HID device to manage and take ownership of
         hid_device *device);
 
+    /// Constructor
+    /// If we already know the path to the device we want, we can pass it in and
+    /// open it directly: still need the acceptor for reconnect enumeration, we
+    /// just won't do it right away.
+    vrpn_HidInterface(
+        /// Platform-specific device path, suitable to be passed to HIDAPI's
+        /// hid_open_path
+        const char *device_path,
+        /// Determines which device we want
+        vrpn_HidAcceptor *acceptor,
+        /// Default vendor is "any"
+        vrpn_uint16 vendor = 0,
+        /// Default product is "any"
+        vrpn_uint16 product = 0);
+
     virtual ~vrpn_HidInterface();
 
     /// Returns true iff the last device I/O succeeded
