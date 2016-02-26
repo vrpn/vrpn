@@ -22,30 +22,57 @@ int vrpn_HidInterface::interface_number() const { return m_interface; }
 // Returns true iff everything was working last time we checked
 bool vrpn_HidInterface::connected() const { return m_working; }
 
-vrpn_HidInterface::vrpn_HidInterface(vrpn_HidAcceptor *acceptor
-    , vrpn_uint16 vendor
-    , vrpn_uint16 product
-    )
+vrpn_HidInterface::vrpn_HidInterface(vrpn_HidAcceptor *acceptor,
+                                     hid_device *device)
     : m_acceptor(acceptor)
+    , m_working(false)
+    , m_vendor(0)
+    , m_product(0)
+    , m_interface(0)
+    , m_vendor_sought(0 /*vendor*/)
+    , m_product_sought(0 /*product*/)
+    , m_device(device)
 {
-    // Move initialization inside function so it happens in the order specified.
-    m_device = NULL;
-    m_working = false;
-    m_vendor = 0;
-    m_product = 0;
-    m_interface = 0;
-    m_vendor_sought = vendor;
-    m_product_sought = product;
+    if (!m_acceptor) {
+        fprintf(stderr,
+            "vrpn_HidInterface::vrpn_HidInterface(): NULL acceptor\n");
+        return;
+    }
+    if (!m_device) {
+        /// Not given an already-open device, hmm.
+        m_acceptor->reset();
+        reconnect();
+        return;
+    }
+    // We'll let this method set m_working for us, if it is, in fact, working.
+    finish_setup();
+}
 
-    if (m_acceptor == NULL) {
+vrpn_HidInterface::vrpn_HidInterface(vrpn_HidAcceptor *acceptor,
+                                     vrpn_uint16 vendor, vrpn_uint16 product,
+                                     hid_device *device)
+    : m_acceptor(acceptor)
+    , m_working(false)
+    , m_vendor(0)
+    , m_product(0)
+    , m_interface(0)
+    , m_vendor_sought(vendor)
+    , m_product_sought(product)
+    , m_device(device)
+{
+    if (!m_acceptor) {
         fprintf(stderr,
                 "vrpn_HidInterface::vrpn_HidInterface(): NULL acceptor\n");
         return;
     }
-
-    // Reset the acceptor and then attempt to connect to a device.
-    m_acceptor->reset();
-    reconnect();
+    if (!m_device) {
+        /// Not given an already-open device.
+        m_acceptor->reset();
+        reconnect();
+        return;
+    }
+    // We'll let this method set m_working for us, if it is, in fact, working.
+    finish_setup();
 }
 
 vrpn_HidInterface::~vrpn_HidInterface()
@@ -56,6 +83,26 @@ vrpn_HidInterface::~vrpn_HidInterface()
     }
 }
 
+namespace {
+    /// RAII class to automatically free the enumeration.
+    class EnumerationFreer {
+    public:
+        typedef struct hid_device_info *EnumerationType;
+        explicit EnumerationFreer(EnumerationType &devs)
+            : devs_(devs)
+        {
+        }
+        ~EnumerationFreer()
+        {
+            hid_free_enumeration(devs_);
+            devs_ = NULL;
+        }
+
+    private:
+        EnumerationType &devs_;
+    };
+} // namespace
+
 // Reconnects the device I/O for the first acceptable device
 // Called automatically by constructor, but userland code can
 // use it to reacquire a hotplugged device.
@@ -63,8 +110,16 @@ bool vrpn_HidInterface::reconnect()
 {
     // Enumerate all devices and pass each one to the acceptor to see if it
     // is the one that we want.
-    struct hid_device_info *devs = hid_enumerate(m_vendor_sought, m_product_sought);
+    struct hid_device_info *devs =
+        hid_enumerate(m_vendor_sought, m_product_sought);
     struct hid_device_info *loop = devs;
+
+    // This will free the enumeration when it goes out of scope: has to stick
+    // around until after the call to open. The serial number (path?) is a
+    // pointer to a
+    // string down in there.
+    EnumerationFreer freeEnumeration(devs);
+
     bool found = false;
     const wchar_t *serial;
     const char *path;
@@ -91,19 +146,17 @@ bool vrpn_HidInterface::reconnect()
             fprintf(stderr, "vrpn_HidInterface::reconnect(): Found %ls %ls "
                             "(%04hx:%04hx) at path %s - will attempt to "
                             "open.\n",
-                            loop->manufacturer_string, loop->product_string, m_vendor,
-                            m_product, loop->path);
+                    loop->manufacturer_string, loop->product_string, m_vendor,
+                    m_product, loop->path);
 #endif
         }
         loop = loop->next;
     }
     if (!found) {
-        //fprintf(stderr, "vrpn_HidInterface::reconnect(): Device not found\n");
-        hid_free_enumeration(devs);
-        devs = NULL;
+        // fprintf(stderr, "vrpn_HidInterface::reconnect(): Device not
+        // found\n");
         return false;
     }
-
 
     // Initialize the HID interface and open the device.
     m_device = hid_open_path(path);
@@ -114,19 +167,18 @@ bool vrpn_HidInterface::reconnect()
 #ifdef linux
         fprintf(stderr, "   (Did you remember to run as root?)\n");
 #endif
-        hid_free_enumeration(devs);
-        devs = NULL;
         return false;
     }
 
-    // We cannot do this before the call to open because the serial number
-    // is a pointer to a string down in there, which forms a race condition.
-    // This will be a memory leak if the device fails to open.
-    if (devs != NULL) {
-        hid_free_enumeration(devs);
-        devs = NULL;
-    }
+    return finish_setup();
+}
 
+bool vrpn_HidInterface::finish_setup()
+{
+    if (!m_device) {
+        m_working = false;
+        return false;
+    }
     // Set the device to non-blocking mode.
     if (hid_set_nonblocking(m_device, 1) != 0) {
         fprintf(stderr, "vrpn_HidInterface::reconnect(): Could not set device "
@@ -170,10 +222,9 @@ void vrpn_HidInterface::update()
 #endif
             const wchar_t *errmsg = hid_error(m_device);
             if (errmsg) {
-                fprintf(
-                    stderr,
-                    "vrpn_HidInterface::update(): error message: %ls\n",
-                    errmsg);
+                fprintf(stderr,
+                        "vrpn_HidInterface::update(): error message: %ls\n",
+                        errmsg);
             }
             m_working = false;
             return;

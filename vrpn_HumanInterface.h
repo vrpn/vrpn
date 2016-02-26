@@ -68,13 +68,32 @@ typedef struct hid_device_ hid_device;
 // Main VRPN API for HID devices
 class VRPN_API vrpn_HidInterface {
 public:
+    /// Constructor
+    /// If we already have a HID device from some other source, it can be passed
+    /// and we'll take ownership: still need the acceptor for reconnect, we just
+    /// won't do it right away.
     vrpn_HidInterface(
         /// Determines which device we want
         vrpn_HidAcceptor *acceptor,
         /// Default vendor is "any"
         vrpn_uint16 vendor = 0,
         /// Default product is "any"
-        vrpn_uint16 product = 0);
+        vrpn_uint16 product = 0,
+        /// Optional underlying HID device to manage and take ownership of
+        hid_device *device = NULL);
+
+    /// Simplified constructor that just takes an acceptor and an underlying HID
+    /// device (both non-optional).
+    ///
+    /// Designed for passing in a device (May look at you funny if you pass a
+    /// NULL device, but will work just as if you had called the other
+    /// constructor with a null device) but handles NULL devices just fine.
+    vrpn_HidInterface(
+        /// Determines which device we want
+        vrpn_HidAcceptor *acceptor,
+        /// Underlying HID device to manage and take ownership of
+        hid_device *device);
+
     virtual ~vrpn_HidInterface();
 
     /// Returns true iff the last device I/O succeeded
@@ -150,6 +169,8 @@ protected:
     vrpn_uint16 m_product_sought; //!< What product we want
 
 private:
+    // finishing setup of a device, either passed in or recently opened.
+    bool finish_setup();
     hid_device *m_device; ///< The HID device to use.
 };
 
