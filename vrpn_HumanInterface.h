@@ -109,12 +109,18 @@ public:
     virtual bool reconnect();
 
     /// Returns USB vendor ID of connected device
+    /// May not contain valid if an already-open device was provided to the
+    /// constructor.
     vrpn_uint16 vendor() const;
 
     /// Returns USB product ID of connected device
+    /// May not contain valid if an already-open device was provided to the
+    /// constructor.
     vrpn_uint16 product() const;
 
     /// Returns the USB interface number of connected device
+    /// May not contain valid information on all platforms or if an already-open
+    /// device was provided to the constructor.
     int interface_number() const;
 
 protected:
