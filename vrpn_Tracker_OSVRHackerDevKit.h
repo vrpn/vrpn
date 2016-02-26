@@ -90,9 +90,11 @@ public:
      * @brief Constructor.
      *
      * @param name Name of tracker.
+     * @param dev Optional Already-opened HIDAPI device for the tracker.
      * @param c Optional vrpn_Connection.
      */
-    vrpn_Tracker_OSVRHackerDevKit(const char *name, vrpn_Connection *c = NULL);
+    vrpn_Tracker_OSVRHackerDevKit(const char *name, hid_device *dev = NULL,
+                                  vrpn_Connection *c = NULL);
 
     /**
      * @brief Destructor.
