@@ -150,6 +150,12 @@ namespace vrpn {
     };
 
     template <typename T, typename D>
+    inline void swap(OwningPtr<T, D>& lhs, OwningPtr<T, D>& rhs)
+    {
+        lhs.swap(rhs);
+    }
+
+    template <typename T, typename D>
     inline typename traits::OwningPtrPointerType<T>::type
     get_pointer(OwningPtr<T, D> const& ptr)
     {
