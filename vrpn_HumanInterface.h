@@ -177,6 +177,12 @@ protected:
 private:
     // finishing setup of a device, either passed in or recently opened.
     bool finish_setup();
+    // Report an error message, which will be augmented with a HIDAPI error
+    // message if one is available and desired
+    void print_error(const char *function, const char *msg,
+                     bool askHIDAPI = true) const;
+    // Performs just the HIDAPI portion of print_error.
+    void print_hidapi_error(const char *function) const;
     hid_device *m_device; ///< The HID device to use.
 };
 

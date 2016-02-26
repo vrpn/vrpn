@@ -34,8 +34,7 @@ vrpn_HidInterface::vrpn_HidInterface(vrpn_HidAcceptor *acceptor,
     , m_device(device)
 {
     if (!m_acceptor) {
-        fprintf(stderr,
-            "vrpn_HidInterface::vrpn_HidInterface(): NULL acceptor\n");
+        print_error("vrpn_HidInterface", "NULL acceptor", false);
         return;
     }
     if (!m_device) {
@@ -61,8 +60,7 @@ vrpn_HidInterface::vrpn_HidInterface(vrpn_HidAcceptor *acceptor,
     , m_device(device)
 {
     if (!m_acceptor) {
-        fprintf(stderr,
-                "vrpn_HidInterface::vrpn_HidInterface(): NULL acceptor\n");
+        print_error("vrpn_HidInterface", "NULL acceptor", false);
         return;
     }
     if (!m_device) {
@@ -165,8 +163,9 @@ bool vrpn_HidInterface::reconnect()
                 "vrpn_HidInterface::reconnect(): Could not open device %s\n",
                 path);
 #ifdef linux
-        fprintf(stderr, "   (Did you remember to run as root?)\n");
+        fprintf(stderr, "   (Did you remember to run as root or otherwise set permissions?)\n");
 #endif
+        print_hidapi_error("reconnect");
         return false;
     }
 
@@ -181,8 +180,7 @@ bool vrpn_HidInterface::finish_setup()
     }
     // Set the device to non-blocking mode.
     if (hid_set_nonblocking(m_device, 1) != 0) {
-        fprintf(stderr, "vrpn_HidInterface::reconnect(): Could not set device "
-                        "to nonblocking\n");
+        print_error("finish_setup", "Could not set device to nonblocking");
         return false;
     }
 
@@ -247,16 +245,13 @@ void vrpn_HidInterface::update()
 void vrpn_HidInterface::send_data(size_t bytes, const vrpn_uint8 *buffer)
 {
     if (!m_working) {
-        fprintf(stderr, "vrpn_HidInterface::send_data(): Interface not "
-                        "currently working\n");
+        print_error("send_data", "Interface not currently working", false);
         return;
     }
     int ret;
     if ((ret = hid_write(m_device, const_cast<vrpn_uint8 *>(buffer), bytes)) !=
         static_cast<int>(bytes)) {
-        fprintf(stderr, "vrpn_HidInterface::send_data(): hid_interrupt_write() "
-                        "failed with code %d\n",
-                ret);
+        print_error("send_data", "hid_write failed");
     }
 }
 
@@ -264,21 +259,14 @@ void vrpn_HidInterface::send_feature_report(size_t bytes,
                                             const vrpn_uint8 *buffer)
 {
     if (!m_working) {
-        fprintf(stderr, "vrpn_HidInterface::send_feature_report(): Interface "
-                        "not currently working\n");
+        print_error("get_feature_report", "Interface not currently working",
+                      false);
         return;
     }
 
     int ret = hid_send_feature_report(m_device, buffer, bytes);
     if (ret == -1) {
-        fprintf(stderr, "vrpn_HidInterface::send_feature_report(): failed to "
-                        "send feature report\n");
-        const wchar_t *errmsg = hid_error(m_device);
-        if (errmsg) {
-            fprintf(stderr, "vrpn_HidInterface::send_feature_report(): error "
-                            "message: %ls\n",
-                    errmsg);
-        }
+        print_error("send_feature_report", "failed to send feature report");
     }
     else {
         // fprintf(stderr, "vrpn_HidInterface::send_feature_report(): sent
@@ -289,22 +277,14 @@ void vrpn_HidInterface::send_feature_report(size_t bytes,
 int vrpn_HidInterface::get_feature_report(size_t bytes, vrpn_uint8 *buffer)
 {
     if (!m_working) {
-        fprintf(stderr, "vrpn_HidInterface::get_feature_report(): Interface "
-                        "not currently working\n");
+        print_error("get_feature_report", "Interface not currently working",
+                      false);
         return -1;
     }
 
     int ret = hid_get_feature_report(m_device, buffer, bytes);
     if (ret == -1) {
-        fprintf(stderr, "vrpn_HidInterface::get_feature_report(): failed to "
-                        "get feature report\n");
-        const wchar_t *errmsg = hid_error(m_device);
-        if (errmsg) {
-            fprintf(
-                stderr,
-                "vrpn_HidInterface::get_feature_report(): error message: %ls\n",
-                errmsg);
-        }
+        print_error("get_feature_report", "failed to get feature report");
     }
     else {
         // fprintf(stderr, "vrpn_HidInterface::get_feature_report(): got feature
@@ -313,4 +293,24 @@ int vrpn_HidInterface::get_feature_report(size_t bytes, vrpn_uint8 *buffer)
     return ret;
 }
 
-#endif // any interface
+void vrpn_HidInterface::print_error(const char *function, const char *msg,
+                                    bool askHIDAPI) const
+{
+    fprintf(stderr, "vrpn_HidInterface::%s(): %s\n", function, msg);
+    if (!askHIDAPI) {
+        return;
+    }
+    print_hidapi_error(function);
+}
+
+void vrpn_HidInterface::print_hidapi_error(const char *function) const
+{
+    const wchar_t *errmsg = hid_error(m_device);
+    if (!errmsg) {
+        return;
+    }
+    fprintf(stderr, "vrpn_HidInterface::%s(): error message: %ls\n", function,
+            errmsg);
+}
+
+#endif
