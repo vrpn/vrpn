@@ -3399,7 +3399,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_OSVRHackerDevKit(char *&pch, char
 
 #ifdef VRPN_USE_HID
     // Open the tracker
-    _devices->add(new vrpn_Tracker_OSVRHackerDevKit(s2, connection));
+    _devices->add(new vrpn_Tracker_OSVRHackerDevKit(s2, NULL, connection));
 #else
     fprintf(stderr,
             "OSVRHackerDevKit driver works only with VRPN_USE_HID defined!\n");

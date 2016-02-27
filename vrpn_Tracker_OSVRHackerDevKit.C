@@ -37,27 +37,51 @@ static const vrpn_uint16 vrpn_OSVR_ALT_HACKER_DEV_KIT_HMD = 0x2421;
 static const vrpn_uint16 vrpn_HDK_STATUS_STRIDE = 400;
 static const vrpn_float64 vrpn_HDK_DT = 1.0 / 50;
 
+static vrpn_HidAcceptor *makeHDKHidAcceptor()
+{
+    return new vrpn_HidBooleanOrAcceptor(
+        new vrpn_HidProductAcceptor(vrpn_OSVR_VENDOR,
+                                    vrpn_OSVR_HACKER_DEV_KIT_HMD),
+        new vrpn_HidProductAcceptor(vrpn_OSVR_ALT_VENDOR,
+                                    vrpn_OSVR_ALT_HACKER_DEV_KIT_HMD));
+}
+
 // NOTE: Cannot use the vendor-and-product parameters in the
 // vrpn_HidInterface because there are one of two possible
 // vendor/product pairs.  The Acceptor will still correctly
 // work, it will just do more work during the enumeration phase
 // because it will have to check all devices in the system.
 vrpn_Tracker_OSVRHackerDevKit::vrpn_Tracker_OSVRHackerDevKit(const char *name,
+                                                             hid_device *dev,
                                                              vrpn_Connection *c)
     : vrpn_Tracker(name, c)
     , vrpn_Analog(name, c)
-    , vrpn_HidInterface(new vrpn_HidBooleanOrAcceptor(
-          new vrpn_HidProductAcceptor(vrpn_OSVR_VENDOR,
-                                      vrpn_OSVR_HACKER_DEV_KIT_HMD),
-          new vrpn_HidProductAcceptor(vrpn_OSVR_ALT_VENDOR,
-                                      vrpn_OSVR_ALT_HACKER_DEV_KIT_HMD)))
+    , vrpn_HidInterface(makeHDKHidAcceptor(), dev)
     , _wasConnected(false)
     , _messageCount(0)
     , _reportVersion(0)
     , _knownVersion(true)
 {
+    shared_init();
+}
+
+vrpn_Tracker_OSVRHackerDevKit::vrpn_Tracker_OSVRHackerDevKit(const char *name,
+                                                             vrpn_Connection *c)
+    : vrpn_Tracker(name, c)
+    , vrpn_Analog(name, c)
+    , vrpn_HidInterface(makeHDKHidAcceptor())
+    , _wasConnected(false)
+    , _messageCount(0)
+    , _reportVersion(0)
+    , _knownVersion(true)
+{
+    shared_init();
+}
+
+void vrpn_Tracker_OSVRHackerDevKit::shared_init() {
     /// Tracker setup
     vrpn_Tracker::num_sensors = 1; // only orientation
+
     // Initialize the state
     std::memset(d_quat, 0, sizeof(d_quat));
     d_quat[Q_W] = 1.0;
@@ -207,7 +231,7 @@ void vrpn_Tracker_OSVRHackerDevKit::on_data_received(std::size_t bytes,
             delta[Q_Z] = angVel[Q_Z] * vrpn_HDK_DT * 0.5;
             q_exp(delta, delta);
             q_normalize(delta, delta);
-         }
+        }
         // Bring the delta back into canonical space
         q_type canonical;
         q_mult(canonical, delta, inverse);

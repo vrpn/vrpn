@@ -90,9 +90,16 @@ public:
      * @brief Constructor.
      *
      * @param name Name of tracker.
+     * @param dev Optional Already-opened HIDAPI device for the tracker.
      * @param c Optional vrpn_Connection.
      */
-    vrpn_Tracker_OSVRHackerDevKit(const char *name, vrpn_Connection *c = NULL);
+    vrpn_Tracker_OSVRHackerDevKit(const char *name, hid_device *dev = NULL,
+                                  vrpn_Connection *c = NULL);
+
+    /**
+     * @overload
+     */
+    vrpn_Tracker_OSVRHackerDevKit(const char *name, vrpn_Connection *c);
 
     /**
      * @brief Destructor.
@@ -114,6 +121,7 @@ public:
 protected:
     /// Extracts the sensor values from each report.
     void on_data_received(std::size_t bytes, vrpn_uint8 *buffer);
+    void shared_init();
 
     /// Timestamp updated during mainloop()
     struct timeval _timestamp;
