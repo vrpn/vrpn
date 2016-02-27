@@ -12,7 +12,7 @@
 #ifndef NTSTATUS
 typedef long NTSTATUS;
 #endif
-#include "submodules/hidapi/windows/hid.cpp"
+#include "submodules/hidapi/windows/hid.c"
 
 #pragma comment( lib, "Setupapi.lib" )
 
@@ -26,7 +26,7 @@ typedef long NTSTATUS;
 #error This code must be compiled as C code, rather than C++.  Use the '-x c' option to the compiler.
 #endif
 
-#include "submodules/hidapi/linux/hid-libusb.c"
+#include "submodules/hidapi/libusb/hid.c"
 
 #elif defined(__APPLE__)
 // On the mac, we need to compile this code as C code rather than C++ code
