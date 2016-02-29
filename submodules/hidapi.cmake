@@ -106,9 +106,10 @@ if(VRPN_USE_LOCAL_HIDAPI)
 	elseif(WIN32)
 		if(EXISTS "${HIDAPI_SOURCE_DIR}/windows/hid.cpp")
 			# Old hidapi
+			message(STATUS "Warning: Outdated HIDAPI submodule in VRPN! git submodule update submodules/hidapi in the VRPN source directory is recommended!")
 			list(APPEND
 				HIDAPI_SOURCES
-				"${PROJECT_SOURCE_DIR}/vrpn_Local_HIDAPI.C")
+				"${HIDAPI_SOURCE_DIR}/windows/hid.cpp")
 		elseif(EXISTS "${HIDAPI_SOURCE_DIR}/windows/hid.c")
 			# New hidapi
 			list(APPEND
@@ -129,6 +130,7 @@ if(VRPN_USE_LOCAL_HIDAPI)
 				"${HIDAPI_SOURCE_DIR}/libusb/hid.c")
 		elseif(EXISTS "${HIDAPI_SOURCE_DIR}/linux/hid-libusb.c")
 			# Earlier version - before FreeBSD support
+			message(STATUS "Warning: Outdated HIDAPI submodule in VRPN! git submodule update submodules/hidapi in the VRPN source directory is recommended!")
 			list(APPEND
 				HIDAPI_SOURCES
 				"${HIDAPI_SOURCE_DIR}/linux/hid-libusb.c")
