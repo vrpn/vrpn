@@ -161,7 +161,7 @@ int vrpn_Microsoft_Controller_Raw::on_connect(void* /*thisPtr*/, vrpn_HANDLERPAR
 // SideWinder Precision 2 Joystick
 //////////////////////////////////////////////////////////////////////////
 vrpn_Microsoft_SideWinder_Precision_2::vrpn_Microsoft_SideWinder_Precision_2(const char *name, vrpn_Connection *c) :
-vrpn_Microsoft_Controller_Raw(_filter = new vrpn_HidProductAcceptor(MICROSOFT_VENDOR, SIDEWINDER_PRECISION_2), name, c, MICROSOFT_VENDOR, SIDEWINDER_PRECISION_2),
+vrpn_Microsoft_Controller_Raw(new vrpn_HidProductAcceptor(MICROSOFT_VENDOR, SIDEWINDER_PRECISION_2), name, c, MICROSOFT_VENDOR, SIDEWINDER_PRECISION_2),
 	vrpn_Analog(name, c), vrpn_Button_Filter(name, c), vrpn_Dial(name, c)
 {
 	vrpn_Analog::num_channel = 5;
@@ -305,7 +305,7 @@ void vrpn_Microsoft_SideWinder_Precision_2::decodePacket(size_t bytes, vrpn_uint
 // SideWinder Joystick
 //////////////////////////////////////////////////////////////////////////
 vrpn_Microsoft_SideWinder::vrpn_Microsoft_SideWinder(const char *name, vrpn_Connection *c) :
-vrpn_Microsoft_Controller_Raw(_filter = new vrpn_HidProductAcceptor(MICROSOFT_VENDOR, SIDEWINDER), name, c, MICROSOFT_VENDOR, SIDEWINDER),
+vrpn_Microsoft_Controller_Raw(new vrpn_HidProductAcceptor(MICROSOFT_VENDOR, SIDEWINDER), name, c, MICROSOFT_VENDOR, SIDEWINDER),
 	vrpn_Analog(name, c), vrpn_Button_Filter(name, c), vrpn_Dial(name, c)
 {
 	vrpn_Analog::num_channel = 3;
@@ -411,7 +411,7 @@ void vrpn_Microsoft_SideWinder::decodePacket(size_t bytes, vrpn_uint8 *buffer)
 // Xbox S
 //////////////////////////////////////////////////////////////////////////
 vrpn_Microsoft_Controller_Raw_Xbox_S::vrpn_Microsoft_Controller_Raw_Xbox_S(const char *name, vrpn_Connection *c)
-    : vrpn_Microsoft_Controller_Raw(_filter = new vrpn_HidProductAcceptor(MICROSOFT_VENDOR, XBOX_S), name, c, MICROSOFT_VENDOR, XBOX_S)
+    : vrpn_Microsoft_Controller_Raw(new vrpn_HidProductAcceptor(MICROSOFT_VENDOR, XBOX_S), name, c, MICROSOFT_VENDOR, XBOX_S)
   , vrpn_Analog(name, c)
   , vrpn_Button_Filter(name, c)
   , vrpn_Dial(name, c)
@@ -656,7 +656,7 @@ void vrpn_Microsoft_Controller_Raw_Xbox_S::decodePacket(size_t bytes, vrpn_uint8
 // Xbox 360
 //////////////////////////////////////////////////////////////////////////
 vrpn_Microsoft_Controller_Raw_Xbox_360_base::vrpn_Microsoft_Controller_Raw_Xbox_360_base(const char *name, vrpn_Connection *c, vrpn_uint16 vendor, vrpn_uint16 product)
-    : vrpn_Microsoft_Controller_Raw(_filter = new vrpn_HidProductAcceptor(vendor, product), name, c, vendor, product)
+    : vrpn_Microsoft_Controller_Raw(new vrpn_HidProductAcceptor(vendor, product), name, c, vendor, product)
 , vrpn_Analog(name, c)
 , vrpn_Button_Filter(name, c)
 , vrpn_Dial(name, c)

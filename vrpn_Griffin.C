@@ -67,7 +67,7 @@ int vrpn_Griffin::on_connect(void* /*thisPtr*/, vrpn_HANDLERPARAM /*p*/)
 }
 
 vrpn_Griffin_PowerMate::vrpn_Griffin_PowerMate(const char *name, vrpn_Connection *c)
-    : vrpn_Griffin(_filter = new vrpn_HidProductAcceptor(GRIFFIN_VENDOR, GRIFFIN_POWERMATE), name, c, GRIFFIN_VENDOR, GRIFFIN_POWERMATE)
+    : vrpn_Griffin(new vrpn_HidProductAcceptor(GRIFFIN_VENDOR, GRIFFIN_POWERMATE), name, c, GRIFFIN_VENDOR, GRIFFIN_POWERMATE)
   , vrpn_Analog(name, c)
   , vrpn_Button_Filter(name, c)
   , vrpn_Dial(name, c)

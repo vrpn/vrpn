@@ -35,7 +35,7 @@ void vrpn_DreamCheeky::on_data_received(size_t bytes, vrpn_uint8 *buffer)
 
 vrpn_DreamCheeky_Drum_Kit::vrpn_DreamCheeky_Drum_Kit(const char *name, vrpn_Connection *c,
                                                      bool debounce)
-                                                     : vrpn_DreamCheeky(_filter = new vrpn_HidProductAcceptor(DREAMCHEEKY_VENDOR, USB_ROLL_UP_DRUM_KIT), name, c, DREAMCHEEKY_VENDOR, USB_ROLL_UP_DRUM_KIT)
+                                                     : vrpn_DreamCheeky(new vrpn_HidProductAcceptor(DREAMCHEEKY_VENDOR, USB_ROLL_UP_DRUM_KIT), name, c, DREAMCHEEKY_VENDOR, USB_ROLL_UP_DRUM_KIT)
   , vrpn_Button_Filter(name, c)
   , d_debounce(debounce)
 {

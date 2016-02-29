@@ -109,7 +109,7 @@ int vrpn_Logitech_Controller_Raw::on_connect(void* /*thisPtr*/, vrpn_HANDLERPARA
 // SideWinder Precision 2 Joystick
 //////////////////////////////////////////////////////////////////////////
 vrpn_Logitech_Extreme_3D_Pro::vrpn_Logitech_Extreme_3D_Pro(const char *name, vrpn_Connection *c) :
-vrpn_Logitech_Controller_Raw(_filter = new vrpn_HidProductAcceptor(LOGITECH_VENDOR, EXTREME_3D_PRO), name, c, LOGITECH_VENDOR, EXTREME_3D_PRO),
+vrpn_Logitech_Controller_Raw(new vrpn_HidProductAcceptor(LOGITECH_VENDOR, EXTREME_3D_PRO), name, c, LOGITECH_VENDOR, EXTREME_3D_PRO),
 	vrpn_Analog(name, c), vrpn_Button_Filter(name, c), vrpn_Dial(name, c)
 {
 	vrpn_Analog::num_channel = 5;

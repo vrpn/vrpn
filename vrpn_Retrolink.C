@@ -118,7 +118,7 @@ int vrpn_Retrolink::on_connect(void* /*thisPtr*/, vrpn_HANDLERPARAM /*p*/)
 }
 
 vrpn_Retrolink_GameCube::vrpn_Retrolink_GameCube(const char *name, vrpn_Connection *c)
-    : vrpn_Retrolink(_filter = new vrpn_HidProductAcceptor(RETROLINK_VENDOR, RETROLINK_GAMECUBE), name, c, RETROLINK_VENDOR, RETROLINK_GAMECUBE)
+    : vrpn_Retrolink(new vrpn_HidProductAcceptor(RETROLINK_VENDOR, RETROLINK_GAMECUBE), name, c, RETROLINK_VENDOR, RETROLINK_GAMECUBE)
   , vrpn_Analog(name, c)
   , vrpn_Button_Filter(name, c)
 {
@@ -257,7 +257,7 @@ void vrpn_Retrolink_GameCube::decodePacket(size_t bytes, vrpn_uint8 *buffer)
 }
 
 vrpn_Retrolink_Genesis::vrpn_Retrolink_Genesis(const char *name, vrpn_Connection *c)
-    : vrpn_Retrolink(_filter = new vrpn_HidProductAcceptor(RETROLINK_VENDOR, RETROLINK_GENESIS), name, c, RETROLINK_VENDOR, RETROLINK_GENESIS)
+    : vrpn_Retrolink(new vrpn_HidProductAcceptor(RETROLINK_VENDOR, RETROLINK_GENESIS), name, c, RETROLINK_VENDOR, RETROLINK_GENESIS)
   , vrpn_Analog(name, c)
   , vrpn_Button_Filter(name, c)
 {

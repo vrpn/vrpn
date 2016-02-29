@@ -108,7 +108,7 @@ int vrpn_Saitek_Controller_Raw::on_connect(void* /*thisPtr*/, vrpn_HANDLERPARAM 
 // ST290 Pro Joystick
 //////////////////////////////////////////////////////////////////////////
 vrpn_Saitek_ST290_Pro::vrpn_Saitek_ST290_Pro(const char *name, vrpn_Connection *c) :
-vrpn_Saitek_Controller_Raw(_filter = new vrpn_HidProductAcceptor(SAITEK_VENDOR, ST290_PRO), name, c, SAITEK_VENDOR, ST290_PRO),
+vrpn_Saitek_Controller_Raw(new vrpn_HidProductAcceptor(SAITEK_VENDOR, ST290_PRO), name, c, SAITEK_VENDOR, ST290_PRO),
 	vrpn_Analog(name, c), vrpn_Button_Filter(name, c), vrpn_Dial(name, c)
 {
 	vrpn_Analog::num_channel = 5;
