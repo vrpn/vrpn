@@ -2,6 +2,8 @@
 # HID and HIDAPI
 ###
 
+set(LOCAL_HIDAPI_SUBMODULE_RETRIEVED FALSE)
+
 set(HIDAPI_BACKEND_FOUND NO)
 # Local HIDAPI requirements
 if(ANDROID)
@@ -58,7 +60,7 @@ if(EXISTS "${VRPN_SOURCE_DIR}/submodules/hidapi/hidapi/hidapi.h")
 	set(LOCAL_HIDAPI_SUBMODULE_RETRIEVED TRUE)
 endif()
 
-if(NOT LOCAL_HIDAPI_SUBMODULE_RETRIEVED)
+if(NOT LOCAL_HIDAPI_SUBMODULE_RETRIEVED AND NOT SUBPROJECT)
 	message(STATUS
 		"Local HIDAPI submodule not found. To download with Git, run git submodule update --init")
 endif()
