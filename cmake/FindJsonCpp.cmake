@@ -53,6 +53,8 @@ macro(_jsoncpp_check_for_real_jsoncpplib)
 	endif()
 endmacro()
 
+include(FindPackageHandleStandardArgs)
+
 # We will always try first to get a config file.
 if(NOT JSONCPP_IMPORTED_LIBRARY)
 	# See if we find a CMake config file.
@@ -122,12 +124,6 @@ if(NOT JSONCPP_IMPORTED_LIBRARY)
 				json/json.h
 				PATH_SUFFIXES include jsoncpp include/jsoncpp
 				HINTS ${__jsoncpp_hints})
-
-			if(JsonCpp_INCLUDE_DIR)
-				mark_as_advanced(JsonCpp_INCLUDE_DIR)
-				# Note - this does not set it in the cache, in case we find it better at some point in the future!
-				set(JSONCPP_IMPORTED_INCLUDE_DIRS ${JsonCpp_INCLUDE_DIR})
-			endif()
 		endif()
 
 		# As a convenience...
@@ -135,14 +131,22 @@ if(NOT JSONCPP_IMPORTED_LIBRARY)
 			add_library(jsoncpp_lib INTERFACE)
 			target_link_libraries(jsoncpp_lib INTERFACE jsoncpp_lib_static)
 		endif()
-
-		# OK, finish this up.
-		include(FindPackageHandleStandardArgs)
-		find_package_handle_standard_args(JsonCpp
-			DEFAULT_MSG
-			JSONCPP_IMPORTED_LIBRARY
-			JSONCPP_IMPORTED_INCLUDE_DIRS)
 	endif()
+endif()
+
+if(JSONCPP_IMPORTED_LIBRARY)
+	if(NOT JSONCPP_IMPORTED_INCLUDE_DIRS)
+		if(JsonCpp_INCLUDE_DIR)
+			mark_as_advanced(JsonCpp_INCLUDE_DIR)
+			# Note - this does not set it in the cache, in case we find it better at some point in the future!
+			set(JSONCPP_IMPORTED_INCLUDE_DIRS ${JsonCpp_INCLUDE_DIR})
+		endif()
+	endif()
+
+	find_package_handle_standard_args(JsonCpp
+		DEFAULT_MSG
+		JSONCPP_IMPORTED_LIBRARY
+		JSONCPP_IMPORTED_INCLUDE_DIRS)
 endif()
 
 # Create any missing namespaced targets from the config module.
