@@ -326,7 +326,7 @@ void vrpn_HidInterface::print_error(const char *function, const char *msg,
                                     bool askHIDAPI) const
 {
     fprintf(stderr, "vrpn_HidInterface::%s(): %s\n", function, msg);
-    if (!askHIDAPI) {
+    if (!askHIDAPI || !m_device) {
         return;
     }
     print_hidapi_error(function);
