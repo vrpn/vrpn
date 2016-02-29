@@ -63,7 +63,7 @@ endif()
 find_package(Boost QUIET)
 
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(LibNiFalcon
+find_package_handle_standard_args(LibNifalcon
 	DEFAULT_MSG
 	LIBNIFALCON_LIBRARY
 	LIBNIFALCON_INCLUDE_DIR
