@@ -79,6 +79,18 @@ protected:
 };
 #endif  // not VRPN_USE_HID
 
+class VRPN_API vrpn_3DConnexionWireless : public vrpn_3DConnexion {
+public:
+	vrpn_3DConnexionWireless(vrpn_HidAcceptor *filter, unsigned num_buttons,
+		const char *name, vrpn_Connection *c = 0,
+		vrpn_uint16 vendor = 0, vrpn_uint16 product = 0);
+	virtual ~vrpn_3DConnexionWireless() {};
+#if defined(VRPN_USE_HID)
+protected:
+	virtual void decodePacket(size_t bytes, vrpn_uint8 *buffer);
+#endif
+};
+
 class VRPN_API vrpn_3DConnexion_Navigator: public vrpn_3DConnexion {
 public:
   vrpn_3DConnexion_Navigator(const char *name, vrpn_Connection *c = 0);
@@ -138,7 +150,15 @@ public:
 protected:
 };
 
-class VRPN_API vrpn_3DConnexion_SpaceMouseWireless : public vrpn_3DConnexion {
+class VRPN_API vrpn_3DConnexion_SpaceMouseProWireless : public vrpn_3DConnexionWireless {
+public:
+  vrpn_3DConnexion_SpaceMouseProWireless(const char *name, vrpn_Connection *c = 0);
+  virtual ~vrpn_3DConnexion_SpaceMouseProWireless() {};
+
+protected:
+};
+
+class VRPN_API vrpn_3DConnexion_SpaceMouseWireless : public vrpn_3DConnexionWireless {
 public:
 	vrpn_3DConnexion_SpaceMouseWireless(const char *name, vrpn_Connection *c = 0);
 	virtual ~vrpn_3DConnexion_SpaceMouseWireless() {};

@@ -33,6 +33,7 @@ static const vrpn_uint16 vrpn_3DCONNEXION_SPACEMOUSEPRO = 50731;
 static const vrpn_uint16 vrpn_3DCONNEXION_SPACEMOUSEWIRELESS = 50735;
 static const vrpn_uint16 vrpn_3DCONNEXION_SPACEBALL5000 = 0xc621;   // 50721;
 static const vrpn_uint16 vrpn_3DCONNEXION_SPACEPILOT =  0xc625;
+static const vrpn_uint16 vrpn_3DCONNEXION_SPACEMOUSEPROWIRELESS = 50738;
 
 vrpn_3DConnexion::vrpn_3DConnexion(vrpn_HidAcceptor *filter, unsigned num_buttons,
                                    const char *name, vrpn_Connection *c,
@@ -309,7 +310,94 @@ void vrpn_3DConnexion::decodePacket(size_t bytes, vrpn_uint8 *buffer)
     report_changes();
   }
 }
+
+void vrpn_3DConnexionWireless::decodePacket(size_t bytes, vrpn_uint8 *buffer)
+{
+  // The wireless versions send 13 bytes, not 7.
+  //We do the same check on size as the non wireless version
+  if (bytes<13) bytes=13;
+  if (bytes > 13) {
+    fprintf(stderr, "vrpn_3DConnexionWireless::decodePacket(): Long packet (%d bytes), may mis-parse\n",
+      static_cast<int>(bytes));
+  }
+  // Decode all full reports.
+  // Just like the wired the first byte is the report type.
+  // Unlike the wired the wireless mice only send report type 1 & 3 (and 23) but not 2.
+  // 23 appears to be a new report type that signals and end of mouse movement.
+  // Report type 1 is then followed by both translation and rotation.
+  for (size_t i = 0; i < bytes / 13; i++) {
+    vrpn_uint8 *report = buffer + (i * 13);
+
+    // There are three types of reports.  Parse whichever type this is.
+    char  report_type = report[0];
+    vrpn_uint8 *bufptr = &report[1];
+    //The wireless version reports out of 350, compared to out of 400 for the wired.
+    const float scale = 1.0f/350.0f;
+    switch (report_type)  {
+      // Report types 1 and 2 come one after the other.  Each seems
+      // to change when the puck is moved.  It looks like each pair
+      // of values records a signed value for one channel; report
+      // type 1 is translation and report type 2 is rotation.
+      // The minimum and maximum values seem to vary somewhat.
+      // They all seem to be able to get over 400, so we scale
+      // by 400 and then clamp to (-1..1).
+      // The first byte is the low-order byte and the second is the
+      // high-order byte.
+    case 1:
+      channel[0] = vrpn_unbuffer_from_little_endian<vrpn_int16>(bufptr) * scale;
+      if (channel[0] < -1.0) { channel[0] = -1.0; }
+      if (channel[0] > 1.0) { channel[0] = 1.0; }
+      channel[1] = vrpn_unbuffer_from_little_endian<vrpn_int16>(bufptr) * scale;
+      if (channel[1] < -1.0) { channel[1] = -1.0; }
+      if (channel[1] > 1.0) { channel[1] = 1.0; }
+      channel[2] = vrpn_unbuffer_from_little_endian<vrpn_int16>(bufptr) * scale;
+      if (channel[2] < -1.0) { channel[2] = -1.0; }
+      if (channel[2] > 1.0) { channel[2] = 1.0; }
+      channel[3] = vrpn_unbuffer_from_little_endian<vrpn_int16>(bufptr) * scale;
+      if (channel[3] < -1.0) { channel[3] = -1.0; }
+      if (channel[3] > 1.0) { channel[3] = 1.0; }
+      channel[4] = vrpn_unbuffer_from_little_endian<vrpn_int16>(bufptr) * scale;
+      if (channel[4] < -1.0) { channel[4] = -1.0; }
+      if (channel[4] > 1.0) { channel[4] = 1.0; }
+      channel[5] = vrpn_unbuffer_from_little_endian<vrpn_int16>(bufptr) * scale;
+      if (channel[5] < -1.0) { channel[5] = -1.0; }
+      if (channel[5] > 1.0) { channel[5] = 1.0; }
+      break;
+
+    case 3: { // Button report
+      int btn;
+
+      // Button reports are encoded as per non-wirless version.
+
+      for (btn = 0; btn < vrpn_Button::num_buttons; btn++) {
+        vrpn_uint8 *location, mask;
+        location = report + 1 + (btn / 8);
+        mask = 1 << (btn % 8);
+        buttons[btn] = ((*location) & mask) != 0;
+      }
+      break;
+    }
+
+    case 23:
+      //No need to take action. It just indicates user has stopped using the mouse.
+      break;    
+
+    default:
+      vrpn_gettimeofday(&_timestamp, NULL);
+      send_text_message("Unknown report type", _timestamp, vrpn_TEXT_WARNING);
+    }
+    // Report this event before parsing the next.
+    report_changes();
+  }
+}
 #endif
+
+vrpn_3DConnexionWireless::vrpn_3DConnexionWireless(vrpn_HidAcceptor *filter, unsigned num_buttons,
+	const char *name, vrpn_Connection *c,
+	vrpn_uint16 vendor, vrpn_uint16 product)
+	: vrpn_3DConnexion(filter, num_buttons, name, c, vendor, product)
+{
+}
 
 vrpn_3DConnexion_Navigator::vrpn_3DConnexion_Navigator(const char *name, vrpn_Connection *c)
     : vrpn_3DConnexion(_filter = new vrpn_HidProductAcceptor(vrpn_3DCONNEXION_VENDOR, vrpn_3DCONNEXION_NAVIGATOR), 2, name, c, vrpn_3DCONNEXION_VENDOR, vrpn_3DCONNEXION_NAVIGATOR)
@@ -337,7 +425,7 @@ vrpn_3DConnexion_SpaceMousePro::vrpn_3DConnexion_SpaceMousePro(const char *name,
 }
 
 vrpn_3DConnexion_SpaceMouseWireless::vrpn_3DConnexion_SpaceMouseWireless(const char *name, vrpn_Connection *c)
-    : vrpn_3DConnexion(_filter = new vrpn_HidProductAcceptor(vrpn_SPACEMOUSEWIRELESS_VENDOR, vrpn_3DCONNEXION_SPACEMOUSEWIRELESS), 2, name, c, vrpn_SPACEMOUSEWIRELESS_VENDOR, vrpn_3DCONNEXION_SPACEMOUSEWIRELESS)
+	: vrpn_3DConnexionWireless(_filter = new vrpn_HidProductAcceptor(vrpn_SPACEMOUSEWIRELESS_VENDOR, vrpn_3DCONNEXION_SPACEMOUSEWIRELESS), 2, name, c, vrpn_SPACEMOUSEWIRELESS_VENDOR, vrpn_3DCONNEXION_SPACEMOUSEWIRELESS)
 {
 }
 
@@ -354,4 +442,9 @@ vrpn_3DConnexion_SpaceBall5000::vrpn_3DConnexion_SpaceBall5000(const char *name,
 vrpn_3DConnexion_SpacePilot::vrpn_3DConnexion_SpacePilot(const char *name, vrpn_Connection *c)
     : vrpn_3DConnexion(_filter = new vrpn_HidProductAcceptor(vrpn_3DCONNEXION_VENDOR, vrpn_3DCONNEXION_SPACEPILOT), 21, name, c, vrpn_3DCONNEXION_VENDOR, vrpn_3DCONNEXION_SPACEPILOT)
 {
+}
+
+vrpn_3DConnexion_SpaceMouseProWireless::vrpn_3DConnexion_SpaceMouseProWireless(const char *name, vrpn_Connection *c)
+	: vrpn_3DConnexionWireless(_filter = new vrpn_HidProductAcceptor(vrpn_SPACEMOUSEWIRELESS_VENDOR, vrpn_3DCONNEXION_SPACEMOUSEPROWIRELESS), 27, name, c, vrpn_SPACEMOUSEWIRELESS_VENDOR, vrpn_3DCONNEXION_SPACEMOUSEPROWIRELESS)
+{	// 15 physical buttons are numbered: 0-2, 4-5, 8, 12-15, 22-26
 }
