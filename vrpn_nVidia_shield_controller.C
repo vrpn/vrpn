@@ -39,7 +39,7 @@ void vrpn_nVidia_shield::on_data_received(size_t bytes, vrpn_uint8 *buffer)
 }
 
 vrpn_nVidia_shield_USB::vrpn_nVidia_shield_USB(const char *name, vrpn_Connection *c)
-    : vrpn_nVidia_shield(d_filter = new vrpn_HidProductAcceptor(NVIDIA_VENDOR, NVIDIA_SHIELD_USB), name, c, NVIDIA_VENDOR, NVIDIA_SHIELD_USB)
+    : vrpn_nVidia_shield(new vrpn_HidProductAcceptor(NVIDIA_VENDOR, NVIDIA_SHIELD_USB), name, c, NVIDIA_VENDOR, NVIDIA_SHIELD_USB)
   , vrpn_Analog(name, c)
   , vrpn_Button_Filter(name, c)
 {

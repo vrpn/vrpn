@@ -133,7 +133,8 @@ int main(void)
   double skip;
   vrpn_gettimeofday(&last_time, NULL);
   printf("Current time in seconds:microseconds = %lu:%lu\n", 
-    last_time.tv_sec, last_time.tv_usec);
+    static_cast<unsigned long>(last_time.tv_sec),
+    static_cast<unsigned long>(last_time.tv_usec) );
   
   printf("Checking for monotonicity and step size\n");
   printf(" (should be no further output if things are working perfectly)\n");

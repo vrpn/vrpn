@@ -108,7 +108,7 @@ int vrpn_CHProducts_Controller_Raw::on_connect(void* /* thisPtr */, vrpn_HANDLER
 // ST290 Pro Joystick
 //////////////////////////////////////////////////////////////////////////
 vrpn_CHProducts_Fighterstick_USB::vrpn_CHProducts_Fighterstick_USB(const char *name, vrpn_Connection *c) :
-vrpn_CHProducts_Controller_Raw(_filter = new vrpn_HidProductAcceptor(CHPRODUCTS_VENDOR, FIGHTERSTICK_USB), name, c, CHPRODUCTS_VENDOR, FIGHTERSTICK_USB),
+vrpn_CHProducts_Controller_Raw(new vrpn_HidProductAcceptor(CHPRODUCTS_VENDOR, FIGHTERSTICK_USB), name, c, CHPRODUCTS_VENDOR, FIGHTERSTICK_USB),
 	vrpn_Analog(name, c), vrpn_Button_Filter(name, c), vrpn_Dial(name, c)
 {
 	vrpn_Analog::num_channel = 8;

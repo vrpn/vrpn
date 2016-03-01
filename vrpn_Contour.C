@@ -70,7 +70,7 @@ int vrpn_Contour::on_connect(void* /*thisPtr*/, vrpn_HANDLERPARAM /*p*/)
 }
 
 vrpn_Contour_ShuttleXpress::vrpn_Contour_ShuttleXpress(const char *name, vrpn_Connection *c)
-    : vrpn_Contour(_filter = new vrpn_HidProductAcceptor(CONTOUR_VENDOR, CONTOUR_SHUTTLEXPRESS), name, c, CONTOUR_VENDOR, CONTOUR_SHUTTLEXPRESS)
+    : vrpn_Contour(new vrpn_HidProductAcceptor(CONTOUR_VENDOR, CONTOUR_SHUTTLEXPRESS), name, c, CONTOUR_VENDOR, CONTOUR_SHUTTLEXPRESS)
   , vrpn_Analog(name, c)
   , vrpn_Button_Filter(name, c)
   , vrpn_Dial(name, c)
@@ -206,7 +206,7 @@ void vrpn_Contour_ShuttleXpress::decodePacket(size_t bytes, vrpn_uint8 *buffer) 
 
 
 vrpn_Contour_ShuttlePROv2::vrpn_Contour_ShuttlePROv2(const char *name, vrpn_Connection *c)
-    : vrpn_Contour(_filter = new vrpn_HidProductAcceptor(CONTOUR_VENDOR, CONTOUR_SHUTTLEPROV2), name, c, CONTOUR_VENDOR, CONTOUR_SHUTTLEPROV2)
+    : vrpn_Contour(new vrpn_HidProductAcceptor(CONTOUR_VENDOR, CONTOUR_SHUTTLEPROV2), name, c, CONTOUR_VENDOR, CONTOUR_SHUTTLEPROV2)
 	, vrpn_Analog(name, c)
 	, vrpn_Button_Filter(name, c)
 	, vrpn_Dial(name, c)

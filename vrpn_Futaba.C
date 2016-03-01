@@ -72,7 +72,7 @@ int vrpn_Futaba::on_connect(void* /*thisPtr*/, vrpn_HANDLERPARAM /*p*/)
 }
 
 vrpn_Futaba_InterLink_Elite::vrpn_Futaba_InterLink_Elite(const char *name, vrpn_Connection *c)
-    : vrpn_Futaba(_filter = new vrpn_HidProductAcceptor(FUTABA_VENDOR, FUTABA_ELITE), name, c, FUTABA_VENDOR, FUTABA_ELITE)
+    : vrpn_Futaba(new vrpn_HidProductAcceptor(FUTABA_VENDOR, FUTABA_ELITE), name, c, FUTABA_VENDOR, FUTABA_ELITE)
   , vrpn_Analog(name, c)
   , vrpn_Button_Filter(name, c)
   , vrpn_Dial(name, c)
