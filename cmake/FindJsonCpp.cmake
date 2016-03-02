@@ -54,6 +54,8 @@ macro(_jsoncpp_check_for_real_jsoncpplib)
 endmacro()
 
 include(FindPackageHandleStandardArgs)
+# Ensure that if this is TRUE later, it's because we set it.
+set(JSONCPP_FOUND FALSE)
 
 # We will always try first to get a config file.
 if(NOT JSONCPP_IMPORTED_LIBRARY)
@@ -79,9 +81,9 @@ if(NOT JSONCPP_IMPORTED_LIBRARY)
 		elseif(TARGET jsoncpp_lib_static)
 			# Well, only one variant, but we know for sure that it's static.
 			set(JSONCPP_IMPORTED_LIBRARY_STATIC jsoncpp_lib_static CACHE INTERNAL "" FORCE)
-			set(JSONCPP_IMPORTED_LIBRARY ${JSONCPP_IMPORTED_LIBRARY_STATIC} CACHE INTERNAL "" FORCE)
+			set(JSONCPP_IMPORTED_LIBRARY jsoncpp_lib_static CACHE INTERNAL "" FORCE)
 			set(JSONCPP_IMPORTED_LIBRARY_IS_SHARED FALSE CACHE INTERNAL "" FORCE)
-		else() #elseif(TARGET jsoncpp_lib)
+		elseif(TARGET __jsoncpp_have_jsoncpplib)
 			# One variant, and we have no idea if this is just an old version or if
 			# this is shared based on the target name alone. Hmm.
 			# TODO figure out if this is shared or static?
@@ -102,29 +104,6 @@ if(NOT JSONCPP_IMPORTED_LIBRARY)
 				set(JSONCPP_IMPORTED_INCLUDE_DIRS "${__jsoncpp_interface_include_dirs}" CACHE INTERNAL "" FORCE)
 			endif()
 		endif()
-		if(NOT JSONCPP_IMPORTED_INCLUDE_DIRS)
-			# OK, so we couldn't get it from the target... maybe we can figure it out from jsoncpp_DIR.
-
-			# take off the jsoncpp component
-			get_filename_component(__jsoncpp_import_root "${jsoncpp_DIR}/.." ABSOLUTE)
-			set(__jsoncpp_hints "${__jsoncpp_import_root}")
-			# take off the cmake component
-			get_filename_component(__jsoncpp_import_root "${__jsoncpp_import_root}/.." ABSOLUTE)
-			list(APPEND __jsoncpp_hints "${__jsoncpp_import_root}")
-			# take off the lib component
-			get_filename_component(__jsoncpp_import_root "${__jsoncpp_import_root}/.." ABSOLUTE)
-			list(APPEND __jsoncpp_hints "${__jsoncpp_import_root}")
-			# take off one more component in case of multiarch lib
-			get_filename_component(__jsoncpp_import_root "${__jsoncpp_import_root}/.." ABSOLUTE)
-			list(APPEND __jsoncpp_hints "${__jsoncpp_import_root}")
-
-			# Now, search.
-			find_path(JsonCpp_INCLUDE_DIR
-				NAMES
-				json/json.h
-				PATH_SUFFIXES include jsoncpp include/jsoncpp
-				HINTS ${__jsoncpp_hints})
-		endif()
 
 		# As a convenience...
 		if(TARGET jsoncpp_lib_static AND NOT TARGET jsoncpp_lib)
@@ -136,6 +115,27 @@ endif()
 
 if(JSONCPP_IMPORTED_LIBRARY)
 	if(NOT JSONCPP_IMPORTED_INCLUDE_DIRS)
+		# OK, so we couldn't get it from the target... maybe we can figure it out from jsoncpp_DIR.
+
+		# take off the jsoncpp component
+		get_filename_component(__jsoncpp_import_root "${jsoncpp_DIR}/.." ABSOLUTE)
+		set(__jsoncpp_hints "${__jsoncpp_import_root}")
+		# take off the cmake component
+		get_filename_component(__jsoncpp_import_root "${__jsoncpp_import_root}/.." ABSOLUTE)
+		list(APPEND __jsoncpp_hints "${__jsoncpp_import_root}")
+		# take off the lib component
+		get_filename_component(__jsoncpp_import_root "${__jsoncpp_import_root}/.." ABSOLUTE)
+		list(APPEND __jsoncpp_hints "${__jsoncpp_import_root}")
+		# take off one more component in case of multiarch lib
+		get_filename_component(__jsoncpp_import_root "${__jsoncpp_import_root}/.." ABSOLUTE)
+		list(APPEND __jsoncpp_hints "${__jsoncpp_import_root}")
+
+		# Now, search.
+		find_path(JsonCpp_INCLUDE_DIR
+			NAMES
+			json/json.h
+			PATH_SUFFIXES include jsoncpp include/jsoncpp
+			HINTS ${__jsoncpp_hints})
 		if(JsonCpp_INCLUDE_DIR)
 			mark_as_advanced(JsonCpp_INCLUDE_DIR)
 			# Note - this does not set it in the cache, in case we find it better at some point in the future!
@@ -149,26 +149,31 @@ if(JSONCPP_IMPORTED_LIBRARY)
 		JSONCPP_IMPORTED_INCLUDE_DIRS)
 endif()
 
-# Create any missing namespaced targets from the config module.
-if(__jsoncpp_have_namespaced_targets)
-	if(JSONCPP_IMPORTED_LIBRARY AND NOT TARGET JsonCpp::JsonCpp)
-		add_library(JsonCpp::JsonCpp INTERFACE IMPORTED)
-		set_property(TARGET JsonCpp::JsonCpp PROPERTY INTERFACE_LINK_LIBRARIES ${JSONCPP_IMPORTED_LIBRARY})
+if(JSONCPP_FOUND)
+	# Create any missing namespaced targets from the config module.
+	if(__jsoncpp_have_namespaced_targets)
+		if(JSONCPP_IMPORTED_LIBRARY AND NOT TARGET JsonCpp::JsonCpp)
+			add_library(JsonCpp::JsonCpp INTERFACE IMPORTED)
+			set_target_properties(JsonCpp::JsonCpp PROPERTIES
+				INTERFACE_INCLUDE_DIRECTORIES "${JSONCPP_IMPORTED_INCLUDE_DIRS}"
+				INTERFACE_LINK_LIBRARIES "${JSONCPP_IMPORTED_LIBRARY}")
+		endif()
+
+		if(JSONCPP_IMPORTED_LIBRARY_SHARED AND NOT TARGET JsonCpp::JsonCppShared)
+			add_library(JsonCpp::JsonCppShared INTERFACE IMPORTED)
+			set_target_properties(JsonCpp::JsonCppShared PROPERTIES
+				INTERFACE_INCLUDE_DIRECTORIES "${JSONCPP_IMPORTED_INCLUDE_DIRS}"
+				INTERFACE_LINK_LIBRARIES "${JSONCPP_IMPORTED_LIBRARY_SHARED}")
+		endif()
+
+		if(JSONCPP_IMPORTED_LIBRARY_STATIC AND NOT TARGET JsonCpp::JsonCppStatic)
+			add_library(JsonCpp::JsonCppStatic INTERFACE IMPORTED)
+			set_target_properties(JsonCpp::JsonCppStatic PROPERTIES
+				INTERFACE_INCLUDE_DIRECTORIES "${JSONCPP_IMPORTED_INCLUDE_DIRS}"
+				INTERFACE_LINK_LIBRARIES "${JSONCPP_IMPORTED_LIBRARY_STATIC}")
+		endif()
 	endif()
 
-	if(JSONCPP_IMPORTED_LIBRARY_SHARED AND NOT TARGET JsonCpp::JsonCppShared)
-		add_library(JsonCpp::JsonCppShared INTERFACE IMPORTED)
-		set_property(TARGET JsonCpp::JsonCppShared PROPERTY INTERFACE_LINK_LIBRARIES ${JSONCPP_IMPORTED_LIBRARY_SHARED})
-	endif()
-
-	if(JSONCPP_IMPORTED_LIBRARY_STATIC AND NOT TARGET JsonCpp::JsonCppStatic)
-		add_library(JsonCpp::JsonCppStatic INTERFACE IMPORTED)
-		set_property(TARGET JsonCpp::JsonCppStatic PROPERTY INTERFACE_LINK_LIBRARIES ${JSONCPP_IMPORTED_LIBRARY_STATIC})
-	endif()
-endif()
-
-# Set any non-cache variables from cache variables set by a config module parsed above.
-if(JSONCPP_FOUND AND JSONCPP_IMPORTED_LIBRARY)
 	set(JSONCPP_LIBRARY ${JSONCPP_IMPORTED_LIBRARY})
 	set(JSONCPP_INCLUDE_DIRS ${JSONCPP_IMPORTED_INCLUDE_DIRS})
 	if(DEFINED JSONCPP_IMPORTED_LIBRARY_IS_SHARED)
@@ -176,19 +181,18 @@ if(JSONCPP_FOUND AND JSONCPP_IMPORTED_LIBRARY)
 	else()
 		unset(JSONCPP_LIBRARY_IS_SHARED)
 	endif()
-endif()
 
-if(JSONCPP_IMPORTED_LIBRARY_SHARED)
-	set(JSONCPP_LIBRARY_SHARED ${JSONCPP_IMPORTED_LIBRARY_SHARED})
-endif()
+	if(JSONCPP_IMPORTED_LIBRARY_SHARED)
+		set(JSONCPP_LIBRARY_SHARED ${JSONCPP_IMPORTED_LIBRARY_SHARED})
+	endif()
 
-if(JSONCPP_IMPORTED_LIBRARY_STATIC)
-	set(JSONCPP_LIBRARY_STATIC ${JSONCPP_IMPORTED_LIBRARY_STATIC})
+	if(JSONCPP_IMPORTED_LIBRARY_STATIC)
+		set(JSONCPP_LIBRARY_STATIC ${JSONCPP_IMPORTED_LIBRARY_STATIC})
+	endif()
 endif()
-
 
 # Still nothing after looking for the config file: must go "old-school"
-if(NOT JSONCPP_FOUND OR NOT JSONCPP_IMPORTED_LIBRARY)
+if(NOT JSONCPP_FOUND)
 	# Invoke pkgconfig for hints
 	find_package(PkgConfig QUIET)
 	set(_JSONCPP_INCLUDE_HINTS)
@@ -269,13 +273,13 @@ if(NOT JSONCPP_FOUND OR NOT JSONCPP_IMPORTED_LIBRARY)
 		PATHS libs
 		PATH_SUFFIXES ${_JSONCPP_PATHSUFFIXES}
 		HINTS ${_JSONCPP_LIB_HINTS})
-	include(FindPackageHandleStandardArgs)
+
 	find_package_handle_standard_args(JsonCpp
 		DEFAULT_MSG
 		JsonCpp_INCLUDE_DIR
 		JsonCpp_LIBRARY)
-	if(JSONCPP_FOUND)
 
+	if(JSONCPP_FOUND)
 		# We already know that the target doesn't exist, let's make it.
 		# TODO don't know why we get errors like:
 		# error: 'JsonCpp::JsonCpp-NOTFOUND', needed by 'bin/osvr_json_to_c', missing and no known rule to make it
