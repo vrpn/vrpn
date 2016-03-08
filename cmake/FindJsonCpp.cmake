@@ -57,10 +57,11 @@ include(FindPackageHandleStandardArgs)
 # Ensure that if this is TRUE later, it's because we set it.
 set(JSONCPP_FOUND FALSE)
 
+# See if we find a CMake config file.
+find_package(jsoncpp QUIET NO_MODULE)
+
 # We will always try first to get a config file.
 if(NOT JSONCPP_IMPORTED_LIBRARY)
-	# See if we find a CMake config file.
-	find_package(jsoncpp QUIET NO_MODULE)
 	if(jsoncpp_FOUND)
 		# OK, so we found something.
 		unset(JSONCPP_IMPORTED_LIBRARY_IS_SHARED)
