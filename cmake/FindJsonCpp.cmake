@@ -46,8 +46,10 @@ macro(_jsoncpp_check_for_real_jsoncpplib)
 	set(__jsoncpp_have_jsoncpplib FALSE)
 	if(TARGET jsoncpp_lib)
 		get_property(__jsoncpp_lib_type TARGET jsoncpp_lib PROPERTY TYPE)
+		#message(STATUS "__jsoncpp_lib_type ${__jsoncpp_lib_type}")
 		# We make interface libraries. If an actual config module made it, it would be an imported library.
 		if(NOT __jsoncpp_lib_type STREQUAL "INTERFACE_LIBRARY")
+			#message("have jsoncpp_lib and we didn't invent it ourselves")
 			set(__jsoncpp_have_jsoncpplib TRUE)
 		endif()
 	endif()
@@ -57,61 +59,106 @@ include(FindPackageHandleStandardArgs)
 # Ensure that if this is TRUE later, it's because we set it.
 set(JSONCPP_FOUND FALSE)
 
-# See if we find a CMake config file.
+# See if we find a CMake config file - there is no harm in calling this more than once,
+# and we need to call it at least once every CMake invocation to create the original
+# imported targets, since those don't stick around like cache variables.
 find_package(jsoncpp QUIET NO_MODULE)
 
-# We will always try first to get a config file.
-if(NOT JSONCPP_IMPORTED_LIBRARY)
-	if(jsoncpp_FOUND)
-		# OK, so we found something.
-		unset(JSONCPP_IMPORTED_LIBRARY_IS_SHARED)
-		_jsoncpp_check_for_real_jsoncpplib()
-		if(__jsoncpp_have_jsoncpplib AND TARGET jsoncpp_lib_static)
-			# A veritable cache of riches - we have both shared and static!
-			set(JSONCPP_IMPORTED_LIBRARY_SHARED jsoncpp_lib CACHE INTERNAL "" FORCE)
-			set(JSONCPP_IMPORTED_LIBRARY_STATIC jsoncpp_lib_static CACHE INTERNAL "" FORCE)
-			if(WIN32 OR CYGWIN OR MINGW)
-				# DLL platforms: static library should be default
-				set(JSONCPP_IMPORTED_LIBRARY ${JSONCPP_IMPORTED_LIBRARY_STATIC} CACHE INTERNAL "" FORCE)
-				set(JSONCPP_IMPORTED_LIBRARY_IS_SHARED FALSE CACHE INTERNAL "" FORCE)
-			else()
-				# Other platforms - might require PIC to be linked into shared libraries, so safest to prefer shared.
-				set(JSONCPP_IMPORTED_LIBRARY ${JSONCPP_IMPORTED_LIBRARY_SHARED} CACHE INTERNAL "" FORCE)
-				set(JSONCPP_IMPORTED_LIBRARY_IS_SHARED TRUE CACHE INTERNAL "" FORCE)
-			endif()
-		elseif(TARGET jsoncpp_lib_static)
-			# Well, only one variant, but we know for sure that it's static.
-			set(JSONCPP_IMPORTED_LIBRARY_STATIC jsoncpp_lib_static CACHE INTERNAL "" FORCE)
-			set(JSONCPP_IMPORTED_LIBRARY jsoncpp_lib_static CACHE INTERNAL "" FORCE)
+if(jsoncpp_FOUND)
+	# Build a string to help us figure out when to invalidate our cache variables.
+	# start with where we found jsoncpp
+	set(__jsoncpp_info_string "[${jsoncpp_DIR}]")
+
+	# part of the string to indicate if we found a real jsoncpp_lib (and what kind)
+	_jsoncpp_check_for_real_jsoncpplib()
+	if(__jsoncpp_have_jsoncpplib)
+		list(APPEND __jsoncpp_info_string "[${__jsoncpp_lib_type}]")
+	else()
+		list(APPEND __jsoncpp_info_string "[]")
+	endif()
+	# part of the string to indicate if we found jsoncpp_lib_static
+	if(TARGET jsoncpp_lib_static)
+		list(APPEND __jsoncpp_info_string "[T]")
+	else()
+		list(APPEND __jsoncpp_info_string "[]")
+	endif()
+endif()
+
+
+# If we found something, and it's not the exact same as what we've found before...
+# NOTE: The contents of this "if" block update only (internal) cache variables!
+# (since this will only get run the first CMake pass that finds jsoncpp or that finds a different/updated install)
+if(jsoncpp_FOUND AND NOT __jsoncpp_info_string STREQUAL "${JSONCPP_CACHED_JSONCPP_DIR_DETAILS}")
+	#message("Updating jsoncpp cache variables! ${__jsoncpp_info_string}")
+	set(JSONCPP_CACHED_JSONCPP_DIR_DETAILS "${__jsoncpp_info_string}" CACHE INTERNAL "" FORCE)
+	unset(JSONCPP_IMPORTED_LIBRARY_SHARED)
+	unset(JSONCPP_IMPORTED_LIBRARY_STATIC)
+	unset(JSONCPP_IMPORTED_LIBRARY)
+	unset(JSONCPP_IMPORTED_INCLUDE_DIRS)
+	unset(JSONCPP_IMPORTED_LIBRARY_IS_SHARED)
+
+	# if(__jsoncpp_have_jsoncpplib) is equivalent to if(TARGET jsoncpp_lib) except it excludes our
+	# "invented" jsoncpp_lib interface targets, made for convenience purposes after this block.
+
+	if(__jsoncpp_have_jsoncpplib AND TARGET jsoncpp_lib_static)
+
+		# A veritable cache of riches - we have both shared and static!
+		set(JSONCPP_IMPORTED_LIBRARY_SHARED jsoncpp_lib CACHE INTERNAL "" FORCE)
+		set(JSONCPP_IMPORTED_LIBRARY_STATIC jsoncpp_lib_static CACHE INTERNAL "" FORCE)
+		if(WIN32 OR CYGWIN OR MINGW)
+			# DLL platforms: static library should be default
+			set(JSONCPP_IMPORTED_LIBRARY ${JSONCPP_IMPORTED_LIBRARY_STATIC} CACHE INTERNAL "" FORCE)
 			set(JSONCPP_IMPORTED_LIBRARY_IS_SHARED FALSE CACHE INTERNAL "" FORCE)
-		elseif(TARGET __jsoncpp_have_jsoncpplib)
-			# One variant, and we have no idea if this is just an old version or if
-			# this is shared based on the target name alone. Hmm.
-			# TODO figure out if this is shared or static?
-			set(JSONCPP_IMPORTED_LIBRARY jsoncpp_lib CACHE INTERNAL "" FORCE)
+		else()
+			# Other platforms - might require PIC to be linked into shared libraries, so safest to prefer shared.
+			set(JSONCPP_IMPORTED_LIBRARY ${JSONCPP_IMPORTED_LIBRARY_SHARED} CACHE INTERNAL "" FORCE)
+			set(JSONCPP_IMPORTED_LIBRARY_IS_SHARED TRUE CACHE INTERNAL "" FORCE)
 		endif()
 
-		# Now, we need include directories. Can't just limit this to old CMakes, since
-		# new CMakes might be used to build projects designed to support older ones.
-		if(__jsoncpp_have_jsoncpplib)
-			get_property(__jsoncpp_interface_include_dirs TARGET jsoncpp_lib PROPERTY INTERFACE_INCLUDE_DIRECTORIES)
-			if(__jsoncpp_interface_include_dirs)
-				set(JSONCPP_IMPORTED_INCLUDE_DIRS "${__jsoncpp_interface_include_dirs}" CACHE INTERNAL "" FORCE)
-			endif()
-		endif()
-		if(TARGET jsoncpp_lib_static AND NOT JSONCPP_IMPORTED_INCLUDE_DIRS)
-			get_property(__jsoncpp_interface_include_dirs TARGET jsoncpp_lib_static PROPERTY INTERFACE_INCLUDE_DIRECTORIES)
-			if(__jsoncpp_interface_include_dirs)
-				set(JSONCPP_IMPORTED_INCLUDE_DIRS "${__jsoncpp_interface_include_dirs}" CACHE INTERNAL "" FORCE)
-			endif()
-		endif()
+	elseif(TARGET jsoncpp_lib_static)
+		# Well, only one variant, but we know for sure that it's static.
+		set(JSONCPP_IMPORTED_LIBRARY_STATIC jsoncpp_lib_static CACHE INTERNAL "" FORCE)
+		set(JSONCPP_IMPORTED_LIBRARY jsoncpp_lib_static CACHE INTERNAL "" FORCE)
+		set(JSONCPP_IMPORTED_LIBRARY_IS_SHARED FALSE CACHE INTERNAL "" FORCE)
 
-		# As a convenience...
-		if(TARGET jsoncpp_lib_static AND NOT TARGET jsoncpp_lib)
-			add_library(jsoncpp_lib INTERFACE)
-			target_link_libraries(jsoncpp_lib INTERFACE jsoncpp_lib_static)
+	elseif(__jsoncpp_have_jsoncpplib AND __jsoncpp_lib_type STREQUAL "STATIC_LIBRARY")
+		# We were able to figure out the mystery library is static!
+		set(JSONCPP_IMPORTED_LIBRARY_STATIC jsoncpp_lib CACHE INTERNAL "" FORCE)
+		set(JSONCPP_IMPORTED_LIBRARY jsoncpp_lib CACHE INTERNAL "" FORCE)
+		set(JSONCPP_IMPORTED_LIBRARY_IS_SHARED FALSE CACHE INTERNAL "" FORCE)
+
+	elseif(__jsoncpp_have_jsoncpplib AND __jsoncpp_lib_type STREQUAL "SHARED_LIBRARY")
+		# We were able to figure out the mystery library is shared!
+		set(JSONCPP_IMPORTED_LIBRARY_SHARED jsoncpp_lib CACHE INTERNAL "" FORCE)
+		set(JSONCPP_IMPORTED_LIBRARY jsoncpp_lib CACHE INTERNAL "" FORCE)
+		set(JSONCPP_IMPORTED_LIBRARY_IS_SHARED TRUE CACHE INTERNAL "" FORCE)
+
+	elseif(__jsoncpp_have_jsoncpplib)
+		# One variant, and we have no idea if this is just an old version or if
+		# this is shared based on the target name alone. Hmm.
+		set(JSONCPP_IMPORTED_LIBRARY jsoncpp_lib CACHE INTERNAL "" FORCE)
+	endif()
+
+	# Now, we need include directories. Can't just limit this to old CMakes, since
+	# new CMakes might be used to build projects designed to support older ones.
+	if(__jsoncpp_have_jsoncpplib)
+		get_property(__jsoncpp_interface_include_dirs TARGET jsoncpp_lib PROPERTY INTERFACE_INCLUDE_DIRECTORIES)
+		if(__jsoncpp_interface_include_dirs)
+			set(JSONCPP_IMPORTED_INCLUDE_DIRS "${__jsoncpp_interface_include_dirs}" CACHE INTERNAL "" FORCE)
 		endif()
 	endif()
+	if(TARGET jsoncpp_lib_static AND NOT JSONCPP_IMPORTED_INCLUDE_DIRS)
+		get_property(__jsoncpp_interface_include_dirs TARGET jsoncpp_lib_static PROPERTY INTERFACE_INCLUDE_DIRECTORIES)
+		if(__jsoncpp_interface_include_dirs)
+			set(JSONCPP_IMPORTED_INCLUDE_DIRS "${__jsoncpp_interface_include_dirs}" CACHE INTERNAL "" FORCE)
+		endif()
+	endif()
+endif()
+
+# As a convenience...
+if(TARGET jsoncpp_lib_static AND NOT TARGET jsoncpp_lib)
+	add_library(jsoncpp_lib INTERFACE)
+	target_link_libraries(jsoncpp_lib INTERFACE jsoncpp_lib_static)
 endif()
 
 if(JSONCPP_IMPORTED_LIBRARY)
@@ -146,6 +193,7 @@ if(JSONCPP_IMPORTED_LIBRARY)
 
 	find_package_handle_standard_args(JsonCpp
 		DEFAULT_MSG
+		jsoncpp_DIR
 		JSONCPP_IMPORTED_LIBRARY
 		JSONCPP_IMPORTED_INCLUDE_DIRS)
 endif()
@@ -172,6 +220,14 @@ if(JSONCPP_FOUND)
 			set_target_properties(JsonCpp::JsonCppStatic PROPERTIES
 				INTERFACE_INCLUDE_DIRECTORIES "${JSONCPP_IMPORTED_INCLUDE_DIRS}"
 				INTERFACE_LINK_LIBRARIES "${JSONCPP_IMPORTED_LIBRARY_STATIC}")
+		endif()
+
+		# Hide the stuff we didn't, and no longer, need.
+		if(NOT JsonCpp_LIBRARY)
+			unset(JsonCpp_LIBRARY CACHE)
+		endif()
+		if(NOT JsonCpp_INCLUDE_DIR)
+			unset(JsonCpp_INCLUDE_DIR CACHE)
 		endif()
 	endif()
 
@@ -308,10 +364,9 @@ if(NOT JSONCPP_FOUND)
 				add_library(JsonCpp::JsonCpp ALIAS jsoncpp_interface)
 			endif()
 		endif()
-		mark_as_advanced(JsonCpp_INCLUDE_DIR JsonCpp_LIBRARY)
 	endif()
 endif()
 
 if(JSONCPP_FOUND)
-	mark_as_advanced(jsoncpp_DIR)
+	mark_as_advanced(jsoncpp_DIR JsonCpp_INCLUDE_DIR JsonCpp_LIBRARY)
 endif()
