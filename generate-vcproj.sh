@@ -16,6 +16,12 @@ EOS
 
 function SourceFile()
 {
+if [ "x$2" == "xc" ]; then
+	COMPILEAS=1 # If we pass a second argument "c", then compile this as C
+else
+	COMPILEAS=2 # Otherwise force compilation as C++
+fi
+
 cat <<EOS
 			<File
 				RelativePath="${1}"
@@ -25,7 +31,7 @@ cat <<EOS
 					>
 					<Tool
 						Name="VCCLCompilerTool"
-						CompileAs="2"
+						CompileAs="${COMPILEAS}"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -33,13 +39,14 @@ cat <<EOS
 					>
 					<Tool
 						Name="VCCLCompilerTool"
-						CompileAs="2"
+						CompileAs="${COMPILEAS}"
 					/>
 				</FileConfiguration>
 			</File>
 EOS
 
 }
+
 function HeaderFile()
 {
 cat <<EOS
@@ -67,7 +74,12 @@ EOS
 
 	for src in $(ls vrpn_*.C vrpn_*.cpp | CleanFileList)
 	do
-		SourceFile $src
+		if (echo "$src" | grep -i "Local_HIDAPI" >/dev/null); then
+			# This is the HIDAPI source, which must be compiled as C or signal11 gets grumpy.
+			SourceFile $src c
+		else
+			SourceFile $src
+		fi
 	done
 
 cat <<EOS
