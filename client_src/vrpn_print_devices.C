@@ -88,7 +88,7 @@ handle_tracker_pos_quat(void *userdata, const vrpn_TRACKERCB t)
     // print this one.  If so, print and reset the count.
     if (++t_data->t_counts[t.sensor] >= tracker_stride) {
         t_data->t_counts[t.sensor] = 0;
-        printf("Tracker %s, sensor %d:\n        pos (%5.2f, %5.2f, %5.2f); "
+        printf("Tracker %s, sensor %d:\n     pos (%5.2f, %5.2f, %5.2f); "
                "quat (%5.2f, %5.2f, %5.2f, %5.2f)\n",
                t_data->t_name, t.sensor, t.pos[0], t.pos[1], t.pos[2],
                t.quat[0], t.quat[1], t.quat[2], t.quat[3]);
@@ -108,10 +108,11 @@ void VRPN_CALLBACK handle_tracker_vel(void *userdata, const vrpn_TRACKERVELCB t)
     // print this one.  If so, print and reset the count.
     if (++t_data->t_counts[t.sensor] >= tracker_stride) {
         t_data->t_counts[t.sensor] = 0;
-        printf("Tracker %s, sensor %d:\n        vel (%5.2f, %5.2f, %5.2f); "
-               "quatvel (%5.2f, %5.2f, %5.2f, %5.2f)\n",
+        printf("Tracker %s, sensor %d:\n     vel (%5.2f, %5.2f, %5.2f); "
+               "quatvel (%5.2f, %5.2f, %5.2f, %5.2f), dt %5.2f\n",
                t_data->t_name, t.sensor, t.vel[0], t.vel[1], t.vel[2],
-               t.vel_quat[0], t.vel_quat[1], t.vel_quat[2], t.vel_quat[3]);
+               t.vel_quat[0], t.vel_quat[1], t.vel_quat[2], t.vel_quat[3],
+               t.vel_quat_dt);
     }
 }
 
@@ -128,10 +129,11 @@ void VRPN_CALLBACK handle_tracker_acc(void *userdata, const vrpn_TRACKERACCCB t)
     // print this one.  If so, print and reset the count.
     if (++t_data->t_counts[t.sensor] >= tracker_stride) {
         t_data->t_counts[t.sensor] = 0;
-        printf("Tracker %s, sensor %d:\n        acc (%5.2f, %5.2f, %5.2f); "
-               "quatacc (%5.2f, %5.2f, %5.2f, %5.2f)\n",
+        printf("Tracker %s, sensor %d:\n     acc (%5.2f, %5.2f, %5.2f); "
+               "quatacc (%5.2f, %5.2f, %5.2f, %5.2f), dt %5.2f\n",
                t_data->t_name, t.sensor, t.acc[0], t.acc[1], t.acc[2],
-               t.acc_quat[0], t.acc_quat[1], t.acc_quat[2], t.acc_quat[3]);
+               t.acc_quat[0], t.acc_quat[1], t.acc_quat[2], t.acc_quat[3],
+               t.acc_quat_dt);
     }
 }
 
