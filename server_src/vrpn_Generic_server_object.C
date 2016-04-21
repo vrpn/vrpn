@@ -2044,6 +2044,30 @@ int vrpn_Generic_Server_Object::setup_Tracker_NULL(char *&pch, char *line,
     return 0;
 }
 
+int vrpn_Generic_Server_Object::setup_Tracker_Spin(char *&pch, char *line,
+  FILE * /*config_file*/)
+{
+
+  char s2[LINESIZE];
+  int i1;
+  float report, x, y, z, spin;
+
+  VRPN_CONFIG_NEXT();
+  // Get the arguments (class, tracker_name, sensors, rate)
+  if (sscanf(pch, "%511s%d%g%g%g%g%g", s2, &i1, &report, &x, &y, &z, &spin) != 7) {
+    fprintf(stderr, "Bad vrpn_Tracker_Spin line: %s\n", line);
+    return -1;
+  }
+
+  // Open the tracker
+  if (verbose)
+    printf("Opening vrpn_Tracker_Spin: %s with %d sensors, rate %f\n", s2,
+    i1, report);
+  _devices->add(new vrpn_Tracker_Spin(s2, connection, i1, report, x, y, z, spin));
+
+  return 0;
+}
+
 int vrpn_Generic_Server_Object::setup_Button_Python(char *&pch, char *line,
                                                     FILE * /*config_file*/)
 {
@@ -5644,6 +5668,9 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(
                 }
                 else if (VRPN_ISIT("vrpn_nVidia_shield_USB")) {
                   VRPN_CHECK(setup_nVidia_shield_USB);
+                }
+                else if (VRPN_ISIT("vrpn_Tracker_Spin")) {
+                  VRPN_CHECK(setup_Tracker_Spin);
                 }
                 else {                         // Never heard of it
                     sscanf(line, "%511s", s1); // Find out the class name
