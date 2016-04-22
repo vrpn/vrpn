@@ -1,5 +1,17 @@
 #!/bin/sh
 
+if which unix2dos > /dev/null 2>&1; then
+    UNIX2DOS=$(which unix2dos)
+elif which fromdos > /dev/null 2>&1 && which todos > /dev/null 2>&1; then
+    # wouldn't trust just looking for todos because that's also todo s
+    UNIX2DOS=$(which todos)
+elif which dos2unix > /dev/null 2>&1 && (echo "testing" | dos2unix --u2d)> /dev/null 2>&1; then
+    # Ah, we have one of the dos2unix binaries that takes the u2d parameter. Interesting.
+    UNIX2DOS="$(which dos2unix) --u2d"
+else
+    UNIX2DOS="echo Could not find a unix2dos-type tool so line endings might be wrong on "
+fi
+
 function IncludeDirectories()
 {
 cat <<'EOS'
@@ -528,8 +540,8 @@ EOS
 }
 
 GenerateVrpnVCPROJ > vrpn.vcproj
-dos2unix --u2d vrpn.vcproj
+$UNIX2DOS vrpn.vcproj
 
 GenerateVrpnDLLVCPROJ > vrpndll.vcproj
-dos2unix --u2d vrpndll.vcproj
+$UNIX2DOS vrpndll.vcproj
 # | sed 's|^\(.*\)$|<File RelativePath="\1"></File>|'
