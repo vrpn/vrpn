@@ -1300,7 +1300,7 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
-						CompileAs="2"
+						CompileAs="1"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -1308,7 +1308,7 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
-						CompileAs="2"
+						CompileAs="1"
 					/>
 				</FileConfiguration>
 			</File>
@@ -3003,6 +3003,10 @@
 			</File>
 			<File
 				RelativePath="vrpn_OneEuroFilter.h"
+				>
+			</File>
+			<File
+				RelativePath="vrpn_OwningPtr.h"
 				>
 			</File>
 			<File
