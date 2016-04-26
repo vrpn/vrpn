@@ -828,6 +828,7 @@ option_requires(VRPN_USE_FREESPACE
 	LIBFREESPACE_FOUND)
 
 if(VRPN_USE_FREESPACE)
+	configure_file(vrpn_Freespace.h.in "${CMAKE_CURRENT_BINARY_DIR}/vrpn_Freespace.h")
 	include_directories(${LIBFREESPACE_INCLUDE_DIRS})
 	list(APPEND SERVER_EXTRA_LIBS ${LIBFREESPACE_LIBRARIES})
 endif()
