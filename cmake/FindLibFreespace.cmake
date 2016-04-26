@@ -85,8 +85,8 @@ file(WRITE "${_libfreespace_version_srcfile}"
 
 int main() {
 	std::string version = freespace_version();
-	std::replace(begin(version), end(version), '.', ';');
-	std::cout << version << std::endl;
+	std::replace(version.begin(), version.end(), '.', ';');
+	std::cout << version << std::flush;
 	return 0;
 }
 "
@@ -99,11 +99,11 @@ try_run(_libfreespace_run_result _libfreespace_compile_result
 	#COMPILE_OUTPUT_VARIABLE _libfreespace_compiler_output
 	RUN_OUTPUT_VARIABLE LIBFREESPACE_VERSION)
 
-if(LIBFREESPACE_VERSION)
-	list(GET LIBFREESPACE_VERSION 0 LIBFREESPACE_MAJOR_VERSION)
-	list(GET LIBFREESPACE_VERSION 1 LIBFREESPACE_MINOR_VERSION)
-	list(GET LIBFREESPACE_VERSION 2 LIBFREESPACE_PATCH_VERSION)
-endif()
+#message(STATUS "libfreespace compiler output = ${_libfreespace_compiler_output}")
+list(APPEND LIBFREESPACE_VERSION 0 0 0) # in case one or more version segments are unused
+list(GET LIBFREESPACE_VERSION 0 LIBFREESPACE_MAJOR_VERSION)
+list(GET LIBFREESPACE_VERSION 1 LIBFREESPACE_MINOR_VERSION)
+list(GET LIBFREESPACE_VERSION 2 LIBFREESPACE_PATCH_VERSION)
 
 mark_as_advanced(LIBFREESPACE_INCLUDE_DIR
 	LIBFREESPACE_LIBRARY)
