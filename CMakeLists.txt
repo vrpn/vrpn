@@ -827,8 +827,8 @@ option_requires(VRPN_USE_FREESPACE
 	${DEFAULT_OFF_IF_SUBPROJECT}
 	LIBFREESPACE_FOUND)
 
+configure_file(vrpn_Freespace.h.in "${CMAKE_CURRENT_BINARY_DIR}/vrpn_Freespace.h")
 if(VRPN_USE_FREESPACE)
-	configure_file(vrpn_Freespace.h.in "${CMAKE_CURRENT_BINARY_DIR}/vrpn_Freespace.h")
 	include_directories(${LIBFREESPACE_INCLUDE_DIRS})
 	list(APPEND SERVER_EXTRA_LIBS ${LIBFREESPACE_LIBRARIES})
 endif()
