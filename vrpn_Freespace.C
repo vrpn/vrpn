@@ -5,7 +5,9 @@
 #include "quat.h"
 
 #include <freespace/freespace_codecs.h>
+#if FREESPACE_VERSION_GREATER_THAN(0,7,0)
 #include <freespace/freespace_util.h>
+#endif
 
 #include <cstring>
 
