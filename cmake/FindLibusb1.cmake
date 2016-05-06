@@ -67,6 +67,7 @@ find_path(LIBUSB1_INCLUDE_DIR
 
 find_library(LIBUSB1_LIBRARY
 	NAMES
+	libusb-1.0
 	usb-1.0
 	PATHS
 	${PC_LIBUSB1_LIBRARY_DIRS}
