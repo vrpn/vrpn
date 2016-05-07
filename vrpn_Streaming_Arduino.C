@@ -213,7 +213,7 @@ int vrpn_Streaming_Arduino::get_report(void)
       // seconds per character (a little under a tenth of a milli-
       // second).  So we get about 1ms of delay for every 10
       // characters.
-      long offset_usec = static_cast<long>(87 * m_buffer.size());
+      int offset_usec = static_cast<int>(87 * m_buffer.size());
       struct timeval offset = { 0 , offset_usec };
       m_timestamp = vrpn_TimevalDiff(read_time, offset);
 
