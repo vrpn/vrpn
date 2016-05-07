@@ -14,10 +14,10 @@
 
 #include "vrpn_Tracker_NovintFalcon.h"
 
-#if defined(VRPN_USE_LIBNIFALCON)
-#include "boost/array.hpp"
-#include "boost/ptr_container/ptr_vector.hpp"
-#include "boost/shared_ptr.hpp"
+#ifdef VRPN_USE_LIBNIFALCON
+#include <vector>
+#include <array>
+#include <memory>
 #include "falcon/core/FalconDevice.h"
 #include "falcon/firmware/FalconFirmwareNovintSDK.h"
 #include "falcon/grip/FalconGripFourButton.h"
@@ -37,7 +37,7 @@
 /**************************************************************************/
 
 // save us some typing
-typedef boost::array<double, 3> d_vector;
+typedef std::array<double, 3> d_vector;
 
 /// allow to add two vectors
 static d_vector operator+(const d_vector &a,const d_vector &b)
@@ -176,7 +176,7 @@ public:
 
         int i;
         bool message = false;
-        boost::shared_ptr<libnifalcon::FalconFirmware> f;
+        std::shared_ptr<libnifalcon::FalconFirmware> f;
         f=m_falconDevice->getFalconFirmware();
         for (i=0; !m_falconDevice->runIOLoop() && i < FALCON_NUM_RETRIES; ++i) continue;
         while(1) { // XXX: add timeout to declare device dead after a while.
@@ -407,7 +407,7 @@ public:
     /// calculate the effect force
     d_vector calcForce(const d_vector &pos) {
         d_vector force, offset;
-        force.assign(0.0);
+        force.fill(0.0);
         if (m_active) {
             // apply damping to effect values
             const double mix = 1.0 - m_damping;
@@ -469,7 +469,7 @@ static int VRPN_CALLBACK handle_forcefield_change_message(void *userdata, vrpn_H
 /// class to collect all force generating objects.
 class vrpn_NovintFalcon_ForceObjects {
 public:
-    boost::ptr_vector<ForceFieldEffect> m_FFEffects;
+    std::vector<ForceFieldEffect*> m_FFEffects;
 
 protected:
     d_vector m_curforce; //< collected force value
@@ -479,8 +479,8 @@ protected:
 public:
     /// constructor
     vrpn_NovintFalcon_ForceObjects() {
-            m_curforce.assign(0.0);
-            m_curpos.assign(0.0);
+            m_curforce.fill(0.0);
+            m_curpos.fill(0.0);
     };
     /// destructor
     ~vrpn_NovintFalcon_ForceObjects() {};
@@ -498,7 +498,7 @@ public:
         // force field objects
         int nobj = m_FFEffects.size();
         for (i=0; i<nobj; ++i) {
-            m_curforce = m_curforce + m_FFEffects[i].calcForce (m_curpos);
+            m_curforce = m_curforce + m_FFEffects[i]->calcForce (m_curpos);
         }
         return m_curforce;
     };
@@ -687,8 +687,8 @@ int vrpn_Tracker_NovintFalcon::update_forcefield_effect(vrpn_HANDLERPARAM p)
     decode_forcefield(p.buffer, p.payload_len, center, force, jacobian, &radius);
     // XXX: only one force field effect. sufficient for VMD.
     // we have just updated our published position and can use that
-    m_obj->m_FFEffects[0].start();
-    m_obj->m_FFEffects[0].setForce(center, force, jacobian, radius);
+    m_obj->m_FFEffects[0]->start();
+    m_obj->m_FFEffects[0]->setForce(center, force, jacobian, radius);
     return 0;
 }
 
