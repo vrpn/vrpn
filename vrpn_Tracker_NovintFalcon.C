@@ -235,30 +235,12 @@ public:
                        return false;
 
         // we have no orientation of the effector.
-        // so we just pick one. to tell them apart
-        // more easily, we just give each a different
-        // orientation.
+        // so we just pick the identity quaternion.
         if (quat) {
-            switch (m_flags & MASK_DEVICEIDX) {
-              case 0:
-                  quat[0] =  0.0;
-                  quat[1] =  0.0;
-                  quat[2] =  1.0;
-                  quat[3] =  0.0;
-                  break;
-              case 1:
-                  quat[0] =  1.0;
-                  quat[1] =  0.0;
-                  quat[2] =  0.0;
-                  quat[3] =  0.0;
-                  break;
-              default:
-                  quat[0] =  1.0;
-                  quat[1] =  0.0;
-                  quat[2] =  0.0;
-                  quat[3] =  0.0;
-                  break;
-            }
+            quat[0] =  0.0;
+            quat[1] =  0.0;
+            quat[2] =  0.0;
+            quat[3] =  1.0;
         }
 
         if (vel_quat) {
