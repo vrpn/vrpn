@@ -113,6 +113,14 @@ public:
         fprintf(stderr, "Closing Falcon device %d.\n", m_flags & MASK_DEVICEIDX);
 #endif
         if (m_falconDevice) {
+            std::shared_ptr<libnifalcon::FalconFirmware> f;
+            f=m_falconDevice->getFalconFirmware();
+            if(f) {
+                f->setLEDStatus(libnifalcon::FalconFirmware::RED_LED |
+                                libnifalcon::FalconFirmware::BLUE_LED |
+                                libnifalcon::FalconFirmware::GREEN_LED);
+                for (int i=0; !m_falconDevice->runIOLoop() && i < FALCON_NUM_RETRIES; ++i) continue;
+            }
             m_falconDevice->close();
         }
         delete m_falconDevice;
