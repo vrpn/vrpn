@@ -914,7 +914,13 @@ endif()
 
 # This will only work on compilers that support C++-11.
 # We could check for this and turn it on by default.
-option(VRPN_USE_STD_CHRONO "Use the std::chrono class for time" OFF)
+set(VRPN_CHRONO_DEFAULT OFF)
+if(MSVC AND MSVC_VERSION GREATER 1800)
+	# On MSVC 2015 and newer, std::chrono provides the best time implementation.
+	set(VRPN_CHRONO_DEFAULT ON)
+endif()
+
+option(VRPN_USE_STD_CHRONO "Use the std::chrono class for time" ${VRPN_CHRONO_DEFAULT})
 
 option(VRPN_USE_STATIC_ASSERTIONS "Use some compile-time assertions" ON)
 option(VRPN_BUILD_EXTRA_COMPILER_WARNINGS
