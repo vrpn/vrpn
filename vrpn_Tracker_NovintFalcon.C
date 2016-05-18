@@ -150,14 +150,11 @@ public:
             int i;
             // 10 chances to load the firmware.
             for (i=0; i<FALCON_NUM_RETRIES; ++i) {
-                if(!m_falconDevice->getFalconFirmware()->loadFirmware(false, libnifalcon::NOVINT_FALCON_NVENT_FIRMWARE_SIZE, const_cast<uint8_t*>(libnifalcon::NOVINT_FALCON_NVENT_FIRMWARE)))
+                if(!m_falconDevice->getFalconFirmware()->loadFirmware(true, libnifalcon::NOVINT_FALCON_NVENT_FIRMWARE_SIZE, const_cast<uint8_t*>(libnifalcon::NOVINT_FALCON_NVENT_FIRMWARE)))
                 {
                     fprintf(stderr, "Firmware loading attempt %d failed.\n", i);
-                    // Completely close and reopen device and try again
-                    m_falconDevice->close();
-                    if(!m_falconDevice->open(devidx))
-                    {
-                        fprintf(stderr, "Cannot open falcon device %d - Lib Error Code: %d - Device Error Code: %d\n",
+                    if(i==FALCON_NUM_RETRIES-1){
+                        fprintf(stderr, "Cannot load falcon device %d firmware - Device Error Code: %d - Comm Lib Error Code: %d\n",
                                 devidx, m_falconDevice->getErrorCode(), m_falconDevice->getFalconComm()->getDeviceErrorCode());
                         return false;
                     }
@@ -170,6 +167,7 @@ public:
             }
         } else {
 #ifdef VERBOSE
+
             fprintf(stderr, "Falcon Firmware already loaded.\n");
 #endif
         }
@@ -721,9 +719,6 @@ void vrpn_Tracker_NovintFalcon::mainloop()
               break;
 
           case vrpn_TRACKER_FAIL:
-              fprintf(stderr, "NovintFalcon #%d failed, trying to reset (Try power cycle if more than 4 attempts made)\n",
-                  vrpn_NovintFalcon_Device::MASK_DEVICEIDX & m_devflags);
-              status = vrpn_TRACKER_RESETTING;
               break;
 
           default:
