@@ -794,9 +794,11 @@ option(VRPN_USE_PDI
 if(VRPN_USE_PDI)
 	find_path(POLHEMUS_PDI_DIR NAMES "Inc" "Lib" PATH_SUFFIXES "PDI_110" "PDI_90" PATHS "C:/Program Files (x86)/Polhemus/PDI" NO_DEFAULT_PATH)
 	include_directories(${POLHEMUS_PDI_DIR}/Inc)
-	list(APPEND
-		SERVER_EXTRA_LIBS
-		${POLHEMUS_PDI_DIR}/Lib/Win32/PDI.lib)
+	if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+		list(APPEND SERVER_EXTRA_LIBS "${POLHEMUS_PDI_DIR}/Lib/x64/PDI.lib")
+	else()
+		list(APPEND SERVER_EXTRA_LIBS "${POLHEMUS_PDI_DIR}/Lib/Win32/PDI.lib")
+	endif()
 endif()
 
 ###
