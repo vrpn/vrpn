@@ -1,0 +1,26 @@
+cmake_minimum_required(VERSION 2.8)
+ 
+PROJECT(embedded)
+
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+ 
+FIND_PACKAGE(VRPN REQUIRED)
+FIND_PACKAGE(quatlib REQUIRED)
+
+INCLUDE_DIRECTORIES(
+  ${QUATLIB_INCLUDE_DIR}
+  ${VRPN_INCLUDE_DIR}
+)
+
+# support for out-of-source build
+INCLUDE_DIRECTORIES(
+  ${CMAKE_CURRENT_BINARY_DIR}
+  ${CMAKE_CURRENT_SOURCE_DIR}
+)
+
+ADD_EXECUTABLE( embedded_server embedded_server.cpp )
+
+TARGET_LINK_LIBRARIES( embedded_server
+    ${VRPN_SERVER_LIBRARIES}
+    ${QUATLIB_LIBRARIES}
+)
