@@ -117,6 +117,10 @@ public:
 // interpreting them as inertial-measurement report vectors.  The two required
 // inputs are an acceleration vector and a rotational velocity measurement.  There
 // is an optional magnetometer.
+//  The accelerometer scale parameter should be set to produce values that
+// are fractions of gravity.  The rotational input scale parameters should
+// be set to produce values that are in radians/second.  The magnetometer
+// scale should be set to produce a unit normal vector.
 //  NOTE: The coordinate system of the HMD has X to the right as the device
 // is worn, Y facing up, and Z pointing out the back of the wearer's head.
 //  The time reported by is as of the last report received from any device.
