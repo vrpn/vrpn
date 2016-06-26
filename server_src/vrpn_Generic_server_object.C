@@ -2245,10 +2245,10 @@ int vrpn_Generic_Server_Object::setup_StreamingArduino(char *&pch, char *line,
                                            FILE * /*config_file*/)
 {
     char s2[LINESIZE], s3[LINESIZE];
-    int i1;
+    int numAna,baud;
     VRPN_CONFIG_NEXT();
-    // Get the arguments (class, tng3_name, port, numana)
-    if (sscanf(pch, "%511s%511s%d", s2, s3, &i1) != 3) {
+    // Get the arguments (class, tng3_name, port, baud, numana)
+    if (sscanf(pch, "%511s%511s%d%d", s2, s3, &baud, &numAna) != 4) {
         fprintf(stderr, "Bad vrpn_Streaming_Arduino line: %s\n", line);
         return -1;
     }
@@ -2256,8 +2256,8 @@ int vrpn_Generic_Server_Object::setup_StreamingArduino(char *&pch, char *line,
     if (verbose)
         printf("Opening vrpn_Streaming_Arduino: %s on port %s, baud %d, "
                " %d analog\n",
-               s2, s3, 115200, i1);
-    _devices->add(new vrpn_Streaming_Arduino(s2, connection, s3, i1, 115200));
+               s2, s3, baud, numAna);
+    _devices->add(new vrpn_Streaming_Arduino(s2, connection, s3, numAna, baud));
     return 0;
 }
 
