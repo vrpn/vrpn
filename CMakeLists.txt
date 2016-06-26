@@ -792,10 +792,13 @@ option(VRPN_USE_PDI
 	"Build with flags to enable the use of Polhemus DVI library."
 	OFF)
 if(VRPN_USE_PDI)
-	include_directories("C:/Program Files (x86)/Polhemus/PDI/PDI_90/Inc")
-	list(APPEND
-		SERVER_EXTRA_LIBS
-		"C:/Program Files (x86)/Polhemus/PDI/PDI_90/Lib/Win32/PDI.lib")
+	find_path(POLHEMUS_PDI_DIR NAMES "Inc" "Lib" PATH_SUFFIXES "PDI_110" "PDI_90" PATHS "C:/Program Files (x86)/Polhemus/PDI" NO_DEFAULT_PATH)
+	include_directories(${POLHEMUS_PDI_DIR}/Inc)
+	if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+		list(APPEND SERVER_EXTRA_LIBS "${POLHEMUS_PDI_DIR}/Lib/x64/PDI.lib")
+	else()
+		list(APPEND SERVER_EXTRA_LIBS "${POLHEMUS_PDI_DIR}/Lib/Win32/PDI.lib")
+	endif()
 endif()
 
 ###
