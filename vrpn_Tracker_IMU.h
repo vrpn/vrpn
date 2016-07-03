@@ -118,7 +118,7 @@ public:
 // inputs are an acceleration vector and a rotational velocity measurement.  There
 // is an optional magnetometer.
 //  The accelerometer scale parameter should be set to produce values that
-// are fractions of gravity.  The rotational input scale parameters should
+// are in meters/second/second.  The rotational input scale parameters should
 // be set to produce values that are in radians/second.  The magnetometer
 // scale should be set to produce a unit normal vector.
 //  NOTE: The coordinate system of the HMD has X to the right as the device
