@@ -69,10 +69,12 @@ vrpn_Tracker_Colibri::vrpn_Tracker_Colibri(const char* name, vrpn_Connection* c,
             printf("%d: %s (FW %d.%.3d)\n", i, info.ID, info.FW_ver/1000, info.FW_ver%1000);
         }
 
-        result = TC_QuickConfig(nw, TCS_ORIENT | (report_a_w ? TCS_ACC|TCS_GYR : 0));
-        if (result != TCR_SUCCESS) {
-            printf("Colibri sensor error.\n");
-            break;
+        if (!path) { // No configuration file
+            result = TC_QuickConfig(nw, TCS_ORIENT | (report_a_w ? TCS_ACC|TCS_GYR : 0));
+            if (result != TCR_SUCCESS) {
+                printf("Colibri sensor error.\n");
+                break;
+            }
         }
 
         // Start the devices
