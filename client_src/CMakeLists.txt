@@ -26,7 +26,7 @@ if(VRPN_BUILD_CLIENTS)
 	find_package(OpenGL)
 
 	set(CLIENTS_SOURCES
-    vrpn_average_analogs.C
+	vrpn_average_analogs.C
 		vrpn_print_devices.C
 		vrpn_print_performance.C
 		vrpn_print_messages.C

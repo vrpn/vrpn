@@ -17,67 +17,67 @@
 # http://www.boost.org/LICENSE_1_0.txt)
 
 if(MINGW AND NOT MINGWSEARCH_COMPLETED)
-    ###
-    # Helper function
-    ###
-    function(_mingwsearch_conditional_add _var _path)
-        #message(STATUS "conditional add to ${_var}: ${_path}")
-        if(("${_path}" MATCHES "registry") OR (NOT IS_DIRECTORY "${_path}"))
-            # Path invalid - do not add
-            return()
-        endif()
-        list(FIND ${_var} "${_path}" _idx)
-        if(_idx GREATER -1)
-            # Path already in list - do not add
-            return()
-        endif()
-        # Not yet in the list, so we'll add it
-        list(APPEND ${_var} "${_path}")
-        set(${_var} ${${_var}} PARENT_SCOPE)
-    endfunction()
+	###
+	# Helper function
+	###
+	function(_mingwsearch_conditional_add _var _path)
+		#message(STATUS "conditional add to ${_var}: ${_path}")
+		if(("${_path}" MATCHES "registry") OR (NOT IS_DIRECTORY "${_path}"))
+			# Path invalid - do not add
+			return()
+		endif()
+		list(FIND ${_var} "${_path}" _idx)
+		if(_idx GREATER -1)
+			# Path already in list - do not add
+			return()
+		endif()
+		# Not yet in the list, so we'll add it
+		list(APPEND ${_var} "${_path}")
+		set(${_var} ${${_var}} PARENT_SCOPE)
+	endfunction()
 
-    # Clear the working variables.
-    set(MINGWSEARCH_INCLUDE_DIRS_WORK)
-    set(MINGWSEARCH_LIBRARY_DIRS_WORK)
-    set(_mingw_target_triple)
+	# Clear the working variables.
+	set(MINGWSEARCH_INCLUDE_DIRS_WORK)
+	set(MINGWSEARCH_LIBRARY_DIRS_WORK)
+	set(_mingw_target_triple)
 
-    # Try to find the string like x86_64-w64-mingw32 by parsing the implicit link directories...
-    # TODO this is a hack that either should be resolved in CMake or in MSYS2's package of CMake.
-    foreach(_link_dir ${CMAKE_CXX_IMPLICIT_LINK_DIRECTORIES})
-        _mingwsearch_conditional_add(MINGWSEARCH_LIBRARY_DIRS_WORK "${_link_dir}")
-        if("${_link_dir}" MATCHES "/([^/]*-mingw32)/lib")
-            set(_mingw_target_triple ${CMAKE_MATCH_1})
-            get_filename_component(_mingw_internal_basedir "${_link_dir}" PATH)
-            # Try adding the parallel include dir
-            _mingwsearch_conditional_add(MINGWSEARCH_INCLUDE_DIRS_WORK "${_mingw_internal_basedir}/include")
-            if(NOT CMAKE_CROSSCOMPILING)
-                # Try going up a level, since the directory with the target is usually a sibling to the main prefix.
-                get_filename_component(_mingw_main_basedir_candidate "${_mingw_internal_basedir}/.." ABSOLUTE)
-                if(NOT ("${_mingw_main_basedir_candidate}" STREQUAL "${_mingw_internal_basedir}"))
-                    # If we could go up a level, add that include dir too.
-                    _mingwsearch_conditional_add(MINGWSEARCH_INCLUDE_DIRS_WORK "${_mingw_main_basedir_candidate}/include")
-                endif()
-            endif()
-        endif()
-    endforeach()
+	# Try to find the string like x86_64-w64-mingw32 by parsing the implicit link directories...
+	# TODO this is a hack that either should be resolved in CMake or in MSYS2's package of CMake.
+	foreach(_link_dir ${CMAKE_CXX_IMPLICIT_LINK_DIRECTORIES})
+		_mingwsearch_conditional_add(MINGWSEARCH_LIBRARY_DIRS_WORK "${_link_dir}")
+		if("${_link_dir}" MATCHES "/([^/]*-mingw32)/lib")
+			set(_mingw_target_triple ${CMAKE_MATCH_1})
+			get_filename_component(_mingw_internal_basedir "${_link_dir}" PATH)
+			# Try adding the parallel include dir
+			_mingwsearch_conditional_add(MINGWSEARCH_INCLUDE_DIRS_WORK "${_mingw_internal_basedir}/include")
+			if(NOT CMAKE_CROSSCOMPILING)
+				# Try going up a level, since the directory with the target is usually a sibling to the main prefix.
+				get_filename_component(_mingw_main_basedir_candidate "${_mingw_internal_basedir}/.." ABSOLUTE)
+				if(NOT ("${_mingw_main_basedir_candidate}" STREQUAL "${_mingw_internal_basedir}"))
+					# If we could go up a level, add that include dir too.
+					_mingwsearch_conditional_add(MINGWSEARCH_INCLUDE_DIRS_WORK "${_mingw_main_basedir_candidate}/include")
+				endif()
+			endif()
+		endif()
+	endforeach()
 
-    ###
-    # Output results.
-    ###
-    if(MINGWSEARCH_INCLUDE_DIRS_WORK)
-        set(MINGWSEARCH_INCLUDE_DIRS "${MINGWSEARCH_INCLUDE_DIRS_WORK}" CACHE INTERNAL "" FORCE)
-        #message(STATUS "MINGWSEARCH_INCLUDE_DIRS ${MINGWSEARCH_INCLUDE_DIRS}")
-    endif()
+	###
+	# Output results.
+	###
+	if(MINGWSEARCH_INCLUDE_DIRS_WORK)
+		set(MINGWSEARCH_INCLUDE_DIRS "${MINGWSEARCH_INCLUDE_DIRS_WORK}" CACHE INTERNAL "" FORCE)
+		#message(STATUS "MINGWSEARCH_INCLUDE_DIRS ${MINGWSEARCH_INCLUDE_DIRS}")
+	endif()
 
-    if(MINGWSEARCH_LIBRARY_DIRS_WORK)
-        set(MINGWSEARCH_LIBRARY_DIRS "${MINGWSEARCH_LIBRARY_DIRS_WORK}" CACHE INTERNAL "" FORCE)
-        #message(STATUS "MINGWSEARCH_LIBRARY_DIRS ${MINGWSEARCH_LIBRARY_DIRS}")
-    endif()
+	if(MINGWSEARCH_LIBRARY_DIRS_WORK)
+		set(MINGWSEARCH_LIBRARY_DIRS "${MINGWSEARCH_LIBRARY_DIRS_WORK}" CACHE INTERNAL "" FORCE)
+		#message(STATUS "MINGWSEARCH_LIBRARY_DIRS ${MINGWSEARCH_LIBRARY_DIRS}")
+	endif()
 
-    if(_mingw_target_triple)
-        set(MINGWSEARCH_TARGET_TRIPLE ${_mingw_target_triple} CACHE INTERNAL "" FORCE)
-        #message(STATUS "MINGWSEARCH_TARGET_TRIPLE ${MINGWSEARCH_TARGET_TRIPLE}")
-    endif()
+	if(_mingw_target_triple)
+		set(MINGWSEARCH_TARGET_TRIPLE ${_mingw_target_triple} CACHE INTERNAL "" FORCE)
+		#message(STATUS "MINGWSEARCH_TARGET_TRIPLE ${MINGWSEARCH_TARGET_TRIPLE}")
+	endif()
 
-    set(MINGWSEARCH_COMPLETED TRUE CACHE INTERNAL "" FORCE)
+	set(MINGWSEARCH_COMPLETED TRUE CACHE INTERNAL "" FORCE)
 endif()
