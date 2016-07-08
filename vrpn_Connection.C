@@ -6145,8 +6145,8 @@ vrpn_Connection_IP::vrpn_Connection_IP(
         // Since we are doing a TCP connection, tell the endpoint not to try and
         // use any other communication mechanism to get to the server.
         endpoint->d_tcp_only = vrpn_TRUE;
-
         endpoint->status = TRYING_TO_CONNECT;
+        connectionStatus = TRYING_TO_CONNECT;
 
 #ifdef VERBOSE
         printf("vrpn_Connection_IP: Getting the TCP port to connect with.\n");
@@ -6164,7 +6164,6 @@ vrpn_Connection_IP::vrpn_Connection_IP(
             return;
         }
 
-        connectionStatus = TRYING_TO_CONNECT;
         endpoint->status = TRYING_TO_CONNECT;
 
         if (endpoint->setup_new_connection()) {
