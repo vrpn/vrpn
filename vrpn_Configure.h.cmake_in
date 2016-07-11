@@ -120,6 +120,10 @@
 // paths.)
 #cmakedefine VRPN_USE_GHOST_31
 
+//------------------------
+// Instructs vrpn to use libi2c-dev.
+#cmakedefine VRPN_USE_I2CDEV
+
 //-----------------------
 // Instructs VRPN to use the high-performance timer code on
 // Windows, rather than the default clock which has an infrequent
