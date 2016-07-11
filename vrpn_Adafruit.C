@@ -4,6 +4,7 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <stdio.h>
+#include <sys/ioctl.h>
 
 #ifdef VRPN_USE_I2CDEV
 
@@ -44,7 +45,7 @@ vrpn_Adafruit_10DOF_Raspberry_pi::vrpn_Adafruit_10DOF_Raspberry_pi(
   // Set device parameters.
   d_read_interval_seconds = read_interval_seconds;
   num_channel = 11;
-  for (size_t i = 0; i < num_channel; i++) {
+  for (vrpn_int32 i = 0; i < num_channel; i++) {
     channel[i] = 0;
     last[i] = channel[i];
   }
