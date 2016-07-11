@@ -7,12 +7,32 @@
 
 #ifdef VRPN_USE_I2CDEV
 
+// Developed using information from
+// http://ozzmaker.com/guide-to-interfacing-a-gyro-and-accelerometer-with-a-raspberry-pi
+
+// Constants that describe the device
+#define LSM303_CTRL_REG1_A (0x20)
+#define LSM303_CTRL_REG4_A (0x23)
+
+#define GYRO_ADDRESS (0x6b)
+#define ACC_ADDRESS (0x19)
+#define MAG_ADDRESS (0x1e)
+
+// Helper functions
 static bool select_device(int file, int addr)
 {
   if (ioctl(file, I2C_SLAVE, addr) < 0) {
     return false;
   }
   return true;
+}
+
+bool write_acc_register(int file, vrpn_uint8 reg, vrpn_uint8 value)
+{
+  if (!select_device(file, ACC_ADDRESS)) {
+    return false;
+  }
+  return i2c_smbus_write_byte_data(file, reg, value) >= 0;
 }
 
 vrpn_Adafruit_10DOF_Raspberry_pi::vrpn_Adafruit_10DOF_Raspberry_pi(
@@ -29,6 +49,7 @@ vrpn_Adafruit_10DOF_Raspberry_pi::vrpn_Adafruit_10DOF_Raspberry_pi(
     last[i] = channel[i];
   }
 
+  //--------------------------------------------------------
   // Open the file we're going to use to talk with the device.
   d_i2c_dev = open(device.c_str(), O_RDWR);
   if (d_i2c_dev < 0) {
@@ -38,8 +59,29 @@ vrpn_Adafruit_10DOF_Raspberry_pi::vrpn_Adafruit_10DOF_Raspberry_pi(
     return;
   }
 
+  //--------------------------------------------------------
   // Configure the sensors on the device.
 
+  // Enable the accelerometer at a rate consistent with our
+  // read rate.
+  // @todo For now, 100 Hz data rate
+  if (!write_acc_register(d_i2c_dev, LSM303_CTRL_REG1_A, 0b01010111)) {
+    fprintf(stderr,
+      "vrpn_Adafruit_10DOF_Raspberry_pi::vrpn_Adafruit_10DOF_Raspberry_pi(): "
+      "Cannot configure accelerometer on %s", device.c_str());
+    close(d_i2c_dev);
+    d_i2c_dev = -1;
+  }
+  // +/- 8G full scale, FS = 10 on HLHC, high resolution output mode
+  if (!write_acc_register(d_i2c_dev, LSM303_CTRL_REG4_A, 0b00101000)) {
+    fprintf(stderr,
+      "vrpn_Adafruit_10DOF_Raspberry_pi::vrpn_Adafruit_10DOF_Raspberry_pi(): "
+      "Cannot configure accelerometer range on %s", device.c_str());
+    close(d_i2c_dev);
+    d_i2c_dev = -1;
+  }
+
+  //--------------------------------------------------------
   // Record the time we opened the device.
   vrpn_gettimeofday(&timestamp, NULL);
 }
