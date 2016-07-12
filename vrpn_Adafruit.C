@@ -14,6 +14,8 @@
 // Constants that describe the device
 #define LSM303_CTRL_REG1_A (0x20)
 #define LSM303_CTRL_REG4_A (0x23)
+#define L3G_CTRL_REG1 (0x20)
+#define L3G_CTRL_REG4 (0x23)
 
 #define GYRO_ADDRESS (0x6b)
 #define ACC_ADDRESS (0x19)
@@ -32,6 +34,15 @@ bool write_acc_register(int file, vrpn_uint8 reg, vrpn_uint8 value)
 {
   if (!select_device(file, ACC_ADDRESS)) {
     fprintf(stderr,"write_acc_register(): Cannot select device\n");
+    return false;
+  }
+  return i2c_smbus_write_byte_data(file, reg, value) >= 0;
+}
+
+bool write_gyro_register(int file, vrpn_uint8 reg, vrpn_uint8 value)
+{
+  if (!select_device(file, GYRO_ADDRESS)) {
+    fprintf(stderr,"write_gyro_register(): Cannot select device\n");
     return false;
   }
   return i2c_smbus_write_byte_data(file, reg, value) >= 0;
@@ -73,7 +84,7 @@ vrpn_Adafruit_10DOF::vrpn_Adafruit_10DOF(
       "Cannot configure accelerometer on %s\n", device.c_str());
     close(d_i2c_dev);
     d_i2c_dev = -1;
-    return;
+//    return;
   }
   // +/- 8G full scale, FS = 10 on HLHC, high resolution output mode
   if (!write_acc_register(d_i2c_dev, LSM303_CTRL_REG4_A, 0b00101000)) {
@@ -82,7 +93,26 @@ vrpn_Adafruit_10DOF::vrpn_Adafruit_10DOF(
       "Cannot configure accelerometer range on %s\n", device.c_str());
     close(d_i2c_dev);
     d_i2c_dev = -1;
-    return;
+//    return;
+  }
+
+  // Enable the gyro.
+  if (!write_gyro_register(d_i2c_dev, L3G_CTRL_REG1, 0b01010111)) {
+    fprintf(stderr,
+      "vrpn_Adafruit_10DOF::vrpn_Adafruit_10DOF(): "
+      "Cannot configure gyro on %s\n", device.c_str());
+    close(d_i2c_dev);
+    d_i2c_dev = -1;
+//    return;
+  }
+  // Continuous update, 2000 dps full scale
+  if (!write_acc_register(d_i2c_dev, L3G_CTRL_REG4, 0b00110000)) {
+    fprintf(stderr,
+      "vrpn_Adafruit_10DOF::vrpn_Adafruit_10DOF(): "
+      "Cannot configure gyro range on %s\n", device.c_str());
+    close(d_i2c_dev);
+    d_i2c_dev = -1;
+//    return;
   }
 
   //--------------------------------------------------------
