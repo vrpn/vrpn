@@ -9,6 +9,7 @@
 #include "vrpn_3DMicroscribe.h"
 #include "vrpn_3Space.h"     // for vrpn_Tracker_3Space
 #include "vrpn_5DT16.h"      // for vrpn_5dt16, etc
+#include "vrpn_Adafruit.h"   // for vrpn_Adafruit_10DOF
 #include "vrpn_ADBox.h"      // for vrpn_ADBox
 #include "vrpn_Analog_5dt.h" // for vrpn_5dt
 #include "vrpn_Analog_5dtUSB.h"
@@ -5101,6 +5102,32 @@ int vrpn_Generic_Server_Object::setup_nVidia_shield_USB(char *&pch, char *line, 
   return 0; // successful completion
 }
 
+int vrpn_Generic_Server_Object::setup_Adafruit_10DOF(char *&pch, char *line, FILE *)
+{
+  char vrpnName[LINESIZE], devName[LINESIZE];
+  double interval;
+
+  VRPN_CONFIG_NEXT();
+  int ret = sscanf(pch, "%511s%511s%lg", vrpnName, devName, &interval);
+  if (ret != 3) {
+    fprintf(stderr, "Bad Adafruit_10DOF line: %s\n", line);
+    return -1;
+  }
+
+  // Open the shield
+  if (verbose) {
+    printf("Opening Adafruit_10DOF\n");
+  }
+
+#ifdef VRPN_USE_I2CDEV
+  _devices->add(new vrpn_Adafruit_10DOF(vrpnName, connection, devName, interval));
+#else
+  fprintf(stderr,
+    "Adafruit_10DOF driver only compiled in when VRPN_USE_I2CDEV is defined!\n");
+#endif
+  return 0; // successful completion
+}
+
 #undef VRPN_CONFIG_NEXT
 
 vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(
@@ -5674,6 +5701,9 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(
                 }
                 else if (VRPN_ISIT("vrpn_Tracker_Spin")) {
                   VRPN_CHECK(setup_Tracker_Spin);
+                }
+                else if (VRPN_ISIT("vrpn_Adafruit_10DOF")) {
+                  VRPN_CHECK(setup_Adafruit_10DOF);
                 }
                 else {                         // Never heard of it
                     sscanf(line, "%511s", s1); // Find out the class name
