@@ -6,14 +6,14 @@
 
 #ifdef VRPN_USE_I2CDEV
 
-class vrpn_Adafruit_10DOF_Raspberry_pi : public vrpn_Analog_Server
+class vrpn_Adafruit_10DOF: public vrpn_Analog_Server
 {
 public:
-  vrpn_Adafruit_10DOF_Raspberry_pi(const std::string &name,
+  vrpn_Adafruit_10DOF(const std::string &name,
     vrpn_Connection *c,
     const std::string &device = "/dev/i2c-1",
-    double read_interval_seconds = 5e-5);
-  ~vrpn_Adafruit_10DOF_Raspberry_pi();
+    double read_interval_seconds = 10e-3);
+  ~vrpn_Adafruit_10DOF();
 
   virtual void mainloop();
 

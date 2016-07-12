@@ -31,12 +31,13 @@ static bool select_device(int file, int addr)
 bool write_acc_register(int file, vrpn_uint8 reg, vrpn_uint8 value)
 {
   if (!select_device(file, ACC_ADDRESS)) {
+    fprintf(stderr,"write_acc_register(): Cannot select device\n");
     return false;
   }
   return i2c_smbus_write_byte_data(file, reg, value) >= 0;
 }
 
-vrpn_Adafruit_10DOF_Raspberry_pi::vrpn_Adafruit_10DOF_Raspberry_pi(
+vrpn_Adafruit_10DOF::vrpn_Adafruit_10DOF(
     const std::string &name, vrpn_Connection *c,
     const std::string &device,
     double read_interval_seconds)
@@ -55,8 +56,8 @@ vrpn_Adafruit_10DOF_Raspberry_pi::vrpn_Adafruit_10DOF_Raspberry_pi(
   d_i2c_dev = open(device.c_str(), O_RDWR);
   if (d_i2c_dev < 0) {
     fprintf(stderr,
-      "vrpn_Adafruit_10DOF_Raspberry_pi::vrpn_Adafruit_10DOF_Raspberry_pi(): "
-      "Cannot open %s", device.c_str());
+      "vrpn_Adafruit_10DOF::vrpn_Adafruit_10DOF(): "
+      "Cannot open %s\n", device.c_str());
     return;
   }
 
@@ -68,18 +69,20 @@ vrpn_Adafruit_10DOF_Raspberry_pi::vrpn_Adafruit_10DOF_Raspberry_pi(
   // @todo For now, 100 Hz data rate
   if (!write_acc_register(d_i2c_dev, LSM303_CTRL_REG1_A, 0b01010111)) {
     fprintf(stderr,
-      "vrpn_Adafruit_10DOF_Raspberry_pi::vrpn_Adafruit_10DOF_Raspberry_pi(): "
-      "Cannot configure accelerometer on %s", device.c_str());
+      "vrpn_Adafruit_10DOF::vrpn_Adafruit_10DOF(): "
+      "Cannot configure accelerometer on %s\n", device.c_str());
     close(d_i2c_dev);
     d_i2c_dev = -1;
+    return;
   }
   // +/- 8G full scale, FS = 10 on HLHC, high resolution output mode
   if (!write_acc_register(d_i2c_dev, LSM303_CTRL_REG4_A, 0b00101000)) {
     fprintf(stderr,
-      "vrpn_Adafruit_10DOF_Raspberry_pi::vrpn_Adafruit_10DOF_Raspberry_pi(): "
-      "Cannot configure accelerometer range on %s", device.c_str());
+      "vrpn_Adafruit_10DOF::vrpn_Adafruit_10DOF(): "
+      "Cannot configure accelerometer range on %s\n", device.c_str());
     close(d_i2c_dev);
     d_i2c_dev = -1;
+    return;
   }
 
   //--------------------------------------------------------
@@ -87,14 +90,14 @@ vrpn_Adafruit_10DOF_Raspberry_pi::vrpn_Adafruit_10DOF_Raspberry_pi(
   vrpn_gettimeofday(&timestamp, NULL);
 }
 
-vrpn_Adafruit_10DOF_Raspberry_pi::~vrpn_Adafruit_10DOF_Raspberry_pi()
+vrpn_Adafruit_10DOF::~vrpn_Adafruit_10DOF()
 {
   if (d_i2c_dev >= 0) {
     close(d_i2c_dev);
   }
 }
 
-void vrpn_Adafruit_10DOF_Raspberry_pi::mainloop()
+void vrpn_Adafruit_10DOF::mainloop()
 {
   // Check and see if we have an open device.  If not, return.
   if (d_i2c_dev < 0) { return; }
