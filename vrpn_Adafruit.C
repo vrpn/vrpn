@@ -14,8 +14,10 @@
 // Constants that describe the device
 #define LSM303_CTRL_REG1_A (0x20)
 #define LSM303_CTRL_REG4_A (0x23)
+#define LSM303_OUT_X_L_A (0x28)
 #define L3G_CTRL_REG1 (0x20)
 #define L3G_CTRL_REG4 (0x23)
+#define L3G_OUT_X_L (0x28)
 
 #define GYRO_ADDRESS (0x6b)
 #define ACC_ADDRESS (0x19)
@@ -84,7 +86,7 @@ vrpn_Adafruit_10DOF::vrpn_Adafruit_10DOF(
       "Cannot configure accelerometer on %s\n", device.c_str());
     close(d_i2c_dev);
     d_i2c_dev = -1;
-//    return;
+    return;
   }
   // +/- 8G full scale, FS = 10 on HLHC, high resolution output mode
   if (!write_acc_register(d_i2c_dev, LSM303_CTRL_REG4_A, 0b00101000)) {
@@ -93,7 +95,7 @@ vrpn_Adafruit_10DOF::vrpn_Adafruit_10DOF(
       "Cannot configure accelerometer range on %s\n", device.c_str());
     close(d_i2c_dev);
     d_i2c_dev = -1;
-//    return;
+    return;
   }
 
   // Enable the gyro.
@@ -103,7 +105,7 @@ vrpn_Adafruit_10DOF::vrpn_Adafruit_10DOF(
       "Cannot configure gyro on %s\n", device.c_str());
     close(d_i2c_dev);
     d_i2c_dev = -1;
-//    return;
+    return;
   }
   // Continuous update, 2000 dps full scale
   if (!write_acc_register(d_i2c_dev, L3G_CTRL_REG4, 0b00110000)) {
@@ -112,7 +114,7 @@ vrpn_Adafruit_10DOF::vrpn_Adafruit_10DOF(
       "Cannot configure gyro range on %s\n", device.c_str());
     close(d_i2c_dev);
     d_i2c_dev = -1;
-//    return;
+    return;
   }
 
   //--------------------------------------------------------
@@ -129,6 +131,8 @@ vrpn_Adafruit_10DOF::~vrpn_Adafruit_10DOF()
 
 void vrpn_Adafruit_10DOF::mainloop()
 {
+  server_mainloop();
+
   // Check and see if we have an open device.  If not, return.
   if (d_i2c_dev < 0) { return; }
 
@@ -140,6 +144,48 @@ void vrpn_Adafruit_10DOF::mainloop()
   if (duration < d_read_interval_seconds) { return; }
   timestamp = now;
 
+  // Select the Accelerometer device
+  if (!select_device(d_i2c_dev, ACC_ADDRESS)) {
+    fprintf(stderr,"vrpn_Adafruit_10DOF::mainloop: Cannot select accelerometer\n");
+    return;
+  }
+
+  // Read and parse the raw values from the accelerometer
+  vrpn_uint8 block[6];
+  int result = i2c_smbus_read_i2c_block_data(d_i2c_dev,
+     0x80 | LSM303_OUT_X_L_A, sizeof(block), block);
+  if (result != sizeof(block)) {
+    printf("vrpn_Adafruit_10DOF::mainloop: Failed to read from accelerometer.");
+    return;
+  }
+  channel[0] = (block[0] | static_cast<vrpn_int16>(block[1]) << 8) >> 4;
+  channel[1] = (block[2] | static_cast<vrpn_int16>(block[3]) << 8) >> 4;
+  channel[2] = (block[4] | static_cast<vrpn_int16>(block[5]) << 8) >> 4;
+
+  // Convert to meters/second/second
+  // @todo
+
+  // Select the Gyroscope device
+  if (!select_device(d_i2c_dev, GYRO_ADDRESS)) {
+    fprintf(stderr,"vrpn_Adafruit_10DOF::mainloop: Cannot select gyroscope\n");
+    return;
+  }
+
+  // Read and parse the raw values from the accelerometer
+  result = i2c_smbus_read_i2c_block_data(d_i2c_dev,
+    0x80 | L3G_OUT_X_L, sizeof(block), block);
+  if (result != sizeof(block)) {
+    printf("vrpn_Adafruit_10DOF::mainloop: Failed to read from gyro.");
+    return;
+  }
+  channel[4] = (block[0] | static_cast<vrpn_int16>(block[1]) << 8);
+  channel[5] = (block[2] | static_cast<vrpn_int16>(block[3]) << 8);
+  channel[6] = (block[4] | static_cast<vrpn_int16>(block[5]) << 8);
+
+  // Convert to radians/second
+  // @todo
+
+  report_changes(); 
 }
 
 #endif
