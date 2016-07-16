@@ -56,9 +56,10 @@
 #include "vrpn_Mouse.h"                    // for vrpn_Button_SerialMouse, etc
 #include "vrpn_NationalInstruments.h"
 #include "vrpn_nikon_controls.h"   // for vrpn_Nikon_Controls
-#include "vrpn_Oculus.h"           // for vrpn_Oculus
 #include "vrpn_nVidia_shield_controller.h"
+#include "vrpn_Oculus.h"           // for vrpn_Oculus
 #include "vrpn_OmegaTemperature.h" // for vrpn_OmegaTemperature
+#include "vrpn_OzzMaker.h"   // for vrpn_OzzMaker_BerryIMU
 #include "vrpn_Phantom.h"
 #include "vrpn_Poser_Analog.h"          // for vrpn_Poser_AnalogParam, etc
 #include "vrpn_Poser.h"                 // for vrpn_Poser
@@ -5128,6 +5129,32 @@ int vrpn_Generic_Server_Object::setup_Adafruit_10DOF(char *&pch, char *line, FIL
   return 0; // successful completion
 }
 
+int vrpn_Generic_Server_Object::setup_OzzMaker_BerryIMU(char *&pch, char *line, FILE *)
+{
+  char vrpnName[LINESIZE], devName[LINESIZE];
+  double interval;
+
+  VRPN_CONFIG_NEXT();
+  int ret = sscanf(pch, "%511s%511s%lg", vrpnName, devName, &interval);
+  if (ret != 3) {
+    fprintf(stderr, "Bad OzzMaker_BerryIMU line: %s\n", line);
+    return -1;
+  }
+
+  // Open the device
+  if (verbose) {
+    printf("Opening OzzMaker_BerryIMU\n");
+  }
+
+#ifdef VRPN_USE_I2CDEV
+  _devices->add(new vrpn_OzzMaker_BerryIMU(vrpnName, connection, devName, interval));
+#else
+  fprintf(stderr,
+    "OzzMaker_BerryIMU driver only compiled in when VRPN_USE_I2CDEV is defined!\n");
+#endif
+  return 0; // successful completion
+}
+
 #undef VRPN_CONFIG_NEXT
 
 vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(
@@ -5704,6 +5731,9 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(
                 }
                 else if (VRPN_ISIT("vrpn_Adafruit_10DOF")) {
                   VRPN_CHECK(setup_Adafruit_10DOF);
+                }
+                else if (VRPN_ISIT("vrpn_OzzMaker_BerryIMU")) {
+                  VRPN_CHECK(setup_OzzMaker_BerryIMU);
                 }
                 else {                         // Never heard of it
                     sscanf(line, "%511s", s1); // Find out the class name
