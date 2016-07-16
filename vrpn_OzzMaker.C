@@ -5,18 +5,32 @@
 #include <sys/stat.h>
 #include <stdio.h>
 #include <sys/ioctl.h>
+#include <cmath>
 
 #ifdef VRPN_USE_I2CDEV
+
+#ifndef M_PI
+#define M_PI  (2*acos(0.0))
+#endif
 
 // Developed using information from
 // http://ozzmaker.com/berryimu/
  
-// Constants that describe the device
+// Constants that describe the device registers
 #define LSM9DS0_CTRL_REG1_XM (0x20)
 #define LSM9DS0_CTRL_REG2_XM (0x21)
+#define LSM9DS0_CTRL_REG5_XM (0x24)
 #define LSM9DS0_CTRL_REG1_G (0x20)
 #define LSM9DS0_CTRL_REG2_G (0x21)
+#define LSM9DS0_CTRL_REG4_G (0x23)
+#define LSM9DS0_CTRL_REG6_G (0x25)
+#define LSM9DS0_CTRL_REG7_G (0x26)
 
+#define LSM9DS0_OUT_X_L_A (0x28)
+#define LSM9DS0_OUT_X_L_G (0x28)
+#define LSM9DS0_OUT_X_L_A (0x28)
+
+// Constants that define the I2C bus addresses
 #define GYRO_ADDRESS (0x6a)
 #define ACC_ADDRESS (0x1e)
 #define MAG_ADDRESS (0x1e)
@@ -30,7 +44,7 @@ static bool select_device(int file, int addr)
   return true;
 }
 
-bool write_acc_register(int file, vrpn_uint8 reg, vrpn_uint8 value)
+static bool write_acc_register(int file, vrpn_uint8 reg, vrpn_uint8 value)
 {
   if (!select_device(file, ACC_ADDRESS)) {
     fprintf(stderr,"write_acc_register(): Cannot select device\n");
@@ -39,7 +53,7 @@ bool write_acc_register(int file, vrpn_uint8 reg, vrpn_uint8 value)
   return i2c_smbus_write_byte_data(file, reg, value) >= 0;
 }
 
-bool write_gyro_register(int file, vrpn_uint8 reg, vrpn_uint8 value)
+static bool write_gyro_register(int file, vrpn_uint8 reg, vrpn_uint8 value)
 {
   if (!select_device(file, GYRO_ADDRESS)) {
     fprintf(stderr,"write_gyro_register(): Cannot select device\n");
@@ -48,7 +62,7 @@ bool write_gyro_register(int file, vrpn_uint8 reg, vrpn_uint8 value)
   return i2c_smbus_write_byte_data(file, reg, value) >= 0;
 }
 
-bool write_meg_register(int file, vrpn_uint8 reg, vrpn_uint8 value)
+static bool write_meg_register(int file, vrpn_uint8 reg, vrpn_uint8 value)
 {
   if (!select_device(file, MAG_ADDRESS)) {
     fprintf(stderr,"write_mag_register(): Cannot select device\n");
@@ -87,7 +101,7 @@ vrpn_OzzMaker_BerryIMU::vrpn_OzzMaker_BerryIMU(
   // Enable the accelerometer at a rate consistent with our read rate.
   // Enable all 3 axes for continuous update.
   // @todo For now, 100 Hz data rate
-  if (!write_acc_register(d_i2c_dev, LSMDS0_CTRL_REG1_XM, 0b01100111)) {
+  if (!write_acc_register(d_i2c_dev, LSM9DS0_CTRL_REG1_XM, 0b01100111)) {
     fprintf(stderr,
       "vrpn_OzzMaker_BerryIMU::vrpn_OzzMaker_BerryIMU(): "
       "Cannot configure accelerometer on %s\n", device.c_str());
@@ -95,8 +109,8 @@ vrpn_OzzMaker_BerryIMU::vrpn_OzzMaker_BerryIMU(
     d_i2c_dev = -1;
     return;
   }
-  // +/- 16G full scale
-  if (!write_acc_register(d_i2c_dev, LSMDS0_CTRL_REG2_XM, 0b00100000)) {
+  // +/- 16G full scale, 773 Hz (max) anti-alias filter bandwidth
+  if (!write_acc_register(d_i2c_dev, LSM9DS0_CTRL_REG2_XM, 0b00100000)) {
     fprintf(stderr,
       "vrpn_OzzMaker_BerryIMU::vrpn_OzzMaker_BerryIMU(): "
       "Cannot configure accelerometer range on %s\n", device.c_str());
@@ -115,7 +129,7 @@ vrpn_OzzMaker_BerryIMU::vrpn_OzzMaker_BerryIMU(
     return;
   }
   // Continuous update, 2000 dps full scale
-  if (!write_gyro_register(d_i2c_dev, LSM9DS0_CTRL_REG1_G, 0b00110000)) {
+  if (!write_gyro_register(d_i2c_dev, LSM9DS0_CTRL_REG4_G, 0b00110000)) {
     fprintf(stderr,
       "vrpn_OzzMaker_BerryIMU::vrpn_OzzMaker_BerryIMU(): "
       "Cannot configure gyro range on %s\n", device.c_str());
@@ -124,7 +138,37 @@ vrpn_OzzMaker_BerryIMU::vrpn_OzzMaker_BerryIMU(
     return;
   }
 
-  // @todo Enable the magnetometer
+  // Enable the magnetometer
+  // Temperature enable, M data rate = 50Hz
+  // @todo Change data rate to match what we are planning to use
+  if (!write_gyro_register(d_i2c_dev, LSM9DS0_CTRL_REG5_XM, 0b11110000)) {
+    fprintf(stderr,
+      "vrpn_OzzMaker_BerryIMU::vrpn_OzzMaker_BerryIMU(): "
+      "Cannot configure magnetometer on %s\n", device.c_str());
+    close(d_i2c_dev);
+    d_i2c_dev = -1;
+    return;
+  }
+  // +/- 12 Gauss
+  if (!write_gyro_register(d_i2c_dev, LSM9DS0_CTRL_REG6_G, 0b01100000)) {
+    fprintf(stderr,
+      "vrpn_OzzMaker_BerryIMU::vrpn_OzzMaker_BerryIMU(): "
+      "Cannot configure magnetometer range on %s\n", device.c_str());
+    close(d_i2c_dev);
+    d_i2c_dev = -1;
+    return;
+  }
+  // Continuous update
+  if (!write_gyro_register(d_i2c_dev, LSM9DS0_CTRL_REG7_G, 0b00000000)) {
+    fprintf(stderr,
+      "vrpn_OzzMaker_BerryIMU::vrpn_OzzMaker_BerryIMU(): "
+      "Cannot configure magnetometer mode on %s\n", device.c_str());
+    close(d_i2c_dev);
+    d_i2c_dev = -1;
+    return;
+  }
+
+  // @todo Enable other sensors
 
   //--------------------------------------------------------
   // Record the time we opened the device.
@@ -162,17 +206,21 @@ void vrpn_OzzMaker_BerryIMU::mainloop()
   // Read and parse the raw values from the accelerometer
   vrpn_uint8 block[6];
   int result = i2c_smbus_read_i2c_block_data(d_i2c_dev,
-     0x80 | LSM303_OUT_X_L_A, sizeof(block), block);
+     0x80 | LSM9DS0_OUT_X_L_A, sizeof(block), block);
   if (result != sizeof(block)) {
     printf("vrpn_OzzMaker_BerryIMU::mainloop: Failed to read from accelerometer.");
     return;
   }
-  channel[0] = (block[0] | static_cast<vrpn_int16>(block[1]) << 8) >> 4;
-  channel[1] = (block[2] | static_cast<vrpn_int16>(block[3]) << 8) >> 4;
-  channel[2] = (block[4] | static_cast<vrpn_int16>(block[5]) << 8) >> 4;
+  channel[0] = static_cast<vrpn_int16>(block[0] | (block[1] << 8));
+  channel[1] = static_cast<vrpn_int16>(block[2] | (block[3] << 8));
+  channel[2] = static_cast<vrpn_int16>(block[4] | (block[5] << 8));
 
-  // Convert to meters/second/second
-  // @todo
+  // Convert to meters/second/second.
+  // For range of +/- 16g, it report 0.732 mg/count.
+  const double acc_gain = 9.80665 * 0.732e-3;
+  channel[0] *= acc_gain;
+  channel[1] *= acc_gain;
+  channel[2] *= acc_gain;
 
   // Select the Gyroscope device
   if (!select_device(d_i2c_dev, GYRO_ADDRESS)) {
@@ -180,19 +228,28 @@ void vrpn_OzzMaker_BerryIMU::mainloop()
     return;
   }
 
-  // Read and parse the raw values from the accelerometer
+  // Read and parse the raw values from the gyroscope
   result = i2c_smbus_read_i2c_block_data(d_i2c_dev,
-    0x80 | L3G_OUT_X_L, sizeof(block), block);
+    0x80 | LSM9DS0_OUT_X_L_G, sizeof(block), block);
   if (result != sizeof(block)) {
     printf("vrpn_OzzMaker_BerryIMU::mainloop: Failed to read from gyro.");
     return;
   }
-  channel[4] = (block[0] | static_cast<vrpn_int16>(block[1]) << 8);
-  channel[5] = (block[2] | static_cast<vrpn_int16>(block[3]) << 8);
-  channel[6] = (block[4] | static_cast<vrpn_int16>(block[5]) << 8);
+  channel[3] = static_cast<vrpn_int16>(block[0] | (block[1] << 8));
+  channel[4] = static_cast<vrpn_int16>(block[2] | (block[3] << 8));
+  channel[5] = static_cast<vrpn_int16>(block[4] | (block[5] << 8));
 
-  // Convert to radians/second
-  // @todo
+  // Convert to radians/second.
+  // For 2000 degree/second full range, it reports in 70 millidegrees
+  // per second for each count.
+  const double gyro_gain = (M_PI/180.0) * 70e-3;
+  channel[3] *= gyro_gain;
+  channel[4] *= gyro_gain;
+  channel[5] *= gyro_gain;
+
+  // @todo Read and convert values from the magnetometer
+
+  // @todo Read and convert the other values.
 
   report_changes(); 
 }
