@@ -32,7 +32,7 @@ static bool select_device(int file, int addr)
   return true;
 }
 
-bool write_acc_register(int file, vrpn_uint8 reg, vrpn_uint8 value)
+static bool write_acc_register(int file, vrpn_uint8 reg, vrpn_uint8 value)
 {
   if (!select_device(file, ACC_ADDRESS)) {
     fprintf(stderr,"write_acc_register(): Cannot select device\n");
@@ -41,7 +41,7 @@ bool write_acc_register(int file, vrpn_uint8 reg, vrpn_uint8 value)
   return i2c_smbus_write_byte_data(file, reg, value) >= 0;
 }
 
-bool write_gyro_register(int file, vrpn_uint8 reg, vrpn_uint8 value)
+static bool write_gyro_register(int file, vrpn_uint8 reg, vrpn_uint8 value)
 {
   if (!select_device(file, GYRO_ADDRESS)) {
     fprintf(stderr,"write_gyro_register(): Cannot select device\n");
