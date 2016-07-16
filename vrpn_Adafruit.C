@@ -108,7 +108,7 @@ vrpn_Adafruit_10DOF::vrpn_Adafruit_10DOF(
     return;
   }
   // Continuous update, 2000 dps full scale
-  if (!write_acc_register(d_i2c_dev, L3G_CTRL_REG4, 0b00110000)) {
+  if (!write_gyro_register(d_i2c_dev, L3G_CTRL_REG4, 0b00110000)) {
     fprintf(stderr,
       "vrpn_Adafruit_10DOF::vrpn_Adafruit_10DOF(): "
       "Cannot configure gyro range on %s\n", device.c_str());
