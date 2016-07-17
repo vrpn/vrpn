@@ -1,3 +1,5 @@
+#ifdef VRPN_USE_I2CDEV
+
 #include "vrpn_Adafruit.h"
 #include <linux/i2c-dev.h>
 #include <unistd.h>
@@ -5,8 +7,6 @@
 #include <sys/stat.h>
 #include <stdio.h>
 #include <sys/ioctl.h>
-
-#ifdef VRPN_USE_I2CDEV
 
 // Developed using information from
 // http://ozzmaker.com/guide-to-interfacing-a-gyro-and-accelerometer-with-a-raspberry-pi
