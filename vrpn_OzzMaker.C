@@ -28,7 +28,7 @@
 
 #define LSM9DS0_OUT_X_L_A (0x28)
 #define LSM9DS0_OUT_X_L_G (0x28)
-#define LSM9DS0_OUT_X_L_A (0x28)
+#define LSM9DS0_OUT_X_L_M (0x08)
 
 // Constants that define the I2C bus addresses
 #define GYRO_ADDRESS (0x6a)
@@ -64,7 +64,7 @@ static bool write_gyro_register(int file, vrpn_uint8 reg, vrpn_uint8 value)
   return vrpn_i2c_smbus_write_byte_data(file, reg, value) >= 0;
 }
 
-static bool write_meg_register(int file, vrpn_uint8 reg, vrpn_uint8 value)
+static bool write_mag_register(int file, vrpn_uint8 reg, vrpn_uint8 value)
 {
   if (!select_device(file, MAG_ADDRESS)) {
     fprintf(stderr,"write_mag_register(): Cannot select device\n");
@@ -143,7 +143,7 @@ vrpn_OzzMaker_BerryIMU::vrpn_OzzMaker_BerryIMU(
   // Enable the magnetometer
   // Temperature enable, M data rate = 50Hz
   // @todo Change data rate to match what we are planning to use
-  if (!write_gyro_register(d_i2c_dev, LSM9DS0_CTRL_REG5_XM, 0b11110000)) {
+  if (!write_mag_register(d_i2c_dev, LSM9DS0_CTRL_REG5_XM, 0b11110000)) {
     fprintf(stderr,
       "vrpn_OzzMaker_BerryIMU::vrpn_OzzMaker_BerryIMU(): "
       "Cannot configure magnetometer on %s\n", device.c_str());
@@ -152,7 +152,7 @@ vrpn_OzzMaker_BerryIMU::vrpn_OzzMaker_BerryIMU(
     return;
   }
   // +/- 12 Gauss
-  if (!write_gyro_register(d_i2c_dev, LSM9DS0_CTRL_REG6_G, 0b01100000)) {
+  if (!write_mag_register(d_i2c_dev, LSM9DS0_CTRL_REG6_G, 0b01100000)) {
     fprintf(stderr,
       "vrpn_OzzMaker_BerryIMU::vrpn_OzzMaker_BerryIMU(): "
       "Cannot configure magnetometer range on %s\n", device.c_str());
@@ -161,7 +161,7 @@ vrpn_OzzMaker_BerryIMU::vrpn_OzzMaker_BerryIMU(
     return;
   }
   // Continuous update
-  if (!write_gyro_register(d_i2c_dev, LSM9DS0_CTRL_REG7_G, 0b00000000)) {
+  if (!write_mag_register(d_i2c_dev, LSM9DS0_CTRL_REG7_G, 0b00000000)) {
     fprintf(stderr,
       "vrpn_OzzMaker_BerryIMU::vrpn_OzzMaker_BerryIMU(): "
       "Cannot configure magnetometer mode on %s\n", device.c_str());
@@ -249,7 +249,30 @@ void vrpn_OzzMaker_BerryIMU::mainloop()
   channel[4] *= gyro_gain;
   channel[5] *= gyro_gain;
 
-  // @todo Read and convert values from the magnetometer
+  // Select the Magnetometer device
+  if (!select_device(d_i2c_dev, MAG_ADDRESS)) {
+    fprintf(stderr,"vrpn_OzzMaker_BerryIMU::mainloop: Cannot select magnetometer\n");
+    return;
+  }
+
+  // Read and parse the raw values from the magnetometer
+  result = vrpn_i2c_smbus_read_i2c_block_data(d_i2c_dev,
+    0x80 | LSM9DS0_OUT_X_L_M, sizeof(block), block);
+  if (result != sizeof(block)) {
+    printf("vrpn_OzzMaker_BerryIMU::mainloop: Failed to read from magnetometer.");
+    return;
+  }
+  channel[6] = static_cast<vrpn_int16>(block[0] | (block[1] << 8));
+  channel[7] = static_cast<vrpn_int16>(block[2] | (block[3] << 8));
+  channel[8] = static_cast<vrpn_int16>(block[4] | (block[5] << 8));
+
+  // Convert to Gauss.
+  // For 12 Gauss full range, it reports in 0.48 milliGauss
+  // per second for each count.
+  const double mag_gain = 0.48e-3;
+  channel[6] *= mag_gain;
+  channel[7] *= mag_gain;
+  channel[8] *= mag_gain;
 
   // @todo Read and convert the other values.
 
