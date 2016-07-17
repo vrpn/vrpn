@@ -170,7 +170,9 @@ vrpn_OzzMaker_BerryIMU::vrpn_OzzMaker_BerryIMU(
     return;
   }
 
-  // @todo Enable other sensors
+  // @todo Enable the temperature and pressure unit using info from
+  // http://ozzmaker.com/wp-content/uploads/2015/01/BMP180-DS000-09.pdf
+  // The sensor is located at address 0x77.
 
   //--------------------------------------------------------
   // Record the time we opened the device.
@@ -274,7 +276,8 @@ void vrpn_OzzMaker_BerryIMU::mainloop()
   channel[7] *= mag_gain;
   channel[8] *= mag_gain;
 
-  // @todo Read and convert the other values.
+  // @todo Read and convert temperature and pressure using info from
+  // http://ozzmaker.com/wp-content/uploads/2015/01/BMP180-DS000-09.pdf
 
   report_changes(); 
 }

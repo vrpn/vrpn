@@ -10,6 +10,9 @@
 
 // Developed using information from
 // http://ozzmaker.com/guide-to-interfacing-a-gyro-and-accelerometer-with-a-raspberry-pi
+// @todo This implementation is not yet complete, nor completely tested.
+// It does open the device and read raw values from the acceleromater. The gyro
+// read may be working as well.
 
 // Constants that describe the device
 #define LSM303_CTRL_REG1_A (0x20)
