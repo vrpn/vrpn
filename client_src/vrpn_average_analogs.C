@@ -56,10 +56,10 @@ void VRPN_CALLBACK handle_analog(void *userdata, const vrpn_ANALOGCB a)
 
     // Likewise for the min and max values.
     while (dev->valueMins.size() < a.num_channel) {
-      dev->valueMins.push_back(a.channel[dev->valueMins.size()-1]);
+      dev->valueMins.push_back(a.channel[dev->valueMins.size()]);
     }
     while (dev->valueMaxs.size() < a.num_channel) {
-      dev->valueMaxs.push_back(a.channel[dev->valueMaxs.size()-1]);
+      dev->valueMaxs.push_back(a.channel[dev->valueMaxs.size()]);
     }
 
     // Add in the new values and increment our value count.
@@ -137,6 +137,11 @@ int main(int argc, char *argv[])
     // Print high-resolution versions of the min, mean, and max for
     // each channel.
     printf("Min, mean, max values for each channel:\n");
+    for (size_t i = 0; i < dev.valueSums.size(); i++) {
+      printf("Channel %2d: %lg, %lg, %lg\n", static_cast<int>(i),
+        dev.valueMins[i], dev.valueSums[i] / dev.numValuesRead,
+        dev.valueMaxs[i]);
+    }
     // @todo
 
     return 0;
