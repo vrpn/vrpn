@@ -35,6 +35,8 @@
 #define ACC_ADDRESS (0x1e)
 #define MAG_ADDRESS (0x1e)
 
+#include "vrpn_i2c_helpers.h"
+
 // Helper functions
 static bool select_device(int file, int addr)
 {
@@ -50,7 +52,7 @@ static bool write_acc_register(int file, vrpn_uint8 reg, vrpn_uint8 value)
     fprintf(stderr,"write_acc_register(): Cannot select device\n");
     return false;
   }
-  return i2c_smbus_write_byte_data(file, reg, value) >= 0;
+  return vrpn_i2c_smbus_write_byte_data(file, reg, value) >= 0;
 }
 
 static bool write_gyro_register(int file, vrpn_uint8 reg, vrpn_uint8 value)
@@ -59,7 +61,7 @@ static bool write_gyro_register(int file, vrpn_uint8 reg, vrpn_uint8 value)
     fprintf(stderr,"write_gyro_register(): Cannot select device\n");
     return false;
   }
-  return i2c_smbus_write_byte_data(file, reg, value) >= 0;
+  return vrpn_i2c_smbus_write_byte_data(file, reg, value) >= 0;
 }
 
 static bool write_meg_register(int file, vrpn_uint8 reg, vrpn_uint8 value)
@@ -68,7 +70,7 @@ static bool write_meg_register(int file, vrpn_uint8 reg, vrpn_uint8 value)
     fprintf(stderr,"write_mag_register(): Cannot select device\n");
     return false;
   }
-  return i2c_smbus_write_byte_data(file, reg, value) >= 0;
+  return vrpn_i2c_smbus_write_byte_data(file, reg, value) >= 0;
 }
 
 vrpn_OzzMaker_BerryIMU::vrpn_OzzMaker_BerryIMU(
@@ -205,7 +207,7 @@ void vrpn_OzzMaker_BerryIMU::mainloop()
 
   // Read and parse the raw values from the accelerometer
   vrpn_uint8 block[6];
-  int result = i2c_smbus_read_i2c_block_data(d_i2c_dev,
+  int result = vrpn_i2c_smbus_read_i2c_block_data(d_i2c_dev,
      0x80 | LSM9DS0_OUT_X_L_A, sizeof(block), block);
   if (result != sizeof(block)) {
     printf("vrpn_OzzMaker_BerryIMU::mainloop: Failed to read from accelerometer.");
@@ -229,7 +231,7 @@ void vrpn_OzzMaker_BerryIMU::mainloop()
   }
 
   // Read and parse the raw values from the gyroscope
-  result = i2c_smbus_read_i2c_block_data(d_i2c_dev,
+  result = vrpn_i2c_smbus_read_i2c_block_data(d_i2c_dev,
     0x80 | LSM9DS0_OUT_X_L_G, sizeof(block), block);
   if (result != sizeof(block)) {
     printf("vrpn_OzzMaker_BerryIMU::mainloop: Failed to read from gyro.");
