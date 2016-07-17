@@ -1,7 +1,16 @@
 // Helper functions that are not present in the i2c-dev.h file on
 // all platforms.  They fill in the parameters and call the appropriate
 // ioctl() and then package info for return.
+
+// Ensure that we don't include i2c.h on platforms like Raspberry Pi
+// where they pulled these definitions into i2c-dev.h rather than just
+// doing #include i2c.h, and where they also did not define _LINUX_I2C_H
+// to guard against its future inclusion.  Here, we pick one of the
+// things that are defined in that file and check for it.
+
+#ifndef I2C_M_TEN
 #include <linux/i2c.h>
+#endif
 
 static inline vrpn_int32 vrpn_i2c_smbus_access(
         int file, char read_write, vrpn_uint8 command,
