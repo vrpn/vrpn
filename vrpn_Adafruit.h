@@ -9,9 +9,9 @@
 class vrpn_Adafruit_10DOF: public vrpn_Analog_Server
 {
 public:
-  vrpn_Adafruit_10DOF(const std::string &name,
+  vrpn_Adafruit_10DOF(std::string const &name,
     vrpn_Connection *c,
-    const std::string &device = "/dev/i2c-1",
+    std::string const &device = "/dev/i2c-1",
     double read_interval_seconds = 10e-3);
   ~vrpn_Adafruit_10DOF();
 

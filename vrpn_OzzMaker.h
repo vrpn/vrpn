@@ -9,9 +9,9 @@
 class vrpn_OzzMaker_BerryIMU: public vrpn_Analog_Server
 {
 public:
-  vrpn_OzzMaker_BerryIMU(const std::string &name,
+  vrpn_OzzMaker_BerryIMU(std::string const &name,
     vrpn_Connection *c,
-    const std::string &device = "/dev/i2c-1",
+    std::string const &device = "/dev/i2c-1",
     double read_interval_seconds = 10e-3);
   ~vrpn_OzzMaker_BerryIMU();
 

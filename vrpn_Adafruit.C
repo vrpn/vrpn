@@ -1,6 +1,6 @@
-#ifdef VRPN_USE_I2CDEV
-
 #include "vrpn_Adafruit.h"
+
+#ifdef VRPN_USE_I2CDEV
 #include <linux/i2c-dev.h>
 #include <unistd.h>
 #include <fcntl.h>
@@ -56,8 +56,8 @@ static bool write_gyro_register(int file, vrpn_uint8 reg, vrpn_uint8 value)
 }
 
 vrpn_Adafruit_10DOF::vrpn_Adafruit_10DOF(
-    const std::string &name, vrpn_Connection *c,
-    const std::string &device,
+    std::string const &name, vrpn_Connection *c,
+    std::string const &device,
     double read_interval_seconds)
   : vrpn_Analog_Server(name.c_str(), c)
 {
