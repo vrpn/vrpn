@@ -1,3 +1,5 @@
+#ifdef VRPN_USE_I2CDEV
+
 #include "vrpn_OzzMaker.h"
 #include <linux/i2c-dev.h>
 #include <unistd.h>
@@ -6,8 +8,6 @@
 #include <stdio.h>
 #include <sys/ioctl.h>
 #include <cmath>
-
-#ifdef VRPN_USE_I2CDEV
 
 #ifndef M_PI
 #define M_PI  (2*acos(0.0))
