@@ -2386,7 +2386,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_InterSense(char *&pch, char *line,
                                                          FILE *config_file)
 {
     char trackerName[LINESIZE];
-    char commStr[100];
+    char commStr[LINESIZE];
     int commPort;
 
     char s4[LINESIZE];
@@ -3161,7 +3161,7 @@ int vrpn_Generic_Server_Object::setup_Atmel(char *&pch, char *line,
     char mode[3];
 
     // Get the arguments
-    if (sscanf(pch, "%d%511s", &channel, mode) != 2) {
+    if (sscanf(pch, "%d%2s", &channel, mode) != 2) {
         fprintf(stderr, "Bad vrpn_Atmel line: %s\n", line);
         return -1;
     }
