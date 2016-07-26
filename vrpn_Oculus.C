@@ -284,18 +284,6 @@ void vrpn_Oculus_DK2::parse_message_type_11(std::size_t bytes,
   size_t num_reports = buffer[3];
   if (num_reports > 2) { num_reports = 2; }
 
-  // @todo Check to see if we get multiple up reports
-  // when we get multiple other reports (I never see multiple
-  // other reports from my unit).
-  if (num_reports == 2) {
-    static bool printed = false;
-    if (!printed) {
-      fprintf(stderr, "vrpn_Oculus_DK2::on_data_received: Got 2 reports; check accuracy of "
-        "the up vector on the second and either replace with the first if it is zero or "
-        " remove this print statement from the code if it works.\n");
-      printed = true;
-    }
-  }
   // Skip the first four bytes and start parsing the other reports from there.
   vrpn_uint8 *bufptr = &buffer[4];  // Point at the start of the report
 
