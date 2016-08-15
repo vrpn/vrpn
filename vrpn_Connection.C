@@ -84,7 +84,7 @@ static std::string WSA_number_to_string(int err)
 #endif
 
 #ifndef VRPN_USE_WINSOCK_SOCKETS
-#include <sys/wait.h> // for wait, wait3, WNOHANG
+#include <sys/wait.h> // for waitpid, WNOHANG
 #ifndef __CYGWIN__
 #include <netinet/tcp.h> // for TCP_NODELAY
 #endif                   /* __CYGWIN__ */
@@ -214,22 +214,6 @@ const char *vrpn_dropped_last_connection =
     "VRPN_Connection_Dropped_Last_Connection";
 
 const char *vrpn_CONTROL = "VRPN Control";
-
-//**********************************************************************
-//**  This section has been pulled from the "SDI" library and had its
-//**  functions renamed to vrpn_ from sdi_.  This removes our dependence
-//**  on libsdi.a for VRPN.
-
-#ifdef sparc
-
-// On capefear and swift, getdtablesize() isn't declared in unistd.h
-// even though the man page says it should be.  Similarly, wait3()
-// isn't declared in sys/{wait,time,resource}.h.
-extern "C" {
-extern int getdtablesize(void);
-pid_t wait3(int *statusp, int options, struct rusage *rusage);
-}
-#endif
 
 /* On HP's, this defines how many possible open file descriptors can be
  * open at once.  This is what is returned by the getdtablesize() function
@@ -2456,7 +2440,7 @@ static int vrpn_start_server(const char *machine, char *server_name, char *args,
 {
 #if defined(VRPN_USE_WINSOCK_SOCKETS) || defined(__CYGWIN__)
     fprintf(stderr, "VRPN: vrpn_start_server not ported"
-                    " for windows winsocks or cygwin!\n");
+                    " for windows winsock or cygwin!\n");
     IPaddress = IPaddress;
     args = args;
     server_name = server_name;
@@ -2542,11 +2526,7 @@ static int vrpn_start_server(const char *machine, char *server_name, char *args,
         for (waitloop = 0; waitloop < (SERVCOUNT); waitloop++) {
             int ret;
             pid_t deadkid;
-#if defined(sparc) || defined(FreeBSD) || defined(_AIX) || defined(__ANDROID__)
-            int status; // doesn't exist on sparc_solaris or FreeBSD
-#else
-            union wait status;
-#endif
+            int status;
 
             /* Check to see if they called back yet. */
             ret = vrpn_poll_for_accept(server_sock, &child_socket, SERVWAIT);
@@ -2559,16 +2539,8 @@ static int vrpn_start_server(const char *machine, char *server_name, char *args,
                 break; // Got it!
             }
 
-/* Check to see if the child is dead yet */
-#if defined(hpux) || defined(sgi) || defined(__hpux) || defined(__CYGWIN__) || \
-    defined(__APPLE__)
-            /* hpux include files have the wrong declaration */
-            deadkid = wait3((int *)&status, WNOHANG, NULL);
-#elif defined(__ANDROID__)
+            /* Check to see if the child is dead yet */
             deadkid = waitpid(-1, &status, WNOHANG);
-#else
-            deadkid = wait3(&status, WNOHANG, NULL);
-#endif
             if (deadkid == pid) {
                 fprintf(stderr, "vrpn_start_server: server process exited\n");
                 vrpn_closeSocket(server_sock);
