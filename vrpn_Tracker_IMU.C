@@ -382,14 +382,14 @@ void vrpn_IMU_SimpleCombiner::mainloop()
     if (d_connection) {
       char	msgbuf[1000];
       int	len = encode_to(msgbuf);
-      if (d_connection->pack_message(len, vrpn_Tracker::timestamp,
+      if (d_connection->pack_message(len, now,
         position_m_id, d_sender_id, msgbuf,
         vrpn_CONNECTION_LOW_LATENCY)) {
         fprintf(stderr, "vrpn_IMU_SimpleCombiner: "
           "cannot write pose message: tossing\n");
       }
       len = encode_vel_to(msgbuf);
-      if (d_connection->pack_message(len, vrpn_Tracker::timestamp,
+      if (d_connection->pack_message(len, now,
         velocity_m_id, d_sender_id, msgbuf,
         vrpn_CONNECTION_LOW_LATENCY)) {
         fprintf(stderr, "vrpn_IMU_SimpleCombiner: "
