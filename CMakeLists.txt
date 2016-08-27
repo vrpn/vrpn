@@ -505,6 +505,19 @@ endif()
 
 
 ###
+# libi2c-dev
+###
+find_package(libi2c-dev ${QUIET_IF_SUBPROJECT})
+option_requires(VRPN_USE_I2CDEV
+	"Build devices requiring libi2c-dev"
+	${DEFAULT_OFF_IF_SUBPROJECT}
+	I2CDEV_FOUND)
+
+if(VRPN_USE_I2CDEV)
+	include_directories(AFTER ${I2CDEV_INCLUDE_DIRS})
+endif()
+
+###
 # WiiUse
 ###
 find_package(WiiUse ${QUIET_IF_SUBPROJECT})
@@ -1047,6 +1060,7 @@ set(VRPN_SERVER_SOURCES
 	vrpn_3DMicroscribe.C
 	vrpn_3Space.C
 	vrpn_5DT16.C
+	vrpn_Adafruit.C
 	vrpn_ADBox.C
 	vrpn_Analog_5dt.C
 	vrpn_Analog_5dtUSB.C
@@ -1092,8 +1106,9 @@ set(VRPN_SERVER_SOURCES
 	vrpn_NationalInstruments.C
 	vrpn_Nidaq.C
 	vrpn_nikon_controls.C
-  vrpn_nVidia_shield_controller.C
+	vrpn_nVidia_shield_controller.C
 	vrpn_Oculus.C
+	vrpn_OzzMaker.C
 	vrpn_OmegaTemperature.C
 	vrpn_Poser_Analog.C
 	vrpn_Poser_Tek4662.C
@@ -1153,6 +1168,7 @@ set(VRPN_SERVER_PUBLIC_HEADERS
 	vrpn_3DMicroscribe.h
 	vrpn_3Space.h
 	vrpn_5DT16.h
+	vrpn_Adafruit.h
 	vrpn_ADBox.h
 	vrpn_Analog_5dt.h
 	vrpn_Analog_5dtUSB.h
@@ -1200,10 +1216,11 @@ set(VRPN_SERVER_PUBLIC_HEADERS
 	vrpn_NationalInstruments.h
 	vrpn_Nidaq.h
 	vrpn_nikon_controls.h
-  vrpn_nVidia_shield_controller.h
+	vrpn_nVidia_shield_controller.h
 	vrpn_Oculus.h
 	vrpn_OmegaTemperature.h
 	vrpn_OneEuroFilter.h
+	vrpn_OzzMaker.h
 	vrpn_Poser_Analog.h
 	vrpn_Poser.h
 	vrpn_Poser_Tek4662.h

@@ -9,6 +9,7 @@
 #include "vrpn_3DMicroscribe.h"
 #include "vrpn_3Space.h"     // for vrpn_Tracker_3Space
 #include "vrpn_5DT16.h"      // for vrpn_5dt16, etc
+#include "vrpn_Adafruit.h"   // for vrpn_Adafruit_10DOF
 #include "vrpn_ADBox.h"      // for vrpn_ADBox
 #include "vrpn_Analog_5dt.h" // for vrpn_5dt
 #include "vrpn_Analog_5dtUSB.h"
@@ -55,9 +56,10 @@
 #include "vrpn_Mouse.h"                    // for vrpn_Button_SerialMouse, etc
 #include "vrpn_NationalInstruments.h"
 #include "vrpn_nikon_controls.h"   // for vrpn_Nikon_Controls
-#include "vrpn_Oculus.h"           // for vrpn_Oculus
 #include "vrpn_nVidia_shield_controller.h"
+#include "vrpn_Oculus.h"           // for vrpn_Oculus
 #include "vrpn_OmegaTemperature.h" // for vrpn_OmegaTemperature
+#include "vrpn_OzzMaker.h"   // for vrpn_OzzMaker_BerryIMU
 #include "vrpn_Phantom.h"
 #include "vrpn_Poser_Analog.h"          // for vrpn_Poser_AnalogParam, etc
 #include "vrpn_Poser.h"                 // for vrpn_Poser
@@ -5101,6 +5103,58 @@ int vrpn_Generic_Server_Object::setup_nVidia_shield_USB(char *&pch, char *line, 
   return 0; // successful completion
 }
 
+int vrpn_Generic_Server_Object::setup_Adafruit_10DOF(char *&pch, char *line, FILE *)
+{
+  char vrpnName[LINESIZE], devName[LINESIZE];
+  double interval;
+
+  VRPN_CONFIG_NEXT();
+  int ret = sscanf(pch, "%511s%511s%lg", vrpnName, devName, &interval);
+  if (ret != 3) {
+    fprintf(stderr, "Bad Adafruit_10DOF line: %s\n", line);
+    return -1;
+  }
+
+  // Open the shield
+  if (verbose) {
+    printf("Opening Adafruit_10DOF\n");
+  }
+
+#ifdef VRPN_USE_I2CDEV
+  _devices->add(new vrpn_Adafruit_10DOF(vrpnName, connection, devName, interval));
+#else
+  fprintf(stderr,
+    "Adafruit_10DOF driver only compiled in when VRPN_USE_I2CDEV is defined!\n");
+#endif
+  return 0; // successful completion
+}
+
+int vrpn_Generic_Server_Object::setup_OzzMaker_BerryIMU(char *&pch, char *line, FILE *)
+{
+  char vrpnName[LINESIZE], devName[LINESIZE];
+  double interval;
+
+  VRPN_CONFIG_NEXT();
+  int ret = sscanf(pch, "%511s%511s%lg", vrpnName, devName, &interval);
+  if (ret != 3) {
+    fprintf(stderr, "Bad OzzMaker_BerryIMU line: %s\n", line);
+    return -1;
+  }
+
+  // Open the device
+  if (verbose) {
+    printf("Opening OzzMaker_BerryIMU\n");
+  }
+
+#ifdef VRPN_USE_I2CDEV
+  _devices->add(new vrpn_OzzMaker_BerryIMU(vrpnName, connection, devName, interval));
+#else
+  fprintf(stderr,
+    "OzzMaker_BerryIMU driver only compiled in when VRPN_USE_I2CDEV is defined!\n");
+#endif
+  return 0; // successful completion
+}
+
 #undef VRPN_CONFIG_NEXT
 
 vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(
@@ -5674,6 +5728,12 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(
                 }
                 else if (VRPN_ISIT("vrpn_Tracker_Spin")) {
                   VRPN_CHECK(setup_Tracker_Spin);
+                }
+                else if (VRPN_ISIT("vrpn_Adafruit_10DOF")) {
+                  VRPN_CHECK(setup_Adafruit_10DOF);
+                }
+                else if (VRPN_ISIT("vrpn_OzzMaker_BerryIMU")) {
+                  VRPN_CHECK(setup_OzzMaker_BerryIMU);
                 }
                 else {                         // Never heard of it
                     sscanf(line, "%511s", s1); // Find out the class name

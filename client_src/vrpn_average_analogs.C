@@ -30,6 +30,8 @@ int done = 0;                // Signals that the program should exit
 class device_info {
 public:
     std::vector<double> valueSums;
+    std::vector<double> valueMins;
+    std::vector<double> valueMaxs;
     size_t numValuesRead;
 };
 
@@ -52,9 +54,21 @@ void VRPN_CALLBACK handle_analog(void *userdata, const vrpn_ANALOGCB a)
       dev->numValuesRead = 0;
     }
 
+    // Likewise for the min and max values.
+    while (dev->valueMins.size() < a.num_channel) {
+      dev->valueMins.push_back(a.channel[dev->valueMins.size()]);
+    }
+    while (dev->valueMaxs.size() < a.num_channel) {
+      dev->valueMaxs.push_back(a.channel[dev->valueMaxs.size()]);
+    }
+
     // Add in the new values and increment our value count.
+    // Maintain max and min values.
     for (i = 0; i < a.num_channel; i++) {
-      dev->valueSums[i] += a.channel[i];
+      double val = a.channel[i];
+      dev->valueSums[i] += val;
+      if (dev->valueMins[i] > val) { dev->valueMins[i] = val; }
+      if (dev->valueMaxs[i] < val) { dev->valueMaxs[i] = val; }
     }
     dev->numValuesRead++;
 
@@ -119,6 +133,16 @@ int main(int argc, char *argv[])
     }
 
     delete ana;
+
+    // Print high-resolution versions of the min, mean, and max for
+    // each channel.
+    printf("Min, mean, max values for each channel:\n");
+    for (size_t i = 0; i < dev.valueSums.size(); i++) {
+      printf("Channel %2d: %lg, %lg, %lg\n", static_cast<int>(i),
+        dev.valueMins[i], dev.valueSums[i] / dev.numValuesRead,
+        dev.valueMaxs[i]);
+    }
+    // @todo
 
     return 0;
 } /* main */
