@@ -5167,12 +5167,12 @@ int vrpn_Generic_Server_Object::setup_Laputa(char *&pch, char *line, FILE *)
     return -1;
   }
 
+#ifdef VRPN_USE_HID
   // Open the Laputa
   if (verbose) {
     printf("Opening vrpn_Laputa\n");
   }
 
-#ifdef VRPN_USE_HID
   // Open the tracker
   _devices->add(new vrpn_Laputa(s2, connection));
 #else
