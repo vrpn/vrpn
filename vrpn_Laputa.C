@@ -84,15 +84,18 @@ void vrpn_Laputa::parse_message_type_1(std::size_t bytes, vrpn_uint8 *buffer)
 
     // The next two bytes are an increasing counter that changes by 1 for
     // every report.
-    vrpn_uint16 report_index = vrpn_unbuffer_from_little_endian<vrpn_uint16, vrpn_uint8>(bufptr);
+    vrpn_uint16 report_index =
+        vrpn_unbuffer_from_little_endian<vrpn_uint16, vrpn_uint8>(bufptr);
     channel[1] = report_index;
 
     // The next two bytes are zero, so we skip them
-    vrpn_uint16 skip = vrpn_unbuffer_from_little_endian<vrpn_uint16, vrpn_uint8>(bufptr);
+    vrpn_uint16 skip =
+        vrpn_unbuffer_from_little_endian<vrpn_uint16, vrpn_uint8>(bufptr);
 
     // The next entry is temperature, and it may be in hundredths of a degree C
     const double temperature_scale = 0.01;
-    vrpn_uint16 temperature = vrpn_unbuffer_from_little_endian<vrpn_uint16, vrpn_uint8>(bufptr);
+    vrpn_uint16 temperature =
+        vrpn_unbuffer_from_little_endian<vrpn_uint16, vrpn_uint8>(bufptr);
     channel[0] = temperature * temperature_scale;
 
     // The magnetometer data comes after the space to store three
