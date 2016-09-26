@@ -5178,6 +5178,9 @@ int vrpn_Generic_Server_Object::setup_Laputa(char *&pch, char *line, FILE *)
 #else
   fprintf(stderr,
     "Laputa driver works only with VRPN_USE_HID defined!\n");
+#endif
+  return 0; // successful completion
+}
 
 #undef VRPN_CONFIG_NEXT
 
@@ -5758,6 +5761,7 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(
                 }
                 else if (VRPN_ISIT("vrpn_OzzMaker_BerryIMU")) {
                   VRPN_CHECK(setup_OzzMaker_BerryIMU);
+                }
                 else if (VRPN_ISIT("vrpn_Laputa")){
                     VRPN_CHECK(setup_Laputa);
                 }
