@@ -10,6 +10,13 @@
 
 %module vrpn_Analog
 
+%typemap(in) vrpn_float64 {
+   $1 = PyFloat_AsDouble($input);
+}
+%typemap(in) vrpn_uint32 {
+   $1 = PyInt_AsLong($input);
+}
+
 %{
 #include "../vrpn_Types.h"
 #include "../vrpn_BaseClass.h"
