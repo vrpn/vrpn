@@ -9,6 +9,14 @@
 //
 
 %module vrpn_Analog_Output
+
+%typemap(in) vrpn_float64 {
+   $1 = PyFloat_AsDouble($input);
+}
+%typemap(in) vrpn_uint32 {
+   $1 = PyInt_AsLong($input);
+}
+
 %{
 #include "../vrpn_Types.h"
 #include "../vrpn_BaseClass.h"
@@ -26,6 +34,22 @@ static PyObject* convert_analogoutput_cb(vrpn_ANALOGOUTPUTCB* t) {
        return Py_BuildValue("(i|ddddd)",t->num_channel,t->channel[0],t->channel[1],t->channel[2],t->channel[3],t->channel[4]);
 }
 %}
+
+// We seem to have a problem with the automatically generated code for the
+// request_change_channel_value() function and have chased it down to having
+// an issue with the default-value last parameter.  Even though Swig generates
+// the code to handle both cases, when the switching function that is generated
+// is called it is always called with 4 arguments even when there are in fact 3, so
+// it fails to find the right function.
+//  To work around this, we here construct a python-callable method that does
+// not have a variable number of arguments and have it call the original function.
+%extend vrpn_Analog_Output_Remote {
+    virtual bool request_change_channel_value_python(
+        unsigned int chan, vrpn_float64 val)
+    {
+          return $self->request_change_channel_value( chan, val, vrpn_CONNECTION_RELIABLE);
+    }
+};
 
 %include python-callback-wrapper.i
 
