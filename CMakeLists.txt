@@ -253,6 +253,7 @@ if(NOT CurrentPythonSettings STREQUAL _VRPN_PYTHON_SETTINGS)
 	if(VRPN_BUILD_PYTHON)
 		# Swig wants 2.x, I assume
 		set(vrpn_python_versionsearch 2)
+		set(Python_ADDITIONAL_VERSIONS "")
 		if(VRPN_BUILD_PYTHON_HANDCODED_3X)
 			message(FATAL_ERROR
 				"Can't build both SWIG (2.x) and hand-coded 3.x Python bindings. Disable either VRPN_BUILD_PYTHON or VRPN_BUILD_PYTHON_HANDCODED_3X.")
@@ -267,11 +268,13 @@ if(NOT CurrentPythonSettings STREQUAL _VRPN_PYTHON_SETTINGS)
 		NOT
 		VRPN_BUILD_PYTHON_HANDCODED_3X)
 		set(vrpn_python_versionsearch 2)
+		set(Python_ADDITIONAL_VERSIONS "")
 	elseif(VRPN_BUILD_PYTHON_HANDCODED_3X
 		AND
 		NOT
 		VRPN_BUILD_PYTHON_HANDCODED_2X)
 		set(vrpn_python_versionsearch 3)
+		set(Python_ADDITIONAL_VERSIONS 3.4)
 	endif()
 	unset(PYTHON_INCLUDE_DIR CACHE)
 	unset(PYTHON_INCLUDE_DIR)
@@ -294,7 +297,6 @@ endif()
 
 # Passing just the major version works with as desired multi-python-capable find module such
 # as in latest CMake (2.8.9)
-set(Python_ADDITIONAL_VERSIONS 3.4)
 find_package(PythonLibs ${_VRPN_PYTHON_VERSIONSEARCH} ${QUIET_IF_SUBPROJECT})
 if(PYTHONLIBS_FOUND)
 	if(PYTHONLIBS_VERSION_STRING)
