@@ -25,7 +25,8 @@ static const vrpn_int32 NUM_CHANNELS = 11;
 vrpn_Laputa::vrpn_Laputa(const char *name, vrpn_Connection *c)
     : vrpn_Analog(name, c)
     , vrpn_HidInterface(
-          m_filter = new vrpn_HidProductAcceptor(LAPUTA_VENDOR, LAPUTA_PRODUCT))
+          m_filter = new vrpn_HidProductAcceptor(LAPUTA_VENDOR, LAPUTA_PRODUCT),
+          LAPUTA_VENDOR, LAPUTA_PRODUCT)
 {
 
     vrpn_Analog::num_channel = NUM_CHANNELS;
@@ -130,13 +131,16 @@ void vrpn_Laputa::parse_message_type_1(std::size_t bytes, vrpn_uint8 *buffer)
         // The magnetomoter data goes into analogs 6,7,8.
         const double accelerometer_scale = 0.0001;
         const double gyroscope_scale = 0.0001;
-        channel[2] = accelerometer_raw[0] * accelerometer_scale;
-        channel[3] = accelerometer_raw[1] * accelerometer_scale;
-        channel[4] = accelerometer_raw[2] * accelerometer_scale;
+        channel[2] =
+            static_cast<double>(accelerometer_raw[0]) * accelerometer_scale;
+        channel[3] =
+            static_cast<double>(accelerometer_raw[1]) * accelerometer_scale;
+        channel[4] =
+            static_cast<double>(accelerometer_raw[2]) * accelerometer_scale;
 
-        channel[5] = gyroscope_raw[0] * gyroscope_scale;
-        channel[6] = gyroscope_raw[1] * gyroscope_scale;
-        channel[7] = gyroscope_raw[2] * gyroscope_scale;
+        channel[5] = static_cast<double>(gyroscope_raw[0]) * gyroscope_scale;
+        channel[6] = static_cast<double>(gyroscope_raw[1]) * gyroscope_scale;
+        channel[7] = static_cast<double>(gyroscope_raw[2]) * gyroscope_scale;
 
         vrpn_Analog::report_changes();
     }
