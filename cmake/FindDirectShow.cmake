@@ -109,10 +109,10 @@ if(WINDOWSSDK_FOUND AND NOT DIRECTSHOW_QEDIT_INCLUDE_DIR)
 	foreach(_sdk ${WINDOWSSDK_DIRS})
 		windowssdk_build_lookup("${_sdk}" _build)
 		if(_build AND ("${_build}" VERSION_LESS 6.2))
-			get_windowssdk_include_dirs("${_sdk}" _dirs)
-			if(_dirs)
-				list(APPEND DIRECTSHOW_QEDIT_SEARCH ${_dirs})
-			endif()
+		get_windowssdk_include_dirs("${_sdk}" _dirs)
+		if(_dirs)
+			list(APPEND DIRECTSHOW_QEDIT_SEARCH ${_dirs})
+		endif()
 		endif()
 	endforeach()
 endif()
@@ -124,7 +124,7 @@ find_path(DIRECTSHOW_QEDIT_INCLUDE_DIR
 	HINTS
 	"${DIRECTSHOW_WINDOWSSDK_ROOT}"
 	PATHS
-	${WINDOWSSDK_DIRS}
+	${DIRECTSHOW_QEDIT_SEARCH}
 	PATH_SUFFIXES
 	"Include")
 
@@ -151,19 +151,19 @@ set(DIRECTSHOW_STRMIIDS_SEARCH)
 if(WINDOWSSDK_FOUND AND NOT DIRECTSHOW_STRMIIDS_LIBRARY)
 	foreach(_sdk ${WINDOWSSDK_DIRS})
 		get_windowssdk_library_dirs("${_sdk}" _dirs)
-		message(STATUS "- ${_dirs}")
 		if(_dirs)
 			list(APPEND DIRECTSHOW_STRMIIDS_SEARCH ${_dirs})
 		endif()
 	endforeach()
 endif()
+
 find_library(DIRECTSHOW_STRMIIDS_LIBRARY
 	NAMES
 	strmiids
 	HINTS
 	"${DIRECTSHOW_WINDOWSSDK_ROOT}"
 	PATHS
-	${_acceptable_winsdk}
+	${DIRECTSHOW_STRMIIDS_SEARCH}
 	PATH_SUFFIXES
 	"Lib${DIRECTSHOW_LIB_SUBDIR}")
 
