@@ -25,8 +25,7 @@ static const vrpn_int32 NUM_CHANNELS = 11;
 vrpn_Laputa::vrpn_Laputa(const char *name, vrpn_Connection *c)
     : vrpn_Analog(name, c)
     , vrpn_HidInterface(
-          m_filter = new vrpn_HidProductAcceptor(LAPUTA_VENDOR, LAPUTA_PRODUCT),
-          LAPUTA_VENDOR, LAPUTA_PRODUCT)
+          new vrpn_HidProductAcceptor(LAPUTA_VENDOR, LAPUTA_PRODUCT))
 {
 
     vrpn_Analog::num_channel = NUM_CHANNELS;

@@ -33,8 +33,6 @@ public:
     virtual void mainloop();
 
 protected:
-    vrpn_HidAcceptor *m_filter;
-
     //-------------------------------------------------------------
     // Parsers for different report types.
     // Override to define more parsers
