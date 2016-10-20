@@ -1336,6 +1336,26 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="vrpn_Laputa.C"
+				>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath="vrpn_Local_HIDAPI.C"
 				>
 				<FileConfiguration
@@ -2978,6 +2998,10 @@
 			</File>
 			<File
 				RelativePath="vrpn_LamportClock.h"
+				>
+			</File>
+			<File
+				RelativePath="vrpn_Laputa.h"
 				>
 			</File>
 			<File
