@@ -685,6 +685,7 @@ SLIB_FILES =  $(LIB_FILES) \
 	vrpn_JoyFly.C \
 	vrpn_Joylin.C \
 	vrpn_Keyboard.C \
+	vrpn_Laputa.C \
 	vrpn_LUDL.C \
 	vrpn_Local_HIDAPI.C \
 	vrpn_Logitech_Controller_Raw.C \
@@ -779,6 +780,7 @@ SLIB_INCLUDES = $(LIB_INCLUDES) \
 	vrpn_JoyFly.h \
 	vrpn_Joylin.h \
 	vrpn_Keyboard.h \
+	vrpn_Laputa.h \
 	vrpn_LUDL.h \
 	vrpn_Logitech_Controller_Raw.h \
 	vrpn_Magellan.h \
