@@ -1100,6 +1100,7 @@ set(VRPN_SERVER_SOURCES
 	vrpn_Joylin.C
 	vrpn_Joywin32.C
 	vrpn_Keyboard.C
+	vrpn_Laputa.C
 	vrpn_LUDL.C
 	vrpn_Logitech_Controller_Raw.C
 	vrpn_Magellan.C
@@ -1210,6 +1211,7 @@ set(VRPN_SERVER_PUBLIC_HEADERS
 	vrpn_Joywin32.h
 	vrpn_Keyboard.h
 	vrpn_Logitech_Controller_Raw.h
+	vrpn_Laputa.h
 	vrpn_LUDL.h
 	vrpn_Magellan.h
 	vrpn_MessageMacros.h
