@@ -4,31 +4,23 @@
 #include "vrpn_Configure.h"   // IWYU pragma: keep
 
 #ifdef  VRPN_INCLUDE_PHASESPACE
-#include <map>
-#include <vector>
+#include <string>
 
 #include "vrpn_Shared.h"
 #include "vrpn_Tracker.h"
+#include "vrpn_Button.h"
+#include "vrpn_Analog.h"
 
-#include "owl.h"
-#include "owl_planes.h"
-#include "owl_peaks.h"
-#include "owl_images.h"
+#include "owl.hpp"
 
-#define VRPN_PHASESPACE_MAXMARKERS 256
-#define VRPN_PHASESPACE_MAXRIGIDS 32
-#define VRPN_PHASESPACE_MAXCAMERAS 128
-#define VRPN_PHASESPACE_MAXDETECTORS 128
-#define VRPN_PHASESPACE_MAXPLANES 256
-#define VRPN_PHASESPACE_MAXPEAKS 512
-#define VRPN_PHASESPACE_MAXIMAGES 512
-#define VRPN_PHASESPACE_MSGBUFSIZE 1024
+class VRPN_API vrpn_Tracker_PhaseSpace : public vrpn_Tracker, public vrpn_Button_Filter, public vrpn_Clipping_Analog_Server {
 
-class VRPN_API vrpn_Tracker_PhaseSpace : public vrpn_Tracker {
+ public:
 
-public:
+  vrpn_Tracker_PhaseSpace(const char *name,
+                          vrpn_Connection *c);
 
-  vrpn_Tracker_PhaseSpace(const char *name, 
+  vrpn_Tracker_PhaseSpace(const char *name,
                           vrpn_Connection *c,
                           const char* device,
                           float frequency,
@@ -38,42 +30,50 @@ public:
 
   ~vrpn_Tracker_PhaseSpace();
 
+  bool debug;
+
+  // vrpn_Tracker
   virtual void mainloop();
+  static int VRPN_CALLBACK handle_update_rate_request(void *userdata, vrpn_HANDLERPARAM p);
 
-  bool addMarker(int sensor,int led_id);
-  bool addRigidMarker(int sensor, int led_id, float x, float y, float z);
-  bool startNewRigidBody(int sensor);
-  bool enableTracker(bool enable);
-  void setFrequency(float freq);
+  // parse a tracker specification file and create PhaseSpace trackers
+  bool load(FILE* file);
 
-  static int VRPN_CALLBACK handle_update_rate_request(void *userdata, vrpn_HANDLERPARAM p);  
+  // connect to the Impulse system
+  bool InitOWL();
 
-protected:
+  // start streaming
+  bool enableStreaming(bool enable);
 
-  int numRigids;
-  int numMarkers;
-  bool owlRunning;
-  float frequency;
-  bool readMostRecent;
-  bool slave;
-  int frame;
-
-  typedef std::map<int, vrpn_int32> RigidToSensorMap;
-  RigidToSensorMap r2s_map;
-  std::vector<OWLMarker> markers;
-  std::vector<OWLRigid> rigids;
-  std::vector<OWLCamera> cameras;
-  std::vector<OWLPlane> planes;
-  std::vector<OWLPeak> peaks;
-  std::vector<OWLImage> images;
-  std::vector<OWLDetectors> detectors;
-
-protected:
-  int read_frame(void);
-    
+ protected:
+  // vrpn_Tracker
   virtual int get_report(void);
   virtual void send_report(void);
-};
-#endif
 
-#endif
+ protected:
+
+  // libowl2
+  OWL::Context context;
+  std::string device;
+  std::string options;
+
+  // 
+  bool drop_frames;
+
+  class SensorManager;
+  SensorManager* smgr;
+
+ protected:
+
+  bool create_trackers();
+
+  void set_pose(const OWL::Rigid &r);
+  void report_marker(vrpn_int32 sensor, const OWL::Marker &m);
+  void report_rigid(vrpn_int32 sensor, const OWL::Rigid &r, bool is_stylus=false);
+  void report_button(vrpn_int32 sensor, int value);
+  void report_button_analog(vrpn_int32 sensor, int value);
+
+};
+
+#endif //VRPN_INCLUDE_PHASESPACE
+#endif //VRPN_TRACKER_PHASESPACE_H
