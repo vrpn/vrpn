@@ -2943,7 +2943,7 @@ int vrpn_Generic_Server_Object::setup_DTrack(char *&pch, char *line,
 
     _devices->add(new vrpn_Tracker_DTrack(s2, connection, dtrackPort,
                                           timeToReachJoy, nob, nof, pidbf,
-                                          actTracing));
+                                          act3DOFout, actTracing));
 
     return 0;
 #else
