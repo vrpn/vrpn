@@ -28,7 +28,6 @@ if(VRPN_USE_LOCAL_JSONCPP)
 		"${_jsoncpp_base}/src/lib_json/*.inl"
 		"${_jsoncpp_base}/src/lib_json/*.h"
 		"${_jsoncpp_base}/src/lib_json/*.cpp")
-	source_group("JSONCPP Submodule" FILES ${JSONCPP_SOURCES})
 	set(JSONCPP_LIBRARIES "")
 	set(JSONCPP_FOUND TRUE)
 endif()
