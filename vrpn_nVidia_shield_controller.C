@@ -524,7 +524,8 @@ void vrpn_nVidia_shield_stealth_USB::decodePacket(size_t bytes, vrpn_uint8 *buff
     vrpn_uint8 *bufptr = &buffer[9];
     for (int axis = first_joy_axis; axis < first_joy_axis + num_joy_axis; axis++) {
       vrpn_uint16 raw_val = vrpn_unbuffer_from_little_endian<vrpn_uint16>(bufptr);
-      double value = raw_val / 65535.0;
+      vrpn_int32 signed_val = raw_val - static_cast<int>(32767);
+      double value = signed_val / 32768.0;
       channel[first_analog + axis - first_joy_axis] = value;
     }
 
