@@ -49,9 +49,27 @@ protected:
   void decodePacket(size_t bytes, vrpn_uint8 *buffer);
 };
 
+class vrpn_nVidia_shield_stealth_USB: protected vrpn_nVidia_shield,
+    public vrpn_Analog, public vrpn_Button_Filter {
+public:
+  vrpn_nVidia_shield_stealth_USB(const char *name, vrpn_Connection *c = 0);
+  virtual ~vrpn_nVidia_shield_stealth_USB(void) {};
+
+  virtual void mainloop(void);
+
+protected:
+  // Send report iff changed
+  void report_changes (vrpn_uint32 class_of_service = vrpn_CONNECTION_LOW_LATENCY);
+  // Send report whether or not changed
+  void report (vrpn_uint32 class_of_service = vrpn_CONNECTION_LOW_LATENCY);
+
+  void decodePacket(size_t bytes, vrpn_uint8 *buffer);
+};
+
 // end of VRPN_USE_HID
 #else
 class VRPN_API vrpn_nVidia_shield;
 class VRPN_API vrpn_nVidia_shield_USB;
+class VRPN_API vrpn_nVidia_shield_stealth_USB;
 #endif
 

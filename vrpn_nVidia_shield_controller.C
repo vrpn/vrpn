@@ -14,6 +14,7 @@ static const double POLL_INTERVAL = 1e+6 / 30.0;		// If we have not heard, repor
 // USB vendor and product IDs for the models we support
 static const vrpn_uint16 NVIDIA_VENDOR = 0x955;
 static const vrpn_uint16 NVIDIA_SHIELD_USB = 0x7210;
+static const vrpn_uint16 NVIDIA_SHIELD_STEALTH_USB = 0x7214;
 
 vrpn_nVidia_shield::vrpn_nVidia_shield(vrpn_HidAcceptor *filter,
     const char *name, vrpn_Connection *c,
@@ -295,6 +296,253 @@ void vrpn_nVidia_shield_USB::decodePacket(size_t bytes, vrpn_uint8 *buffer)
     vrpn_uint8 type = 0;
     if (bytes > 0) { type = buffer[0]; }
 		fprintf(stderr, "vrpn_nVidia_shield_USB: Unrecognized report type (%u); # total bytes = %u\n", type, static_cast<unsigned>(bytes));
+	}
+
+}
+
+vrpn_nVidia_shield_stealth_USB::vrpn_nVidia_shield_stealth_USB(const char *name, vrpn_Connection *c)
+    : vrpn_nVidia_shield(new vrpn_HidProductAcceptor(NVIDIA_VENDOR, NVIDIA_SHIELD_STEALTH_USB), name, c, NVIDIA_VENDOR, NVIDIA_SHIELD_STEALTH_USB)
+  , vrpn_Analog(name, c)
+  , vrpn_Button_Filter(name, c)
+{
+  vrpn_Analog::num_channel = 10;
+  vrpn_Button::num_buttons = 21;
+
+  // Initialize the state of all the analogs and buttons
+  memset(buttons, 0, sizeof(buttons));
+  memset(lastbuttons, 0, sizeof(lastbuttons));
+  memset(channel, 0, sizeof(channel));
+  memset(last, 0, sizeof(last));
+}
+
+void vrpn_nVidia_shield_stealth_USB::mainloop(void)
+{
+	update();
+	server_mainloop();
+	struct timeval current_time;
+	vrpn_gettimeofday(&current_time, NULL);
+	if (vrpn_TimevalDuration(current_time, d_timestamp) > POLL_INTERVAL ) {
+		d_timestamp = current_time;
+		report_changes();
+
+		if (vrpn_Analog::num_channel > 0)
+		{
+			vrpn_Analog::server_mainloop();
+		}
+		if (vrpn_Button::num_buttons > 0)
+		{
+			vrpn_Button::server_mainloop();
+		}
+	}
+}
+
+void vrpn_nVidia_shield_stealth_USB::report(vrpn_uint32 class_of_service) {
+	if (vrpn_Analog::num_channel > 0)
+	{
+		vrpn_Analog::timestamp = d_timestamp;
+	}
+	if (vrpn_Button::num_buttons > 0)
+	{
+		vrpn_Button::timestamp = d_timestamp;
+	}
+
+	if (vrpn_Analog::num_channel > 0)
+	{
+		vrpn_Analog::report(class_of_service);
+	}
+	if (vrpn_Button::num_buttons > 0)
+	{
+		vrpn_Button::report_changes();
+	}
+}
+
+void vrpn_nVidia_shield_stealth_USB::report_changes(vrpn_uint32 class_of_service) {
+	if (vrpn_Analog::num_channel > 0)
+	{
+		vrpn_Analog::timestamp = d_timestamp;
+	}
+	if (vrpn_Button::num_buttons > 0)
+	{
+		vrpn_Button::timestamp = d_timestamp;
+	}
+
+	if (vrpn_Analog::num_channel > 0)
+	{
+		vrpn_Analog::report_changes(class_of_service);
+	}
+	if (vrpn_Button::num_buttons > 0)
+	{
+		vrpn_Button::report_changes();
+	}
+}
+
+void vrpn_nVidia_shield_stealth_USB::decodePacket(size_t bytes, vrpn_uint8 *buffer)
+{
+  // There is one type of report, type 1 is 32 bytes long (plus the
+  // type byte).
+
+  if ( (bytes == 33) && (buffer[0] == 1) ) {
+
+    // 32-byte reports.
+    // Byte 0 is 01 (report type 1)
+    // Byte 1 is a counter index on reports that loops
+
+    // Byte 3:
+    //  Bit 0: A button
+    //  Bit 1: B button
+    //  Bit 2: X button
+    //  Bit 3: Y button
+    //  Bit 4: Left finger trigger button
+    //  Bit 5: Right finger trigger button
+    //  Bit 6: Left joystick button
+    //  Bit 7: Right joystick button
+
+    int first_byte = 3;
+    int num_bytes = 1;
+    int first_button = 0;
+    for (int byte = first_byte; byte < first_byte + num_bytes; byte++) {
+      vrpn_uint8 value = buffer[byte];
+      for (int btn = 0; btn < 8; btn++) {
+        vrpn_uint8 mask = static_cast<vrpn_uint8>(1 << btn);
+        buttons[8*(byte - first_byte) + btn + first_button] = ((value & mask) != 0);
+      }
+    }
+
+    // Byte 4:
+    //  Bit 0: Play/pause button
+    buttons[9] = buffer[4] & 0x01;
+
+    // Byte 17:
+    //  Bit 0: Circle button pressed
+    //  Bit 1: Left-arrow button pressed
+    //  Bit 2: Shield emblem pressed
+    buttons[12] = buffer[17] & 0x01;
+    buttons[11] = buffer[17] & 0x02;
+    buttons[13] = buffer[17] & 0x04;
+
+    // Byte 2: Left hi-hat:
+    //  80: Nothing pressed
+    //  0 = North, 1 = NE, 2 = E, 3 = SE, 4 = S, 5 = SW, 6 = W, 7 = NW
+    //  This is encoded as buttons 16 (up), 17 (right), 18 (down), and 19 (left)
+    //  It is also encoded as two analogs: 8 (X, -1 left 1 right) and
+    //    9 (Y, -1 up 1 down).
+    switch (buffer[2]) {
+    case 0:
+      buttons[16] = 1;
+      buttons[17] = 0;
+      buttons[18] = 0;
+      buttons[19] = 0;
+      channel[8] = 0;
+      channel[9] = -1;
+      break;
+
+    case 1:
+      buttons[16] = 1;
+      buttons[17] = 1;
+      buttons[18] = 0;
+      buttons[19] = 0;
+      channel[8] = 1;
+      channel[9] = -1;
+      break;
+
+    case 2:
+      buttons[16] = 0;
+      buttons[17] = 1;
+      buttons[18] = 0;
+      buttons[19] = 0;
+      channel[8] = 1;
+      channel[9] = 0;
+      break;
+
+    case 3:
+      buttons[16] = 0;
+      buttons[17] = 1;
+      buttons[18] = 1;
+      buttons[19] = 0;
+      channel[8] = 1;
+      channel[9] = 1;
+      break;
+
+    case 4:
+      buttons[16] = 0;
+      buttons[17] = 0;
+      buttons[18] = 1;
+      buttons[19] = 0;
+      channel[8] = 0;
+      channel[9] = 1;
+      break;
+
+    case 5:
+      buttons[16] = 0;
+      buttons[17] = 0;
+      buttons[18] = 1;
+      buttons[19] = 1;
+      channel[8] = -1;
+      channel[9] = 1;
+      break;
+
+    case 6:
+      buttons[16] = 0;
+      buttons[17] = 0;
+      buttons[18] = 0;
+      buttons[19] = 1;
+      channel[8] = -1;
+      channel[9] = 0;
+      break;
+
+    case 7:
+      buttons[16] = 1;
+      buttons[17] = 0;
+      buttons[18] = 0;
+      buttons[19] = 1;
+      channel[8] = -1;
+      channel[9] = -1;
+      break;
+
+    default:
+      buttons[16] = 0;
+      buttons[17] = 0;
+      buttons[18] = 0;
+      buttons[19] = 0;
+      channel[8] = 0;
+      channel[9] = 0;
+      break;
+    }
+
+    // Bytes 9 and 10 are a 16-bit left-joystick X axis analog, byte 10 MSB
+    //   00 00 to the left, ff ff to the right, around 00 80 centered
+    // Bytes 11 and 12 are a 16-bit left-joystick Y axis analog, byte 12 MSB
+    //   00 00 up, ff ff down, around 00 80 centered
+    // Bytes 13 and 14 are a 16-bit right-joystick X axis analog, byte 14 MSB
+    //   00 00 to the left, ff ff to the right, around 00 80 centered
+    // Bytes 15 and 16 are a 16-bit right-joystick Y axis analog, byte 16 MSB
+    //   00 00 up, ff ff down, around 00 80 centered
+    int first_joy_axis = 0;
+    int num_joy_axis = 4;
+    int first_analog = 0;
+    vrpn_uint8 *bufptr = &buffer[9];
+    for (int axis = first_joy_axis; axis < first_joy_axis + num_joy_axis; axis++) {
+      vrpn_uint16 raw_val = vrpn_unbuffer_from_little_endian<vrpn_uint16>(bufptr);
+      double value = raw_val / 65535.0;
+      channel[first_analog + axis - first_joy_axis] = value;
+    }
+
+    // Bytes 5 and 6 are a 16-bit left-finger analog, byte 6 MSB
+    // Bytes 7 and 8 are a 16-bit right-finger analog, byte 8 MSB
+    int first_trigger = 0;
+    int num_trigger = 2;
+    first_analog = 4;
+    bufptr = &buffer[5];
+    for (int trig = first_trigger; trig < first_trigger + num_trigger; trig++) {
+      vrpn_uint16 raw_val = vrpn_unbuffer_from_little_endian<vrpn_uint16>(bufptr);
+      double value = raw_val / 65535.0;
+      channel[first_analog + trig - first_trigger] = value;
+    }
+
+	} else {
+    vrpn_uint8 type = 0;
+    if (bytes > 0) { type = buffer[0]; }
+		fprintf(stderr, "vrpn_nVidia_shield_stealth_USB: Unrecognized report type (%u); # total bytes = %u\n", type, static_cast<unsigned>(bytes));
 	}
 
 }

@@ -5104,6 +5104,31 @@ int vrpn_Generic_Server_Object::setup_nVidia_shield_USB(char *&pch, char *line, 
   return 0; // successful completion
 }
 
+int vrpn_Generic_Server_Object::setup_nVidia_shield_stealth_USB(char *&pch, char *line, FILE *)
+{
+  char s2[LINESIZE];
+
+  VRPN_CONFIG_NEXT();
+  int ret = sscanf(pch, "%511s", s2);
+  if (ret != 1) {
+    fprintf(stderr, "Bad nVidia_shield_stealth_USB line: %s\n", line);
+    return -1;
+  }
+
+  // Open the shield
+  if (verbose) {
+    printf("Opening vrpn_nVidia_shield_stealth_USB\n");
+  }
+
+#ifdef VRPN_USE_HID
+  _devices->add(new vrpn_nVidia_shield_stealth_USB(s2, connection));
+#else
+  fprintf(stderr,
+    "nVidia_shield_stealth_USB driver works only with VRPN_USE_HID defined!\n");
+#endif
+  return 0; // successful completion
+}
+
 int vrpn_Generic_Server_Object::setup_Adafruit_10DOF(char *&pch, char *line, FILE *)
 {
   char vrpnName[LINESIZE], devName[LINESIZE];
@@ -5116,7 +5141,7 @@ int vrpn_Generic_Server_Object::setup_Adafruit_10DOF(char *&pch, char *line, FIL
     return -1;
   }
 
-  // Open the shield
+  // Open the Adafruit
   if (verbose) {
     printf("Opening Adafruit_10DOF\n");
   }
@@ -5752,6 +5777,9 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(
                 }
                 else if (VRPN_ISIT("vrpn_nVidia_shield_USB")) {
                   VRPN_CHECK(setup_nVidia_shield_USB);
+                }
+                else if (VRPN_ISIT("vrpn_nVidia_shield_stealth_USB")) {
+                  VRPN_CHECK(setup_nVidia_shield_stealth_USB);
                 }
                 else if (VRPN_ISIT("vrpn_Tracker_Spin")) {
                   VRPN_CHECK(setup_Tracker_Spin);
