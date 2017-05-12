@@ -379,9 +379,10 @@ void vrpn_nVidia_shield_stealth_USB::report_changes(vrpn_uint32 class_of_service
 void vrpn_nVidia_shield_stealth_USB::decodePacket(size_t bytes, vrpn_uint8 *buffer)
 {
   // There is one type of report, type 1 is 32 bytes long (plus the
+  // type byte).  On Windows, the packet is 232 bytes long (plus the
   // type byte).
 
-  if ( (bytes == 33) && (buffer[0] == 1) ) {
+  if ( (bytes >= 33) && (buffer[0] == 1) ) {
 
     // 32-byte reports.
     // Byte 0 is 01 (report type 1)
