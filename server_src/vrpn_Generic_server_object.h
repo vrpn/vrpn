@@ -167,6 +167,7 @@ protected:
     int setup_IMU_Magnetometer(char *&pch, char *line, FILE *config_file);
     int setup_IMU_SimpleCombiner(char *&pch, char *line, FILE *config_file);
     int setup_nVidia_shield_USB(char *&pch, char *line, FILE *config_file);
+    int setup_nVidia_shield_stealth_USB(char *&pch, char *line, FILE *config_file);
     int setup_Adafruit_10DOF(char *&pch, char *line, FILE *config_file);
     int setup_OzzMaker_BerryIMU(char *&pch, char *line, FILE *config_file);
     int setup_Laputa(char *&pch, char *line, FILE *config_file);
