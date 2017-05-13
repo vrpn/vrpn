@@ -15,6 +15,7 @@ static const vrpn_uint16 SIDEWINDER = 0x003c;
 static const vrpn_uint16 XBOX_S = 0x0289;
 static const vrpn_uint16 XBOX_360 = 0x028e;
 static const vrpn_uint16 XBOX_360_WIRELESS = 0x02a1;
+static const vrpn_uint16 XBOX_ONE = 0x02ff;
 
 // and generic controllers that act the same as the above
 static const vrpn_uint16 AFTERGLOW_VENDOR = 0x0e6f;
@@ -865,6 +866,12 @@ vrpn_Microsoft_Controller_Raw_Xbox_360_Wireless::vrpn_Microsoft_Controller_Raw_X
 // the functions from that class.  We just declare the vendor and product ID.
 vrpn_Afterglow_Ax1_For_Xbox_360::vrpn_Afterglow_Ax1_For_Xbox_360(const char *name, vrpn_Connection *c)
     : vrpn_Microsoft_Controller_Raw_Xbox_360_base(name, c, AFTERGLOW_VENDOR, AX1_FOR_XBOX_360)
+{
+}
+
+// The original Xbox_One.  We just declare the vendor and product ID.
+vrpn_Microsoft_Controller_Raw_Xbox_One::vrpn_Microsoft_Controller_Raw_Xbox_One(const char *name, vrpn_Connection *c)
+  : vrpn_Microsoft_Controller_Raw_Xbox_360_base(name, c, MICROSOFT_VENDOR, XBOX_ONE)
 {
 }
 

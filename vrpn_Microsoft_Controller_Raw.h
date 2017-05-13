@@ -144,6 +144,13 @@ public:
 	vrpn_Afterglow_Ax1_For_Xbox_360(const char *name, vrpn_Connection *c);
 };
 
+// Xbox One
+class vrpn_Microsoft_Controller_Raw_Xbox_One : public vrpn_Microsoft_Controller_Raw_Xbox_360_base
+{
+public:
+  vrpn_Microsoft_Controller_Raw_Xbox_One(const char *name, vrpn_Connection *c);
+};
+
 // end of VRPN_USE_HID
 #else
 class VRPN_API vrpn_Microsoft_Controller_Raw_Xbox_S;
@@ -152,4 +159,5 @@ class VRPN_API vrpn_Microsoft_Controller_Raw_Xbox_360_Wireless;
 class VRPN_API vrpn_Afterglow_Ax1_For_Xbox_360;
 class VRPN_API vrpn_Microsoft_SideWinder_Precision_2;
 class VRPN_API vrpn_Microsoft_SideWinder;
+class VRPN_API vrpn_Microsoft_Controller_Raw_Xbox_One;
 #endif
