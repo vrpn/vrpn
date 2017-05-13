@@ -1,6 +1,7 @@
 #include <stdlib.h>                 // for strtol, atoi, strtod
 #include <string.h>                 // for strcmp, strlen, strtok, etc
 #include "vrpn_MainloopContainer.h" // for vrpn_MainloopContainer
+#include "vrpn_Generic_server_object.h"
 #include <locale>                   // To enable setting parsing for .cfg file
 #include <string>
 
@@ -38,7 +39,6 @@
 #include "vrpn_Flock_Parallel.h" // for vrpn_Tracker_Flock_Parallel
 #include "vrpn_Freespace.h"
 #include "vrpn_Futaba.h" // for vrpn_Futaba_InterLink_Elite, etc.
-#include "vrpn_Generic_server_object.h"
 #include "vrpn_GlobalHapticsOrb.h"     // for vrpn_GlobalHapticsOrb
 #include "vrpn_Griffin.h"              // for vrpn_Griffin_PowerMate, etc.
 #include "vrpn_IDEA.h"                 // for vrpn_IDEA
