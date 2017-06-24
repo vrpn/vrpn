@@ -278,7 +278,7 @@ void DynamicPlane::planeEquationToTransform(vrpn_HapticPlane &prev_plane,
         axis = crossprod/sintheta;
     }
     theta = asin(sintheta);
-    if (costheta < 0) theta = M_PI - theta;
+    if (costheta < 0) theta = VRPN_PI - theta;
 
     // set the incremental rotation
 #ifdef	VRPN_USE_HDAPI
@@ -846,14 +846,14 @@ double TexturePlane::computeHeight(double x, double z) const
 // for texture: compute height as a function of radius from texture origin
 double TexturePlane::computeHeight(double r) const
 {
-	double k = 2*M_PI*texWN;
+	double k = 2*VRPN_PI*texWN;
 	return texAmp*cos(k*r);
 }
 
 // for texture:
 vrpn_HapticVector TexturePlane::computeNormal(double x, double z) const
 {
-	double k = 2*M_PI*texWN;
+	double k = 2*VRPN_PI*texWN;
 	double r_sq = x*x + z*z;
 	double r = sqrt(r_sq);
 

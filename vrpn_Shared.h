@@ -9,6 +9,10 @@
 #endif
 #endif
 
+// Definitions needed by several included files that are not on
+// all systems.
+#define VRPN_PI (3.14159265358979323846)
+
 #include "vrpn_Configure.h" // for VRPN_API
 #include "vrpn_Types.h"     // for vrpn_int32, vrpn_float64, etc
 #include "vrpn_Thread.h"

@@ -332,10 +332,6 @@ void vrpn_Tracker_DeadReckoning_Rotation::handle_tracker_velocity_report(void *u
 //===============================================================================
 // Things related to the test() function go below here.
 
-#ifndef M_PI
-#define M_PI  (2*acos(0.0))
-#endif
-
 typedef struct {
     struct timeval  time;
     vrpn_int32  sensor;
@@ -454,7 +450,7 @@ int vrpn_Tracker_DeadReckoning_Rotation::test(void)
     // message that has rotated by very close to 1.4 * 90 degrees.
     q_vec_type pos2 = { 2, 1, 1 };
     q_type quat2;
-    double angle2 = 0.4 * 90 * M_PI / 180.0;
+    double angle2 = 0.4 * 90 * VRPN_PI / 180.0;
     q_from_axis_angle(quat2, 0, 0, 1, angle2);
     struct timeval p4Second = { 0, 400000 };
     struct timeval firstPlusP4 = vrpn_TimevalSum(firstSent, p4Second);
@@ -471,7 +467,7 @@ int vrpn_Tracker_DeadReckoning_Rotation::test(void)
         || (poseResponse.sensor != 0)
         || (q_vec_distance(poseResponse.pos, pos2) > 1e-10)
         || !isClose(x, 0) || !isClose(y, 0) || !isClose(z, 1)
-        || !isClose(angle, 1.4 * 90 * M_PI / 180.0)
+        || !isClose(angle, 1.4 * 90 * VRPN_PI / 180.0)
        )
     {
         std::cerr << "vrpn_Tracker_DeadReckoning_Rotation::test(): Got unexpected"
@@ -506,7 +502,7 @@ int vrpn_Tracker_DeadReckoning_Rotation::test(void)
         || (poseResponse.sensor != 1)
         || (q_vec_distance(poseResponse.pos, pos) > 1e-10)
         || !isClose(x, 0) || !isClose(y, 0) || !isClose(z, 1)
-        || !isClose(angle, 90 * M_PI / 180.0)
+        || !isClose(angle, 90 * VRPN_PI / 180.0)
         )
     {
         std::cerr << "vrpn_Tracker_DeadReckoning_Rotation::test(): Got unexpected"
@@ -532,10 +528,10 @@ int vrpn_Tracker_DeadReckoning_Rotation::test(void)
     struct timeval oneSecond = { 1, 0 };
     struct timeval firstPlusOne = vrpn_TimevalSum(firstSent, oneSecond);
     q_type quat3;
-    q_from_axis_angle(quat3, 1, 0, 0, M_PI);
+    q_from_axis_angle(quat3, 1, 0, 0, VRPN_PI);
     t0->report_pose(1, firstPlusOne, pos, quat3);
     q_type quat4;
-    q_from_axis_angle(quat4, 0, 0, 1, M_PI);
+    q_from_axis_angle(quat4, 0, 0, 1, VRPN_PI);
     t0->report_pose_velocity(1, firstPlusOne, vel, quat4, 1.0);
 
     t0->mainloop();
@@ -548,7 +544,7 @@ int vrpn_Tracker_DeadReckoning_Rotation::test(void)
         || (poseResponse.sensor != 1)
         || (q_vec_distance(poseResponse.pos, pos) > 1e-10)
         || !isClose(x, 0) || !isClose(fabs(y), 1) || !isClose(z, 0)
-        || !isClose(fabs(angle), M_PI)
+        || !isClose(fabs(angle), VRPN_PI)
         )
     {
         std::cerr << "vrpn_Tracker_DeadReckoning_Rotation::test(): Got unexpected"
@@ -576,10 +572,10 @@ int vrpn_Tracker_DeadReckoning_Rotation::test(void)
     // starting at the original time.  We do this on sensor 0, which has never
     // had a velocity report, so that it will be using the pose-only prediction.
     struct timeval firstPlusTwo = vrpn_TimevalSum(firstPlusOne, oneSecond);
-    q_from_axis_angle(quat3, 1, 0, 0, M_PI);
+    q_from_axis_angle(quat3, 1, 0, 0, VRPN_PI);
     t0->report_pose(0, firstSent, pos, quat);
     t0->report_pose(0, firstPlusOne, pos, quat3);
-    q_from_axis_angle(quat4, 0, 0, 1, M_PI / 2);
+    q_from_axis_angle(quat4, 0, 0, 1, VRPN_PI / 2);
     q_type quat5;
     q_mult(quat5, quat4, quat3);
     t0->report_pose(0, firstPlusTwo, pos, quat5);
@@ -594,7 +590,7 @@ int vrpn_Tracker_DeadReckoning_Rotation::test(void)
         || (poseResponse.sensor != 0)
         || (q_vec_distance(poseResponse.pos, pos) > 1e-10)
         || !isClose(x, 0) || !isClose(fabs(y), 1.0) || !isClose(z, 0)
-        || !isClose(fabs(angle), M_PI)
+        || !isClose(fabs(angle), VRPN_PI)
         )
     {
         std::cerr << "vrpn_Tracker_DeadReckoning_Rotation::test(): Got unexpected"
