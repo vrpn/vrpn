@@ -92,6 +92,9 @@
 // manner.  Otherwise, we just use the system call.
 #ifndef VRPN_USE_STD_CHRONO
   #define vrpn_gettimeofday gettimeofday
+#else
+  extern "C" VRPN_API int vrpn_gettimeofday(struct timeval *tp,
+                                            void *tzp = NULL);
 #endif
 #else // winsock sockets
 
