@@ -9,9 +9,10 @@
 #endif
 #endif
 
-// Definitions needed by several included files that are not on
-// all systems.
+// Definitions needed by several included files.
 #define VRPN_PI (3.14159265358979323846)
+#define VRPN_INCHES_TO_METERS (2.54/100.0)
+#define VRPN_DEGREES_TO_RADIANS (VRPN_PI/180.0)
 
 #include "vrpn_Configure.h" // for VRPN_API
 #include "vrpn_Types.h"     // for vrpn_int32, vrpn_float64, etc

@@ -28,8 +28,6 @@
 #include "vrpn_MessageMacros.h"         // for VRPN_MSG_INFO, VRPN_MSG_WARNING, VRPN_MSG_ERROR
 #include "vrpn_Tracker_Fastrak.h"
 
-#define	INCHES_TO_METERS	(2.54/100.0)
-
 vrpn_Tracker_Fastrak::vrpn_Tracker_Fastrak(const char *name, vrpn_Connection *c, 
 		      const char *port, long baud, int enable_filtering, int numstations,
 		      const char *additional_reset_commands, int is900_timestamps) :
@@ -594,9 +592,9 @@ int vrpn_Tracker_Fastrak::get_report(void)
 
    // When copying the positions, convert from inches to meters, since the
    // Fastrak reports in inches and VRPN reports in meters.
-   pos[0] = vrpn_unbuffer_from_little_endian<vrpn_float32>(bufptr) * INCHES_TO_METERS;
-   pos[1] = vrpn_unbuffer_from_little_endian<vrpn_float32>(bufptr) * INCHES_TO_METERS;
-   pos[2] = vrpn_unbuffer_from_little_endian<vrpn_float32>(bufptr) * INCHES_TO_METERS;
+   pos[0] = vrpn_unbuffer_from_little_endian<vrpn_float32>(bufptr) * VRPN_INCHES_TO_METERS;
+   pos[1] = vrpn_unbuffer_from_little_endian<vrpn_float32>(bufptr) * VRPN_INCHES_TO_METERS;
+   pos[2] = vrpn_unbuffer_from_little_endian<vrpn_float32>(bufptr) * VRPN_INCHES_TO_METERS;
 
    // Change the order of the quaternion fields to match quatlib order
    d_quat[Q_W] = vrpn_unbuffer_from_little_endian<vrpn_float32>(bufptr);

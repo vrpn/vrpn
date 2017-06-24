@@ -31,10 +31,6 @@
 #include "isense.c"
 
 #define MAX_TIME_INTERVAL       (5000000) // max time between reports (usec)
-#define	INCHES_TO_METERS	(2.54/100.0)
-#define PI (3.14159265358979323846)
-#define DEG_TO_RAD (PI/180.)
-
 
 void vrpn_Tracker_InterSense::getTrackerInfo(char *msg)
 {
@@ -429,9 +425,9 @@ void vrpn_Tracker_InterSense::get_report(void)
         } else {
 	        // Just return Euler for now...
 	        // nahon@virtools needs to convert to radians
-		angles[0] = DEG_TO_RAD*data.Station[station].Euler[0];
-		angles[1] = DEG_TO_RAD*data.Station[station].Euler[1];
-		angles[2] = DEG_TO_RAD*data.Station[station].Euler[2];
+		angles[0] = VRPN_DEGREES_TO_RADIANS*data.Station[station].Euler[0];
+		angles[1] = VRPN_DEGREES_TO_RADIANS*data.Station[station].Euler[1];
+		angles[2] = VRPN_DEGREES_TO_RADIANS*data.Station[station].Euler[2];
 
 		q_from_euler(d_quat, angles[0], angles[1], angles[2]);	
 	}
