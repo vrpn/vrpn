@@ -884,6 +884,9 @@ option_requires(VRPN_USE_OVR
 if(VRPN_USE_OVR)
 	include_directories(${OVR_INCLUDE_DIRS})
 	list(APPEND SERVER_EXTRA_LIBS ${OVR_LIBRARIES})
+  if(UNIX)
+	  list(APPEND SERVER_EXTRA_LIBS dl)
+  endif()
 endif()
 
 ###
