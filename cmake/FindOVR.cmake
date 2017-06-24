@@ -88,8 +88,8 @@ endif()
 
 find_library(OVR_LIBRARY_RELEASE
 	NAMES
-	ovr${_ovr_libname_bitsuffix}
-	libovr${_ovr_libname_bitsuffix}
+	OVR${_ovr_libname_bitsuffix}
+	libOVR${_ovr_libname_bitsuffix}
 	PATHS
 	"${OVR_ROOT_DIR}"
 	"${OVR_ROOT_DIR}/LibOVR"
@@ -101,8 +101,8 @@ find_library(OVR_LIBRARY_RELEASE
 
 find_library(OVR_LIBRARY_DEBUG
 	NAMES
-	ovr${_ovr_libname_bitsuffix}d
-	libovr${_ovr_libname_bitsuffix}d
+	OVR${_ovr_libname_bitsuffix}d
+	libOVR${_ovr_libname_bitsuffix}d
 	PATHS
 	"${OVR_ROOT_DIR}"
 	"${OVR_ROOT_DIR}/LibOVR"
