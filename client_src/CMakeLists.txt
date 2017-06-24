@@ -80,6 +80,8 @@ if(VRPN_BUILD_CLIENTS)
 			endif()
 		endforeach()
 
+    add_test(test_imager test_imager)
+
 		if(GLUT_FOUND AND OPENGL_FOUND)
 
 			option(VRPN_GLUT_IS_STATIC_FREEGLUT

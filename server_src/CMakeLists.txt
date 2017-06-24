@@ -215,8 +215,10 @@ if(BUILD_TESTING)
 				RUNTIME DESTINATION bin COMPONENT tests)
 		endif()
 	endforeach()
-	add_test(test_loopback test_loopback)
 	add_test(test_vrpn test_vrpn)
+	add_test(test_loopback test_loopback)
+	add_test(test_analogfly test_analogfly)
+	add_test(test_logging test_logging)
 endif()
 
 ###
