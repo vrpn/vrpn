@@ -4271,7 +4271,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_G4(char *&pch, char *line,
 {
     char name[LINESIZE], filepath[LINESIZE];
     int numparms;
-    int Hz = 10;
+    int Hz = 120;
 
     VRPN_CONFIG_NEXT();
     // Get the arguments (class, tracker_name)
@@ -4392,7 +4392,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_FastrakPDI(char *&pch, char *line,
                                                          FILE *config_file)
 {
     char name[LINESIZE];
-    int Hz = 10;
+    int Hz = 120;
     char rcmd[5000]; // reset commands to send to Liberty
     unsigned int nStylusMap = 0;
     VRPN_CONFIG_NEXT();
@@ -4465,7 +4465,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_LibertyPDI(char *&pch, char *line,
                                                          FILE *config_file)
 {
     char name[LINESIZE];
-    int Hz = 10;
+    int Hz = 60;
     unsigned int nStylusMap = 0;
     char rcmd[5000]; // reset commands to send to Liberty
 
