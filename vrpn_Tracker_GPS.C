@@ -21,9 +21,6 @@
 #include "vrpn_MessageMacros.h"         // for VRPN_MSG_INFO, VRPN_MSG_WARNING, VRPN_MSG_ERROR
 
 #define MAX_TIME_INTERVAL       (5000000) // max time between reports (usec)
-#define	INCHES_TO_METERS	(2.54/100.0)
-#define PI (3.14159265358979323846)
-
 
 //--------------------------------------------------
 

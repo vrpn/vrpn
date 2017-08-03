@@ -9,6 +9,11 @@
 #endif
 #endif
 
+// Definitions needed by several included files.
+#define VRPN_PI (3.14159265358979323846)
+#define VRPN_INCHES_TO_METERS (2.54/100.0)
+#define VRPN_DEGREES_TO_RADIANS (VRPN_PI/180.0)
+
 #include "vrpn_Configure.h" // for VRPN_API
 #include "vrpn_Types.h"     // for vrpn_int32, vrpn_float64, etc
 #include "vrpn_Thread.h"
@@ -92,6 +97,9 @@
 // manner.  Otherwise, we just use the system call.
 #ifndef VRPN_USE_STD_CHRONO
   #define vrpn_gettimeofday gettimeofday
+#else
+  extern "C" VRPN_API int vrpn_gettimeofday(struct timeval *tp,
+                                            void *tzp = NULL);
 #endif
 #else // winsock sockets
 

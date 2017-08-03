@@ -2943,7 +2943,7 @@ int vrpn_Generic_Server_Object::setup_DTrack(char *&pch, char *line,
 
     _devices->add(new vrpn_Tracker_DTrack(s2, connection, dtrackPort,
                                           timeToReachJoy, nob, nof, pidbf,
-                                          actTracing));
+                                          act3DOFout, actTracing));
 
     return 0;
 #else
@@ -4198,7 +4198,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_G4(char *&pch, char *line,
 {
     char name[LINESIZE], filepath[LINESIZE];
     int numparms;
-    int Hz = 10;
+    int Hz = 120;
 
     VRPN_CONFIG_NEXT();
     // Get the arguments (class, tracker_name)
@@ -4319,7 +4319,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_FastrakPDI(char *&pch, char *line,
                                                          FILE *config_file)
 {
     char name[LINESIZE];
-    int Hz = 10;
+    int Hz = 120;
     char rcmd[5000]; // reset commands to send to Liberty
     unsigned int nStylusMap = 0;
     VRPN_CONFIG_NEXT();
@@ -4392,7 +4392,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_LibertyPDI(char *&pch, char *line,
                                                          FILE *config_file)
 {
     char name[LINESIZE];
-    int Hz = 10;
+    int Hz = 60;
     unsigned int nStylusMap = 0;
     char rcmd[5000]; // reset commands to send to Liberty
 
@@ -5031,6 +5031,31 @@ int vrpn_Generic_Server_Object::setup_nVidia_shield_USB(char *&pch, char *line, 
   return 0; // successful completion
 }
 
+int vrpn_Generic_Server_Object::setup_nVidia_shield_stealth_USB(char *&pch, char *line, FILE *)
+{
+  char s2[LINESIZE];
+
+  VRPN_CONFIG_NEXT();
+  int ret = sscanf(pch, "%511s", s2);
+  if (ret != 1) {
+    fprintf(stderr, "Bad nVidia_shield_stealth_USB line: %s\n", line);
+    return -1;
+  }
+
+  // Open the shield
+  if (verbose) {
+    printf("Opening vrpn_nVidia_shield_stealth_USB\n");
+  }
+
+#ifdef VRPN_USE_HID
+  _devices->add(new vrpn_nVidia_shield_stealth_USB(s2, connection));
+#else
+  fprintf(stderr,
+    "nVidia_shield_stealth_USB driver works only with VRPN_USE_HID defined!\n");
+#endif
+  return 0; // successful completion
+}
+
 int vrpn_Generic_Server_Object::setup_Adafruit_10DOF(char *&pch, char *line, FILE *)
 {
   char vrpnName[LINESIZE], devName[LINESIZE];
@@ -5043,7 +5068,7 @@ int vrpn_Generic_Server_Object::setup_Adafruit_10DOF(char *&pch, char *line, FIL
     return -1;
   }
 
-  // Open the shield
+  // Open the Adafruit
   if (verbose) {
     printf("Opening Adafruit_10DOF\n");
   }
@@ -5679,6 +5704,9 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(
                 }
                 else if (VRPN_ISIT("vrpn_nVidia_shield_USB")) {
                   VRPN_CHECK(setup_nVidia_shield_USB);
+                }
+                else if (VRPN_ISIT("vrpn_nVidia_shield_stealth_USB")) {
+                  VRPN_CHECK(setup_nVidia_shield_stealth_USB);
                 }
                 else if (VRPN_ISIT("vrpn_Tracker_Spin")) {
                   VRPN_CHECK(setup_Tracker_Spin);

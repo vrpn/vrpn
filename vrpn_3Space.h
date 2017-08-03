@@ -1,5 +1,5 @@
-#ifndef SPACE_H
-#define SPACE_H
+#ifndef VRPN_3SPACE_H
+#define VRPN_3SPACE_H
 
 #include "vrpn_Configure.h"             // for VRPN_API
 #include "vrpn_Tracker.h"               // for vrpn_Tracker_Serial

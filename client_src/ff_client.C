@@ -2,7 +2,7 @@
 // ff_client.C - generates an interesting sinusoidal force field
 //
 
-#include <math.h>                       // for M_PI, cos, sin
+#include <math.h>                       // for cos, sin
 #include <stdio.h>                      // for printf, NULL
 #include <vrpn_Button.h>                // for vrpn_BUTTONCB, etc
 #include <vrpn_ForceDevice.h>           // for vrpn_ForceDevice_Remote, etc
@@ -10,10 +10,6 @@
 
 #include "vrpn_Configure.h"             // for VRPN_CALLBACK
 #include "vrpn_Types.h"                 // for vrpn_float64
-
-#ifndef M_PI
-#define M_PI  (2*acos(0.0))
-#endif
 
 #define PHANTOM_SERVER "Tracker0@localhost"
 
@@ -107,13 +103,13 @@ int main(int /* argc */, char * /* argv */ [])
     if (forceEnabled) {
        forceDevice->setFF_Origin(pos[0],pos[1],pos[2]);
        // units = dynes
-       forceDevice->setFF_Force((float)cos(pos[0]*20.0*M_PI),
-			(float)cos(pos[1]*20.0*M_PI),(float)cos(pos[2]*20.0*M_PI));
+       forceDevice->setFF_Force((float)cos(pos[0]*20.0*VRPN_PI),
+			(float)cos(pos[1]*20.0*VRPN_PI),(float)cos(pos[2]*20.0*VRPN_PI));
        // set derivatives of force field:
        // units = dynes/meter
-       forceDevice->setFF_Jacobian((float)(-20.0*M_PI*sin(pos[0]*20.0*M_PI)), 0, 0, 
-				    0, (float)(-20.0*M_PI*sin(pos[1]*20.0*M_PI)), 0, 
-				    0, 0, (float)(-20.0*M_PI*sin(pos[2]*20.0*M_PI)));
+       forceDevice->setFF_Jacobian((float)(-20.0*VRPN_PI*sin(pos[0]*20.0*VRPN_PI)), 0, 0, 
+				    0, (float)(-20.0*VRPN_PI*sin(pos[1]*20.0*VRPN_PI)), 0, 
+				    0, 0, (float)(-20.0*VRPN_PI*sin(pos[2]*20.0*VRPN_PI)));
        forceDevice->setFF_Radius(0.05f);	// 5cm radius of validity
        forceDevice->sendForceField();
        forceInEffect = 1;

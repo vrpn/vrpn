@@ -99,7 +99,7 @@ int main(int argc, char *argv[]) {
     forceEnabled = 1;
 
     if (forceEnabled) {
-      float py = (0.05 * sin(t + pos[0]*40.0*M_PI) + 0.05);
+      float py = (0.05 * sin(t + pos[0]*40.0*VRPN_PI) + 0.05);
       if (pos[1] > py) {
         forceDevice->stopForceField();
         forceInEffect = 0;
@@ -110,15 +110,15 @@ int main(int argc, char *argv[]) {
 
         fy = (py - pos[1]) * 14.0;
         // units = dynes
-        forceDevice->setFF_Force(0.20 * cos(t + pos[0]*200.0*M_PI),
+        forceDevice->setFF_Force(0.20 * cos(t + pos[0]*200.0*VRPN_PI),
                                  fy,
-                                 0.0 * cos(    pos[2]*200.0*M_PI));
+                                 0.0 * cos(    pos[2]*200.0*VRPN_PI));
         // set derivatives of force field:
         // units = dynes/meter
         forceDevice->setFF_Jacobian(
-            -20.0*sin(t + pos[0]*200.0*M_PI), 0, 0, 
+            -20.0*sin(t + pos[0]*200.0*VRPN_PI), 0, 0, 
              0, -14.0, 0, 
-             0, 0, -0.0*M_PI*sin(pos[2]*200.0*M_PI)
+             0, 0, -0.0*VRPN_PI*sin(pos[2]*200.0*VRPN_PI)
         );
   
         forceDevice->setFF_Radius(0.02); // 2cm radius of validity

@@ -120,7 +120,7 @@ vrpn_HapticVector BuzzForceField::calculateForceFieldForce(gstPHANToM *phantom)
 			return vrpn_HapticVector(0,0,0);
 		}
 		// force may be nonzero so compute height of vibrating plane to see
-		double buzzplane_height = _amplitude*(sin(2.0*M_PI*_frequency*_t_buzz));
+		double buzzplane_height = _amplitude*(sin(2.0*VRPN_PI*_frequency*_t_buzz));
 
 		if (ph_height > 0) { // above static plane but not necess. above vibrating plane
 			if (ph_height > buzzplane_height) // so force will be in +normal direction

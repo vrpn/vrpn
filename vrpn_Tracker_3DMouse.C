@@ -1,11 +1,6 @@
 #include <ctype.h>                      // for isprint
-#include <math.h>                       // for cos, sin, M_PI
+#include <math.h>                       // for cos, sin
 #include <stdio.h>                      // for fprintf, stderr, perror
-
-#ifndef _WIN32
-#else
-#define M_PI 3.14159265358979323846
-#endif
 
 #include "vrpn_Serial.h"                // for vrpn_write_characters, etc
 #include "vrpn_Shared.h"                // for vrpn_SleepMsecs, timeval
@@ -16,7 +11,6 @@ class VRPN_API vrpn_Connection;
 
 // max time between reports (usec)
 #define MAX_TIME_INTERVAL       (2000000) 
-#define	INCHES_TO_METERS	(2.54/100.0)
 
 vrpn_Tracker_3DMouse::vrpn_Tracker_3DMouse(const char *name, vrpn_Connection *c, 
 		      const char *port, long baud, int filtering_count):
@@ -282,9 +276,9 @@ int vrpn_Tracker_3DMouse::get_report(void)
 		y = static_cast<float>(ary / 40.0);		// yaw
 		r = static_cast<float>(arz / 40.0);		// roll
 
-		p = static_cast<float>(p * M_PI / 180);
-		y = static_cast<float>(y * M_PI / 180);
-		r = static_cast<float>((360-r) * M_PI / 180);
+		p = static_cast<float>(p * VRPN_PI / 180);
+		y = static_cast<float>(y * VRPN_PI / 180);
+		r = static_cast<float>((360-r) * VRPN_PI / 180);
 
 		float cosp2 = static_cast<float>(cos(p/2));
 		float cosy2 = static_cast<float>(cos(y/2));

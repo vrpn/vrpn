@@ -37,7 +37,7 @@ if(SWIG_FOUND AND PYTHONLIBS_FOUND AND VRPN_BUILD_PYTHON)
 	#	set_source_files_properties(${COMMON} PROPERTIES CPLUSPLUS ON)
 
 	set(PYTHONVERSIONDIR python)
-	if(PYTHON_LIBRARY MATCHES "python(2.[0-9])")
+	if(PYTHON_LIBRARY MATCHES "python([23].[0-9])")
 		set(PYTHONVERSIONDIR "python${CMAKE_MATCH_1}/")
 	endif()
 

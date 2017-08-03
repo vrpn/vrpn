@@ -9,10 +9,6 @@
 #include <sys/ioctl.h>
 #include <cmath>
 
-#ifndef M_PI
-#define M_PI  (2*acos(0.0))
-#endif
-
 // Developed using information from
 // http://ozzmaker.com/berryimu/
  
@@ -246,7 +242,7 @@ void vrpn_OzzMaker_BerryIMU::mainloop()
   // Convert to radians/second.
   // For 2000 degree/second full range, it reports in 70 millidegrees
   // per second for each count.
-  const double gyro_gain = (M_PI/180.0) * 70e-3;
+  const double gyro_gain = (VRPN_PI/180.0) * 70e-3;
   channel[3] *= gyro_gain;
   channel[4] *= gyro_gain;
   channel[5] *= gyro_gain;
