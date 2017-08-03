@@ -1,9 +1,17 @@
 /*
-  PhaseSpace, Inc 2015
+  PhaseSpace, Inc 2017
   vrpn_Tracker_PhaseSpace.C
 
   ChangeLog
   =================
+  20170802
+  * fixed a bug where timestamp's microsecond field was same as seconds in Windows.
+
+  20170629
+  * added support non-fatal errors (i.e. license warnings)
+  * added server version query for newer cores that support it.
+  * changed indentation of some debugging output.
+
   20170201
   * removed some extraneous comments
 
@@ -150,15 +158,17 @@ bool vrpn_Tracker_PhaseSpace::InitOWL()
       return false;
     }
 
-  //TODO reimplement
-  //// query and print server version
-  //char msg[512];
-  //if(owlGetString(OWL_VERSION,msg)) {
-  //  printf("OWL version: %s\n",msg);
-  //} else {
-  //  printf("Unable to query OWL version.\n");
-  //}
+  if(debug)
+    {
+      std::string coreversion = context.property<std::string>("coreversion");
+      printf("[debug] server version: %s\n", coreversion.length() ? coreversion.c_str() : "unknown");
 
+      std::string apiversion = context.property<std::string>("apiversion");
+
+      printf("[debug] API version: %s\n", apiversion.length() ? apiversion.c_str() : "unknown");
+    }
+
+  if(debug) printf("[debug] initialization parameters: %s\n", init_options.c_str());
   if(context.initialize(init_options) <= 0)
     {
       fprintf(stderr, "owl init error: %s\n", context.lastError().c_str());
@@ -187,7 +197,7 @@ bool vrpn_Tracker_PhaseSpace::InitOWL()
 //
 bool vrpn_Tracker_PhaseSpace::create_trackers()
 {
-  if(debug) printf("creating trackers...\n");
+  if(debug) printf("[debug] creating trackers...\n");
 
   // create trackers
   int nr = 0;
@@ -195,7 +205,6 @@ bool vrpn_Tracker_PhaseSpace::create_trackers()
   std::vector<uint32_t> ti;
 
   // create rigid trackers
-  if(debug) printf("rigids:\n");
   for(Sensors::iterator s = smgr->begin(); s != smgr->end(); s++)
     {
       if(s->type != OWL::Type::RIGID) continue;
@@ -209,7 +218,7 @@ bool vrpn_Tracker_PhaseSpace::create_trackers()
       printf("creating rigid tracker %d\n", s->tracker);
       std::string type = "rigid";
       std::stringstream name; name << type << nr;
-      if(debug) printf("    type=%s id=%d name=%s options=\'%s\'\n", type.c_str(), s->tracker, name.str().c_str(), s->opt.c_str());
+      if(debug) printf("[debug] type=%s id=%d name=%s options=\'%s\'\n", type.c_str(), s->tracker, name.str().c_str(), s->opt.c_str());
 
       if(!context.createTracker(s->tracker, type, name.str(), s->opt))
         {
@@ -220,7 +229,6 @@ bool vrpn_Tracker_PhaseSpace::create_trackers()
     }
 
   // create point trackers
-  if(debug) printf("markers:\n");
   for(Sensors::iterator s = smgr->begin(); s != smgr->end(); s++)
     {
       if(s->type != OWL::Type::MARKER) continue;
@@ -238,7 +246,7 @@ bool vrpn_Tracker_PhaseSpace::create_trackers()
           fprintf(stderr, "marker assignment error: %s\n", context.lastError().c_str());
           return false;
         }
-      if(debug) printf("    id=%d tracker=%d options=\'%s\'\n", s->id, s->tracker, s->opt.c_str());
+      if(debug) printf("[debug] id=%d tracker=%d options=\'%s\'\n", s->id, s->tracker, s->opt.c_str());
     }
 
   if(context.lastError().length())
@@ -635,10 +643,10 @@ bool vrpn_Tracker_PhaseSpace::load(FILE* file)
         if (inTag) {
           if(debug)
             {
-              printf("parsed config file:\n");
-              printf("    %s\n", options.c_str());
+              printf("[debug] parsed config file:\n");
+              printf("[debug]     %s\n", options.c_str());
               for(Sensors::const_iterator s = smgr->begin(); s != smgr->end(); s++)
-                fprintf(stdout, "    sensor=%d type=%d tracker=%d options=\'%s\'\n", s->sensor_id, s->type, s->tracker, s->opt.c_str());
+                fprintf(stdout, "[debug]     sensor=%d type=%d tracker=%d options=\'%s\'\n", s->sensor_id, s->type, s->tracker, s->opt.c_str());
             }
           // closing tag encountered,  exit.
           return true;
@@ -740,14 +748,14 @@ void vrpn_Tracker_PhaseSpace::set_pose(const OWL::Rigid &r)
 }
 
 //
-void vrpn_Tracker_PhaseSpace::report_marker(vrpn_int32 sensor, const OWL::Marker& m)
+void vrpn_Tracker_PhaseSpace::report_marker(vrpn_int32 sensor, const OWL::Marker &m)
 {
   d_sensor = sensor;
 
   if(debug)
     {
       int tr = context.markerInfo(m.id).tracker_id;
-      printf("sensor=%d type=point tracker=%d led=%d x=%f y=%f z=%f cond=%f\n", d_sensor, tr, m.id, m.x, m.y, m.z, m.cond);
+      printf("[debug] sensor=%d type=point tracker=%d led=%d x=%f y=%f z=%f cond=%f\n", d_sensor, tr, m.id, m.x, m.y, m.z, m.cond);
     }
 
   if(m.cond <= 0) return;
@@ -773,7 +781,7 @@ void vrpn_Tracker_PhaseSpace::report_rigid(vrpn_int32 sensor, const OWL::Rigid& 
 
   if(debug)
     {
-  printf("sensor=%d type=rigid tracker=%d x=%f y=%f z=%f w=%f a=%f b=%f c=%f cond=%f\n", d_sensor, r.id, r.pose[0], r.pose[1], r.pose[2], r.pose[3], r.pose[4], r.pose[5], r.pose[6], r.cond);
+  printf("[debug] sensor=%d type=rigid tracker=%d x=%f y=%f z=%f w=%f a=%f b=%f c=%f cond=%f\n", d_sensor, r.id, r.pose[0], r.pose[1], r.pose[2], r.pose[3], r.pose[4], r.pose[5], r.pose[6], r.cond);
     }
 
   if(r.cond <= 0) return;
@@ -813,7 +821,7 @@ void vrpn_Tracker_PhaseSpace::report_button(vrpn_int32 sensor, int value)
 
   if(debug)
     {
-      printf("button %d 0x%x\n", d_sensor, value);
+      printf("[debug] button %d 0x%x\n", d_sensor, value);
     }
 }
 
@@ -826,7 +834,7 @@ void vrpn_Tracker_PhaseSpace::report_button_analog(vrpn_int32 sensor, int value)
 
   if(debug)
     {
-      printf("analog button %d 0x%x\n", d_sensor, value);
+      printf("[debug] analog button %d 0x%x\n", d_sensor, value);
     }
 }
 
@@ -865,7 +873,7 @@ int vrpn_Tracker_PhaseSpace::get_report(void)
   const OWL::Event *event = NULL;
 
   {
-    const OWL::Event *e = NULL;;
+    const OWL::Event *e = NULL;
     int count = 0;
     while(context.isOpen() && context.property<int>("initialized") && (e = context.nextEvent()))
       {
@@ -875,9 +883,13 @@ int vrpn_Tracker_PhaseSpace::get_report(void)
             std::string err;
             e->get(err);
             fprintf(stderr, "owl error event: %s\n", err.c_str());
-            context.done();
-            context.close();
-            return -1;
+            if(e->name() == "fatal")
+              {
+                fprintf(stderr, "stopping...\n");
+                context.done();
+                context.close();
+                return -1;
+              }
           }
         else if(e->type_id() == OWL::Type::BYTE)
           {
@@ -895,8 +907,8 @@ int vrpn_Tracker_PhaseSpace::get_report(void)
 
   // set timestamp
 #if WIN32 // msvc 2008
-  vrpn_Tracker::timestamp.tv_sec = (long) event->time() / 1000000;
-  vrpn_Tracker::timestamp.tv_sec = (long) event->time() % 1000000;
+  vrpn_Tracker::timestamp.tv_sec =  (long) event->time() / 1000000;
+  vrpn_Tracker::timestamp.tv_usec = (long) event->time() % 1000000;
 #else
   lldiv_t divresult = lldiv(event->time(), 1000000);
   vrpn_Tracker::timestamp.tv_sec = divresult.quot;
@@ -905,7 +917,7 @@ int vrpn_Tracker_PhaseSpace::get_report(void)
 
   if(debug)
     {
-      printf("time=%ld.%06ld\n", vrpn_Tracker::timestamp.tv_sec, vrpn_Tracker::timestamp.tv_usec);
+      printf("[debug] time=%ld.%06ld\n", vrpn_Tracker::timestamp.tv_sec, vrpn_Tracker::timestamp.tv_usec);
     }
 
   OWL::Markers markers;
@@ -990,7 +1002,7 @@ int vrpn_Tracker_PhaseSpace::handle_update_rate_request(void *userdata, vrpn_HAN
 {
   vrpn_Tracker_PhaseSpace* thistracker = (vrpn_Tracker_PhaseSpace*)userdata;
   if(thistracker->debug) {
-    printf("vrpn_Tracker_PhaseSpace::handle_update_rate_request\n");
+    printf("[debug] vrpn_Tracker_PhaseSpace::handle_update_rate_request\n");
   }
   vrpn_float64 update_rate = 0;
   vrpn_unbuffer(&p.buffer,&update_rate);
