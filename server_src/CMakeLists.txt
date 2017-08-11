@@ -138,6 +138,10 @@ configure_file("${CMAKE_CURRENT_SOURCE_DIR}/vrpn.cfg"
 	"${CMAKE_CURRENT_BINARY_DIR}/vrpn.cfg"
 	@ONLY)
 
+if(NOT SYSCONF_INSTALL_DIR)
+	set(SYSCONF_INSTALL_DIR etc)
+endif(NOT SYSCONF_INSTALL_DIR)
+
 if(VRPN_INSTALL)
 	if(WIN32)
 		install(FILES "${CMAKE_CURRENT_BINARY_DIR}/vrpn.cfg"
@@ -145,7 +149,7 @@ if(VRPN_INSTALL)
 			COMPONENT mainserver)
 	else()
 		install(FILES "${CMAKE_CURRENT_BINARY_DIR}/vrpn.cfg"
-			DESTINATION etc
+			DESTINATION ${SYSCONF_INSTALL_DIR}
 			COMPONENT mainserver)
 	endif()
 
