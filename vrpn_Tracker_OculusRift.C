@@ -20,7 +20,7 @@ VRPN_SUPPRESS_EMPTY_OBJECT_WARNING()
 #include "vrpn_SendTextMessageStreamProxy.h"  // for operator<<, etc
 
 // Library/third-party includes
-#include <OVR.h>
+#include <OVR_CAPI.h>
 
 // Standard includes
 #include <sstream>                      // for operator<<, basic_ostream, etc
