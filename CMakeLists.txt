@@ -871,6 +871,7 @@ option_requires(VRPN_USE_COLIBRIAPI
 if(VRPN_USE_COLIBRIAPI)
 	include_directories(${COLIBRIAPI_INCLUDE_DIR})
 	list(APPEND SERVER_EXTRA_LIBS ${COLIBRIAPI_LIBRARIES})
+endif()
 
 ###
 # Oculus VR SDK for Oculus Rift DK1 and Dk2
@@ -884,9 +885,9 @@ option_requires(VRPN_USE_OVR
 if(VRPN_USE_OVR)
 	include_directories(${OVR_INCLUDE_DIRS})
 	list(APPEND SERVER_EXTRA_LIBS ${OVR_LIBRARIES})
-  if(UNIX)
-	  list(APPEND SERVER_EXTRA_LIBS dl)
-  endif()
+	if(UNIX)
+		list(APPEND SERVER_EXTRA_LIBS dl)
+	endif()
 endif()
 
 ###
