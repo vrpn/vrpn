@@ -371,7 +371,7 @@ Java_vrpn_FunctionGeneratorRemote_shutdownFunctionGenerator( JNIEnv* env, jobjec
 	vrpn_FunctionGenerator_Remote* f = (vrpn_FunctionGenerator_Remote*) env->GetLongField( jobj, jfid_vrpn_VRPNDevice_native_device );
 
 	// unregister a handler and destroy the force device
-	if( f > 0 )
+	if( f )
 	{
 		f->unregister_channel_reply_handler( jobj, handle_channel_reply );
 		f->unregister_start_reply_handler( jobj, handle_start );
@@ -400,7 +400,7 @@ JNIEXPORT void JNICALL
 Java_vrpn_FunctionGeneratorRemote_mainloop( JNIEnv* env, jobject jobj )
 {
 	vrpn_FunctionGenerator_Remote* f = (vrpn_FunctionGenerator_Remote*) env->GetLongField( jobj, jfid_vrpn_VRPNDevice_native_device );
-	if( f <= 0 )  // this force device is uninitialized or has been shut down already
+	if( f == NULL )  // this force device is uninitialized or has been shut down already
 		return;
 
 	// now call mainloop
@@ -423,7 +423,7 @@ JNIEXPORT jboolean JNICALL
 Java_vrpn_FunctionGeneratorRemote_setChannelNULL_1native( JNIEnv* env, jobject jobj, jint jchannelNum )
 {
 	vrpn_FunctionGenerator_Remote* f = (vrpn_FunctionGenerator_Remote*) env->GetLongField( jobj, jfid_vrpn_VRPNDevice_native_device );
-	if( f <= 0 )
+	if( f == NULL )
 		return false;
 	if( jchannelNum < 0 )
 		return false;
@@ -445,7 +445,7 @@ JNIEXPORT jboolean JNICALL
 Java_vrpn_FunctionGeneratorRemote_setChannelScript_1native( JNIEnv* env, jobject jobj, jint jchannelNum, jstring jscript )
 {
 	vrpn_FunctionGenerator_Remote* f = (vrpn_FunctionGenerator_Remote*) env->GetLongField( jobj, jfid_vrpn_VRPNDevice_native_device );
-	if( f <= 0 )
+	if( f == NULL )
 		return false;
 	if( jchannelNum < 0 )
 		return false;
@@ -469,7 +469,7 @@ JNIEXPORT jboolean JNICALL
 Java_vrpn_FunctionGeneratorRemote_requestChannel_1native( JNIEnv* env, jobject jobj, jint jchannelNum )
 {
 	vrpn_FunctionGenerator_Remote* f = (vrpn_FunctionGenerator_Remote*) env->GetLongField( jobj, jfid_vrpn_VRPNDevice_native_device );
-	if( f <= 0 )
+	if( f == NULL )
 		return false;
 	if( jchannelNum < 0 )
 		return false;
@@ -488,7 +488,7 @@ JNIEXPORT jboolean JNICALL
 Java_vrpn_FunctionGeneratorRemote_requestAllChannels_1native( JNIEnv* env, jobject jobj )
 {
 	vrpn_FunctionGenerator_Remote* f = (vrpn_FunctionGenerator_Remote*) env->GetLongField( jobj, jfid_vrpn_VRPNDevice_native_device );
-	if( f <= 0 )
+	if( f == NULL )
 		return false;
 	if( f->requestAllChannels( ) < 0 )
 		return false;
@@ -505,7 +505,7 @@ JNIEXPORT jboolean JNICALL
 Java_vrpn_FunctionGeneratorRemote_requestStart_1native( JNIEnv* env, jobject jobj )
 {
 	vrpn_FunctionGenerator_Remote* f = (vrpn_FunctionGenerator_Remote*) env->GetLongField( jobj, jfid_vrpn_VRPNDevice_native_device );
-	if( f <= 0 )
+	if( f == NULL )
 		return false;
 	if( f->requestStart( ) < 0 )
 		return false;
@@ -522,7 +522,7 @@ JNIEXPORT jboolean JNICALL
 Java_vrpn_FunctionGeneratorRemote_requestStop_1native( JNIEnv* env, jobject jobj )
 {
 	vrpn_FunctionGenerator_Remote* f = (vrpn_FunctionGenerator_Remote*) env->GetLongField( jobj, jfid_vrpn_VRPNDevice_native_device );
-	if( f <= 0 )
+	if( f == NULL )
 		return false;
 	if( f->requestStop( ) < 0 )
 		return false;
@@ -539,7 +539,7 @@ JNIEXPORT jboolean JNICALL \
 Java_vrpn_FunctionGeneratorRemote_requestSampleRate_1native( JNIEnv* env, jobject jobj, jfloat jrate)
 {
 	vrpn_FunctionGenerator_Remote* f = (vrpn_FunctionGenerator_Remote*) env->GetLongField( jobj, jfid_vrpn_VRPNDevice_native_device );
-	if( f <= 0 )
+	if( f == NULL )
 		return false;
 	if( jrate < 0 )
 		return false;
@@ -558,7 +558,7 @@ JNIEXPORT jboolean JNICALL
 Java_vrpn_FunctionGeneratorRemote_requestInterpreterDescription_1native( JNIEnv* env, jobject jobj )
 {
 	vrpn_FunctionGenerator_Remote* f = (vrpn_FunctionGenerator_Remote*) env->GetLongField( jobj, jfid_vrpn_VRPNDevice_native_device );
-	if( f <= 0 )
+	if( f == NULL )
 		return false;
 	if( f->requestInterpreterDescription( ) < 0 )
 		return false;

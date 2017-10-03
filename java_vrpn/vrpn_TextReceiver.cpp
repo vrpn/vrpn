@@ -128,7 +128,7 @@ JNIEXPORT void JNICALL
 Java_vrpn_TextReceiver_mainloop( JNIEnv* env, jobject jobj )
 {
   vrpn_Text_Receiver* t = (vrpn_Text_Receiver*) env->GetLongField( jobj, jfid_vrpn_VRPNDevice_native_device );
-  if( t <= 0 )  // this text receiver is uninitialized or has been shut down already
+  if( t == NULL )  // this text receiver is uninitialized or has been shut down already
     return;
   
   // now call mainloop
@@ -192,7 +192,7 @@ Java_vrpn_TextReceiver_shutdownTextReceiver( JNIEnv* env, jobject jobj )
   vrpn_Text_Receiver* t = (vrpn_Text_Receiver*) env->GetLongField( jobj, jfid_vrpn_VRPNDevice_native_device );
   
   // unregister a handler and destroy the text receiver
-  if( t > 0 )
+  if( t )
   {
     t->unregister_message_handler( jobj, handle_text_message );
 	t->connectionPtr()->removeReference(); // because we called vrpn_get_connection_by_name
