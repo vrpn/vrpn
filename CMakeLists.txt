@@ -1290,6 +1290,11 @@ if(VRPN_BUILD_SERVER_LIBRARY)
 	set_property(TARGET
 		vrpnserver
 		PROPERTY
+		SOVERSION
+		0)
+	set_property(TARGET
+		vrpnserver
+		PROPERTY
 		PROJECT_LABEL
 		"Core VRPN Server Library")
 	set_property(TARGET
@@ -1333,6 +1338,11 @@ if(VRPN_BUILD_CLIENT_LIBRARY)
 		PROPERTY
 		PUBLIC_HEADER
 		${VRPN_CLIENT_PUBLIC_HEADERS})
+	set_property(TARGET
+		vrpn
+		PROPERTY
+		SOVERSION
+		0)
 
 	if(NOT VRPN_CLIENT_ONLY)
 		set_property(TARGET
