@@ -96,7 +96,7 @@ Java_vrpn_AnalogOutputRemote_requestValueChange_1native__ID( JNIEnv* env, jobjec
 
   // get the analog pointer
   vrpn_Analog_Output_Remote* ao = (vrpn_Analog_Output_Remote*) env->GetLongField( jobj, jfid_vrpn_VRPNDevice_native_device );
-  if( ao <= 0 )  // this analog is uninitialized or has been shut down already
+  if( ao == NULL )  // this analog is uninitialized or has been shut down already
   {
     printf( "Error in native method \"requestValueChange(double)\":  the analog output is "
             "uninitialized or has been shut down.\n" );
@@ -113,7 +113,7 @@ Java_vrpn_AnalogOutputRemote_requestValueChange_1native___3D( JNIEnv* env, jobje
 {
   // get the analog pointer
   vrpn_Analog_Output_Remote* ao = (vrpn_Analog_Output_Remote*) env->GetLongField( jobj, jfid_vrpn_VRPNDevice_native_device );
-  if( ao <= 0 )  // this analog is uninitialized or has been shut down already
+  if( ao == NULL )  // this analog is uninitialized or has been shut down already
   {
     printf( "Error in native method \"requestValueChange(double[])\":  the analog output is "
             "uninitialized or has been shut down.\n" );
@@ -154,7 +154,7 @@ Java_vrpn_AnalogOutputRemote_getNumActiveChannels( JNIEnv* env, jobject jobj )
 {
   // get the analog pointer
   vrpn_Analog_Output_Remote* ao = (vrpn_Analog_Output_Remote*) env->GetLongField( jobj, jfid_vrpn_VRPNDevice_native_device );
-  if( ao <= 0 )  // this analog is uninitialized or has been shut down already
+  if( ao == NULL )  // this analog is uninitialized or has been shut down already
   {
     printf( "Error in native method \"getNumActiveChannels\":  the analog output is "
             "uninitialized or has been shut down.\n" );
@@ -172,7 +172,7 @@ Java_vrpn_AnalogOutputRemote_shutdownAnalogOutput( JNIEnv* env, jobject jobj )
   vrpn_Analog_Output_Remote* ao 
 	  = (vrpn_Analog_Output_Remote*) env->GetLongField( jobj, jfid_vrpn_VRPNDevice_native_device );
 
-  if( ao > 0 )
+  if( ao )
   {
 	ao->connectionPtr()->removeReference(); // because we called vrpn_get_connection_by_name
 	delete ao;
@@ -193,7 +193,7 @@ Java_vrpn_AnalogOutputRemote_mainloop( JNIEnv *env, jobject jobj )
   vrpn_Analog_Output_Remote* ao 
 	  = (vrpn_Analog_Output_Remote*) env->GetLongField( jobj, jfid_vrpn_VRPNDevice_native_device );
 
-  if( ao > 0 )
+  if( ao )
 	ao->mainloop( );
 }
 

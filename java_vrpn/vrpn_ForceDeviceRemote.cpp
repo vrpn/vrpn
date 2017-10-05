@@ -239,7 +239,7 @@ JNIEXPORT void JNICALL
 Java_vrpn_ForceDeviceRemote_mainloop( JNIEnv* env, jobject jobj )
 {
   vrpn_ForceDevice_Remote* f = (vrpn_ForceDevice_Remote*) env->GetLongField( jobj, jfid_vrpn_VRPNDevice_native_device );
-  if( f <= 0 )  // this force device is uninitialized or has been shut down already
+  if( f == NULL )  // this force device is uninitialized or has been shut down already
     return;
 
   // now call mainloop
@@ -259,7 +259,7 @@ Java_vrpn_ForceDeviceRemote_shutdownForceDevice( JNIEnv* env, jobject jobj )
   vrpn_ForceDevice_Remote* f = (vrpn_ForceDevice_Remote*) env->GetLongField( jobj, jfid_vrpn_VRPNDevice_native_device );
   
   // unregister a handler and destroy the force device
-  if( f > 0 )
+  if( f )
   {
     f->unregister_force_change_handler( jobj, handle_force_change );
     f->unregister_scp_change_handler( jobj, handle_scp_change );
@@ -292,7 +292,7 @@ JNIEXPORT jboolean JNICALL
 Java_vrpn_ForceDeviceRemote_sendForceField_1native__( JNIEnv* env, jobject jobj )
 {
   vrpn_ForceDevice_Remote* f = (vrpn_ForceDevice_Remote*) env->GetLongField( jobj, jfid_vrpn_VRPNDevice_native_device );
-  if( f <= 0 )
+  if( f == NULL )
     return false;
   
   f->sendForceField( );
@@ -309,7 +309,7 @@ JNIEXPORT jboolean JNICALL
 Java_vrpn_ForceDeviceRemote_stopForceField_1native( JNIEnv* env, jobject jobj )
 {
   vrpn_ForceDevice_Remote* f = (vrpn_ForceDevice_Remote*) env->GetLongField( jobj, jfid_vrpn_VRPNDevice_native_device );
-  if( f <= 0 )
+  if( f == NULL )
     return false;
   
   f->stopForceField( );
@@ -330,7 +330,7 @@ Java_vrpn_ForceDeviceRemote_sendForceField_1native___3F_3F_3_3FF( JNIEnv* env, j
                                                          jfloat jradius )
 {
   vrpn_ForceDevice_Remote* f = (vrpn_ForceDevice_Remote*) env->GetLongField( jobj, jfid_vrpn_VRPNDevice_native_device );
-  if( f <= 0 )
+  if( f == NULL )
     return false;
 
   // get the arguments
@@ -401,7 +401,7 @@ JNIEXPORT jboolean JNICALL Java_vrpn_ForceDeviceRemote_enableConstraint_1native
   (JNIEnv *env, jobject jobj, jint on_int)
 {
 	vrpn_ForceDevice_Remote* f = (vrpn_ForceDevice_Remote*) env->GetLongField( jobj, jfid_vrpn_VRPNDevice_native_device );
-	if( f <= 0 )
+	if( f == NULL )
 		return false;
 
   // now call the function
@@ -419,7 +419,7 @@ JNIEXPORT jboolean JNICALL Java_vrpn_ForceDeviceRemote_setConstraintMode_1native
   (JNIEnv *env, jobject jobj, jint mode)
 {
 	vrpn_ForceDevice_Remote* f = (vrpn_ForceDevice_Remote*) env->GetLongField( jobj, jfid_vrpn_VRPNDevice_native_device );
-	if( f <= 0 )
+	if( f == NULL )
 		return false;
 
   // now call the function
@@ -437,7 +437,7 @@ JNIEXPORT jboolean JNICALL Java_vrpn_ForceDeviceRemote_setConstraintPoint_1nativ
   (JNIEnv* env, jobject jobj, jfloatArray jpoint)
 {
   vrpn_ForceDevice_Remote* f = (vrpn_ForceDevice_Remote*) env->GetLongField( jobj, jfid_vrpn_VRPNDevice_native_device );
-  if( f <= 0 )
+  if( f == NULL )
     return false;
 
   // get the arguments
@@ -462,7 +462,7 @@ JNIEXPORT jboolean JNICALL
 Java_vrpn_ForceDeviceRemote_setConstraintLinePoint_1native( JNIEnv* env, jobject jobj, jfloatArray jpoint )
 {
 	vrpn_ForceDevice_Remote* f = (vrpn_ForceDevice_Remote*) env->GetLongField( jobj, jfid_vrpn_VRPNDevice_native_device );
-	if( f <= 0 )
+	if( f == NULL )
 		return false;
 
 	// get the arguments
@@ -487,7 +487,7 @@ JNIEXPORT jboolean JNICALL Java_vrpn_ForceDeviceRemote_setConstraintLineDirectio
   (JNIEnv* env, jobject jobj, jfloatArray jpoint)
 {
 	vrpn_ForceDevice_Remote* f = (vrpn_ForceDevice_Remote*) env->GetLongField( jobj, jfid_vrpn_VRPNDevice_native_device );
-	if( f <= 0 )
+	if( f == NULL )
 		return false;
 
 	// get the arguments
@@ -512,7 +512,7 @@ JNIEXPORT jboolean JNICALL Java_vrpn_ForceDeviceRemote_setConstraintPlaneNormal_
   (JNIEnv* env, jobject jobj, jfloatArray jpoint)
 {
 	vrpn_ForceDevice_Remote* f = (vrpn_ForceDevice_Remote*) env->GetLongField( jobj, jfid_vrpn_VRPNDevice_native_device );
-	if( f <= 0 )
+	if( f == NULL )
 		return false;
 
 	// get the arguments
@@ -537,7 +537,7 @@ JNIEXPORT jboolean JNICALL Java_vrpn_ForceDeviceRemote_setConstraintPlanePoint_1
   (JNIEnv* env, jobject jobj, jfloatArray jpoint)
 {
 	vrpn_ForceDevice_Remote* f = (vrpn_ForceDevice_Remote*) env->GetLongField( jobj, jfid_vrpn_VRPNDevice_native_device );
-	if( f <= 0 )
+	if( f == NULL )
 		return false;
 
 	// get the arguments
@@ -562,7 +562,7 @@ JNIEXPORT jboolean JNICALL Java_vrpn_ForceDeviceRemote_setConstraintKSpring_1nat
   (JNIEnv* env, jobject jobj, jfloat springConst)
 {
 	vrpn_ForceDevice_Remote* f = (vrpn_ForceDevice_Remote*) env->GetLongField( jobj, jfid_vrpn_VRPNDevice_native_device );
-	if( f <= 0 )
+	if( f == NULL )
 		return false;
 
 	// now call the function

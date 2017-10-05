@@ -108,7 +108,7 @@ Java_vrpn_AuxiliaryLoggerRemote_sendLoggingRequest( JNIEnv* env, jobject jobj,
 {
 	// get the logger pointer
 	vrpn_Auxiliary_Logger_Remote* r = (vrpn_Auxiliary_Logger_Remote*) env->GetLongField( jobj, jfid_vrpn_VRPNDevice_native_device );
-	if( r <= 0 )  // this logger is uninitialized or has been shut down already
+	if( r == NULL )  // this logger is uninitialized or has been shut down already
 	{
 		printf( "Error in native method \"sendLoggingRequest(...)\":  the logger is "
 			"uninitialized or has been shut down.\n" );
@@ -134,7 +134,7 @@ Java_vrpn_AuxiliaryLoggerRemote_sendLoggingStatusRequest( JNIEnv* env, jobject j
 {
 	// get the analog pointer
 	vrpn_Auxiliary_Logger_Remote* r = (vrpn_Auxiliary_Logger_Remote*) env->GetLongField( jobj, jfid_vrpn_VRPNDevice_native_device );
-	if( r <= 0 )  // this analog is uninitialized or has been shut down already
+	if( r == NULL )  // this analog is uninitialized or has been shut down already
 	{
 		printf( "Error in native method \"sendLoggingStatusRequest(...)\":  the  logger is "
 			"uninitialized or has been shut down.\n" );
@@ -151,7 +151,7 @@ JNIEXPORT void JNICALL
 Java_vrpn_AuxiliaryLoggerRemote_mainloop( JNIEnv* env, jobject jobj )
 {
 	vrpn_Auxiliary_Logger_Remote* l = (vrpn_Auxiliary_Logger_Remote*) env->GetLongField( jobj, jfid_vrpn_VRPNDevice_native_device );
-	if( l <= 0 )  // this logger is uninitialized or has been shut down already
+	if( l == NULL )  // this logger is uninitialized or has been shut down already
 		return;
 
 	// now call mainloop
@@ -205,7 +205,7 @@ Java_vrpn_AuxiliaryLoggerRemote_shutdownAuxiliaryLogger( JNIEnv* env, jobject jo
 	vrpn_Auxiliary_Logger_Remote* r = (vrpn_Auxiliary_Logger_Remote*) env->GetLongField( jobj, jfid_vrpn_VRPNDevice_native_device );
 
 	// unregister a handler and destroy the button
-	if( r > 0 )
+	if( r )
 	{
 		r->unregister_report_handler( jobj, handle_logging_report );
 		r->connectionPtr()->removeReference(); // because we called vrpn_get_connection_by_name

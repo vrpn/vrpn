@@ -197,7 +197,7 @@ JNIEXPORT jint JNICALL
 Java_vrpn_TrackerRemote_setUpdateRate( JNIEnv* env, jobject jobj, jdouble updateRate )
 {
   vrpn_Tracker_Remote* t = (vrpn_Tracker_Remote*) env->GetLongField( jobj, jfid_vrpn_VRPNDevice_native_device );
-  if( t <= 0 )
+  if( t == NULL )
     return -1;
   
   // now set the update rate
@@ -210,7 +210,7 @@ JNIEXPORT void JNICALL
 Java_vrpn_TrackerRemote_mainloop( JNIEnv* env, jobject jobj )
 {
   vrpn_Tracker_Remote* t = (vrpn_Tracker_Remote*) env->GetLongField( jobj, jfid_vrpn_VRPNDevice_native_device );
-  if( t <= 0 )  // this tracker is uninitialized or has been shut down already
+  if( t == NULL )  // this tracker is uninitialized or has been shut down already
     return;
 
   // now call mainloop
@@ -269,7 +269,7 @@ Java_vrpn_TrackerRemote_shutdownTracker( JNIEnv* env, jobject jobj )
   vrpn_Tracker_Remote* t = (vrpn_Tracker_Remote*) env->GetLongField( jobj, jfid_vrpn_VRPNDevice_native_device );
   
   // unregister a handler and destroy the tracker
-  if( t > 0 )
+  if( t )
   {
     t->unregister_change_handler( jobj, handle_tracker_change );
     t->unregister_change_handler( jobj, handle_velocity_change );
