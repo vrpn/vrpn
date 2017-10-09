@@ -567,25 +567,26 @@ int vrpn_gettimeofday(timeval *tp, void *tzp)
 #ifdef _WIN32
 void get_time_using_GetLocalTime(unsigned long &sec, unsigned long &usec)
 {
-    SYSTEMTIME stime;   // System time in funky structure
-    FILETIME ftime;     // Time in 100-nsec intervals since Jan 1 1601
-    LARGE_INTEGER tics; // ftime stored into a 64-bit quantity
+	SYSTEMTIME stime;   // System time in funky structure
+	FILETIME ftime;     // Time in 100-nsec intervals since Jan 1 1601
+	ULARGE_INTEGER tics; // ftime stored into a 64-bit quantity
 
-    GetLocalTime(&stime);
-    SystemTimeToFileTime(&stime, &ftime);
+	GetLocalTime(&stime);
+	SystemTimeToFileTime(&stime, &ftime);
 
-    // Copy the data into a structure that can be treated as a 64-bit integer
-    tics.HighPart = ftime.dwHighDateTime;
-    tics.LowPart = ftime.dwLowDateTime;
+	// Copy the data into a structure that can be treated as a 64-bit integer
+	tics.HighPart = ftime.dwHighDateTime;
+	tics.LowPart = ftime.dwLowDateTime;
 
-    // Convert the 64-bit time into seconds and microseconds since July 1 1601
-    sec = (long)(tics.QuadPart / 10000000L);
-    usec = (long)((tics.QuadPart - (((LONGLONG)(sec)) * 10000000L)) / 10);
+	// Change units (100 nanoseconds --> microseconds)
+	tics.QuadPart /= 10;
+	
+	// Subtract the offset between the two clock bases (Jan 1, 1601 --> Jan 1, 1970)
+	tics.QuadPart -= 11644473600000000ULL;
 
-    // Translate the time to be based on January 1, 1970 (_ftime base)
-    // The offset here is gotten by using the "time_test" program to report the
-    // difference in seconds between the two clocks.
-    sec -= 3054524608;
+	// Convert the 64-bit time into seconds and microseconds since Jan 1 1970
+	sec = (unsigned long)(tics.QuadPart / 1000000UL);
+	usec = (unsigned long)(tics.QuadPart % 1000000UL);
 }
 #endif
 
