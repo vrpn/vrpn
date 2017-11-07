@@ -3755,23 +3755,25 @@ int vrpn_Generic_Server_Object::setup_SpacePoint(char *&pch, char *line,
 {
 
     char s2[LINESIZE];
+    int idx = 0;
 
     VRPN_CONFIG_NEXT();
 
-    if (sscanf(pch, "%511s", s2) != 1) {
+    if (sscanf(pch, "%511s%d", s2, &idx) < 1) {
         fprintf(stderr, "Bad SpacePoint line: %s\n", line);
         return -1;
     }
+
 
 // Open the SpacePoint
 
 #ifdef VRPN_USE_HID
     // Open the tracker
     if (verbose) {
-        printf("Opening vrpn_Tracker_SpacePoint %s\n", s2);
+        printf("Opening vrpn_Tracker_SpacePoint #%d %s\n", idx, s2);
     }
 
-    _devices->add(new vrpn_Tracker_SpacePoint(s2, connection));
+    _devices->add(new vrpn_Tracker_SpacePoint(s2, connection, idx));
 #else
     fprintf(stderr,
             "SpacePoint driver works only with VRPN_USE_HID defined!\n");
