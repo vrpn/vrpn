@@ -7,6 +7,7 @@
 
 #include <stdio.h>                      // for fprintf, stderr
 #include <string.h>                     // for memset
+#include <string>
 #include <set>
 
 #include "vrpn_Connection.h"            // for vrpn_CONNECTION_LOW_LATENCY, etc
@@ -56,7 +57,7 @@ public:
            (m_accepted_already.size() == m_index) &&
            (m_accepted_already.find(device.path) == m_accepted_already.end()))
         {
-            m_accepted_already.emplace(device.path);
+            m_accepted_already.insert(device.path);
             return true;
         }
         else
@@ -71,7 +72,6 @@ public:
 
 private:
     unsigned m_index;
-    unsigned m_found;
     static std::set<std::string> m_accepted_already;
 };
 
