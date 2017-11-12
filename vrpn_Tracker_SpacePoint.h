@@ -24,7 +24,7 @@ class VRPN_API vrpn_Connection;
 class VRPN_API vrpn_Tracker_SpacePoint: public vrpn_Tracker, vrpn_Button, vrpn_HidInterface
 {
     public:
-        vrpn_Tracker_SpacePoint(const char * name, vrpn_Connection * trackercon);
+        vrpn_Tracker_SpacePoint(const char * name, vrpn_Connection * trackercon, int index = 0);
 
         virtual void mainloop ();
 

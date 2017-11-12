@@ -168,6 +168,7 @@ bool vrpn_HidInterface::reconnect()
         device_info.manufacturer_string = loop->manufacturer_string;
         device_info.product_string = loop->product_string;
         device_info.interface_number = loop->interface_number;
+        device_info.path = loop->path;
         // printf("XXX Found vendor 0x%x, product 0x%x, interface %d\n",
         // (unsigned)(loop->vendor_id), (unsigned)(loop->product_id),
         // (int)(loop->interface_number) );
