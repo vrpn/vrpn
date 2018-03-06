@@ -558,12 +558,6 @@ $(AOBJECT_DIR)/%.o: %.C $(ALIB_INCLUDES) $(MAKEFILE)
 	@[ -d $(AOBJECT_DIR) ] || mkdir -p $(AOBJECT_DIR)
 	$(CC) $(CFLAGS) -o $@ -c $<
 
-# Special rule for vrpn_Local_HIDAPI.C, which must be build with
-# the C compiler.
-$(SOBJECT_DIR)/vrpn_Local_HIDAPI.o : vrpn_Local_HIDAPI.C $(SLIB_INCLUDES) $(MAKEFILE)
-	@[ -d $(SOBJECT_DIR) ] || mkdir -p $(SOBJECT_DIR)
-	$(CC) $(CFLAGS) -x c -o $@ -c $<
-
 #
 #
 #############################################################################
