@@ -390,7 +390,8 @@ endif
 # On the PC, place quatlib in the directory ./quat.  No actual system
 # includes should be needed.
 ifeq ($(HW_OS),pc_cygwin)
-  INCLUDE_FLAGS := -I. -I./quat -I./atmellib -I./gpsnmealib
+  SYS_INCLUDE := -I./submodules/hidapi/hidapi -I/usr/include/libusb-1.0
+  INCLUDE_FLAGS := -I. -I./quat -I./atmellib -I./gpsnmealib ${SYS_INCLUDE}
 else
   INCLUDE_FLAGS := -I. $(SYS_INCLUDE) -I./quat -I../quat -I./atmellib -I./gpsnmealib
 endif
@@ -557,12 +558,6 @@ $(SOBJECT_DIR)/%.o: %.C $(SLIB_INCLUDES) $(MAKEFILE)
 $(AOBJECT_DIR)/%.o: %.C $(ALIB_INCLUDES) $(MAKEFILE)
 	@[ -d $(AOBJECT_DIR) ] || mkdir -p $(AOBJECT_DIR)
 	$(CC) $(CFLAGS) -o $@ -c $<
-
-# Special rule for vrpn_Local_HIDAPI.C, which must be build with
-# the C compiler.
-$(SOBJECT_DIR)/vrpn_Local_HIDAPI.o : vrpn_Local_HIDAPI.C $(SLIB_INCLUDES) $(MAKEFILE)
-	@[ -d $(SOBJECT_DIR) ] || mkdir -p $(SOBJECT_DIR)
-	$(CC) $(CFLAGS) -x c -o $@ -c $<
 
 #
 #
