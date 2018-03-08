@@ -450,9 +450,11 @@ if(VRPN_USE_HID)
 	endif()
 else()
 	# Clear this variable if they don't want HID after all.
-	message(STATUS
-		"NOTE: You have VRPN_USE_LOCAL_HIDAPI enabled, but "
-		"VRPN_USE_HID disabled: HIDAPI will only be built if you enable HID support for VRPN")
+	if (VRPN_USE_LOCAL_HIDAPI)
+		message(STATUS
+			"NOTE: You have VRPN_USE_LOCAL_HIDAPI enabled, but "
+			"VRPN_USE_HID disabled: HIDAPI will only be built if you enable HID support for VRPN")
+	endif()
 	set(HIDAPI_SOURCES)
 endif()
 
