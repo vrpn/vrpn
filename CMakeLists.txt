@@ -79,18 +79,20 @@ endif()
 ###
 # Basic packaging options and versioning
 
-include("${CMAKE_CURRENT_SOURCE_DIR}/ParseVersion.cmake")
+if (VRPN_INSTALL)
+	include("${CMAKE_CURRENT_SOURCE_DIR}/ParseVersion.cmake")
 
-message(STATUS
-	"Configuring the VRPN suite version ${CPACK_PACKAGE_VERSION} using the CMake-based build system\n")
+	message(STATUS
+		"Configuring the VRPN suite version ${CPACK_PACKAGE_VERSION} using the CMake-based build system\n")
 
-set(CPACK_PACKAGE_VENDOR
-	"VRPN Community led by Sensics, Inc.")
-set(CPACK_PACKAGE_FILE_NAME
-	"${PROJECT_NAME}-${CPACK_PACKAGE_VERSION}-${CMAKE_SYSTEM_NAME}-${CMAKE_SYSTEM_PROCESSOR}")
-set(CPACK_SOURCE_PACKAGE_FILE_NAME
-	"${PROJECT_NAME}-${CPACK_PACKAGE_VERSION}-src")
-set(CPACK_PACKAGE_CONTACT "Sensics VRPN Contact <vrpn@sensics.com>")
+	set(CPACK_PACKAGE_VENDOR
+		"VRPN Community led by Sensics, Inc.")
+	set(CPACK_PACKAGE_FILE_NAME
+		"${PROJECT_NAME}-${CPACK_PACKAGE_VERSION}-${CMAKE_SYSTEM_NAME}-${CMAKE_SYSTEM_PROCESSOR}")
+	set(CPACK_SOURCE_PACKAGE_FILE_NAME
+		"${PROJECT_NAME}-${CPACK_PACKAGE_VERSION}-src")
+	set(CPACK_PACKAGE_CONTACT "Sensics VRPN Contact <vrpn@sensics.com>")
+endif()
 
 if (NOT SUBPROJECT)
 	#-----------------------------------------------------------------------------
