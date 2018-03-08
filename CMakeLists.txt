@@ -92,28 +92,30 @@ set(CPACK_SOURCE_PACKAGE_FILE_NAME
 	"${PROJECT_NAME}-${CPACK_PACKAGE_VERSION}-src")
 set(CPACK_PACKAGE_CONTACT "Sensics VRPN Contact <vrpn@sensics.com>")
 
-#-----------------------------------------------------------------------------
-# Compiler flags we got from Hans for Windows and from Sheldon Andrews
-# for other architectures.
-if(MSVC)	# MS-Windows Visual Studio, both 32 and 64 bits
-	set(CMAKE_DEBUG_POSTFIX "d" CACHE STRING "add a postfix, usually d on windows")
-	if(MSVC_VERSION GREATER 1310) # This compiler flag needs newer than VS.NET 2003 (7.1)
-		# Choose fast, possibly less accurate floating point
-		# See http://msdn.microsoft.com/en-us/library/e7s85ffb(v=vs.80).aspx
-		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /fp:fast")
-		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /fp:fast")
+if (NOT SUBPROJECT)
+	#-----------------------------------------------------------------------------
+	# Compiler flags we got from Hans for Windows and from Sheldon Andrews
+	# for other architectures.
+	if(MSVC)	# MS-Windows Visual Studio, both 32 and 64 bits
+		set(CMAKE_DEBUG_POSTFIX "d" CACHE STRING "add a postfix, usually d on windows")
+		if(MSVC_VERSION GREATER 1310) # This compiler flag needs newer than VS.NET 2003 (7.1)
+			# Choose fast, possibly less accurate floating point
+			# See http://msdn.microsoft.com/en-us/library/e7s85ffb(v=vs.80).aspx
+			set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /fp:fast")
+			set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /fp:fast")
+		endif()
+
+		# Do not assume fixed base address (probably for DLL integration?)
+		# http://msdn.microsoft.com/en-us/library/w368ysh2(v=vs.80).aspx
+		set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /FIXED:NO")
+	else()
+		# GCC compilers on 64-bit machines require -fPIC for shared libraries or libs
+		# linked into shared libraries.
+
+		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${CMAKE_SHARED_LIBRARY_C_FLAGS}")
+		set(CMAKE_CXX_FLAGS
+			"${CMAKE_CXX_FLAGS} ${CMAKE_SHARED_LIBRARY_CXX_FLAGS}")
 	endif()
-
-	# Do not assume fixed base address (probably for DLL integration?)
-	# http://msdn.microsoft.com/en-us/library/w368ysh2(v=vs.80).aspx
-	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /FIXED:NO")
-else()
-	# GCC compilers on 64-bit machines require -fPIC for shared libraries or libs
-	# linked into shared libraries.
-
-	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${CMAKE_SHARED_LIBRARY_C_FLAGS}")
-	set(CMAKE_CXX_FLAGS
-		"${CMAKE_CXX_FLAGS} ${CMAKE_SHARED_LIBRARY_CXX_FLAGS}")
 endif()
 
 set(SERVER_EXTRA_LIBS)
