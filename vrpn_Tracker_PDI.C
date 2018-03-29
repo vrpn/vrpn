@@ -202,6 +202,8 @@ BOOL vrpn_Tracker_G4::SetupDevice( VOID )
 	pdiG4.SetPNOPosUnits( PosUnits );
 
 	pdiG4.SetPnoBuffer( pMotionBuf, VRPN_PDI_BUFFER_SIZE );
+	pLastBuf = 0;
+	dwLastSize = 0;
 	
 	//pdiG4.StartPipeExport();
 	UpdateStationMap();
@@ -522,7 +524,7 @@ void vrpn_Tracker_G4::DoFilterCmd(char *scmd)
 			break;
 
 		default:
-			printf("\tERROR: Unrecognized Filter Action: %c\r\n", pAct);
+			printf("\tERROR: Unrecognized Filter Action: %c\r\n", *pAct);
 			break;
 		}
 
@@ -649,7 +651,7 @@ void vrpn_Tracker_G4::DoFORCmd( char *scmd )
 			break;
 
 		default:
-			printf("\tERROR: Unrecognized Frame Of Reference Action: %c\r\n", pAct);
+			printf("\tERROR: Unrecognized Frame Of Reference Action: %c\r\n", *pAct);
 			break;
 		}
 
@@ -913,9 +915,6 @@ BOOL vrpn_Tracker_G4::DisplayCont( timeval ct )
 
 	PBYTE pBuf;
 	DWORD dwSize;
-	PBYTE pLastBuf = 0;
-	DWORD dwLastSize = 0;
-
 
 	if (!(pdiG4.LastPnoPtr(pBuf, dwSize)))
 	{
@@ -1238,6 +1237,8 @@ BOOL vrpn_Tracker_FastrakPDI::Connect( VOID )
 		isBinary = TRUE;
 
 		pdiDev.SetPnoBuffer( pMotionBuf, VRPN_PDI_BUFFER_SIZE );
+		pLastBuf = 0;
+		dwLastSize = 0;
 
 		bCnxReady = pdiDev.CnxReady();
 	}
@@ -1477,8 +1478,6 @@ BOOL vrpn_Tracker_FastrakPDI::DisplayCont( timeval ct )
 
 	PBYTE pBuf;
 	DWORD dwSize;
-	PBYTE pLastBuf = 0;
-	DWORD dwLastSize = 0;
 
 	if (!(pdiDev.LastPnoPtr(pBuf, dwSize)))
 	{
@@ -1803,6 +1802,8 @@ BOOL vrpn_Tracker_LibertyPDI::Connect( VOID )
 		// The CPDIdev class will use this space, even if we don't access it directly,
 		// which allows us to specify the size of the buffer
 		pdiDev.SetPnoBuffer( pMotionBuf, VRPN_PDI_BUFFER_SIZE );
+		pLastBuf = 0;
+		dwLastSize = 0;
 
 		bCnxReady = pdiDev.CnxReady();
 	}
@@ -2092,8 +2093,6 @@ BOOL vrpn_Tracker_LibertyPDI::DisplayCont( timeval ct )
 
 	PBYTE pBuf;
 	DWORD dwSize;
-	PBYTE pLastBuf = 0;
-	DWORD dwLastSize = 0;
 
 	if (!(pdiDev.LastPnoPtr(pBuf, dwSize)))
 	{
