@@ -228,7 +228,7 @@ protected:
     char *d_servicename; ///< Name of this device, not including the connection
     /// part
 
-    vrpn_int32 d_sender_id = -1;  ///< Sender ID registered with the connection
+    vrpn_int32 d_sender_id;       ///< Sender ID registered with the connection
     vrpn_int32 d_text_message_id; ///< ID for text messages
     vrpn_int32 d_ping_message_id; ///< Ask the server if they are there
     vrpn_int32 d_pong_message_id; ///< Server telling that it is there

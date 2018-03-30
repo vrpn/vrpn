@@ -422,6 +422,7 @@ vrpn_BaseClassUnique::vrpn_BaseClassUnique()
     , // don't suppress the "No response from server" messages
     d_connection(NULL)
     , d_servicename(NULL)
+    , d_sender_id(-1)
     , d_num_autodeletions(0)
     , d_first_mainloop(1)
     , d_unanswered_ping(0)
