@@ -173,6 +173,8 @@ class VRPN_API vrpn_Tracker_G4: public vrpn_Tracker {
 	HWND	hwnd;
 	DWORD	dwOverflowCount;
 	BYTE	pMotionBuf[VRPN_PDI_BUFFER_SIZE];
+	PBYTE	pLastBuf;
+	DWORD	dwLastSize;
 };
 
 class VRPN_API vrpn_Tracker_FastrakPDI: public vrpn_Tracker {
@@ -219,6 +221,8 @@ class VRPN_API vrpn_Tracker_FastrakPDI: public vrpn_Tracker {
 	HWND	hwnd;
 	DWORD	dwOverflowCount;
 	BYTE	pMotionBuf[VRPN_PDI_BUFFER_SIZE];
+	PBYTE	pLastBuf;
+	DWORD	dwLastSize;
 };
 
 class VRPN_API vrpn_Tracker_LibertyPDI: public vrpn_Tracker {
@@ -266,6 +270,8 @@ class VRPN_API vrpn_Tracker_LibertyPDI: public vrpn_Tracker {
 	HWND	hwnd;
 	DWORD	dwOverflowCount;
 	BYTE	pMotionBuf[VRPN_PDI_BUFFER_SIZE];
+	PBYTE	pLastBuf;
+	DWORD	dwLastSize;
 };
 
 #endif
