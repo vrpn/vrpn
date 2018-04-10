@@ -353,7 +353,7 @@ option_requires(VRPN_BUILD_PYTHON_HANDCODED_3X
 ###
 # javac, jar, and javah (for java wrapper)
 ###
-if(ANDROID)
+if(ANDROID AND DEFINED find_host_package)
 	find_host_package(Java COMPONENTS Development)
 	find_host_package(JNI)
 	find_host_program(JAVAH_EXECUTABLE NAMES javah)
