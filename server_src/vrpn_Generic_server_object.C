@@ -3437,127 +3437,54 @@ int vrpn_Generic_Server_Object::setup_Tracker_OSVRHackerDevKit(char *&pch, char
     return 0; // successful completion
 }
 
-int vrpn_Generic_Server_Object::setup_Tracker_PhaseSpace(char *&, char *line,
+int vrpn_Generic_Server_Object::setup_Tracker_PhaseSpace(char *&pch, char *line,
                                                          FILE *config_file)
 {
-    char trackerName[LINESIZE];
-    char device[LINESIZE];
-    float framerate = 0;
-    int readflag = 0;
-    int slaveflag = 0;
-
-    // get tracker name and device
-    if (sscanf(line, "vrpn_Tracker_PhaseSpace %s %s %f %d %d", trackerName,
-               device, &framerate, &readflag, &slaveflag) < 5) {
-        fprintf(stderr, "Bad vrpn_Tracker_PhaseSpace line: %s\nProper format "
-                        "is:  vrpn_Tracker_Phasespace [trackerName] [device] "
-                        "[framerate] [readflag] [slaveflag]\n",
-                line);
-        return -1;
-    }
-
 #ifdef VRPN_INCLUDE_PHASESPACE
-    vrpn_Tracker_PhaseSpace *pstracker = new vrpn_Tracker_PhaseSpace(
-        trackerName, connection, device, framerate, readflag, slaveflag);
 
-    char tag[LINESIZE];
-    int sensor = 0;
-    int id = 0;
-    float x = 0;
-    float y = 0;
-    float z = 0;
-    bool inTag = false;
+  char trackerName[LINESIZE];
+  char device[LINESIZE];
+  float framerate = 0;
+  int readflag = 0;
+  int slaveflag = 0;
 
-    // read file for markers and rigid body specifications
-    // Parse these even if they aren't used in slave mode just to consume their
-    // place in the input stream.
-    while (fgets(line, LINESIZE, config_file) != NULL) {
+  VRPN_CONFIG_NEXT();
 
-        // cut off comments
-        for (int i = 0; i < LINESIZE && line[i] != '\0'; i++) {
-            if (line[i] == '#') {
-                line[i] = '\0';
-                break;
-            }
-        }
+  vrpn_Tracker_PhaseSpace* pstracker = NULL;
 
-        // read tags and params
-        if (sscanf(line, "%s", tag) == 1) {
-            if (strcmp("<owl>", tag) == 0) {
-                if (inTag) {
-                    fprintf(
-                        stderr,
-                        "Error, nested <owl> tag encountered.  Aborting...\n");
-                    delete pstracker;
-                    return -1;
-                }
-                else {
-                    inTag = true;
-                    continue;
-                }
-            }
-            else if (strcmp("</owl>", tag) == 0) {
-                if (inTag) {
-                    inTag = false;
-                    break;
-                }
-                else {
-                    fprintf(
-                        stderr,
-                        "Error, </owl> tag without <owl> tag.  Aborting...\n");
-                    return -1;
-                }
-            }
-        }
-        if (inTag) {
-            if (sscanf(line, "%d : rb+ %d %f %f %f", &sensor, &id, &x, &y,
-                       &z) == 5) {
-                if (slaveflag) continue;
-                if (!pstracker->addRigidMarker(sensor, id, x, y, z)) {
-                    fprintf(stderr, "Error, unable to add new rigid body "
-                                    "marker: %d:%d %f %f %f\n",
-                            sensor, id, x, y, z);
-                    continue;
-                }
-            }
-            else if (sscanf(line, "%d : pt %d", &sensor, &id) == 2) {
-                if (slaveflag) continue;
-                if (!pstracker->addMarker(sensor, id)) {
-                    fprintf(stderr, "Error, unable to add marker %d:%d\n",
-                            sensor, id);
-                    continue;
-                }
-            }
-            else if (sscanf(line, "%d : rbnew", &sensor) == 1) {
-                if (slaveflag) continue;
-                if (!pstracker->startNewRigidBody(sensor)) {
-                    fprintf(stderr, "Error, unable to add new rigid body: %d\n",
-                            sensor);
-                    continue;
-                }
-            }
-            else {
-                fprintf(stderr, "Ignoring line: %s\n", line);
-                continue;
-            }
-        }
-    }
+  if (sscanf(line, "vrpn_Tracker_PhaseSpace %s", trackerName) == 1) {
+    pstracker = new vrpn_Tracker_PhaseSpace (trackerName, connection);
+  } else {
+    fprintf (stderr, "Bad vrpn_Tracker_PhaseSpace line: %s\nProper format is:  vrpn_Tracker_Phasespace trackerName\n", line);
+    return -1;
+  }
 
-    if (!pstracker->enableTracker(true)) {
-        fprintf(stderr, "Error, unable to enable OWL Tracker.\n");
-        delete pstracker;
-        return -1;
-    }
-    _devices->add(pstracker);
+  // parse config file
+  printf("Parsing config file...\n\n");
+  if(!pstracker->load(config_file)) {
+    fprintf(stderr, "Error parsing config file.\n");
+    delete pstracker;
+    return -1;
+  }
 
-    return 0;
+  if(!pstracker->InitOWL()) {
+    fprintf(stderr, "owl init error.\n");
+    delete pstracker;
+    return -1;
+  }
+
+  // start streaming data
+  if (!pstracker->enableStreaming(true)) {
+    delete pstracker;
+    return -1;
+  }
+
+  _devices->add(pstracker);
+  return 0;
 
 #else
-    fprintf(stderr, "vrpn_server: Can't open PhaseSpace OWL server: "
-                    "VRPN_INCLUDE_PHASESPACE not defined in "
-                    "vrpn_Configure.h!\n");
-    config_file = config_file + 1; // Unused parameter, avoid warning.
-    return -1;
+  fprintf (stderr, "vrpn_server: Can't open PhaseSpace OWL server: VRPN_INCLUDE_PHASESPACE not defined in vrpn_Configure.h!\n");
+  return -1;
 #endif
 }
 
@@ -3828,23 +3755,25 @@ int vrpn_Generic_Server_Object::setup_SpacePoint(char *&pch, char *line,
 {
 
     char s2[LINESIZE];
+    int idx = 0;
 
     VRPN_CONFIG_NEXT();
 
-    if (sscanf(pch, "%511s", s2) != 1) {
+    if (sscanf(pch, "%511s%d", s2, &idx) < 1) {
         fprintf(stderr, "Bad SpacePoint line: %s\n", line);
         return -1;
     }
+
 
 // Open the SpacePoint
 
 #ifdef VRPN_USE_HID
     // Open the tracker
     if (verbose) {
-        printf("Opening vrpn_Tracker_SpacePoint %s\n", s2);
+        printf("Opening vrpn_Tracker_SpacePoint #%d %s\n", idx, s2);
     }
 
-    _devices->add(new vrpn_Tracker_SpacePoint(s2, connection));
+    _devices->add(new vrpn_Tracker_SpacePoint(s2, connection, idx));
 #else
     fprintf(stderr,
             "SpacePoint driver works only with VRPN_USE_HID defined!\n");

@@ -103,7 +103,7 @@ JNIEXPORT void JNICALL
 Java_vrpn_ButtonRemote_mainloop( JNIEnv* env, jobject jobj )
 {
   vrpn_Button_Remote* t = (vrpn_Button_Remote*) env->GetLongField( jobj, jfid_vrpn_VRPNDevice_native_device );
-  if( t <= 0 )  // this button is uninitialized or has been shut down already
+  if( t == NULL )  // this button is uninitialized or has been shut down already
     return;
 
   // now call mainloop
@@ -160,7 +160,7 @@ Java_vrpn_ButtonRemote_shutdownButton( JNIEnv* env, jobject jobj )
   vrpn_Button_Remote* t = (vrpn_Button_Remote*) env->GetLongField( jobj, jfid_vrpn_VRPNDevice_native_device );
   
   // unregister a handler and destroy the button
-  if( t > 0 )
+  if( t )
   {
     t->unregister_change_handler( jobj, handle_button_change );
 	t->connectionPtr()->removeReference(); // because we called vrpn_get_connection_by_name

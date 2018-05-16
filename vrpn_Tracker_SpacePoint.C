@@ -7,6 +7,8 @@
 
 #include <stdio.h>                      // for fprintf, stderr
 #include <string.h>                     // for memset
+#include <string>
+#include <set>
 
 #include "vrpn_Connection.h"            // for vrpn_CONNECTION_LOW_LATENCY, etc
 #include "vrpn_Tracker_SpacePoint.h"
@@ -17,10 +19,69 @@ const unsigned SPACEPOINT_PRODUCT = 0x0100;
 VRPN_SUPPRESS_EMPTY_OBJECT_WARNING()
 
 #ifdef VRPN_USE_HID
-vrpn_Tracker_SpacePoint::vrpn_Tracker_SpacePoint(const char * name, vrpn_Connection * trackercon) :
-                    vrpn_Tracker(name, trackercon), vrpn_Button(name, trackercon),
-                    vrpn_HidInterface(new vrpn_HidProductAcceptor(SPACEPOINT_VENDOR, SPACEPOINT_PRODUCT),
-                    SPACEPOINT_VENDOR, SPACEPOINT_PRODUCT)
+
+/*
+ * Hackish acceptor to work around the broken Windows 10 behavior
+ * where devices are opened in shared mode by default. That prevents
+ * using opening failure to detect an already-in-use device and thus
+ * it is impossible to instantiate multiple copies of this driver for
+ * multiple sensors (they will all read from the first accepted
+ * device).
+ *
+ * This acceptor works it around by keeping a track of already
+ * accepted devices and forcing the use of the next device when
+ * attempting to accept an already accepted one.
+ *
+ * BUGS: the reset() method is useless - we need the device set be
+ * persistent between instantiations of this acceptor and the reset
+ * gets called at the start by all constructors of vrpn_HidInterface :(
+ */
+
+class SpacePointAcceptor : public vrpn_HidAcceptor {
+public:
+    SpacePointAcceptor(unsigned index)
+        : m_index(index)
+    {}
+
+    virtual ~SpacePointAcceptor()
+    {}
+
+    bool accept(const vrpn_HIDDEVINFO &device)
+    {
+        // device.interface_number - SpacePoint clones have only
+        // a single interface and report -1 there, genuine PNI SpacePoint has 2 interfaces
+        // a we need the device with iface num 1 (0 is the raw sensor interface)
+        if((device.vendor == SPACEPOINT_VENDOR) &&
+           (device.product == SPACEPOINT_PRODUCT) &&
+           (device.interface_number < 0 || device.interface_number == 1) &&
+           (m_accepted_already.size() == m_index) &&
+           (m_accepted_already.find(device.path) == m_accepted_already.end()))
+        {
+            m_accepted_already.insert(device.path);
+            return true;
+        }
+        else
+            return false;
+    }
+
+    void reset()
+    {
+        // disabled, see comment above
+        // m_accepted_already.clear();
+    }
+
+private:
+    unsigned m_index;
+    static std::set<std::string> m_accepted_already;
+};
+
+std::set<std::string> SpacePointAcceptor::m_accepted_already;
+
+//new vrpn_HidNthMatchAcceptor(index, new vrpn_HidProductAcceptor(SPACEPOINT_VENDOR, SPACEPOINT_PRODUCT))
+vrpn_Tracker_SpacePoint::vrpn_Tracker_SpacePoint(const char * name, vrpn_Connection * trackercon, int index)
+    : vrpn_Tracker(name, trackercon)
+    , vrpn_Button(name, trackercon)
+    , vrpn_HidInterface(new SpacePointAcceptor(index), SPACEPOINT_VENDOR, SPACEPOINT_PRODUCT)
 {
     memset(d_quat, 0, 4 * sizeof(float));
     d_quat[3] = 1.0;

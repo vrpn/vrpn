@@ -2987,6 +2987,12 @@ int vrpn_Endpoint_IP::mainloop(timeval *timeout)
 
         // We are not a TCP-only connect.
         // See if we have a connection yet (nonblocking select).
+        if (status == BROKEN) { break; }
+        if (d_tcpListenSocket < 0) {
+            fprintf(stderr, "vrpn_Endpoint: mainloop: Bad listen socket\n");
+            status = BROKEN;
+            break;
+        }
         ret = vrpn_poll_for_accept(d_tcpListenSocket, &d_tcpSocket);
         if (ret == -1) {
             fprintf(stderr, "vrpn_Endpoint: mainloop: Can't poll for accept\n");

@@ -89,7 +89,7 @@ Java_vrpn_PoserRemote_mainloop( JNIEnv* env, jobject jobj )
   vrpn_Poser_Remote* po 
 	  = (vrpn_Poser_Remote*) env->GetLongField( jobj, jfid_vrpn_VRPNDevice_native_device );
 
-  if( po > 0 )
+  if( po )
 	po->mainloop( );
 }
 
@@ -106,7 +106,7 @@ Java_vrpn_PoserRemote_shutdownPoser( JNIEnv* env, jobject jobj )
   vrpn_Poser_Remote* po 
 	  = (vrpn_Poser_Remote*) env->GetLongField( jobj, jfid_vrpn_VRPNDevice_native_device );
 
-  if( po > 0 )
+  if( po )
   {
 	po->connectionPtr()->removeReference(); // because we called vrpn_get_connection_by_name
 	delete po;
@@ -175,7 +175,7 @@ Java_vrpn_PoserRemote_requestPose_1native( JNIEnv* env, jobject jobj,
   // get the poser pointer
   vrpn_Poser_Remote* po 
 	  = (vrpn_Poser_Remote*) env->GetLongField( jobj, jfid_vrpn_VRPNDevice_native_device );
-  if( po <= 0 )  // this poser is uninitialized or has been shut down already
+  if( po == NULL )  // this poser is uninitialized or has been shut down already
   {
     printf( "Error in native method \"requestPose(long,long,double[],double[])\":  "
 			"the poser is uninitialized or has been shut down.\n" );
@@ -241,7 +241,7 @@ Java_vrpn_PoserRemote_requestPoseRelative_1native( JNIEnv* env, jobject jobj,
   // get the poser pointer
   vrpn_Poser_Remote* po 
 	  = (vrpn_Poser_Remote*) env->GetLongField( jobj, jfid_vrpn_VRPNDevice_native_device );
-  if( po <= 0 )  // this poser is uninitialized or has been shut down already
+  if( po == NULL )  // this poser is uninitialized or has been shut down already
   {
     printf( "Error in native method \"requestPoseRelative(long,long,double[],double[])\":  "
 			"the poser is uninitialized or has been shut down.\n" );
@@ -307,7 +307,7 @@ Java_vrpn_PoserRemote_requestVelocity_1native( JNIEnv* env, jobject jobj,
   // get the poser pointer
   vrpn_Poser_Remote* po 
 	  = (vrpn_Poser_Remote*) env->GetLongField( jobj, jfid_vrpn_VRPNDevice_native_device );
-  if( po <= 0 )  // this poser is uninitialized or has been shut down already
+  if( po == NULL )  // this poser is uninitialized or has been shut down already
   {
     printf( "Error in native method \"requestVelocity(long,long,double[],double[],double)\":  "
 			"the poser is uninitialized or has been shut down.\n" );
@@ -374,7 +374,7 @@ Java_vrpn_PoserRemote_requestVelocityRelative_1native( JNIEnv* env, jobject jobj
   // get the poser pointer
   vrpn_Poser_Remote* po 
 	  = (vrpn_Poser_Remote*) env->GetLongField( jobj, jfid_vrpn_VRPNDevice_native_device );
-  if( po <= 0 )  // this poser is uninitialized or has been shut down already
+  if( po == NULL )  // this poser is uninitialized or has been shut down already
   {
     printf( "Error in native method \"requestVelocityRelative(long,long,double[],double[],double)\":  "
 			"the poser is uninitialized or has been shut down.\n" );

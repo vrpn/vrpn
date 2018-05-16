@@ -91,7 +91,7 @@ Java_vrpn_TextSender_sendMessage_1native( JNIEnv* env, jobject jobj, jstring jms
 {
 	// get the analog pointer
 	vrpn_Text_Sender* s = (vrpn_Text_Sender*) env->GetLongField( jobj, jfid_vrpn_VRPNDevice_native_device );
-	if( s <= 0 )  // this analog is uninitialized or has been shut down already
+	if( s == NULL )  // this analog is uninitialized or has been shut down already
 	{
 		printf( "Error in native method \"sendMessage(...)\":  the text sender is "
             "uninitialized or has been shut down.\n" );
@@ -118,7 +118,7 @@ JNIEXPORT void JNICALL
 Java_vrpn_TextSender_mainloop( JNIEnv* env, jobject jobj )
 {
   vrpn_Text_Sender* t = (vrpn_Text_Sender*) env->GetLongField( jobj, jfid_vrpn_VRPNDevice_native_device );
-  if( t <= 0 )  // this text sender is uninitialized or has been shut down already
+  if( t == NULL )  // this text sender is uninitialized or has been shut down already
     return;
 
   // now call mainloop (since text sender is really a server object, call the connection's mainloop)
@@ -180,7 +180,7 @@ Java_vrpn_TextSender_shutdownTextSender( JNIEnv* env, jobject jobj )
   vrpn_Text_Sender* t = (vrpn_Text_Sender*) env->GetLongField( jobj, jfid_vrpn_VRPNDevice_native_device );
   
   // destroy the text sender
-  if( t > 0 )
+  if( t )
   {
 	t->connectionPtr()->removeReference(); // because we called vrpn_get_connection_by_name
     delete t;
