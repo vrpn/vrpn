@@ -31,7 +31,7 @@ VRPN_SUPPRESS_EMPTY_OBJECT_WARNING()
 
 static const std::string EMPTY_STRING("");
 
-static const std::string getDeviceNodes(const std::string &device_name)
+static std::string getDeviceNodes(const std::string &device_name)
 {
   std::map<std::string, std::string> s_devicesNodes;
 
