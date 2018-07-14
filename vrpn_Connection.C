@@ -3685,30 +3685,6 @@ int vrpn_Endpoint_IP::connect_udp_to(const char *addr, int port)
     return 0;
 }
 
-vrpn_int32 vrpn_Endpoint_IP::set_tcp_outbuf_size(vrpn_int32 bytecount)
-{
-    char *new_outbuf;
-
-    if (bytecount < 0) {
-        return d_tcpBuflen;
-    }
-
-    new_outbuf = new char[bytecount];
-
-    if (!new_outbuf) {
-        return -1;
-    }
-
-    if (d_tcpOutbuf) {
-        delete[] d_tcpOutbuf;
-    }
-
-    d_tcpOutbuf = new_outbuf;
-    d_tcpBuflen = bytecount;
-
-    return d_tcpBuflen;
-}
-
 void vrpn_Endpoint_IP::drop_connection(void)
 {
 
