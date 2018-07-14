@@ -6250,9 +6250,9 @@ char *vrpn_copy_service_name(const char *fullname)
     else {
         size_t len = 1 + strcspn(fullname, "@");
         char *tbuf = new char[len];
-        if (!tbuf)
+        if (!tbuf) {
             fprintf(stderr, "vrpn_copy_service_name:  Out of memory!\n");
-        else {
+        } else {
             strncpy(tbuf, fullname, len - 1);
             tbuf[len - 1] = 0;
         }
@@ -6270,9 +6270,9 @@ char *vrpn_copy_service_location(const char *fullname)
         len = strlen(fullname) + 1; // We subtract one from it below.
     }
     char *tbuf = new char[len];
-    if (!tbuf)
+    if (!tbuf) {
         fprintf(stderr, "vrpn_copy_service_name:  Out of memory!\n");
-    else {
+    } else {
         strncpy(tbuf, fullname + offset + 1, len - 1);
         tbuf[len - 1] = 0;
     }
@@ -6297,9 +6297,9 @@ char *vrpn_copy_file_name(const char *filespecifier)
 
     len = 1 + strlen(fp);
     filename = new char[len];
-    if (!filename)
+    if (!filename) {
         fprintf(stderr, "vrpn_copy_file_name:  Out of memory!\n");
-    else {
+    } else {
         strncpy(filename, fp, len - 1);
         filename[len - 1] = 0;
     }
@@ -6363,8 +6363,7 @@ char *vrpn_copy_machine_name(const char *hostspecifier)
     tbuf = new char[len];
     if (!tbuf) {
         fprintf(stderr, "vrpn_copy_machine_name:  Out of memory!\n");
-    }
-    else {
+    } else {
         strncpy(tbuf, hostspecifier + nearoffset, len - 1);
         tbuf[len - 1] = 0;
     }
@@ -6406,9 +6405,9 @@ char *vrpn_copy_rsh_program(const char *hostspecifier)
     len = 1 + (faroffset ? faroffset : strlen(hostspecifier) - nearoffset);
     tbuf = new char[len];
 
-    if (!tbuf)
+    if (!tbuf) {
         fprintf(stderr, "vrpn_copy_rsh_program: Out of memory!\n");
-    else {
+    } else {
         strncpy(tbuf, hostspecifier + nearoffset, len - 1);
         tbuf[len - 1] = 0;
         // fprintf(stderr, "server program: '%s'.\n", tbuf);
@@ -6431,9 +6430,9 @@ char *vrpn_copy_rsh_arguments(const char *hostspecifier)
     len = 1 + faroffset - nearoffset;
     tbuf = new char[len];
 
-    if (!tbuf)
+    if (!tbuf) {
         fprintf(stderr, "vrpn_copy_rsh_arguments: Out of memory!\n");
-    else {
+    } else {
         strncpy(tbuf, hostspecifier + nearoffset, len - 1);
         tbuf[len - 1] = 0;
         // fprintf(stderr, "server args: '%s'.\n", tbuf);
