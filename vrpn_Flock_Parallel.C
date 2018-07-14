@@ -75,12 +75,16 @@ vrpn_Tracker_Flock_Parallel::vrpn_Tracker_Flock_Parallel(char *name,
     } else {
       // create a traker name
       sprintf(rgch, "flockSlave%d", i);
-      rgSlaves[i] = new vrpn_Tracker_Flock_Parallel_Slave( rgch,
+      try { rgSlaves[i] = new vrpn_Tracker_Flock_Parallel_Slave( rgch,
 							   d_connection,
 							   slavePortArray[i],
 							   baud,
 							   d_sender_id,
 							   i );
+      } catch (int) {
+        fprintf(stderr, "\nvrpn_Tracker_Flock_Parallel: Out of memory\n");
+        return;
+      }
     }      
   }
 }

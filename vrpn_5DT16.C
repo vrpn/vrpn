@@ -308,7 +308,9 @@ vrpn_Button_5DT_Server::vrpn_Button_5DT_Server(const char *name, const char *dev
         for(int i=0;i<num_buttons;i++) {
                 m_threshold[i]=threshold[i];
 	}
-        d_5dt_button=new vrpn_Analog_Remote(deviceName, d_connection);
+        d_5dt_button = NULL;
+        try { d_5dt_button = new vrpn_Analog_Remote(deviceName, d_connection); }
+        catch (int) { return; }
 #ifdef  VERBOSE
         printf("vrpn_Button_5DT_Server: Adding local analog %s\n",name);
 #endif

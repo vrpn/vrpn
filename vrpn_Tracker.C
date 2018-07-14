@@ -192,14 +192,12 @@ bool vrpn_Tracker::ensure_enough_unit2sensors(unsigned num)
         }
 
         // Allocate new space for the two lists.
-        vrpn_Tracker_Pos *newlist = new vrpn_Tracker_Pos[num];
-        if (newlist == NULL) {
-            return false;
-        }
-        vrpn_Tracker_Quat *newqlist = new vrpn_Tracker_Quat[num];
-        if (newqlist == NULL) {
-            return false;
-        }
+        vrpn_Tracker_Pos *newlist;
+        try { newlist = new vrpn_Tracker_Pos[num]; }
+        catch (int) { return false; }
+        vrpn_Tracker_Quat *newqlist;
+        try { newqlist = new vrpn_Tracker_Quat[num]; }
+        catch (int) { return false; }
 
         // Copy all of the existing elements.
         for (i = 0; i < num_unit2sensors; i++) {
@@ -1343,9 +1341,9 @@ bool vrpn_Tracker_Remote::ensure_enough_sensor_callbacks(unsigned num)
         }
 
         // Allocate new space for the list.
-        vrpn_Tracker_Sensor_Callbacks *newlist =
-            new vrpn_Tracker_Sensor_Callbacks[num];
-        if (newlist == NULL) {
+        vrpn_Tracker_Sensor_Callbacks *newlist;
+        try { newlist = new vrpn_Tracker_Sensor_Callbacks[num]; }
+        catch (int) {
             return false;
         }
 

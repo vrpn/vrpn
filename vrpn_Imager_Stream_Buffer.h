@@ -47,8 +47,9 @@ public:
     // Insert an element into the list.  Return false if fails.
     bool insert_back(const vrpn_HANDLERPARAM &p)
     {
-        struct d_ELEMENT *el = new struct d_ELEMENT;
-        if (el == NULL) {
+        struct d_ELEMENT *el;
+        try { el = new struct d_ELEMENT; }
+        catch (int) {
             return false;
         }
         el->p = p;

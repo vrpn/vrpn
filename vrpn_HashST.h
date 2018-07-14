@@ -98,12 +98,12 @@ vrpn_Hash<TKey, TValue>::vrpn_Hash(int init)
 {
 	HashFunction = vrpn_LinearHashFunction<TKey>;
 	m_NrItems = 0;
-	m_InitialSize = m_SizeHash = init;
-	m_Items = new HashItem*[m_SizeHash];
+        m_CurrentItem = 0;
+        m_First = 0L;
+        m_InitialSize = m_SizeHash = init;
+        try { m_Items = new HashItem*[m_SizeHash]; }
+        catch (int) { return; }
 	MakeNull( m_Items, m_SizeHash );
-	m_CurrentItem = 0;
-
-	m_First=0L;
 }
 
 /**
@@ -116,12 +116,12 @@ vrpn_Hash<TKey, TValue>::vrpn_Hash(unsigned int (*func)(const TKey &key), int in
 {
 	HashFunction = func;
 	m_NrItems = 0;
-	m_InitialSize = m_SizeHash = init;
-	m_Items = new HashItem*[m_SizeHash];
-	MakeNull( m_Items, m_SizeHash );
-	m_CurrentItem = 0;
-
-	m_First=0L;
+        m_CurrentItem = 0;
+        m_First = 0L;
+        m_InitialSize = m_SizeHash = init;
+        try { m_Items = new HashItem*[m_SizeHash]; }
+        catch (int) { return; }
+        MakeNull( m_Items, m_SizeHash );
 }
 
 template <class TKey,class TValue>
@@ -138,13 +138,14 @@ void vrpn_Hash<TKey, TValue>::Clear()
 	ClearItems();
 
 	m_NrItems = 0;
-	delete m_Items;
+        delete m_Items; m_Items = NULL;
+        m_First = 0;
+        m_CurrentItem = 0;
 
 	m_SizeHash = m_InitialSize;
-	m_Items = new HashItem*[m_SizeHash];
-	MakeNull( m_Items, m_SizeHash );
-	m_First = 0;
-	m_CurrentItem = 0;
+        try { m_Items = new HashItem*[m_SizeHash]; }
+        catch (int) { return; }
+        MakeNull( m_Items, m_SizeHash );
 }
 
 template <class TKey,class TValue>
@@ -225,7 +226,9 @@ bool vrpn_Hash<TKey, TValue>::Add(TKey key, TValue value)
 	else
 	{
 		m_NrItems++;
-		HashItem *item = new HashItem; //( HashItem * ) malloc( sizeof( HashItem ) );
+                HashItem *item;
+                try { item = new HashItem; }
+                catch (int) { return false; }
 		item->key = key;
 		item->value = value;
 		item->next = m_First;
@@ -337,13 +340,16 @@ void vrpn_Hash<TKey, TValue>::ReHash()			//--- these functions do not implement 
 	HashItem **temp;
 	int OldSizeHash = m_SizeHash;
 	m_SizeHash *= 2;
-	temp = new HashItem*[m_SizeHash];
+        try { temp = new HashItem*[m_SizeHash]; }
+        catch (int) { m_SizeHash = 0;  return; }
 	MakeNull( temp, m_SizeHash );
 	HashItem *NewFirst = 0;
 	for ( HashItem *item = m_First ; item != 0 ; item = item->next )
 	{
 		unsigned int HashValue = HashFunction( item->key )% OldSizeHash;
-		HashItem *NewItem = new HashItem;
+                HashItem *NewItem;
+                try { NewItem = new HashItem; }
+                catch (int) { return; }
 		NewItem->key = item->key;
 		NewItem->value = item->value;
 		NewItem->next = NewFirst;
