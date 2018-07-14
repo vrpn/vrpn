@@ -115,8 +115,8 @@ void vrpn_Tracker_FilterOneEuro::mainloop()
   // See if we have anything new from our tracker.
   d_listen_tracker->mainloop();
 
-  // server update
-  vrpn_Tracker::server_mainloop();
+  // Call the server_mainloop on our unique base class.
+  server_mainloop();
 }
 
 vrpn_Tracker_DeadReckoning_Rotation::vrpn_Tracker_DeadReckoning_Rotation(

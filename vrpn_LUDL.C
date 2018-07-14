@@ -248,8 +248,8 @@ void vrpn_LUDL_USBMAC6000::mainloop()
   vrpn_gettimeofday(&_timestamp, NULL);
   report_changes();
 
-  vrpn_Analog_Output::server_mainloop();
-  vrpn_Analog::server_mainloop();
+  // Call the server_mainloop on our unique base class.
+  server_mainloop();
 }
 
 void vrpn_LUDL_USBMAC6000::report(vrpn_uint32 class_of_service)

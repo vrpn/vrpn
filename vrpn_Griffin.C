@@ -94,18 +94,8 @@ void vrpn_Griffin_PowerMate::mainloop(void)
 		_timestamp = current_time;
 		report_changes();
 
-		if (vrpn_Analog::num_channel > 0)
-		{
-			vrpn_Analog::server_mainloop();
-		}
-		if (vrpn_Button::num_buttons > 0)
-		{
-			vrpn_Button::server_mainloop();
-		}
-		if (vrpn_Dial::num_dials > 0)
-		{
-			vrpn_Dial::server_mainloop();
-		}
+                // Call the server_mainloop on our unique base class.
+                server_mainloop();
 	}
 }
 

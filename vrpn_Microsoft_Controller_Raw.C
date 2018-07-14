@@ -186,12 +186,8 @@ void vrpn_Microsoft_SideWinder_Precision_2::mainloop(void)
 		_timestamp = current_time;
 		report_changes();
 
-		vrpn_Analog::server_mainloop();
-		vrpn_Button::server_mainloop();
-		if (vrpn_Dial::num_dials > 0)
-		{
-			vrpn_Dial::server_mainloop();
-		}
+                // Call the server_mainloop on our unique base class.
+                server_mainloop();
 	}
 }
 
@@ -330,12 +326,8 @@ void vrpn_Microsoft_SideWinder::mainloop(void)
 		_timestamp = current_time;
 		report_changes();
 
-		vrpn_Analog::server_mainloop();
-		vrpn_Button::server_mainloop();
-		if (vrpn_Dial::num_dials > 0)
-		{
-			vrpn_Dial::server_mainloop();
-		}
+                // Call the server_mainloop on our unique base class.
+                server_mainloop();
 	}
 }
 
@@ -438,12 +430,8 @@ void vrpn_Microsoft_Controller_Raw_Xbox_S::mainloop()
 		_timestamp = current_time;
 		report_changes();
 
-		vrpn_Analog::server_mainloop();
-		vrpn_Button::server_mainloop();
-		if (vrpn_Dial::num_dials > 0)
-		{
-			vrpn_Dial::server_mainloop();
-		}
+                // Call the server_mainloop on our unique base class.
+                server_mainloop();
 	}
 }
 
@@ -683,12 +671,8 @@ void vrpn_Microsoft_Controller_Raw_Xbox_360_base::mainloop()
 		_timestamp = current_time;
 		report_changes();
 
-		vrpn_Analog::server_mainloop();
-		vrpn_Button::server_mainloop();
-		if (vrpn_Dial::num_dials > 0)
-		{
-			vrpn_Dial::server_mainloop();
-		}
+                // Call the server_mainloop on our unique base class.
+                server_mainloop();
 	}
 }
 

@@ -134,12 +134,8 @@ void vrpn_Logitech_Extreme_3D_Pro::mainloop(void)
 		_timestamp = current_time;
 		report_changes();
 
-		vrpn_Analog::server_mainloop();
-		vrpn_Button::server_mainloop();
-		if (vrpn_Dial::num_dials > 0)
-		{
-			vrpn_Dial::server_mainloop();
-		}
+                // Call the server_mainloop on our unique base class.
+                server_mainloop();
 	}
 }
 

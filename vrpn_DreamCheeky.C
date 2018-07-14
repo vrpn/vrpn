@@ -53,15 +53,17 @@ void vrpn_DreamCheeky_Drum_Kit::mainloop()
 	vrpn_gettimeofday(&_timestamp, NULL);
 	report_changes();
 
-	vrpn_Button::server_mainloop();
+	server_mainloop();
 }
 
-void vrpn_DreamCheeky_Drum_Kit::report(void) {
+void vrpn_DreamCheeky_Drum_Kit::report(void)
+{
 	vrpn_Button::timestamp = _timestamp;
 	vrpn_Button::report_changes();
 }
 
-void vrpn_DreamCheeky_Drum_Kit::report_changes(void) {
+void vrpn_DreamCheeky_Drum_Kit::report_changes(void)
+{
 	vrpn_Button::timestamp = _timestamp;
 	vrpn_Button::report_changes();
 }
