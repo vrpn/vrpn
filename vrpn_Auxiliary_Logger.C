@@ -153,7 +153,7 @@ bool vrpn_Auxiliary_Logger::unpack_log_message_from_buffer(
         (*local_in_logfile_name)[localInNameLen] = '\0';
         bufptr += localInNameLen;
     } else {
-        (*local_in_logfile_name) = "";
+        (*local_in_logfile_name) = NULL;
     }
     if (localOutNameLen > 0) {
         try { (*local_out_logfile_name) = new char[localOutNameLen + 1]; }
@@ -166,7 +166,7 @@ bool vrpn_Auxiliary_Logger::unpack_log_message_from_buffer(
         (*local_out_logfile_name)[localOutNameLen] = '\0';
         bufptr += localOutNameLen;
     } else {
-        (*local_out_logfile_name) = "";
+        (*local_out_logfile_name) = NULL;
     }
     if (remoteInNameLen > 0) {
         try { (*remote_in_logfile_name) = new char[remoteInNameLen + 1]; }
@@ -179,7 +179,7 @@ bool vrpn_Auxiliary_Logger::unpack_log_message_from_buffer(
         (*remote_in_logfile_name)[remoteInNameLen] = '\0';
         bufptr += remoteInNameLen;
     } else {
-        (*remote_in_logfile_name) = "";
+        (*remote_in_logfile_name) = NULL;
     }
     if (remoteOutNameLen > 0) {
         try { (*remote_out_logfile_name) = new char[remoteOutNameLen + 1]; }
@@ -192,7 +192,7 @@ bool vrpn_Auxiliary_Logger::unpack_log_message_from_buffer(
         (*remote_out_logfile_name)[remoteOutNameLen] = '\0';
         bufptr += remoteOutNameLen;
     } else {
-        (*remote_out_logfile_name) = "";
+        (*remote_out_logfile_name) = NULL;
     }
 
     return true;
