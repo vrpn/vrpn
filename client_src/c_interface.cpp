@@ -27,12 +27,14 @@ void	VRPN_CALLBACK handle_tracker_pos_quat (void *userdata, const vrpn_TRACKERCB
  * pointer needs to be passed to the poll and close functions. */
 extern "C" void *vrpn_c_open_tracker(const char *device_name, vrpn_c_tracker_callback_function callback)
 {
-	vrpn_Tracker_Remote *tkr = new vrpn_Tracker_Remote(device_name);
-	if (tkr != NULL) {
-		/* Tell the callback handler what function to call. */
-		tkr->register_change_handler((void*)callback, handle_tracker_pos_quat);
-	}
-	return tkr;
+  vrpn_Tracker_Remote *tkr = NULL;
+  try {
+    tkr = new vrpn_Tracker_Remote(device_name);
+    /* Tell the callback handler what function to call. */
+    tkr->register_change_handler((void*)callback, handle_tracker_pos_quat);
+  }
+  catch (int) { }
+  return tkr;
 };
 
 /* Poll the tracker whose device pointer is passed in.  This will cause the
@@ -73,12 +75,13 @@ void	VRPN_CALLBACK handle_button_event (void *userdata, const vrpn_BUTTONCB b)
  * device pointer needs to be passed to the read and close functions. */
 extern "C" void *vrpn_c_open_button(const char *device_name, vrpn_c_button_callback_function callback)
 {
-	vrpn_Button_Remote *btn = new vrpn_Button_Remote(device_name);
-	if (btn != NULL) {
-		/* Tell the callback handler what function to call. */
-		btn->register_change_handler((void*)callback, handle_button_event);
-	}
-	return btn;
+  vrpn_Button_Remote *btn = NULL;
+  try {
+    vrpn_Button_Remote *btn = new vrpn_Button_Remote(device_name);
+    /* Tell the callback handler what function to call. */
+    btn->register_change_handler((void*)callback, handle_button_event);
+  } catch (int) {}
+  return btn;
 };
 
 /* Poll the button whose device pointer is passed in.  This will cause the

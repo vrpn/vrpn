@@ -400,8 +400,8 @@ vrpn_int32 vrpn_TranslationTable::addRemoteEntry(cName name,
     // at a time other than connection set-up.
 
     if (!d_entry[useEntry].name) {
-        d_entry[useEntry].name = new cName;
-        if (!d_entry[useEntry].name) {
+        try { d_entry[useEntry].name = new cName; }
+        catch (int) {
             fprintf(stderr, "vrpn_TranslationTable::addRemoteEntry:  "
                             "Out of memory.\n");
             return -1;
@@ -472,8 +472,8 @@ vrpn_Log::vrpn_Log(vrpn_TranslationTable *senders, vrpn_TranslationTable *types)
     // Set up default value for the cookie received from the server
     // because if we are using a file connection and want to
     // write a log, we never receive a cookie from the server.
-    d_magicCookie = new char[vrpn_cookie_size() + 1];
-    if (!d_magicCookie) {
+    try { d_magicCookie = new char[vrpn_cookie_size() + 1]; }
+    catch (int) {
         fprintf(stderr, "vrpn_Log:  Out of memory.\n");
         return;
     }
@@ -502,11 +502,14 @@ vrpn_Log::~vrpn_Log(void)
 
 char *vrpn_Log::getName()
 {
-    if (this->d_logFileName == NULL)
+    if (this->d_logFileName == NULL) {
         return NULL;
-    else {
-        char *s = new char[strlen(this->d_logFileName) + 1];
-        strcpy(s, this->d_logFileName);
+    } else {
+        char *s = NULL;
+        try {
+          s = new char[strlen(this->d_logFileName) + 1];
+          strcpy(s, this->d_logFileName);
+        } catch (int) {}
         return s;
     }
 }
@@ -760,8 +763,9 @@ int vrpn_Log::logMessage(vrpn_int32 payloadLen, struct timeval time,
     }
 
     // Make a log structure for the new message
-    lp = new vrpn_LOGLIST;
-    if (!lp) {
+    lp = NULL;
+    try { lp = new vrpn_LOGLIST; }
+    catch (int) {
         fprintf(stderr, "vrpn_Log::logMessage:  "
                         "Out of memory!\n");
         return -1;
@@ -779,8 +783,8 @@ int vrpn_Log::logMessage(vrpn_int32 payloadLen, struct timeval time,
     lp->data.buffer = NULL;
 
     if (payloadLen > 0) {
-        lp->data.buffer = new char[payloadLen];
-        if (!lp->data.buffer) {
+        try { lp->data.buffer = new char[payloadLen]; }
+        catch (int) {
             fprintf(stderr, "vrpn_Log::logMessage:  "
                             "Out of memory!\n");
             delete lp;
@@ -841,11 +845,15 @@ int vrpn_Log::setName(const char *name, size_t len)
 {
     if (d_logFileName) {
         delete[] d_logFileName;
+        d_logFileName = NULL;
     }
-    d_logFileName = new char[1 + len];
-    strncpy(d_logFileName, name, len);
-    d_logFileName[len] = '\0';
-
+    try {
+      d_logFileName = new char[1 + len];
+      strncpy(d_logFileName, name, len);
+      d_logFileName[len] = '\0';
+    } catch (int) {
+      return -1;
+    }
     return 0;
 }
 
@@ -854,8 +862,8 @@ int vrpn_Log::setCookie(const char *cookieBuffer)
     if (d_magicCookie) {
         delete[] d_magicCookie;
     }
-    d_magicCookie = new char[1 + vrpn_cookie_size()];
-    if (!d_magicCookie) {
+    try { d_magicCookie = new char[1 + vrpn_cookie_size()]; }
+    catch (int) {
         fprintf(stderr, "vrpn_Log::setCookie:  Out of memory.\n");
         return -1;
     }
@@ -871,8 +879,8 @@ int vrpn_Log::addFilter(vrpn_LOGFILTER filter, void *userdata)
 {
     vrpnLogFilterEntry *newEntry;
 
-    newEntry = new vrpnLogFilterEntry;
-    if (!newEntry) {
+    try { newEntry = new vrpnLogFilterEntry; }
+    catch (int) {
         fprintf(stderr, "vrpn_Log::addFilter:  Out of memory.\n");
         return -1;
     }
@@ -1120,8 +1128,8 @@ vrpn_int32 vrpn_TypeDispatcher::addSender(const char *name)
 
         //  fprintf(stderr, "Allocating a new name entry\n");
 
-        d_senders[d_numSenders] = new cName;
-        if (!d_senders[d_numSenders]) {
+        try { d_senders[d_numSenders] = new cName; }
+        catch (int) {
             fprintf(stderr, "vrpn_TypeDispatcher::addSender:  "
                             "Can't allocate memory for new record\n");
             return -1;
@@ -1191,10 +1199,16 @@ int vrpn_TypeDispatcher::addHandler(vrpn_int32 type,
     }
 
     // Allocate and initialize the new entry
-    new_entry = new vrpnMsgCallbackEntry();
-    new_entry->handler = handler;
-    new_entry->userdata = userdata;
-    new_entry->sender = sender;
+    try {
+      new_entry = new vrpnMsgCallbackEntry;
+      new_entry->handler = handler;
+      new_entry->userdata = userdata;
+      new_entry->sender = sender;
+    } catch (int) {
+      fprintf(stderr, "vrpn_TypeDispatcher::addHandler:  Out of memory\n");
+      return -1;
+      return -1;
+    }
 
 #ifdef VERBOSE
     printf("Adding user handler for type %ld, sender %ld\n", type, sender);
@@ -2818,26 +2832,13 @@ void vrpn_Endpoint::init(void)
     // sends a message of a type that it has not yet defined.
     // (for example, arriving on the UDP line ahead of its TCP
     // definition).
-    d_senders = new vrpn_TranslationTable();
-    d_types = new vrpn_TranslationTable();
-
-    if (!d_senders || !d_types) {
+    try {
+      d_senders = new vrpn_TranslationTable;
+      d_types = new vrpn_TranslationTable;
+      d_inLog = new vrpn_Log(d_senders, d_types);
+      d_outLog = new vrpn_Log(d_senders, d_types);
+    } catch (int) {
         fprintf(stderr, "vrpn_Endpoint::init:  Out of memory!\n");
-        return;
-    }
-
-    d_inLog = new vrpn_Log(d_senders, d_types);
-
-    if (!d_inLog) {
-        fprintf(stderr, "vrpn_Endpoint::init:  Out of memory!\n");
-        return;
-    }
-
-    d_outLog = new vrpn_Log(d_senders, d_types);
-
-    if (!d_outLog) {
-        fprintf(stderr, "vrpn_Endpoint::init:  Out of memory!\n");
-        return;
     }
 }
 
@@ -3327,17 +3328,17 @@ int vrpn_Endpoint::pack_log_description(void)
         outName = d_remoteOutLogName;
     }
 
-    // Include the NULL termination for the strings in the length of the buffer.
-    size_t bufsize =
-        2 * sizeof(vrpn_int32) + strlen(inName) + 1 + strlen(outName) + 1;
-    char *buf = new char[bufsize];
-
     // If we're not requesting remote logging, don't send any message.
-
     if (!d_remoteLogMode) {
-        delete[] buf;
         return 0;
     }
+
+    // Include the NULL termination for the strings in the length of the buffer.
+    size_t bufsize =
+      2 * sizeof(vrpn_int32) + strlen(inName) + 1 + strlen(outName) + 1;
+    char *buf = NULL;
+    try { buf = new char[bufsize]; }
+    catch (int) { return -1; }
 
     // Pack a message with type vrpn_CONNECTION_LOG_DESCRIPTION whose
     // sender ID is the logging mode to be used by the remote connection
@@ -3768,17 +3769,17 @@ void vrpn_Endpoint_IP::setNICaddress(const char *address)
     if (d_NICaddress) {
         delete[] d_NICaddress;
     }
+    d_NICaddress = NULL;
 
 #ifdef VERBOSE
     fprintf(stderr, "Setting endpoint NIC address to %s.\n", address);
 #endif
 
-    d_NICaddress = NULL;
     if (!address) {
         return;
     }
-    d_NICaddress = new char[1 + strlen(address)];
-    if (!d_NICaddress) {
+    try { d_NICaddress = new char[1 + strlen(address)]; }
+    catch (int) {
         fprintf(stderr, "vrpn_Endpoint::setNICaddress:  Out of memory.\n");
         return;
     }
@@ -4751,7 +4752,11 @@ void vrpn_Connection::init(vrpn_EndpointAllocator epa)
 
     vrpn_gettimeofday(&start_time, NULL);
 
-    d_dispatcher = new vrpn_TypeDispatcher;
+    d_stop_processing_messages_after = 0;
+
+    d_dispatcher = NULL;
+    try { d_dispatcher = new vrpn_TypeDispatcher; }
+    catch (int) { return; }
 
     // These should be among the first senders & types sent over the wire
     d_dispatcher->registerSender(vrpn_CONTROL);
@@ -4766,8 +4771,6 @@ void vrpn_Connection::init(vrpn_EndpointAllocator epa)
                                    vrpn_Endpoint::handle_type_message);
     d_dispatcher->setSystemHandler(vrpn_CONNECTION_DISCONNECT_MESSAGE,
                                    handle_disconnect_message);
-
-    d_stop_processing_messages_after = 0;
 }
 
 /**

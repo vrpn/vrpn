@@ -170,13 +170,21 @@ namespace detail {
 
 template <class T> inline vrpn_MainloopObject *vrpn_MainloopObject::wrap(T o)
 {
-    return new detail::TypedMainloopObject<T>(o);
+  vrpn_MainloopObject *ret = NULL;
+  try {
+    ret = new detail::TypedMainloopObject<T>(o);
+  } catch (int) {}
+  return ret;
 }
 
 template <class T>
 inline vrpn_MainloopObject *vrpn_MainloopObject::wrap(T o, bool owner)
 {
-    return new detail::TypedMainloopObject<T>(o, owner);
+  vrpn_MainloopObject *ret = NULL;
+  try {
+    ret = new detail::TypedMainloopObject<T>(o, owner);
+  } catch (int) { }
+  return ret;
 }
 
 #endif // INCLUDED_vrpn_MainloopObject_h_GUID_38f638e4_40e0_4c6d_bebc_21c463794b88
