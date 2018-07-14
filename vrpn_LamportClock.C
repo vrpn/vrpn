@@ -1,18 +1,23 @@
 #include "vrpn_LamportClock.h"
+#include <string.h>
 
 vrpn_LamportTimestamp::vrpn_LamportTimestamp (int vectorLength,
                                               vrpn_uint32 * vector) :
     d_timestampSize (vectorLength),
-    d_timestamp (new vrpn_uint32 [vectorLength]) {
-
+    d_timestamp(NULL)
+{
+  try { d_timestamp = new vrpn_uint32[vectorLength]; }
+  catch (int) { return; }
   copy(vector);
 }
 
 vrpn_LamportTimestamp::vrpn_LamportTimestamp
                             (const vrpn_LamportTimestamp & r) :
     d_timestampSize (r.d_timestampSize),
-    d_timestamp (new vrpn_uint32 [r.d_timestampSize]) {
-
+    d_timestamp(NULL)
+{
+  try { d_timestamp = new vrpn_uint32[r.d_timestampSize]; }
+  catch (int) { return; }
   copy(r.d_timestamp);
 }
 
@@ -29,10 +34,15 @@ vrpn_LamportTimestamp & vrpn_LamportTimestamp::operator =
 
   if (d_timestamp) {
     delete [] d_timestamp;
+    d_timestamp = NULL;
   }
 
   d_timestampSize = r.d_timestampSize;
-  d_timestamp = new vrpn_uint32 [r.d_timestampSize];
+  try { d_timestamp = new vrpn_uint32[r.d_timestampSize]; }
+  catch (int) {
+    d_timestamp = NULL;
+    return *this;
+  }
 
   copy(r.d_timestamp);
 
@@ -96,10 +106,12 @@ void vrpn_LamportTimestamp::copy (const vrpn_uint32 * vector) {
 vrpn_LamportClock::vrpn_LamportClock (int numHosts, int ourIndex) :
     d_numHosts (numHosts),
     d_ourIndex (ourIndex),
-    d_currentTimestamp (new vrpn_uint32 [numHosts]) {
+    d_currentTimestamp(NULL)
+{
+  try { d_currentTimestamp = new vrpn_uint32[numHosts]; }
+  catch (int) { return; }
 
   int i;
-
   if (d_currentTimestamp) {
     for (i = 0; i < numHosts; i++) {
       d_currentTimestamp[i] = 0;
@@ -130,11 +142,14 @@ void vrpn_LamportClock::receive (const vrpn_LamportTimestamp & r) {
 
 }
 
-vrpn_LamportTimestamp * vrpn_LamportClock::getTimestampAndAdvance (void) {
-
+vrpn_LamportTimestamp * vrpn_LamportClock::getTimestampAndAdvance (void)
+{
   d_currentTimestamp[d_ourIndex]++;
 
-  return new vrpn_LamportTimestamp (d_numHosts, d_currentTimestamp);
+  vrpn_LamportTimestamp *ret = NULL;
+  try { ret = new vrpn_LamportTimestamp(d_numHosts, d_currentTimestamp); }
+  catch (int) { return NULL; }
+  return ret;
 }
   
 
