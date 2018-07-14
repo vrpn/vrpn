@@ -881,7 +881,6 @@ protected:
     /// are found.
     vrpn_uint32 d_stop_processing_messages_after;
 
-protected:
     friend VRPN_API vrpn_Connection *vrpn_get_connection_by_name(
         const char *cname, const char *local_in_logfile_name,
         const char *local_out_logfile_name, const char *remote_in_logfile_name,
