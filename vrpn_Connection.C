@@ -807,7 +807,12 @@ int vrpn_Log::logMessage(vrpn_int32 payloadLen, struct timeval time,
 
 int vrpn_Log::setCompoundName(const char *name, int index)
 {
-    char newName[2048]; // HACK
+    // Make sure we have room to store the output.
+    // The result of printing an integer will always be less than 100 characters.
+    // Fill it with zeroes so that whatever string is there will always be NULL-
+    // terminated.
+    std::vector<char> newName;
+    newName.assign(strlen(name) + 100 + 1, 0);
     const char *dot;
     size_t len;
 
@@ -816,19 +821,18 @@ int vrpn_Log::setCompoundName(const char *name, int index)
 
     dot = strrchr(name, '.');
     if (dot) {
-        strncpy(newName, name, dot - name);
-        newName[dot - name] = 0;
+        strncpy(newName.data(), name, dot - name);
+        // Automatically NULL-terminated above.
+    } else {
+        newName.assign(name, name + strlen(name));
     }
-    else {
-        strcpy(newName, name);
-    }
-    len = strlen(newName);
-    sprintf(newName + len, "-%d", index);
+    len = strlen(newName.data());
+    sprintf(newName.data() + len, "-%d", index);
     if (dot) {
-        strcat(newName, dot);
+        strcat(newName.data(), dot);
     }
 
-    return setName(newName);
+    return setName(newName.data());
 }
 
 int vrpn_Log::setName(const char *name) { return setName(name, strlen(name)); }
