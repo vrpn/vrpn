@@ -92,7 +92,9 @@ int vrpn_open_commport(const char *portname, long baud, int charsize,
     if (hCom == INVALID_HANDLE_VALUE) {
         perror("vrpn_open_commport: cannot open serial port");
         fprintf(stderr, "  (Make sure port name is valid and it has not been "
-                        "opened by another program)\n");
+                        "opened by another program.  Note that on Windows "
+                        "COM ports with numbers larger than 9 must be opened "
+                        "using names like \\.\COM10 rather than COM10)\n");
         return -1;
     }
 
