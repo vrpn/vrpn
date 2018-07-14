@@ -98,6 +98,11 @@ vrpn_3DConnexion::vrpn_3DConnexion(vrpn_HidAcceptor *filter, unsigned num_button
 
     // turn the LED on
     set_led(1);
+#else
+#ifndef VRPN_USE_HID
+    fprintf(stderr,"vrpn_3DConnexion::vrpn_3DConnexion(): No implementation compiled in "
+                   "to open this device.  Please recompile.\n");
+#endif
 #endif
 }
 
