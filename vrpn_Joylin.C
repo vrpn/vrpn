@@ -23,7 +23,7 @@
 
 #include <sys/ioctl.h>                  // for ioctl
 #include <unistd.h>                     // for read
-#include <string.h>                     // for strncpy
+#include <string.h>
 
 #include "vrpn_BaseClass.h"             // for ::vrpn_TEXT_ERROR
 #include "vrpn_Connection.h"            // for vrpn_Connection

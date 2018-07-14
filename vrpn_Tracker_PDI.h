@@ -45,11 +45,9 @@ public:
 
 	void ButtonName( char * NewName )
 	{
-		if (!NewName)
-		{}
-		else
-		{
-			strncpy(BtnName, NewName, VRPN_G4_HUB_NAME_SIZE);
+		if (!NewName) {
+                } else {
+                        vrpn_strcpy(BtnName, NewName);
 		}
 	}
 

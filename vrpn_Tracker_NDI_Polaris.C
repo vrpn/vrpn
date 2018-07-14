@@ -362,8 +362,7 @@ int vrpn_Tracker_NDI_Polaris::setupOneTool(const char* NDIToolRomFilename)
 	int numOfChunks=numOfFileBytes/NDI_ROMFILE_CHUNK_SIZE;
 	for (int chunkIndex=0; chunkIndex<numOfChunks; chunkIndex++) {
 		char chunk[129]; //64*2 +1 for the end of string
-		strncpy(chunk,&(asciiEncodedHex[chunkIndex*NDI_ROMFILE_CHUNK_SIZE*2]),NDI_ROMFILE_CHUNK_SIZE*2);
-		chunk[128]='\0';
+                vrpn_strcpy(chunk,&(asciiEncodedHex[chunkIndex*NDI_ROMFILE_CHUNK_SIZE*2]));
 		
 		int NDIAddress=chunkIndex*NDI_ROMFILE_CHUNK_SIZE; //the memory offset (in the NDI machine, not this PC)
 		// where this chunk will start

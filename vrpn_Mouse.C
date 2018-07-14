@@ -9,7 +9,7 @@
 */
 
 #include <stdio.h>                      // for NULL, fprintf, printf, etc
-#include <string.h>                     // for strncpy
+#include <string.h>
 
 #include "vrpn_BaseClass.h"             // for ::vrpn_TEXT_ERROR
 #include "vrpn_Mouse.h"
@@ -211,7 +211,7 @@ vrpn_Button_SerialMouse::vrpn_Button_SerialMouse(const char *name,vrpn_Connectio
 		fprintf(stderr,"vrpn_Button_SerialMouse: NULL port name\n");
 		return;
     } else {
-		strncpy(portname, port, sizeof(portname));
+		vrpn_strcpy(portname, port);
 		portname[sizeof(portname)-1] = '\0';
     }
     num_buttons = 3;

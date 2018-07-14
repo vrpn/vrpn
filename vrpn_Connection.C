@@ -1097,7 +1097,7 @@ vrpn_int32 vrpn_TypeDispatcher::addType(const char *name)
     }
 
     // Add this one into the list and return its index
-    strncpy(d_types[d_numTypes].name, name, sizeof(cName) - 1);
+    vrpn_strcpy(d_types[d_numTypes].name, name);
     d_types[d_numTypes].who_cares = NULL;
     d_types[d_numTypes].cCares = 0;
     d_numTypes++;
@@ -1455,7 +1455,7 @@ void vrpn_ConnectionManager::addConnection(vrpn_Connection *c, const char *name)
         p->connection = c;
 
         if (name) {
-            strncpy(p->name, name, 1000);
+            vrpn_strcpy(p->name, name);
             p->next = d_kcList;
             d_kcList = p;
         }
@@ -5461,8 +5461,7 @@ int vrpn_Connection_IP::handle_UDP_message(void *userdata, vrpn_HANDLERPARAM p)
 #endif
 
     // Get the name of the remote host from the buffer (ensure terminated)
-    strncpy(rhostname, p.buffer, sizeof(rhostname));
-    rhostname[sizeof(rhostname) - 1] = '\0';
+    vrpn_strcpy(rhostname, p.buffer);
 
     // Open the UDP outbound port and connect it to the port on the
     // remote machine.
@@ -5476,7 +5475,7 @@ int vrpn_Connection_IP::handle_UDP_message(void *userdata, vrpn_HANDLERPARAM p)
     // port and every host will get this data.  Previous implementation
     // did it in connect_tcp_to, which only gets called by servers.
 
-    strncpy(endpoint->rhostname, rhostname, sizeof(endpoint->rhostname));
+    vrpn_strcpy(endpoint->rhostname, rhostname);
 
 #ifdef VERBOSE
     printf("  Opened UDP channel to %s:%d\n", rhostname, p.sender);

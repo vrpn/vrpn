@@ -3,7 +3,7 @@
 
 #include <quat.h>                       // for q_matrix_type
 #include <stdio.h>                      // for NULL
-#include <string.h>                     // for strcpy, memcpy, strncpy
+#include <string.h>                     // for strcpy, memcpy
 
 #include "vrpn_Analog.h"                // for vrpn_ANALOGCB, etc
 #include "vrpn_Button.h"                // for vrpn_BUTTONCB, etc
@@ -36,7 +36,7 @@ class VRPN_API vrpn_TBF_axis {
       };
     vrpn_TBF_axis(const char *n, int ch, const float v[],
 	const float rv[], bool absolut)
-      { strncpy(name, n, sizeof(name)-1); name[sizeof(name)-1] = '\0';
+      { vrpn_strcpy(name, n);
 	channel = ch;
 	memcpy(vec, v, sizeof(vec));
 	memcpy(rot, rv, sizeof(rot));

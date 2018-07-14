@@ -956,10 +956,8 @@ vrpn_Tracker_Serial::vrpn_Tracker_Serial(const char *name, vrpn_Connection *c,
         fprintf(stderr, "vrpn_Tracker_Serial: NULL port name\n");
         status = vrpn_TRACKER_FAIL;
         return;
-    }
-    else {
-        strncpy(portname, port, sizeof(portname));
-        portname[sizeof(portname) - 1] = '\0';
+    } else {
+        vrpn_strcpy(portname, port);
     }
     baudrate = baud;
 

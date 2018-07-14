@@ -1390,6 +1390,7 @@ void vrpn_PeerMutex::init(const char *name)
         fprintf(stderr, "vrpn_PeerMutex::init:  Out of memory.\n");
         return;
     }
+    // This is guaranteed to fit because of the new allocation above.
     strncpy(d_mutexName, name, strlen(name));
 
     d_myId = d_server->register_sender(name);

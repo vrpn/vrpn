@@ -139,8 +139,7 @@ vrpn_Serial_Analog::vrpn_Serial_Analog(const char *name, vrpn_Connection *c,
         return;
     }
     else {
-        strncpy(portname, port, sizeof(portname));
-        portname[sizeof(portname) - 1] = '\0';
+        vrpn_strcpy(portname, port);
     }
     baudrate = baud;
 

@@ -114,7 +114,7 @@ m_reset_at_start(reset_at_start)
 	if (additional_reset_commands == NULL) {
 		sprintf(add_reset_cmd, "");
 	} else {
-		strncpy(add_reset_cmd, additional_reset_commands, sizeof(add_reset_cmd)-1);
+		vrpn_strcpy(add_reset_cmd, additional_reset_commands);
 	}
 
 	// Initially, set to no buttons or analogs on the stations.  The

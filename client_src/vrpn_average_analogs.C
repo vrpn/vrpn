@@ -10,7 +10,7 @@
 #ifndef _WIN32_WCE
 #include <signal.h> // for signal, SIGINT
 #endif
-#include <string.h>              // for strcmp, strncpy
+#include <string.h>              // for strcmp
 #include <vrpn_Analog.h>         // for vrpn_ANALOGCB, etc
 #include <vrpn_FileConnection.h> // For preload and accumulate settings
 #include <vector>                // for vector
