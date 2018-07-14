@@ -1134,6 +1134,7 @@ vrpn_int32 vrpn_TypeDispatcher::addSender(const char *name)
 
     // Add this one into the list
     strncpy(d_senders[d_numSenders], name, sizeof(cName) - 1);
+    d_senders[d_numSenders][sizeof(cName) - 1] = '\0';
     d_numSenders++;
 
     // One more in place -- return its index
@@ -1557,6 +1558,7 @@ static int vrpn_getmyIP(char *myIPchar, unsigned maxlen,
                 NIC_IP);
 #endif
         strncpy(myIPchar, NIC_IP, maxlen);
+        myIPchar[maxlen - 1] = '\0';
         return 0;
     }
 
