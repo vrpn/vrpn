@@ -883,8 +883,8 @@ bool vrpn_File_Connection::store_stream_bookmark()
         }
         else {
             if (d_bookmark.oldCurrentLogEntryCopy == NULL) {
-                d_bookmark.oldCurrentLogEntryCopy = new vrpn_LOGLIST();
-                if (d_bookmark.oldCurrentLogEntryCopy == NULL) {
+                try {d_bookmark.oldCurrentLogEntryCopy = new vrpn_LOGLIST; }
+                catch (int) {
                     fprintf(stderr, "Out of memory error:  "
                                     "vrpn_File_Connection::store_stream_"
                                     "bookmark\n");
@@ -908,9 +908,9 @@ bool vrpn_File_Connection::store_stream_bookmark()
             if (d_bookmark.oldCurrentLogEntryCopy->data.buffer != NULL) {
                 delete[]d_bookmark.oldCurrentLogEntryCopy->data.buffer;
             }
-            d_bookmark.oldCurrentLogEntryCopy->data.buffer =
-                new char[d_currentLogEntry->data.payload_len];
-            if (d_bookmark.oldCurrentLogEntryCopy->data.buffer == NULL) {
+            try { d_bookmark.oldCurrentLogEntryCopy->data.buffer =
+                new char[d_currentLogEntry->data.payload_len]; }
+            catch (int) {
                 d_bookmark.valid = false;
                 return false;
             }
@@ -946,17 +946,18 @@ bool vrpn_File_Connection::return_to_bookmark()
             retval |= fseek(d_file, d_bookmark.file_pos, SEEK_SET);
         }
         else {
-            char *newBuffer =
-                new char[d_bookmark.oldCurrentLogEntryCopy->data.payload_len];
-            if (newBuffer == NULL) { // make sure we can allocate the memory
-                                     // before we do anything else
+            char *newBuffer = NULL;
+            try { newBuffer = 
+                new char[d_bookmark.oldCurrentLogEntryCopy->data.payload_len]; }
+            catch (int) {
                 return false;
             }
             d_time = d_bookmark.oldTime;
             retval |= fseek(d_file, d_bookmark.file_pos, SEEK_SET);
             if (d_currentLogEntry == NULL) // we are at the end of the file
             {
-                d_currentLogEntry = new vrpn_LOGLIST();
+                try { d_currentLogEntry = new vrpn_LOGLIST; }
+                catch (int) { return false; }
                 d_currentLogEntry->data.buffer = 0;
             }
             d_currentLogEntry->next = d_bookmark.oldCurrentLogEntryCopy->next;
@@ -1049,8 +1050,8 @@ int vrpn_File_Connection::read_entry(void)
     vrpn_LOGLIST *newEntry;
     size_t retval;
 
-    newEntry = new vrpn_LOGLIST;
-    if (!newEntry) {
+    try { newEntry = new vrpn_LOGLIST; }
+    catch (int) {
         fprintf(stderr, "vrpn_File_Connection::read_entry: Out of memory.\n");
         return -1;
     }
@@ -1098,8 +1099,8 @@ int vrpn_File_Connection::read_entry(void)
     // get the body of the next message
 
     if (header.payload_len > 0) {
-        header.buffer = new char[header.payload_len];
-        if (!header.buffer) {
+        try { header.buffer = new char[header.payload_len]; }
+        catch (int) {
             fprintf(stderr, "vrpn_File_Connection::read_entry:  "
                             "Out of memory.\n");
             return -1;
