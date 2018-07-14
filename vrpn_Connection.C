@@ -974,7 +974,7 @@ public:
 
 protected:
     struct vrpnLocalMapping {
-        char *name;                      // Name of type
+        cName name;                      // Name of type
         vrpnMsgCallbackEntry *who_cares; // Callbacks
         vrpn_int32 cCares;               // TCH 28 Oct 97
     };
@@ -1011,9 +1011,6 @@ vrpn_TypeDispatcher::~vrpn_TypeDispatcher(void)
     int i;
 
     for (i = 0; i < d_numTypes; i++) {
-        if (d_types[i].name) {
-            delete[] d_types[i].name;
-        }
         pVMCB = d_types[i].who_cares;
         while (pVMCB) {
             pVMCB_Del = pVMCB;
@@ -1092,7 +1089,6 @@ vrpn_int32 vrpn_TypeDispatcher::addType(const char *name)
     }
 
     if (!d_types[d_numTypes].name) {
-        d_types[d_numTypes].name = new cName;
         if (!d_types[d_numTypes].name) {
             fprintf(stderr, "vrpn_TypeDispatcher::addType:  "
                             "Can't allocate memory for new record.\n");
@@ -1401,7 +1397,6 @@ void vrpn_TypeDispatcher::clear(void)
     for (i = 0; i < vrpn_CONNECTION_MAX_TYPES; i++) {
         d_types[i].who_cares = NULL;
         d_types[i].cCares = 0;
-        d_types[i].name = NULL;
 
         d_systemMessages[i] = NULL;
     }
