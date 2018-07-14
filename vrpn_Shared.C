@@ -344,13 +344,12 @@ VRPN_API int vrpn_unbuffer(const char **buffer, timeval *t)
     the VRPN defined wire protocol.
 
     If the length is specified as less than zero, then the string will be
-   assumed to
-    be NULL-terminated and will be read using the string-copy routines with a
-    length that is at most the magnitude of the number (-16 means at most 16).
-   NEVER
-    use this on a string that was packed with other than the NULL-terminating
-    condition, since embedded NULL characters will ruin the argument parsing
-    for any later arguments in the message.
+   assumed to be NULL-terminated and will be read using the string-copy
+   routines with a length that is at most the magnitude of the number
+   (-16 means at most 16).
+     NEVER use this on a string that was packed with other than the
+   NULL-terminating condition, since embedded NULL characters will ruin the
+   argument parsing for any later arguments in the message.
 */
 
 VRPN_API int vrpn_unbuffer(const char **buffer, char *string, vrpn_int32 length)
@@ -374,8 +373,7 @@ VRPN_API int vrpn_unbuffer(const char **buffer, char *string, vrpn_int32 length)
             return -1;
         }
         *buffer += strlen(*buffer) + 1; // +1 for NULL terminating character
-    }
-    else {
+    } else {
         memcpy(string, *buffer, length);
         *buffer += length;
     }
