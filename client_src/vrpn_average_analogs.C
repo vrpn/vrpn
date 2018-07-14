@@ -101,8 +101,6 @@ int main(int argc, char *argv[])
     vrpn_FILE_CONNECTIONS_SHOULD_PRELOAD = false;
     vrpn_FILE_CONNECTIONS_SHOULD_ACCUMULATE = false;
 
-    int i;
-
     // Parse arguments, creating objects as we go.  Arguments that
     // change the way a device is treated affect all devices that
     // follow on the command line.
