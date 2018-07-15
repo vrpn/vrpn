@@ -5237,6 +5237,11 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(
 #define VRPN_CHECK(s)                                                          \
     try {                                                                      \
       retval = (s)(pch, line, config_file);                                    \
+    } catch (const std::exception& e) {                                        \
+        d_doing_okay = false;                                                  \
+        fprintf(stderr, "vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(): " \
+          "Unexpected exception (%s)\n", e.what());                            \
+        return;                                                                \
     } catch (...) {                                                            \
         d_doing_okay = false;                                                  \
         fprintf(stderr, "vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(): " \
