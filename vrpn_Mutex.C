@@ -497,7 +497,7 @@ void vrpn_Mutex_Remote::release(void)
     triggerReleaseCallbacks();
 }
 
-void vrpn_Mutex_Remote::addRequestGrantedCallback(void *userdata,
+vrpn_bool vrpn_Mutex_Remote::addRequestGrantedCallback(void *userdata,
                                                   int (*f)(void *))
 {
     mutexCallback *cb = NULL;
@@ -505,16 +505,17 @@ void vrpn_Mutex_Remote::addRequestGrantedCallback(void *userdata,
     catch (...) {
         fprintf(stderr, "vrpn_Mutex_Remote::addRequestGrantedCallback:  "
                         "Out of memory.\n");
-        return;
+        return false;
     }
 
     cb->userdata = userdata;
     cb->f = f;
     cb->next = d_reqGrantedCB;
     d_reqGrantedCB = cb;
+    return true;
 }
 
-void vrpn_Mutex_Remote::addRequestDeniedCallback(void *userdata,
+vrpn_bool vrpn_Mutex_Remote::addRequestDeniedCallback(void *userdata,
                                                  int (*f)(void *))
 {
     mutexCallback *cb = NULL;
@@ -522,46 +523,49 @@ void vrpn_Mutex_Remote::addRequestDeniedCallback(void *userdata,
     catch (...) {
         fprintf(stderr, "vrpn_Mutex_Remote::addRequestDeniedCallback:  "
                         "Out of memory.\n");
-        return;
+        return false;
     }
 
     cb->userdata = userdata;
     cb->f = f;
     cb->next = d_reqDeniedCB;
     d_reqDeniedCB = cb;
+    return true;
 }
 
-void vrpn_Mutex_Remote::addTakeCallback(void *userdata, int (*f)(void *))
+vrpn_bool vrpn_Mutex_Remote::addTakeCallback(void *userdata, int (*f)(void *))
 {
     mutexCallback *cb = NULL;
     try { cb = new mutexCallback; }
     catch (...) {
         fprintf(stderr,
                 "vrpn_Mutex_Remote::addTakeCallback:  Out of memory.\n");
-        return;
+        return false;
     }
 
     cb->userdata = userdata;
     cb->f = f;
     cb->next = d_takeCB;
     d_takeCB = cb;
+    return true;
 }
 
 // static
-void vrpn_Mutex_Remote::addReleaseCallback(void *userdata, int (*f)(void *))
+vrpn_bool vrpn_Mutex_Remote::addReleaseCallback(void *userdata, int (*f)(void *))
 {
     mutexCallback *cb = NULL;
     try { cb = new mutexCallback; }
     catch (...) {
         fprintf(stderr, "vrpn_Mutex_Remote::addReleaseCallback:  "
                         "Out of memory.\n");
-        return;
+        return false;
     }
 
     cb->userdata = userdata;
     cb->f = f;
     cb->next = d_releaseCB;
     d_releaseCB = cb;
+    return true;
 }
 
 // static
@@ -970,7 +974,7 @@ void vrpn_PeerMutex::release(void)
 #endif
 }
 
-void vrpn_PeerMutex::addPeer(const char *stationName)
+vrpn_bool vrpn_PeerMutex::addPeer(const char *stationName)
 {
     vrpn_Connection **newc;
     peerData *newg;
@@ -987,7 +991,7 @@ void vrpn_PeerMutex::addPeer(const char *stationName)
           newg = new peerData[d_numConnectionsAllocated];
         } catch (...) {
             fprintf(stderr, "vrpn_PeerMutex::addPeer:  Out of memory.\n");
-            return;
+            return false;
         }
         for (i = 0; i < d_numPeers; i++) {
             newc[i] = d_peer[i];
@@ -1008,7 +1012,7 @@ void vrpn_PeerMutex::addPeer(const char *stationName)
     try { d = new losePeerData; }
     catch (...) {
         fprintf(stderr, "vrpn_PeerMutex::addPeer:  Out of memory.\n");
-        return;
+        return false;
     }
     d->connection = d_peer[d_numPeers];
     d->mutex = this;
@@ -1024,70 +1028,75 @@ void vrpn_PeerMutex::addPeer(const char *stationName)
 #endif
 
     d_numPeers++;
+    return true;
 }
 
-void vrpn_PeerMutex::addRequestGrantedCallback(void *ud, int (*f)(void *))
+vrpn_bool vrpn_PeerMutex::addRequestGrantedCallback(void *ud, int (*f)(void *))
 {
     mutexCallback *cb = NULL;
     try { cb = new mutexCallback; }
     catch (...) {
         fprintf(stderr, "vrpn_PeerMutex::addRequestGrantedCallback:  "
                         "Out of memory.\n");
-        return;
+        return false;
     }
 
     cb->userdata = ud;
     cb->f = f;
     cb->next = d_reqGrantedCB;
     d_reqGrantedCB = cb;
+    return true;
 }
 
-void vrpn_PeerMutex::addRequestDeniedCallback(void *ud, int (*f)(void *))
+vrpn_bool vrpn_PeerMutex::addRequestDeniedCallback(void *ud, int (*f)(void *))
 {
     mutexCallback *cb = NULL;
     try { cb = new mutexCallback; }
     catch (...) {
         fprintf(stderr, "vrpn_PeerMutex::addRequestDeniedCallback:  "
                         "Out of memory.\n");
-        return;
+        return false;
     }
 
     cb->userdata = ud;
     cb->f = f;
     cb->next = d_reqDeniedCB;
     d_reqDeniedCB = cb;
+    return true;
 }
 
-void vrpn_PeerMutex::addTakeCallback(void *ud, int (*f)(void *))
+vrpn_bool vrpn_PeerMutex::addTakeCallback(void *ud, int (*f)(void *))
 {
     mutexCallback *cb = NULL;
     try { cb = new mutexCallback; }
     catch (...) {
         fprintf(stderr, "vrpn_PeerMutex::addTakeCallback:  Out of memory.\n");
-        return;
+        return false;
     }
 
     cb->userdata = ud;
     cb->f = f;
     cb->next = d_takeCB;
     d_takeCB = cb;
+    return true;
 }
 
 // static
-void vrpn_PeerMutex::addReleaseCallback(void *ud, int (*f)(void *))
+vrpn_bool vrpn_PeerMutex::addReleaseCallback(void *ud, int (*f)(void *))
 {
     mutexCallback *cb = NULL;
     try { cb = new mutexCallback; }
     catch (...) {
         fprintf(stderr, "vrpn_PeerMutex::addReleaseCallback:  "
                         "Out of memory.\n");
-        return;
+        return false;
     }
 
     cb->userdata = ud;
     cb->f = f;
     cb->next = d_releaseCB;
     d_releaseCB = cb;
+    return true;
 }
 
 // static
@@ -1397,13 +1406,14 @@ void vrpn_PeerMutex::checkGrantMutex(void)
 
 void vrpn_PeerMutex::init(const char *name)
 {
-    try { d_mutexName = new char[1 + strlen(name)]; }
-    catch (...) {
+    d_mutexName = NULL;
+    try {
+      d_mutexName = new char[1 + strlen(name)];
+      // This is guaranteed to fit because of the new allocation above.
+      strncpy(d_mutexName, name, strlen(name));
+    } catch (...) {
         fprintf(stderr, "vrpn_PeerMutex::init:  Out of memory.\n");
-        return;
     }
-    // This is guaranteed to fit because of the new allocation above.
-    strncpy(d_mutexName, name, strlen(name));
 
     d_myId = d_server->register_sender(name);
     d_request_type = d_server->register_message_type(requestMutex_type);

@@ -180,7 +180,7 @@ int vrpn_RedundantTransmission::pack_message(
         fprintf(stderr,
                 "vrpn_RedundantTransmission::pack_message:  "
                 "Out of memory;  can't queue message for retransmission.\n");
-        return ret;
+        return -1;
     }
 
     qm->p.payload_len = len;
@@ -192,7 +192,7 @@ int vrpn_RedundantTransmission::pack_message(
         fprintf(stderr,
                 "vrpn_RedundantTransmission::pack_message:  "
                 "Out of memory;  can't queue message for retransmission.\n");
-        return ret;
+        return -1;
     }
     memcpy(const_cast<char *>(qm->p.buffer), buffer, len);
 

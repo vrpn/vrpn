@@ -2830,6 +2830,7 @@ void vrpn_Endpoint::init(void)
       d_outLog = new vrpn_Log(d_senders, d_types);
     } catch (...) {
         fprintf(stderr, "vrpn_Endpoint::init:  Out of memory!\n");
+        status = BROKEN;
         return;
     }
 }
@@ -3773,6 +3774,7 @@ void vrpn_Endpoint_IP::setNICaddress(const char *address)
     try { d_NICaddress = new char[1 + strlen(address)]; }
     catch (...) {
         fprintf(stderr, "vrpn_Endpoint::setNICaddress:  Out of memory.\n");
+        status = BROKEN;
         return;
     }
     strcpy(d_NICaddress, address);
@@ -4748,7 +4750,10 @@ void vrpn_Connection::init(vrpn_EndpointAllocator epa)
 
     d_dispatcher = NULL;
     try { d_dispatcher = new vrpn_TypeDispatcher; }
-    catch (...) { return; }
+    catch (...) {
+      connectionStatus = BROKEN;
+      return;
+    }
 
     // These should be among the first senders & types sent over the wire
     d_dispatcher->registerSender(vrpn_CONTROL);
@@ -5111,6 +5116,8 @@ void vrpn_Connection::get_log_names(char **local_in_logname,
               new char[strlen(endpoint->d_remoteInLogName) + 1];
             strcpy(*remote_in_logname, endpoint->d_remoteInLogName);
           } catch (...) {
+            fprintf(stderr, "vrpn_Connection::get_log_names(): Out of memory\n");
+            connectionStatus = BROKEN;
             *remote_in_logname = NULL;
           }
         } else {
@@ -5126,6 +5133,8 @@ void vrpn_Connection::get_log_names(char **local_in_logname,
             strcpy(*remote_out_logname, endpoint->d_remoteOutLogName);
           }
           catch (...) {
+            fprintf(stderr, "vrpn_Connection::get_log_names(): Out of memory\n");
+            connectionStatus = BROKEN;
             *remote_out_logname = NULL;
           }
         } else {
@@ -5144,7 +5153,10 @@ vrpn_Endpoint_IP *vrpn_Connection::allocateEndpoint(vrpn_Connection *me,
   vrpn_Endpoint_IP *ret = NULL;
   try {
     ret = new vrpn_Endpoint_IP(me->d_dispatcher, connectedEC);
-  } catch (...) {}
+  } catch (...) {
+    fprintf(stderr, "vrpn_Connection::get_log_names(): Out of memory\n");
+    me->connectionStatus = BROKEN;
+  }
   return ret;
 }
 
@@ -5660,6 +5672,7 @@ void vrpn_Connection_IP::server_check_for_incoming_connections(
         } catch (...) {
           fprintf(stderr, "vrpn_Connection_IP::server_check_for_incoming_connections(): "
             "Out of memory\n");
+          connectionStatus = BROKEN;
           return;
         }
         int checkPort;
@@ -6511,6 +6524,7 @@ char *vrpn_set_service_name(const char *specifier, const char *newServiceName)
           location = new char[inputLength + 1];
           strcpy(location, specifier); // take the whole thing to be the location
         } catch (...) {
+          fprintf(stderr, "vrpn_set_service_name: Out of memory!\n");
           return NULL;
         }
     } else {
@@ -6527,6 +6541,7 @@ char *vrpn_set_service_name(const char *specifier, const char *newServiceName)
       strcat(newSpecifier, "@");
       strcat(newSpecifier, location);
     } catch (...) {
+      fprintf(stderr, "vrpn_set_service_name: Out of memory!\n");
       delete[] location;
       return NULL;
     }

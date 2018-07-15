@@ -6,8 +6,7 @@ vrpn_LamportTimestamp::vrpn_LamportTimestamp (int vectorLength,
     d_timestampSize (vectorLength),
     d_timestamp(NULL)
 {
-  try { d_timestamp = new vrpn_uint32[vectorLength]; }
-  catch (...) { return; }
+  d_timestamp = new vrpn_uint32[vectorLength];
   copy(vector);
 }
 
@@ -16,8 +15,7 @@ vrpn_LamportTimestamp::vrpn_LamportTimestamp
     d_timestampSize (r.d_timestampSize),
     d_timestamp(NULL)
 {
-  try { d_timestamp = new vrpn_uint32[r.d_timestampSize]; }
-  catch (...) { return; }
+  d_timestamp = new vrpn_uint32[r.d_timestampSize];
   copy(r.d_timestamp);
 }
 
@@ -108,8 +106,7 @@ vrpn_LamportClock::vrpn_LamportClock (int numHosts, int ourIndex) :
     d_ourIndex (ourIndex),
     d_currentTimestamp(NULL)
 {
-  try { d_currentTimestamp = new vrpn_uint32[numHosts]; }
-  catch (...) { return; }
+  d_currentTimestamp = new vrpn_uint32[numHosts];
 
   int i;
   if (d_currentTimestamp) {

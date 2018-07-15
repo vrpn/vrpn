@@ -87,8 +87,7 @@ public:
                 m_falconDevice = NULL;
                 return;
             } else {
-                try { m_falconDevice = new libnifalcon::FalconDevice; }
-                catch (...) { m_falconDevice = NULL; return; }
+                m_falconDevice = new libnifalcon::FalconDevice;
                 m_falconDevice->setFalconFirmware<libnifalcon::FalconFirmwareNovintSDK>();
             }
 

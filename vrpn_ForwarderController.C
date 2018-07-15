@@ -79,6 +79,7 @@ char *vrpn_Forwarder_Brain::encode_forward_message_type(
     vrpn_int32 nSLen;
     vrpn_int32 nTLen;
 
+    if (!service_name || !message_type) { *length = 0; return NULL; }
     *length = static_cast<int>(3 * sizeof(vrpn_int32) + strlen(service_name) +
                                strlen(message_type));
     try { outbuf = new char[*length]; }
@@ -189,9 +190,8 @@ void vrpn_Forwarder_Server::mainloop(void)
         if (fp->connection) fp->connection->mainloop();
 }
 
-void vrpn_Forwarder_Server::start_remote_forwarding(vrpn_int32 remote_port)
+vrpn_bool vrpn_Forwarder_Server::start_remote_forwarding(vrpn_int32 remote_port)
 {
-
     vrpn_Forwarder_List *fp;
 
     // Make sure it isn't already there
@@ -201,7 +201,7 @@ void vrpn_Forwarder_Server::start_remote_forwarding(vrpn_int32 remote_port)
             fprintf(stderr, "vrpn_Forwarder_Server::start_remote_forwarding:  "
                             "Already open on port %d.\n",
                     remote_port);
-            return;
+            return false;
         }
 
     // Create it and add it to the list
@@ -210,7 +210,7 @@ void vrpn_Forwarder_Server::start_remote_forwarding(vrpn_int32 remote_port)
     catch (...) {
       fprintf(stderr, "vrpn_Forwarder_Server::start_remote_forwarding:  "
         "Out of memory.\n");
-      return;
+      return false;
     }
 
     fp->port = remote_port;
@@ -219,7 +219,7 @@ void vrpn_Forwarder_Server::start_remote_forwarding(vrpn_int32 remote_port)
     catch (...) {
       fprintf(stderr, "vrpn_Forwarder_Server::start_remote_forwarding:  "
         "Out of memory.\n");
-      return;
+      return false;
     }
 
     fp->next = d_myForwarders;
@@ -227,6 +227,7 @@ void vrpn_Forwarder_Server::start_remote_forwarding(vrpn_int32 remote_port)
 
     // fprintf(stderr, "vrpn_Forwarder_Server::start_remote_forwarding:  "
     //"On port %d.\n", remote_port);
+    return true;
 }
 
 void vrpn_Forwarder_Server::forward_message_type(vrpn_int32 remote_port,
@@ -297,7 +298,7 @@ vrpn_Forwarder_Controller::vrpn_Forwarder_Controller(vrpn_Connection *c)
 
 vrpn_Forwarder_Controller::~vrpn_Forwarder_Controller(void) {}
 
-void vrpn_Forwarder_Controller::start_remote_forwarding(vrpn_int32 remote_port)
+vrpn_bool vrpn_Forwarder_Controller::start_remote_forwarding(vrpn_int32 remote_port)
 {
 
     struct timeval now;
@@ -307,11 +308,12 @@ void vrpn_Forwarder_Controller::start_remote_forwarding(vrpn_int32 remote_port)
     vrpn_gettimeofday(&now, NULL);
     buffer = encode_start_remote_forwarding(&length, remote_port);
 
-    if (!buffer) return; // memory allocation failure
+    if (!buffer) return false; // memory allocation failure
 
-    d_connection->pack_message(length, now, d_start_forwarding_type, d_myId,
+    int ret = d_connection->pack_message(length, now, d_start_forwarding_type, d_myId,
                                buffer, vrpn_CONNECTION_RELIABLE);
     delete[] buffer;
+    return ret == 0;
 }
 
 void vrpn_Forwarder_Controller::forward_message_type(vrpn_int32 remote_port,

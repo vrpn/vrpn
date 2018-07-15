@@ -80,13 +80,8 @@ vrpn_Nidaq::vrpn_Nidaq(char *pchName, vrpn_Connection *pConnection,
     // the gain to apply to each
     // differential or single ended
     // bipolar (+/-) or just unipolar (+)
-    try {
-      pDAQ = new DAQ(dSamplingRate, dInterChannelRate, sDeviceNumber, cChannels,
-        rgsChan, rgsGain, sInputMode, sPolarity);
-    } catch (...) {
-      cerr << "vrpn_Nidaq::vrpn_Nidaq: Out of memory" << endl;
-      return;
-    }
+    pDAQ = new DAQ(dSamplingRate, dInterChannelRate, sDeviceNumber, cChannels,
+      rgsChan, rgsGain, sInputMode, sPolarity);
 	
     // start the DAQ-only thread
     InitializeCriticalSection(&csAnalogBuffer);

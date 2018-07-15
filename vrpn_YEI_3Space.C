@@ -43,21 +43,13 @@ vrpn_YEI_3Space::vrpn_YEI_3Space (const char * p_name
     ptr++;
   }
   if (d_reset_command_count > 0) {
-    try { d_reset_commands = new char *[d_reset_command_count]; }
-    catch (...) {
-      fprintf(stderr,"vrpn_YEI_3Space::vrpn_YEI_3Space(): Out of memory, ignoring reset commands\n");
-      d_reset_command_count = 0;
-    }
+    d_reset_commands = new char *[d_reset_command_count];
   }
 
   // Copy any reset commands.
   ptr = reset_commands;
   for (int i = 0; i < d_reset_command_count; i++) {
-    try { d_reset_commands[i] = new char[strlen(reset_commands[i]) + 1]; }
-    catch (...) {
-      fprintf(stderr,"vrpn_YEI_3Space::vrpn_YEI_3Space(): Out of memory, giving up\n");
-      return;
-    }
+    d_reset_commands[i] = new char[strlen(reset_commands[i]) + 1];
     strcpy(d_reset_commands[i], reset_commands[i]);
   }
 

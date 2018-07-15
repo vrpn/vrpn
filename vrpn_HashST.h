@@ -101,8 +101,7 @@ vrpn_Hash<TKey, TValue>::vrpn_Hash(int init)
         m_CurrentItem = 0;
         m_First = 0L;
         m_InitialSize = m_SizeHash = init;
-        try { m_Items = new HashItem*[m_SizeHash]; }
-        catch (...) { return; }
+        m_Items = new HashItem*[m_SizeHash];
 	MakeNull( m_Items, m_SizeHash );
 }
 
@@ -119,8 +118,7 @@ vrpn_Hash<TKey, TValue>::vrpn_Hash(unsigned int (*func)(const TKey &key), int in
         m_CurrentItem = 0;
         m_First = 0L;
         m_InitialSize = m_SizeHash = init;
-        try { m_Items = new HashItem*[m_SizeHash]; }
-        catch (...) { return; }
+        m_Items = new HashItem*[m_SizeHash];
         MakeNull( m_Items, m_SizeHash );
 }
 
@@ -144,7 +142,10 @@ void vrpn_Hash<TKey, TValue>::Clear()
 
 	m_SizeHash = m_InitialSize;
         try { m_Items = new HashItem*[m_SizeHash]; }
-        catch (...) { return; }
+        catch (...) {
+          m_SizeHash = 0;
+          return;
+        }
         MakeNull( m_Items, m_SizeHash );
 }
 
@@ -349,7 +350,7 @@ void vrpn_Hash<TKey, TValue>::ReHash()			//--- these functions do not implement 
 		unsigned int HashValue = HashFunction( item->key )% OldSizeHash;
                 HashItem *NewItem;
                 try { NewItem = new HashItem; }
-                catch (...) { return; }
+                catch (...) { m_SizeHash = 0; return; }
 		NewItem->key = item->key;
 		NewItem->value = item->value;
 		NewItem->next = NewFirst;

@@ -43,7 +43,7 @@ public:
 
     // Tell a Forwarder_Server to open a vrpn_Connection on remote_port.
 
-    virtual void start_remote_forwarding(vrpn_int32 remote_port) = 0;
+    virtual vrpn_bool start_remote_forwarding(vrpn_int32 remote_port) = 0;
 
     // Tell a Forwarder_Server to begin forwarding messages of type
     // message_type from the sender named service_name over remote_port.
@@ -96,7 +96,7 @@ public:
 
     virtual void mainloop(void);
 
-    virtual void start_remote_forwarding(vrpn_int32 remote_port);
+    virtual vrpn_bool start_remote_forwarding(vrpn_int32 remote_port);
 
     virtual void forward_message_type(vrpn_int32 remote_port,
                                       const char *service_name,
@@ -121,7 +121,7 @@ public:
     vrpn_Forwarder_Controller(vrpn_Connection *);
     ~vrpn_Forwarder_Controller(void);
 
-    virtual void start_remote_forwarding(vrpn_int32 remote_port);
+    virtual vrpn_bool start_remote_forwarding(vrpn_int32 remote_port);
 
     virtual void forward_message_type(vrpn_int32 remote_port,
                                       const char *service_name,

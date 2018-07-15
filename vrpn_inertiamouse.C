@@ -40,10 +40,7 @@ vrpn_inertiamouse::vrpn_inertiamouse (const char* name,
     vrpn_Button::num_buttons = numbuttons_;
     vrpn_Analog::num_channel = numchannels_;
 
-    try { vel_ = new double[numchannels_]; }
-    catch (...) {
-      fprintf(stderr,"vrpn_inertiamouse::vrpn_inertiamouse(): Out of memory\n");
-    }
+    vel_ = new double[numchannels_];
     
     clear_values();
     

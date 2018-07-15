@@ -153,7 +153,7 @@ public:
     ///< current serializer.  There currently isn't any provision for
     ///< notification of success (or failure).
 
-    void registerDeferredUpdateCallback(vrpnDeferredUpdateCallback,
+    vrpn_bool registerDeferredUpdateCallback(vrpnDeferredUpdateCallback,
                                         void *userdata);
     ///< The specified function will be passed userdata when this
     ///< particular shared object defers an update (receives a local
@@ -264,9 +264,9 @@ public:
     vrpn_Shared_int32 &set(vrpn_int32 newValue, timeval when);
     // calls protected set (newValue, when, vrpn_TRUE);
 
-    void register_handler(vrpnSharedIntCallback, void *);
+    vrpn_bool register_handler(vrpnSharedIntCallback, void *);
     void unregister_handler(vrpnSharedIntCallback, void *);
-    void register_handler(vrpnTimedSharedIntCallback, void *);
+    vrpn_bool register_handler(vrpnTimedSharedIntCallback, void *);
     void unregister_handler(vrpnTimedSharedIntCallback, void *);
     // Callbacks are (currently) called *AFTER* the assignment
     // has been made, so any check of the value of their shared int
@@ -487,9 +487,9 @@ public:
     virtual vrpn_Shared_String &set(const char *newValue, timeval when);
     // calls protected set (newValue, when, vrpn_TRUE);
 
-    void register_handler(vrpnSharedStringCallback, void *);
+    vrpn_bool register_handler(vrpnSharedStringCallback, void *);
     void unregister_handler(vrpnSharedStringCallback, void *);
-    void register_handler(vrpnTimedSharedStringCallback, void *);
+    vrpn_bool register_handler(vrpnTimedSharedStringCallback, void *);
     void unregister_handler(vrpnTimedSharedStringCallback, void *);
     // Callbacks are (currently) called *AFTER* the assignment
     // has been made, so any check of the value of their shared int

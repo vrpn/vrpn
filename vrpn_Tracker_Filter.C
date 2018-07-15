@@ -60,24 +60,13 @@ vrpn_Tracker_FilterOneEuro::vrpn_Tracker_FilterOneEuro(const char * name, vrpn_C
   , d_channels(channels)
 {
   // Allocate space for the times.  Fill them in with now.
-  try { d_last_report_times = new struct timeval[channels]; }
-  catch (...) {
-    fprintf(stderr,"vrpn_Tracker_FilterOneEuro::vrpn_Tracker_FilterOneEuro(): Out of memory\n");
-    d_channels = 0;
-    return;
-  }
-  
+  d_last_report_times = new struct timeval[channels];
+
   vrpn_gettimeofday(&timestamp, NULL);
 
   // Allocate space for the filters.
-  try {
-    d_filters = new vrpn_OneEuroFilterVec[channels];
-    d_qfilters = new vrpn_OneEuroFilterQuat[channels];
-  } catch (...) {
-    fprintf(stderr,"vrpn_Tracker_FilterOneEuro::vrpn_Tracker_FilterOneEuro(): Out of memory\n");
-    d_channels = 0;
-    return;
-  }
+  d_filters = new vrpn_OneEuroFilterVec[channels];
+  d_qfilters = new vrpn_OneEuroFilterQuat[channels];
 
   // Fill in the parameters for each filter.
   for (int i = 0; i < static_cast<int>(channels); ++i) {
@@ -94,14 +83,10 @@ vrpn_Tracker_FilterOneEuro::vrpn_Tracker_FilterOneEuro(const char * name, vrpn_C
   // If the name starts with the '*' character, use the server
   // connection rather than making a new one.
   if (listen_tracker_name[0] == '*') {
-    try {
-      d_listen_tracker = new vrpn_Tracker_Remote(&(listen_tracker_name[1]),
-        d_connection);
-    } catch (...) { d_listen_tracker = NULL;}
+    d_listen_tracker = new vrpn_Tracker_Remote(&(listen_tracker_name[1]),
+      d_connection);
   } else {
-    try {
-      d_listen_tracker = new vrpn_Tracker_Remote(listen_tracker_name);
-    } catch (...) { d_listen_tracker = NULL;}
+    d_listen_tracker = new vrpn_Tracker_Remote(listen_tracker_name);
   }
   if (d_listen_tracker) d_listen_tracker->register_change_handler(this, handle_tracker_update);
 }

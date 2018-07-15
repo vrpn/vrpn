@@ -323,13 +323,7 @@ vrpn_Auxiliary_Logger_Server_Generic::vrpn_Auxiliary_Logger_Server_Generic(
         d_connection = NULL;
         return;
     }
-    try { d_connection_name = new char[strlen(connection_to_log) + 1]; }
-    catch (...) {
-        fprintf(stderr, "vrpn_Auxiliary_Logger_Server_Generic::vrpn_Auxiliary_"
-                        "Logger_Server_Generic: Out of memory\n");
-        d_connection = NULL;
-        return;
-    }
+    d_connection_name = new char[strlen(connection_to_log) + 1];
     memcpy(d_connection_name, connection_to_log, strlen(connection_to_log) + 1);
 }
 

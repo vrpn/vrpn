@@ -375,8 +375,7 @@ vrpn_FunctionGenerator( const char* name, vrpn_Connection * c )
 	unsigned i;
 	for( i = 0; i <= vrpn_FUNCTION_CHANNELS_MAX - 1; i++ )
 	{
-          try { channels[i] = new vrpn_FunctionGenerator_channel; }
-          catch (...) { break; }
+          channels[i] = new vrpn_FunctionGenerator_channel;
 	}
 }
 

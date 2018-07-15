@@ -574,6 +574,7 @@ bool vrpn_Imager_Stream_Buffer::transcode_and_send(const vrpn_HANDLERPARAM &p)
         fprintf(
             stderr,
             "vrpn_Imager_Stream_Buffer::transcode_and_send(): Out of memory\n");
+        d_connection = NULL;
         return false;
     }
     memcpy(newbuf, p.buffer, p.payload_len);
@@ -899,6 +900,7 @@ void vrpn_Imager_Stream_Buffer::handle_image_description(
         fprintf(stderr, "vrpn_Imager_Stream_Buffer::handle_image_description():"
                         " Out of memory\n");
         me->d_shared_state.time_to_exit(true);
+        me->d_connection = NULL;
         return;
     }
     char *buffer = reinterpret_cast<char *>(fbuf);
