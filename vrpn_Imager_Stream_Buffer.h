@@ -49,7 +49,7 @@ public:
     {
         struct d_ELEMENT *el;
         try { el = new struct d_ELEMENT; }
-        catch (int) {
+        catch (...) {
             return false;
         }
         el->p = p;

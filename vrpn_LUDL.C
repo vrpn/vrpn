@@ -139,12 +139,12 @@ vrpn_LUDL_USBMAC6000::vrpn_LUDL_USBMAC6000(const char *name, vrpn_Connection *c,
 
   // Allocate space to store the axis status and record that the axes are stopped.
   try { _axis_moving = new bool[o_num_channel]; }
-  catch (int) {
+  catch (...) {
     fprintf(stderr,"vrpn_LUDL_USBMAC6000: Out of memory\n");
     return;
   }
   try { _axis_destination = new vrpn_float64[o_num_channel]; }
-  catch (int) {
+  catch (...) {
     fprintf(stderr,"vrpn_LUDL_USBMAC6000: Out of memory\n");
     return;
   }

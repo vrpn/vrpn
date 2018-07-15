@@ -706,7 +706,7 @@ int vrpn_Tracker_Fastrak::add_is900_button(const char *button_device_name, int s
 
     // Add a new button device and set the pointer to point at it.
     try { is900_buttons[sensor] = new vrpn_Button_Server(button_device_name, d_connection, numbuttons); }
-    catch (int) {
+    catch (...) {
 	VRPN_MSG_ERROR("Cannot open button device");
 	return -1;
     }
@@ -727,7 +727,7 @@ int vrpn_Tracker_Fastrak::add_fastrak_stylus_button(const char *button_device_na
 
     // Add a new button device and set the pointer to point at it.
     try { is900_buttons[sensor] = new vrpn_Button_Server(button_device_name, d_connection, numbuttons); }
-    catch (int) {
+    catch (...) {
 	VRPN_MSG_ERROR("Cannot open button device");
 	return -1;
     }
@@ -766,7 +766,7 @@ int vrpn_Tracker_Fastrak::add_is900_analog(const char *analog_device_name, int s
 
     // Add a new analog device and set the pointer to point at it.
     try { is900_analogs[sensor] = new vrpn_Clipping_Analog_Server(analog_device_name, d_connection); }
-    catch (int) {
+    catch (...) {
 	VRPN_MSG_ERROR("Cannot open analog device");
 	return -1;
     }

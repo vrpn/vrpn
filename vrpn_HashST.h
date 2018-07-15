@@ -102,7 +102,7 @@ vrpn_Hash<TKey, TValue>::vrpn_Hash(int init)
         m_First = 0L;
         m_InitialSize = m_SizeHash = init;
         try { m_Items = new HashItem*[m_SizeHash]; }
-        catch (int) { return; }
+        catch (...) { return; }
 	MakeNull( m_Items, m_SizeHash );
 }
 
@@ -120,7 +120,7 @@ vrpn_Hash<TKey, TValue>::vrpn_Hash(unsigned int (*func)(const TKey &key), int in
         m_First = 0L;
         m_InitialSize = m_SizeHash = init;
         try { m_Items = new HashItem*[m_SizeHash]; }
-        catch (int) { return; }
+        catch (...) { return; }
         MakeNull( m_Items, m_SizeHash );
 }
 
@@ -144,7 +144,7 @@ void vrpn_Hash<TKey, TValue>::Clear()
 
 	m_SizeHash = m_InitialSize;
         try { m_Items = new HashItem*[m_SizeHash]; }
-        catch (int) { return; }
+        catch (...) { return; }
         MakeNull( m_Items, m_SizeHash );
 }
 
@@ -228,7 +228,7 @@ bool vrpn_Hash<TKey, TValue>::Add(TKey key, TValue value)
 		m_NrItems++;
                 HashItem *item;
                 try { item = new HashItem; }
-                catch (int) { return false; }
+                catch (...) { return false; }
 		item->key = key;
 		item->value = value;
 		item->next = m_First;
@@ -341,7 +341,7 @@ void vrpn_Hash<TKey, TValue>::ReHash()			//--- these functions do not implement 
 	int OldSizeHash = m_SizeHash;
 	m_SizeHash *= 2;
         try { temp = new HashItem*[m_SizeHash]; }
-        catch (int) { m_SizeHash = 0;  return; }
+        catch (...) { m_SizeHash = 0;  return; }
 	MakeNull( temp, m_SizeHash );
 	HashItem *NewFirst = 0;
 	for ( HashItem *item = m_First ; item != 0 ; item = item->next )
@@ -349,7 +349,7 @@ void vrpn_Hash<TKey, TValue>::ReHash()			//--- these functions do not implement 
 		unsigned int HashValue = HashFunction( item->key )% OldSizeHash;
                 HashItem *NewItem;
                 try { NewItem = new HashItem; }
-                catch (int) { return; }
+                catch (...) { return; }
 		NewItem->key = item->key;
 		NewItem->value = item->value;
 		NewItem->next = NewFirst;

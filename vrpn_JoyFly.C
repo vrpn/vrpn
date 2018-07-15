@@ -17,7 +17,7 @@ vrpn_Tracker_JoyFly::vrpn_Tracker_JoyFly
   int i;
 
   try { joy_remote = new vrpn_Analog_Remote(source, sourceConnection); }
-  catch (int) {
+  catch (...) {
     fprintf(stderr, "vrpn_Tracker_JoyFly::vrpn_Tracker_JoyFly: Out of memory\n");
     return;
   }

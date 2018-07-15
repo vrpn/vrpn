@@ -58,7 +58,7 @@ clone( ) const
 {
   vrpn_FunctionGenerator_function *ret;
   try { ret = new vrpn_FunctionGenerator_function_NULL(); }
-  catch (int) { return NULL; }
+  catch (...) { return NULL; }
   return ret;
 }
 
@@ -80,7 +80,7 @@ vrpn_FunctionGenerator_function_script( )
   try {
     this->script = new char[1];
     script[0] = '\0';
-  } catch (int) {}
+  } catch (...) {}
 }
 
 
@@ -91,7 +91,7 @@ vrpn_FunctionGenerator_function_script( const char* script )
   try {
     this->script = new char[strlen(script) + 1];
     strcpy(this->script, script);
-  } catch (int) {}
+  } catch (...) {}
 }
 
 
@@ -102,7 +102,7 @@ vrpn_FunctionGenerator_function_script( const vrpn_FunctionGenerator_function_sc
   try {
     this->script = new char[strlen(s.script) + 1];
     strcpy(this->script, s.script);
-  } catch (int) {}
+  } catch (...) {}
 }
 
 
@@ -181,7 +181,7 @@ decode_from( const char** buf, vrpn_int32& len )
 
         char* newscript = NULL;
         try { newscript = new char[newlen + 1]; }
-        catch (int) {
+        catch (...) {
           fprintf(stderr, "vrpn_FunctionGenerator_function_script:: "
             "Out of memory.\n");
           fflush(stderr);
@@ -217,7 +217,7 @@ getScript( ) const
   try {
     new char[strlen(this->script) + 1];
     strcpy(retval, this->script);
-  } catch (int) {
+  } catch (...) {
     return NULL;
   }
   return retval;
@@ -234,7 +234,7 @@ setScript( char* script )
         try {
           this->script = new char[strlen(script) + 1];
           strcpy(this->script, script);
-        } catch (int) { return false; }
+        } catch (...) { return false; }
 	return true;
 }
 
@@ -253,7 +253,7 @@ vrpn_FunctionGenerator_channel::
 vrpn_FunctionGenerator_channel( )
 {
   try { function = new vrpn_FunctionGenerator_function_NULL; }
-  catch (int) { function = NULL; }
+  catch (...) { function = NULL; }
 }
 
 
@@ -342,7 +342,7 @@ decode_from( const char** buf, vrpn_int32& len )
 			fflush( stderr );
 			return -1;
 		}
-            } catch (int) {
+            } catch (...) {
               fprintf(stderr, "vrpn_FunctionGenerator_channel::decode_from:  "
                 "Out of memory.\n");
               fflush(stderr);
@@ -376,7 +376,7 @@ vrpn_FunctionGenerator( const char* name, vrpn_Connection * c )
 	for( i = 0; i <= vrpn_FUNCTION_CHANNELS_MAX - 1; i++ )
 	{
           try { channels[i] = new vrpn_FunctionGenerator_channel; }
-          catch (int) { break; }
+          catch (...) { break; }
 	}
 }
 
@@ -555,7 +555,7 @@ handle_channel_message( void* userdata, vrpn_HANDLERPARAM p )
 	vrpn_FunctionGenerator_Server* me = (vrpn_FunctionGenerator_Server*) userdata;
         vrpn_FunctionGenerator_channel* channel = NULL;
         try { channel = new vrpn_FunctionGenerator_channel(); }
-        catch (int) { return -1; }
+        catch (...) { return -1; }
 	vrpn_uint32 channelNum = vrpn_FUNCTION_CHANNELS_MAX + 1; // an invalid number
 	if( 0 > me->decode_channel( p.buffer, p.payload_len, channelNum, *channel ) )
 	{
@@ -1985,7 +1985,7 @@ decode_interpreterDescription_reply( const char* buf, const vrpn_int32 len, char
 		return -1;
 	}
         try { *desc = new char[dlength + 1]; }
-        catch (int) {
+        catch (...) {
           fprintf(stderr, "vrpn_FunctionGenerator_Remote::decode_interpreterDescription_reply:  "
             "Out of memory.\n");
           fflush(stderr);

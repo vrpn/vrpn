@@ -106,7 +106,7 @@ int	vrpn_IMU_Magnetometer::setup_vector(vrpn_IMU_Vector *vector)
       vector->params.name.c_str());
 #endif
     }
-  } catch (int) { vector->ana = NULL; }
+  } catch (...) { vector->ana = NULL; }
   if (vector->ana == NULL) {
 	  fprintf(stderr,"vrpn_IMU_Magnetometer: "
             "Can't open Analog %s\n", vector->params.name.c_str());
@@ -326,7 +326,7 @@ int	vrpn_IMU_SimpleCombiner::setup_vector(vrpn_IMU_Vector *vector,
         vector->params.name.c_str());
 #endif
     }
-  } catch (int) { vector->ana = NULL; }
+  } catch (...) { vector->ana = NULL; }
   if (vector->ana == NULL) {
     fprintf(stderr, "vrpn_Tracker_AnalogFly: "
       "Can't open Analog %s\n", vector->params.name.c_str());

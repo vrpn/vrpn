@@ -693,7 +693,7 @@ int vrpn_Tracker_Liberty::add_stylus_button(const char *button_device_name, int 
 
     // Add a new button device and set the pointer to point at it.
     try { stylus_buttons[sensor] = new vrpn_Button_Server(button_device_name, d_connection, numbuttons); }
-    catch (int) {
+    catch (...) {
 	VRPN_MSG_ERROR("Cannot open button device");
 	return -1;
     }

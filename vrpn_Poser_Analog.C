@@ -30,14 +30,14 @@ bool vrpn_Poser_Analog::setup_channel(vrpn_PA_fullaxis* full)
           try {
             full->ana = new vrpn_Analog_Output_Remote(&(full->axis.ana_name[1]),
               d_connection);
-          } catch (int) {
+          } catch (...) {
             fprintf(stderr, "vrpn_Poser_Analog: Out of memory\n");
             return false;
           }
         } else {
           try {
             full->ana = new vrpn_Analog_Output_Remote(full->axis.ana_name);
-          } catch (int) {
+          } catch (...) {
             fprintf(stderr, "vrpn_Poser_Analog: Out of memory\n");
             return false;
           }

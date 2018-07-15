@@ -45,7 +45,7 @@ vrpn_Forwarder_Brain::encode_start_remote_forwarding(vrpn_int32 *length,
 
     *length = sizeof(vrpn_int32);
     try { outbuf = new char[*length]; }
-    catch (int) {
+    catch (...) {
         *length = 0;
         return NULL;
     }
@@ -82,7 +82,7 @@ char *vrpn_Forwarder_Brain::encode_forward_message_type(
     *length = static_cast<int>(3 * sizeof(vrpn_int32) + strlen(service_name) +
                                strlen(message_type));
     try { outbuf = new char[*length]; }
-    catch (int) {
+    catch (...) {
         *length = 0;
         return NULL;
     }
@@ -128,7 +128,7 @@ void vrpn_Forwarder_Brain::decode_forward_message_type(const char *buffer,
     memcpy(&Slength, buffer + sizeof(vrpn_int32), sizeof(vrpn_int32));
     Slength = ntohl(Slength);
     try { Soutbuf = new char[1 + Slength]; }
-    catch (int) {
+    catch (...) {
       *remote_port = -1;
       *service_name = NULL;
       *message_type = NULL;
@@ -137,7 +137,7 @@ void vrpn_Forwarder_Brain::decode_forward_message_type(const char *buffer,
     memcpy(&Tlength, buffer + 2 * sizeof(vrpn_int32), sizeof(vrpn_int32));
     Tlength = ntohl(Tlength);
     try { Toutbuf = new char[1 + Tlength]; }
-    catch (int) {
+    catch (...) {
         *remote_port = -1;
         *service_name = NULL;
         *message_type = NULL;
@@ -207,7 +207,7 @@ void vrpn_Forwarder_Server::start_remote_forwarding(vrpn_int32 remote_port)
     // Create it and add it to the list
 
     try { fp = new vrpn_Forwarder_List; }
-    catch (int) {
+    catch (...) {
       fprintf(stderr, "vrpn_Forwarder_Server::start_remote_forwarding:  "
         "Out of memory.\n");
       return;
@@ -216,7 +216,7 @@ void vrpn_Forwarder_Server::start_remote_forwarding(vrpn_int32 remote_port)
     fp->port = remote_port;
     fp->connection = vrpn_create_server_connection(remote_port);
     try { fp->forwarder = new vrpn_ConnectionForwarder(d_connection, fp->connection); }
-    catch (int) {
+    catch (...) {
       fprintf(stderr, "vrpn_Forwarder_Server::start_remote_forwarding:  "
         "Out of memory.\n");
       return;

@@ -137,7 +137,7 @@ BOOL vrpn_Tracker_G4::InitDigIOBtns()
 			if (pHub->nBtnCount)
 			{
 				try { pHub->pBtnSrv = new vrpn_Button_Server(pHub->BtnName, d_connection, pHub->nBtnCount ); }
-				catch (int)
+				catch (...)
 				{
 					cout << "Cannot create button device " << pHub->BtnName << endl;
 					bRet = FALSE;
@@ -1165,7 +1165,7 @@ BOOL vrpn_Tracker_FastrakPDI::InitStylusBtns()
 			char btnName[512];
 			sprintf( btnName, "%sStylus%d", d_servicename, i+1);
 			try { FTstylusBtns[i] = new vrpn_Button_Server( btnName, d_connection, 1 ); }
-			catch (int)
+			catch (...)
 			{
 				cout << "Cannot create button device " << btnName << endl;
 				bRet = FALSE;
@@ -1727,7 +1727,7 @@ BOOL vrpn_Tracker_LibertyPDI::InitStylusBtns()
 			char btnName[512];
 			sprintf( btnName, "%sStylus%d", d_servicename, i+1);
 			try { StylusBtns[i] = new vrpn_Button_Server( btnName, d_connection, 1 ); }
-			catch (int)
+			catch (...)
 			{
 				cout << "Cannot create button device " << btnName << endl;
 				bRet = FALSE;

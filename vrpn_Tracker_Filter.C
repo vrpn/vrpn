@@ -61,7 +61,7 @@ vrpn_Tracker_FilterOneEuro::vrpn_Tracker_FilterOneEuro(const char * name, vrpn_C
 {
   // Allocate space for the times.  Fill them in with now.
   try { d_last_report_times = new struct timeval[channels]; }
-  catch (int) {
+  catch (...) {
     fprintf(stderr,"vrpn_Tracker_FilterOneEuro::vrpn_Tracker_FilterOneEuro(): Out of memory\n");
     d_channels = 0;
     return;
@@ -73,7 +73,7 @@ vrpn_Tracker_FilterOneEuro::vrpn_Tracker_FilterOneEuro(const char * name, vrpn_C
   try {
     d_filters = new vrpn_OneEuroFilterVec[channels];
     d_qfilters = new vrpn_OneEuroFilterQuat[channels];
-  } catch (int) {
+  } catch (...) {
     fprintf(stderr,"vrpn_Tracker_FilterOneEuro::vrpn_Tracker_FilterOneEuro(): Out of memory\n");
     d_channels = 0;
     return;
@@ -97,11 +97,11 @@ vrpn_Tracker_FilterOneEuro::vrpn_Tracker_FilterOneEuro(const char * name, vrpn_C
     try {
       d_listen_tracker = new vrpn_Tracker_Remote(&(listen_tracker_name[1]),
         d_connection);
-    } catch (int) { d_listen_tracker = NULL;}
+    } catch (...) { d_listen_tracker = NULL;}
   } else {
     try {
       d_listen_tracker = new vrpn_Tracker_Remote(listen_tracker_name);
-    } catch (int) { d_listen_tracker = NULL;}
+    } catch (...) { d_listen_tracker = NULL;}
   }
   if (d_listen_tracker) d_listen_tracker->register_change_handler(this, handle_tracker_update);
 }
@@ -149,7 +149,7 @@ vrpn_Tracker_DeadReckoning_Rotation::vrpn_Tracker_DeadReckoning_Rotation(
       } else {
         d_origTracker = new vrpn_Tracker_Remote(origTrackerName.c_str());
       }
-    } catch (int) {
+    } catch (...) {
       d_origTracker = NULL;
       return;
     }
@@ -406,7 +406,7 @@ int vrpn_Tracker_DeadReckoning_Rotation::test(void)
       t0 = new vrpn_Tracker_Server("Tracker0", c, 2);
       t1 = new vrpn_Tracker_DeadReckoning_Rotation("Tracker1", c, "*Tracker0", 2, 1);
       tr = new vrpn_Tracker_Remote("Tracker1", c);
-    } catch (int) {
+    } catch (...) {
       std::cerr << "vrpn_Tracker_DeadReckoning_Rotation::test: Out of memory" << std::endl;
       return 100;
     }

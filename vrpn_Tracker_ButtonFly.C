@@ -55,11 +55,11 @@ vrpn_Tracker_ButtonFly::vrpn_Tracker_ButtonFly
       try {
         d_vel_scale = new vrpn_Analog_Remote
         (&(params->vel_scale_name[1]), d_connection);
-      } catch (int) { d_vel_scale = NULL; }
+      } catch (...) { d_vel_scale = NULL; }
     } else {
       try {
         d_vel_scale = new vrpn_Analog_Remote(params->vel_scale_name);
-        } catch (int) { d_vel_scale = NULL; }
+        } catch (...) { d_vel_scale = NULL; }
     }
 
     // Set up the callback handler
@@ -87,11 +87,11 @@ vrpn_Tracker_ButtonFly::vrpn_Tracker_ButtonFly
       try {
         d_rot_scale = new vrpn_Analog_Remote
         (&(params->rot_scale_name[1]), d_connection);
-      } catch (int) { d_rot_scale = NULL; }
+      } catch (...) { d_rot_scale = NULL; }
     } else {
       try {
         d_rot_scale = new vrpn_Analog_Remote(params->rot_scale_name);
-      } catch (int) { d_rot_scale = NULL; }
+      } catch (...) { d_rot_scale = NULL; }
     }
 
     // Set up the callback handler
@@ -158,7 +158,7 @@ int	vrpn_Tracker_ButtonFly::setup_channel(vrpn_TBF_fullaxis *full)
     try {
       full->btn = new vrpn_Button_Remote(&(full->axis.name[1]),
           d_connection);
-    } catch (int) { full->btn = NULL; }
+    } catch (...) { full->btn = NULL; }
 #ifdef	VERBOSE
     printf("vrpn_Tracker_ButtonFly: Adding local button %s\n",
               &(full->axis.name[1]));
@@ -166,7 +166,7 @@ int	vrpn_Tracker_ButtonFly::setup_channel(vrpn_TBF_fullaxis *full)
   } else {
     try {
       full->btn = new vrpn_Button_Remote(full->axis.name);
-    } catch (int) { full->btn = NULL; }
+    } catch (...) { full->btn = NULL; }
 #ifdef	VERBOSE
     printf("vrpn_Tracker_ButtonFly: Adding remote button %s\n",
               full->axis.name);

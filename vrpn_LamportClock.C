@@ -7,7 +7,7 @@ vrpn_LamportTimestamp::vrpn_LamportTimestamp (int vectorLength,
     d_timestamp(NULL)
 {
   try { d_timestamp = new vrpn_uint32[vectorLength]; }
-  catch (int) { return; }
+  catch (...) { return; }
   copy(vector);
 }
 
@@ -17,7 +17,7 @@ vrpn_LamportTimestamp::vrpn_LamportTimestamp
     d_timestamp(NULL)
 {
   try { d_timestamp = new vrpn_uint32[r.d_timestampSize]; }
-  catch (int) { return; }
+  catch (...) { return; }
   copy(r.d_timestamp);
 }
 
@@ -39,7 +39,7 @@ vrpn_LamportTimestamp & vrpn_LamportTimestamp::operator =
 
   d_timestampSize = r.d_timestampSize;
   try { d_timestamp = new vrpn_uint32[r.d_timestampSize]; }
-  catch (int) {
+  catch (...) {
     d_timestamp = NULL;
     return *this;
   }
@@ -109,7 +109,7 @@ vrpn_LamportClock::vrpn_LamportClock (int numHosts, int ourIndex) :
     d_currentTimestamp(NULL)
 {
   try { d_currentTimestamp = new vrpn_uint32[numHosts]; }
-  catch (int) { return; }
+  catch (...) { return; }
 
   int i;
   if (d_currentTimestamp) {
@@ -148,7 +148,7 @@ vrpn_LamportTimestamp * vrpn_LamportClock::getTimestampAndAdvance (void)
 
   vrpn_LamportTimestamp *ret = NULL;
   try { ret = new vrpn_LamportTimestamp(d_numHosts, d_currentTimestamp); }
-  catch (int) { return NULL; }
+  catch (...) { return NULL; }
   return ret;
 }
   

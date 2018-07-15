@@ -95,7 +95,7 @@ public:
 	{
 		HUBMAP_ENTRY *next = p_hub_map;
                 try { p_hub_map = new HUBMAP_ENTRY(nHub); }
-                catch (int) {
+                catch (...) {
                   fprintf(stderr, "vrpn_Tracker_G4_HubMap::Add(): Out of memory\n");
                   return;
                 }

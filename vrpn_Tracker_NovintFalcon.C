@@ -88,7 +88,7 @@ public:
                 return;
             } else {
                 try { m_falconDevice = new libnifalcon::FalconDevice; }
-                catch (int) { m_falconDevice = NULL; return; }
+                catch (...) { m_falconDevice = NULL; return; }
                 m_falconDevice->setFalconFirmware<libnifalcon::FalconFirmwareNovintSDK>();
             }
 
@@ -555,12 +555,12 @@ void vrpn_Tracker_NovintFalcon::clear_values()
 
     if (m_obj) delete m_obj;
     try { m_obj = new vrpn_NovintFalcon_ForceObjects; }
-    catch (int) { m_obj = NULL; return; }
+    catch (...) { m_obj = NULL; return; }
 
     // add dummy effect object
     ForceFieldEffect *ffe;
     try { ffe = new ForceFieldEffect; }
-    catch (int) { return; }
+    catch (...) { return; }
     ffe->setDamping(m_damp);
     ffe->stop();
     m_obj->m_FFEffects.push_back(ffe);
@@ -590,7 +590,7 @@ void vrpn_Tracker_NovintFalcon::reset()
         delete m_dev;
 
     try { m_dev = new vrpn_NovintFalcon_Device(m_devflags); }
-    catch (int) {
+    catch (...) {
 #ifdef VERBOSE
         fprintf(stderr, "Device constructor failed!\n");
 #endif

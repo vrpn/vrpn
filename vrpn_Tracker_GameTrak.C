@@ -29,7 +29,7 @@ vrpn_Tracker_GameTrak::vrpn_Tracker_GameTrak(const char * name, vrpn_Connection 
       } else {
         _analog = new vrpn_Analog_Remote(joystick_dev);
       }
-    } catch (int) { _analog = NULL;}
+    } catch (...) { _analog = NULL;}
 
     if (_analog == NULL) {
         fprintf(stderr, "vrpn_Tracker_GameTrak: "

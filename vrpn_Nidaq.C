@@ -83,7 +83,7 @@ vrpn_Nidaq::vrpn_Nidaq(char *pchName, vrpn_Connection *pConnection,
     try {
       pDAQ = new DAQ(dSamplingRate, dInterChannelRate, sDeviceNumber, cChannels,
         rgsChan, rgsGain, sInputMode, sPolarity);
-    } catch (int) {
+    } catch (...) {
       cerr << "vrpn_Nidaq::vrpn_Nidaq: Out of memory" << endl;
       return;
     }

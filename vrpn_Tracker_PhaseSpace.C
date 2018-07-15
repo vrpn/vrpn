@@ -126,7 +126,7 @@ vrpn_Tracker_PhaseSpace::vrpn_Tracker_PhaseSpace(const char *name, vrpn_Connecti
   num_buttons = 0;
 
   try { smgr = new SensorManager(); }
-  catch (int) { return; }
+  catch (...) { return; }
 
   if(d_connection) {
     // Register a handler for the update change callback

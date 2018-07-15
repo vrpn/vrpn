@@ -33,7 +33,7 @@ extern "C" void *vrpn_c_open_tracker(const char *device_name, vrpn_c_tracker_cal
     /* Tell the callback handler what function to call. */
     tkr->register_change_handler((void*)callback, handle_tracker_pos_quat);
   }
-  catch (int) { }
+  catch (...) { }
   return tkr;
 };
 
@@ -80,7 +80,7 @@ extern "C" void *vrpn_c_open_button(const char *device_name, vrpn_c_button_callb
     vrpn_Button_Remote *btn = new vrpn_Button_Remote(device_name);
     /* Tell the callback handler what function to call. */
     btn->register_change_handler((void*)callback, handle_button_event);
-  } catch (int) {}
+  } catch (...) {}
   return btn;
 };
 

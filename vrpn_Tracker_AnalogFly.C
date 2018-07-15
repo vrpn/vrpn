@@ -66,14 +66,14 @@ vrpn_Tracker_AnalogFly::vrpn_Tracker_AnalogFly
                     d_reset_button = new vrpn_Button_Remote
                     (&(params->reset_name[1]),
                       d_connection);
-                  } catch (int) {
+                  } catch (...) {
                     d_reset_button = NULL;
                   }
 		} else {
                   try {
 		    d_reset_button = new vrpn_Button_Remote
                       (params->reset_name);
-                  } catch (int) {
+                  } catch (...) {
                     d_reset_button = NULL;
                   }
 		}
@@ -104,14 +104,14 @@ vrpn_Tracker_AnalogFly::vrpn_Tracker_AnalogFly
                     d_clutch_button = new vrpn_Button_Remote
                                (&(params->clutch_name[1]),
 				d_connection);
-                  } catch (int) {
+                  } catch (...) {
                     d_clutch_button = NULL;
                   }
                 } else {
                   try {
                     d_clutch_button = new vrpn_Button_Remote
                                (params->clutch_name);
-                  } catch (int) {
+                  } catch (...) {
                     d_clutch_button = NULL;
                   }
 		}
@@ -272,7 +272,7 @@ int	vrpn_Tracker_AnalogFly::setup_channel(vrpn_TAF_fullaxis *full)
           try {
             full->ana = new vrpn_Analog_Remote(&(full->axis.name[1]),
               d_connection);
-          } catch (int) { full->ana = NULL; }
+          } catch (...) { full->ana = NULL; }
 #ifdef	VERBOSE
 		printf("vrpn_Tracker_AnalogFly: Adding local analog %s\n",
                           &(full->axis.name[1]));
@@ -280,7 +280,7 @@ int	vrpn_Tracker_AnalogFly::setup_channel(vrpn_TAF_fullaxis *full)
 	} else {
           try {
             full->ana = new vrpn_Analog_Remote(full->axis.name);
-          } catch (int) { full->ana = NULL; }
+          } catch (...) { full->ana = NULL; }
 
 #ifdef	VERBOSE
 		printf("vrpn_Tracker_AnalogFly: Adding remote analog %s\n",

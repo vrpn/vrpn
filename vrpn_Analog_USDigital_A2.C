@@ -70,7 +70,7 @@ _numDevices(0)
 {
 #ifdef VRPN_USE_USDIGITAL
     try { this->_devAddr = new long[vrpn_Analog_USDigital_A2::vrpn_Analog_USDigital_A2_CHANNEL_MAX] ; }
-    catch (int) {
+    catch (...) {
         fprintf(stderr,"vrpn_Analog_USDigital_A2: Out of memory!\n");
 	return;
     }    

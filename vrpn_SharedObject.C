@@ -53,11 +53,11 @@ vrpn_SharedObject::vrpn_SharedObject(const char *name, const char *tname,
     if (name) try {
         d_name = new char[1 + strlen(name)];
         strcpy(d_name, name);
-    } catch (int) { return;}
+    } catch (...) { return;}
     if (tname) try {
         d_typename = new char[1 + strlen(tname)];
         strcpy(d_typename, tname);
-    } catch (int) { return;}
+    } catch (...) { return;}
     vrpn_gettimeofday(&d_lastUpdate, NULL);
 }
 
@@ -174,7 +174,7 @@ void vrpn_SharedObject::registerDeferredUpdateCallback(
     deferredUpdateCallbackEntry *x;
 
     try { x = new deferredUpdateCallbackEntry; }
-    catch (int) {
+    catch (...) {
         fprintf(stderr, "vrpn_SharedObject::registerDeferredUpdateCallback:  "
                         "Out of memory!\n");
         return;
@@ -423,7 +423,7 @@ void vrpn_Shared_int32::register_handler(vrpnSharedIntCallback cb,
 {
     callbackEntry *e;
     try { e = new callbackEntry; }
-    catch (int) {
+    catch (...) {
         fprintf(stderr, "vrpn_Shared_int32::register_handler:  "
                         "Out of memory.\n");
         return;
@@ -460,7 +460,7 @@ void vrpn_Shared_int32::register_handler(vrpnTimedSharedIntCallback cb,
 {
     timedCallbackEntry *e;
     try { e = new timedCallbackEntry; }
-    catch (int) {
+    catch (...) {
         fprintf(stderr, "vrpn_Shared_int32::register_handler:  "
                         "Out of memory.\n");
         return;
@@ -666,7 +666,7 @@ void vrpn_Shared_int32::decodeLamport(const char **buffer, vrpn_int32 *,
     vrpn_unbuffer(buffer, when);
     vrpn_unbuffer(buffer, &size);
     try { array = new vrpn_uint32[size]; }
-    catch (int) {
+    catch (...) {
       *t = NULL;
       return;
     }
@@ -675,7 +675,7 @@ void vrpn_Shared_int32::decodeLamport(const char **buffer, vrpn_int32 *,
     }
     vrpn_LamportTimestamp *ret = NULL;
     try { ret = new vrpn_LamportTimestamp(size, array); }
-    catch (int) {}
+    catch (...) {}
     *t = ret;
     delete[] array;
 }
@@ -1204,7 +1204,7 @@ void vrpn_Shared_String::register_handler(vrpnSharedStringCallback cb,
 {
     callbackEntry *e;
     try { e = new callbackEntry; }
-    catch (int) {
+    catch (...) {
         fprintf(stderr, "vrpn_Shared_String::register_handler:  "
                         "Out of memory.\n");
         return;
@@ -1241,7 +1241,7 @@ void vrpn_Shared_String::register_handler(vrpnTimedSharedStringCallback cb,
 {
     timedCallbackEntry *e;
     try { e = new timedCallbackEntry; }
-    catch (int) {
+    catch (...) {
         fprintf(stderr, "vrpn_Shared_String::register_handler:  "
                         "Out of memory.\n");
         return;
@@ -1295,7 +1295,7 @@ vrpn_Shared_String &vrpn_Shared_String::set(const char *newValue, timeval when,
                 delete[] d_value;
             }
             try { d_value = new char[1 + strlen(newValue)]; }
-            catch (int) {
+            catch (...) {
                 fprintf(stderr, "vrpn_Shared_String::set:  Out of memory.\n");
                 return *this;
             }

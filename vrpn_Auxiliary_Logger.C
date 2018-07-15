@@ -64,7 +64,7 @@ bool vrpn_Auxiliary_Logger::pack_log_message_of_type(
     std::vector<char> buf;
     try {
       buf.resize(bufsize);
-    } catch (int) {
+    } catch (...) {
       fprintf(stderr, "vrpn_Auxiliary_Logger::pack_log_message_of_type(): "
         "Out of memory.\n");
       return false;
@@ -144,7 +144,7 @@ bool vrpn_Auxiliary_Logger::unpack_log_message_from_buffer(
     (*remote_out_logfile_name) = NULL;
     if (localInNameLen > 0) {
         try { (*local_in_logfile_name) = new char[localInNameLen + 1]; }
-        catch (int) {
+        catch (...) {
             fprintf(stderr, "vrpn_Auxiliary_Logger::unpack_log_message_from_"
                             "buffer: Out of memory\n");
             return false;
@@ -157,7 +157,7 @@ bool vrpn_Auxiliary_Logger::unpack_log_message_from_buffer(
     }
     if (localOutNameLen > 0) {
         try { (*local_out_logfile_name) = new char[localOutNameLen + 1]; }
-        catch (int) {
+        catch (...) {
             fprintf(stderr, "vrpn_Auxiliary_Logger::unpack_log_message_from_"
                             "buffer: Out of memory\n");
             return false;
@@ -170,7 +170,7 @@ bool vrpn_Auxiliary_Logger::unpack_log_message_from_buffer(
     }
     if (remoteInNameLen > 0) {
         try { (*remote_in_logfile_name) = new char[remoteInNameLen + 1]; }
-        catch (int) {
+        catch (...) {
             fprintf(stderr, "vrpn_Auxiliary_Logger::unpack_log_message_from_"
                             "buffer: Out of memory\n");
             return false;
@@ -183,7 +183,7 @@ bool vrpn_Auxiliary_Logger::unpack_log_message_from_buffer(
     }
     if (remoteOutNameLen > 0) {
         try { (*remote_out_logfile_name) = new char[remoteOutNameLen + 1]; }
-        catch (int) {
+        catch (...) {
             fprintf(stderr, "vrpn_Auxiliary_Logger::unpack_log_message_from_"
                             "buffer: Out of memory\n");
             return false;
@@ -324,7 +324,7 @@ vrpn_Auxiliary_Logger_Server_Generic::vrpn_Auxiliary_Logger_Server_Generic(
         return;
     }
     try { d_connection_name = new char[strlen(connection_to_log) + 1]; }
-    catch (int) {
+    catch (...) {
         fprintf(stderr, "vrpn_Auxiliary_Logger_Server_Generic::vrpn_Auxiliary_"
                         "Logger_Server_Generic: Out of memory\n");
         d_connection = NULL;

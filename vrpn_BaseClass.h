@@ -405,7 +405,7 @@ public:
         // Allocate and initialize the new entry
         try {
           new_entry = new CHANGELIST_ENTRY;
-        } catch (int) {
+        } catch (...) {
           fprintf(stderr,
             "vrpn_Callback_List::register_handler(): Out of memory\n");
           return -1;

@@ -46,7 +46,7 @@ static vrpn_HidAcceptor *makeHDKHidAcceptor()
         vrpn_OSVR_HACKER_DEV_KIT_HMD),
       new vrpn_HidProductAcceptor(vrpn_OSVR_ALT_VENDOR,
         vrpn_OSVR_ALT_HACKER_DEV_KIT_HMD));
-  } catch (int) { return NULL; }
+  } catch (...) { return NULL; }
   return ret;
 }
 

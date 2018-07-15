@@ -93,7 +93,7 @@ void vrpn_ForceDevice::setCustomEffect(vrpn_int32 effectId,
         customEffectParams = NULL;
     }
     try { customEffectParams = new vrpn_float32[nbParams]; }
-    catch (int) {
+    catch (...) {
       fprintf(stderr, "vrpn_ForceDevice::setCustomEffect(): Out of memory\n");
       return;
     }
@@ -221,7 +221,7 @@ char *vrpn_ForceDevice::encode_force(vrpn_int32 &length,
     mlen = length;
 
     try { buf = new char[length]; }
-    catch (int) { return NULL; }
+    catch (...) { return NULL; }
     mptr = buf;
 
     // Move the force there
@@ -267,7 +267,7 @@ char *vrpn_ForceDevice::encode_custom_effect(vrpn_int32 &len,
     mlen = len;
 
     try { buf = new char[len]; }
-    catch (int) { return NULL; }
+    catch (...) { return NULL; }
     mptr = buf;
 
     vrpn_buffer(&mptr, &mlen, effectId);
@@ -314,7 +314,7 @@ vrpn_int32 vrpn_ForceDevice::decode_custom_effect(const char *buffer,
 
     if (*params != NULL) delete[] * params;
     try { *params = new vrpn_float32[(*nbParams)]; }
-    catch (int) {
+    catch (...) {
       fprintf(stderr, "vrpn_ForceDevice::decode_custom_effect(): Out of memory\n");
       return -3;
     }
@@ -340,7 +340,7 @@ char *vrpn_ForceDevice::encode_scp(vrpn_int32 &length, const vrpn_float64 *pos,
     mlen = length;
 
     try { buf = new char[length]; }
-    catch (int) { return NULL; }
+    catch (...) { return NULL; }
     mptr = buf;
 
     for (i = 0; i < 3; i++) {
@@ -394,7 +394,7 @@ char *vrpn_ForceDevice::encode_plane(
     mlen = len;
 
     try { buf = new char[len]; }
-    catch (int) { return NULL; }
+    catch (...) { return NULL; }
 
     mptr = buf;
 
@@ -457,7 +457,7 @@ char *vrpn_ForceDevice::encode_surface_effects(
     mlen = len;
 
     try { buf = new char[len]; }
-    catch (int) { return NULL; }
+    catch (...) { return NULL; }
 
     mptr = buf;
 
@@ -513,7 +513,7 @@ char *vrpn_ForceDevice::encode_vertex(vrpn_int32 &len, const vrpn_int32 objNum,
     mlen = len;
 
     try { buf = new char[len]; }
-    catch (int) { return NULL; }
+    catch (...) { return NULL; }
 
     mptr = buf;
 
@@ -568,7 +568,7 @@ char *vrpn_ForceDevice::encode_normal(vrpn_int32 &len, const vrpn_int32 objNum,
     mlen = len;
 
     try { buf = new char[len]; }
-    catch (int) { return NULL; }
+    catch (...) { return NULL; }
 
     mptr = buf;
     vrpn_buffer(&mptr, &mlen, objNum);
@@ -623,7 +623,7 @@ char *vrpn_ForceDevice::encode_triangle(
     mlen = len;
 
     try { buf = new char[len]; }
-    catch (int) { return NULL; }
+    catch (...) { return NULL; }
     mptr = buf;
 
     vrpn_buffer(&mptr, &mlen, objNum);
@@ -680,7 +680,7 @@ char *vrpn_ForceDevice::encode_removeTriangle(vrpn_int32 &len,
     mlen = len;
 
     try { buf = new char[len]; }
-    catch (int) { return NULL; }
+    catch (...) { return NULL; }
     mptr = buf;
 
     vrpn_buffer(&mptr, &mlen, objNum);
@@ -726,7 +726,7 @@ char *vrpn_ForceDevice::encode_updateTrimeshChanges(
     mlen = len;
 
     try { buf = new char[len]; }
-    catch (int) { return NULL; }
+    catch (...) { return NULL; }
     mptr = buf;
 
     vrpn_buffer(&mptr, &mlen, objNum);
@@ -778,7 +778,7 @@ char *vrpn_ForceDevice::encode_setTrimeshType(vrpn_int32 &len,
     mlen = len;
 
     try { buf = new char[len]; }
-    catch (int) { return NULL; }
+    catch (...) { return NULL; }
     mptr = buf;
 
     vrpn_buffer(&mptr, &mlen, objNum);
@@ -823,7 +823,7 @@ char *vrpn_ForceDevice::encode_trimeshTransform(
     mlen = len;
 
     try { buf = new char[len]; }
-    catch (int) { return NULL; }
+    catch (...) { return NULL; }
     mptr = buf;
 
     vrpn_buffer(&mptr, &mlen, objNum);
@@ -869,7 +869,7 @@ char *vrpn_ForceDevice::encode_addObject(vrpn_int32 &len,
     mlen = len;
 
     try { buf = new char[len]; }
-    catch (int) { return NULL; }
+    catch (...) { return NULL; }
     mptr = buf;
 
     vrpn_buffer(&mptr, &mlen, objNum);
@@ -909,7 +909,7 @@ char *vrpn_ForceDevice::encode_addObjectExScene(vrpn_int32 &len,
     mlen = len;
 
     try { buf = new char[len]; }
-    catch (int) { return NULL; }
+    catch (...) { return NULL; }
     mptr = buf;
 
     vrpn_buffer(&mptr, &mlen, objNum);
@@ -947,7 +947,7 @@ char *vrpn_ForceDevice::encode_objectPosition(vrpn_int32 &len,
     mlen = len;
 
     try { buf = new char[len]; }
-    catch (int) { return NULL; }
+    catch (...) { return NULL; }
     mptr = buf;
 
     vrpn_buffer(&mptr, &mlen, objNum);
@@ -994,7 +994,7 @@ char *vrpn_ForceDevice::encode_objectOrientation(vrpn_int32 &len,
     mlen = len;
 
     try { buf = new char[len]; }
-    catch (int) { return NULL; }
+    catch (...) { return NULL; }
     mptr = buf;
 
     vrpn_buffer(&mptr, &mlen, objNum);
@@ -1044,7 +1044,7 @@ char *vrpn_ForceDevice::encode_objectScale(vrpn_int32 &len,
     mlen = len;
 
     try { buf = new char[len]; }
-    catch (int) { return NULL; }
+    catch (...) { return NULL; }
     mptr = buf;
 
     vrpn_buffer(&mptr, &mlen, objNum);
@@ -1089,7 +1089,7 @@ char *vrpn_ForceDevice::encode_removeObject(vrpn_int32 &len,
     mlen = len;
 
     try { buf = new char[len]; }
-    catch (int) { return NULL; }
+    catch (...) { return NULL; }
     mptr = buf;
 
     vrpn_buffer(&mptr, &mlen, objNum);
@@ -1126,7 +1126,7 @@ char *vrpn_ForceDevice::encode_clearTrimesh(vrpn_int32 &len,
     mlen = len;
 
     try { buf = new char[len]; }
-    catch (int) { return NULL; }
+    catch (...) { return NULL; }
     mptr = buf;
 
     vrpn_buffer(&mptr, &mlen, objNum);
@@ -1164,7 +1164,7 @@ char *vrpn_ForceDevice::encode_moveToParent(vrpn_int32 &len,
     mlen = len;
 
     try { buf = new char[len]; }
-    catch (int) { return NULL; }
+    catch (...) { return NULL; }
     mptr = buf;
 
     vrpn_buffer(&mptr, &mlen, objNum);
@@ -1209,7 +1209,7 @@ char *vrpn_ForceDevice::encode_setHapticOrigin(vrpn_int32 &len,
     mlen = len;
 
     try { buf = new char[len]; }
-    catch (int) { return NULL; }
+    catch (...) { return NULL; }
     mptr = buf;
 
     for (i = 0; i < 3; i++)
@@ -1261,7 +1261,7 @@ char *vrpn_ForceDevice::encode_setHapticScale(vrpn_int32 &len,
     mlen = len;
 
     try { buf = new char[len]; }
-    catch (int) { return NULL; }
+    catch (...) { return NULL; }
     mptr = buf;
 
     vrpn_buffer(&mptr, &mlen, scale);
@@ -1302,7 +1302,7 @@ char *vrpn_ForceDevice::encode_setSceneOrigin(vrpn_int32 &len,
     mlen = len;
 
     try { buf = new char[len]; }
-    catch (int) { return NULL; }
+    catch (...) { return NULL; }
     mptr = buf;
 
     for (i = 0; i < 3; i++)
@@ -1356,7 +1356,7 @@ char *vrpn_ForceDevice::encode_setObjectIsTouchable(vrpn_int32 &len,
     mlen = len;
 
     try { buf = new char[len]; }
-    catch (int) { return NULL; }
+    catch (...) { return NULL; }
     mptr = buf;
 
     vrpn_buffer(&mptr, &mlen, objNum);
@@ -1403,7 +1403,7 @@ char *vrpn_ForceDevice::encode_forcefield(vrpn_int32 &len,
     mlen = len;
 
     try { buf = new char[len]; }
-    catch (int) { return NULL; }
+    catch (...) { return NULL; }
     mptr = buf;
 
     for (i = 0; i < 3; i++)
@@ -1464,7 +1464,7 @@ char *vrpn_ForceDevice::encode_error(vrpn_int32 &len,
     mlen = len;
 
     try { buf = new char[len]; }
-    catch (int) { return NULL; }
+    catch (...) { return NULL; }
     mptr = buf;
 
     vrpn_buffer(&mptr, &mlen, error_code);
@@ -1551,7 +1551,7 @@ char *vrpn_ForceDevice::encode_enableConstraint(vrpn_int32 &len,
     mlen = len;
 
     try { buf = new char[len]; }
-    catch (int) { return NULL; }
+    catch (...) { return NULL; }
     mptr = buf;
 
     vrpn_buffer(&mptr, &mlen, enable);
@@ -1592,7 +1592,7 @@ char *vrpn_ForceDevice::encode_setConstraintMode(vrpn_int32 &len,
     mlen = len;
 
     try { buf = new char[len]; }
-    catch (int) { return NULL; }
+    catch (...) { return NULL; }
     mptr = buf;
 
     switch (mode) {
@@ -1762,7 +1762,7 @@ char *vrpn_ForceDevice::encode_setConstraintKSpring(vrpn_int32 &len,
     mlen = len;
 
     try { buf = new char[len]; }
-    catch (int) { return NULL; }
+    catch (...) { return NULL; }
     mptr = buf;
 
     vrpn_buffer(&mptr, &mlen, k);
@@ -1806,7 +1806,7 @@ char *vrpn_ForceDevice::encodePoint(vrpn_int32 &len, vrpn_float32 x,
     mlen = len;
 
     try { buf = new char[len]; }
-    catch (int) { return NULL; }
+    catch (...) { return NULL; }
     mptr = buf;
 
     vrpn_buffer(&mptr, &mlen, x);

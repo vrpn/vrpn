@@ -130,7 +130,7 @@ bool vrpn_Semaphore::init()
         numMax = 1;
     }
     try { semaphore = new sem_t; }
-    catch (int) { return false; }
+    catch (...) { return false; }
     if (sem_init(semaphore, 0, numMax) != 0) {
         perror("vrpn_Semaphore::vrpn_Semaphore: error initializing semaphore");
         return false;

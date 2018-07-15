@@ -100,7 +100,7 @@ int vrpn_TextPrinter::add_object(vrpn_BaseClass *o)
 
     // Add the object to the beginning of the list.
     try { victim = new vrpn_TextPrinter_Watch_Entry; }
-    catch (int) {
+    catch (...) {
         fprintf(stderr, "vrpn_TextPrinter::add_object(): out of memory\n");
         return -1;
     }

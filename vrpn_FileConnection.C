@@ -884,7 +884,7 @@ bool vrpn_File_Connection::store_stream_bookmark()
         else {
             if (d_bookmark.oldCurrentLogEntryCopy == NULL) {
                 try {d_bookmark.oldCurrentLogEntryCopy = new vrpn_LOGLIST; }
-                catch (int) {
+                catch (...) {
                     fprintf(stderr, "Out of memory error:  "
                                     "vrpn_File_Connection::store_stream_"
                                     "bookmark\n");
@@ -910,7 +910,7 @@ bool vrpn_File_Connection::store_stream_bookmark()
             }
             try { d_bookmark.oldCurrentLogEntryCopy->data.buffer =
                 new char[d_currentLogEntry->data.payload_len]; }
-            catch (int) {
+            catch (...) {
                 d_bookmark.valid = false;
                 return false;
             }
@@ -949,7 +949,7 @@ bool vrpn_File_Connection::return_to_bookmark()
             char *newBuffer = NULL;
             try { newBuffer = 
                 new char[d_bookmark.oldCurrentLogEntryCopy->data.payload_len]; }
-            catch (int) {
+            catch (...) {
                 return false;
             }
             d_time = d_bookmark.oldTime;
@@ -957,7 +957,7 @@ bool vrpn_File_Connection::return_to_bookmark()
             if (d_currentLogEntry == NULL) // we are at the end of the file
             {
                 try { d_currentLogEntry = new vrpn_LOGLIST; }
-                catch (int) { return false; }
+                catch (...) { return false; }
                 d_currentLogEntry->data.buffer = 0;
             }
             d_currentLogEntry->next = d_bookmark.oldCurrentLogEntryCopy->next;
@@ -1051,7 +1051,7 @@ int vrpn_File_Connection::read_entry(void)
     size_t retval;
 
     try { newEntry = new vrpn_LOGLIST; }
-    catch (int) {
+    catch (...) {
         fprintf(stderr, "vrpn_File_Connection::read_entry: Out of memory.\n");
         return -1;
     }
@@ -1100,7 +1100,7 @@ int vrpn_File_Connection::read_entry(void)
 
     if (header.payload_len > 0) {
         try { header.buffer = new char[header.payload_len]; }
-        catch (int) {
+        catch (...) {
             fprintf(stderr, "vrpn_File_Connection::read_entry:  "
                             "Out of memory.\n");
             return -1;

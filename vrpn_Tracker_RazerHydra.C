@@ -107,7 +107,7 @@ static vrpn_HidAcceptor * makeHydraInterfaceAcceptor(unsigned whichInterface) {
     ret.reset(new vrpn_HidNthMatchAcceptor(whichInterface,
         productAcceptor.release()));
 #endif
-  } catch (int) { return NULL; }
+  } catch (...) { return NULL; }
   return ret.release();
 }
 
@@ -141,14 +141,17 @@ public:
         {
           MyInterface *ret;
           try { ret = new MyInterface(which_interface, &hydra, dev); }
-          catch (int) { return NULL; }
+          catch (...) { return NULL; }
           return ret;
         }
         static MyInterface *make(unsigned which_interface,
                                  vrpn_Tracker_RazerHydra &hydra,
                                  const char *path)
         {
-            return new MyInterface(which_interface, &hydra, path);
+          MyInterface *ret;
+          try { ret = new MyInterface(which_interface, &hydra, path); }
+          catch (...) { return NULL; }
+          return ret;
         }
 
         void on_data_received(size_t bytes, vrpn_uint8 *buffer)

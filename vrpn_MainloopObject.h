@@ -173,7 +173,7 @@ template <class T> inline vrpn_MainloopObject *vrpn_MainloopObject::wrap(T o)
   vrpn_MainloopObject *ret = NULL;
   try {
     ret = new detail::TypedMainloopObject<T>(o);
-  } catch (int) {}
+  } catch (...) {}
   return ret;
 }
 
@@ -183,7 +183,7 @@ inline vrpn_MainloopObject *vrpn_MainloopObject::wrap(T o, bool owner)
   vrpn_MainloopObject *ret = NULL;
   try {
     ret = new detail::TypedMainloopObject<T>(o, owner);
-  } catch (int) { }
+  } catch (...) { }
   return ret;
 }
 

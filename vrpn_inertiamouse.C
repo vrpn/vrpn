@@ -41,7 +41,7 @@ vrpn_inertiamouse::vrpn_inertiamouse (const char* name,
     vrpn_Analog::num_channel = numchannels_;
 
     try { vel_ = new double[numchannels_]; }
-    catch (int) {
+    catch (...) {
       fprintf(stderr,"vrpn_inertiamouse::vrpn_inertiamouse(): Out of memory\n");
     }
     
@@ -59,7 +59,7 @@ vrpn_inertiamouse::create (const char* name,
 {
   vrpn_inertiamouse *ret = NULL;
   try { ret = new vrpn_inertiamouse(name, c, port, baud_rate); }
-  catch (int) { return NULL; }
+  catch (...) { return NULL; }
   return ret;
 }
 

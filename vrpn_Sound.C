@@ -78,7 +78,7 @@ vrpn_int32 vrpn_Sound::encodeSound_local(const char *filename,
 
     *buf = NULL;
     try { *buf = new char[len]; }
-    catch (int) {
+    catch (...) {
       fprintf(stderr, "vrpn_Sound::encodeSound_local(): Out of memory.\n");
       return 0;
     }
@@ -126,7 +126,7 @@ vrpn_int32 vrpn_Sound::decodeSound_local(const char *buf, char **filename,
     *filename = NULL;
     try { *filename =
         new char[payload - sizeof(vrpn_SoundID) - sizeof(vrpn_SoundDef)]; }
-    catch (int) {
+    catch (...) {
       fprintf(stderr, "vrpn_Sound::decodeSound_local(): Out of memory.\n");
       return -1;
     }
@@ -603,7 +603,7 @@ vrpn_int32 vrpn_Sound::encodeLoadModel_local(const char *filename, char **buf)
 
     *buf = NULL;
     try { *buf = new char[strlen(filename) + sizeof(vrpn_SoundID) + 1]; }
-    catch (int) {
+    catch (...) {
       fprintf(stderr, "vrpn_Sound::encodeLoadModel_local(): Out of memory.\n");
       return 0;
     }
@@ -622,7 +622,7 @@ vrpn_int32 vrpn_Sound::decodeLoadModel_local(const char *buf, char **filename,
 
     *filename = NULL;
     try { *filename = new char[payload - sizeof(vrpn_SoundID)]; }
-    catch (int) {
+    catch (...) {
       fprintf(stderr, "vrpn_Sound::decodeLoadModel_local(): Out of memory.\n");
       return -1;
     }

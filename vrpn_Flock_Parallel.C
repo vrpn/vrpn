@@ -81,7 +81,7 @@ vrpn_Tracker_Flock_Parallel::vrpn_Tracker_Flock_Parallel(char *name,
 							   baud,
 							   d_sender_id,
 							   i );
-      } catch (int) {
+      } catch (...) {
         fprintf(stderr, "\nvrpn_Tracker_Flock_Parallel: Out of memory\n");
         return;
       }

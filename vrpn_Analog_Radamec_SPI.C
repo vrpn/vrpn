@@ -98,7 +98,7 @@ int vrpn_Radamec_SPI::send_command(const unsigned char *cmd, int len)
     int		ret;
     unsigned	char	*outbuf;
     try { outbuf = new unsigned char[len + 1]; } // Leave room for the CRC
-    catch (int) { return -1; }
+    catch (...) { return -1; }
 
     // Put the command into the output buffer
     memcpy(outbuf, cmd, len);

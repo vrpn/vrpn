@@ -5237,7 +5237,7 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(
 #define VRPN_CHECK(s)                                                          \
     try {                                                                      \
       retval = (s)(pch, line, config_file);                                    \
-    } catch (int) {                                                            \
+    } catch (...) {                                                            \
         d_doing_okay = false;                                                  \
         fprintf(stderr, "vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(): " \
           "Unexpected exception (out of memory?)\n");                          \

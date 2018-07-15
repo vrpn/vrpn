@@ -241,7 +241,7 @@ int vrpn_Tracker_NDI_Polaris::convertBinaryFileToAsciiEncodedHex(const char* fil
 	// allocate memory to contain the whole file:
         unsigned char* rawBytesFromRomFile;
         try { rawBytesFromRomFile = new unsigned char[fileSizeInBytes]; }
-        catch (int) {
+        catch (...) {
           fprintf(stderr, "vrpn_Tracker_NDI_Polaris: Out of memory!\n");
           fclose(fptr);
           return(-1);

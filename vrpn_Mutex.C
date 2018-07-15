@@ -309,7 +309,7 @@ int vrpn_Mutex_Server::handle_requestIndex(void *userdata, vrpn_HANDLERPARAM p)
     vrpn_int32 msg_len = sizeof(vrpn_int32) + p.payload_len;
     char *buffer = NULL;
     try { buffer = new char[msg_len]; }
-    catch (int) { return -1; }
+    catch (...) { return -1; }
     char *b = buffer;
     vrpn_int32 bl = msg_len;
 
@@ -433,7 +433,7 @@ void vrpn_Mutex_Remote::requestIndex(void)
     vrpn_int32 buflen = sizeof(vrpn_int32) + sizeof(vrpn_uint32);
     char *buf = NULL;
     try { buf = new char[buflen]; }
-    catch (int) { return; }
+    catch (...) { return; }
     char *bufptr = buf;
     vrpn_int32 len = buflen;
     vrpn_uint32 ip_addr = getmyIP();
@@ -502,7 +502,7 @@ void vrpn_Mutex_Remote::addRequestGrantedCallback(void *userdata,
 {
     mutexCallback *cb = NULL;
     try { cb = new mutexCallback; }
-    catch (int) {
+    catch (...) {
         fprintf(stderr, "vrpn_Mutex_Remote::addRequestGrantedCallback:  "
                         "Out of memory.\n");
         return;
@@ -519,7 +519,7 @@ void vrpn_Mutex_Remote::addRequestDeniedCallback(void *userdata,
 {
     mutexCallback *cb = NULL;
     try { cb = new mutexCallback; }
-    catch (int) {
+    catch (...) {
         fprintf(stderr, "vrpn_Mutex_Remote::addRequestDeniedCallback:  "
                         "Out of memory.\n");
         return;
@@ -535,7 +535,7 @@ void vrpn_Mutex_Remote::addTakeCallback(void *userdata, int (*f)(void *))
 {
     mutexCallback *cb = NULL;
     try { cb = new mutexCallback; }
-    catch (int) {
+    catch (...) {
         fprintf(stderr,
                 "vrpn_Mutex_Remote::addTakeCallback:  Out of memory.\n");
         return;
@@ -552,7 +552,7 @@ void vrpn_Mutex_Remote::addReleaseCallback(void *userdata, int (*f)(void *))
 {
     mutexCallback *cb = NULL;
     try { cb = new mutexCallback; }
-    catch (int) {
+    catch (...) {
         fprintf(stderr, "vrpn_Mutex_Remote::addReleaseCallback:  "
                         "Out of memory.\n");
         return;
@@ -985,7 +985,7 @@ void vrpn_PeerMutex::addPeer(const char *stationName)
         try {
           newc = new vrpn_Connection *[d_numConnectionsAllocated];
           newg = new peerData[d_numConnectionsAllocated];
-        } catch (int) {
+        } catch (...) {
             fprintf(stderr, "vrpn_PeerMutex::addPeer:  Out of memory.\n");
             return;
         }
@@ -1006,7 +1006,7 @@ void vrpn_PeerMutex::addPeer(const char *stationName)
     // d_peerData[d_numPeers].grantedLock = vrpn_false;
 
     try { d = new losePeerData; }
-    catch (int) {
+    catch (...) {
         fprintf(stderr, "vrpn_PeerMutex::addPeer:  Out of memory.\n");
         return;
     }
@@ -1030,7 +1030,7 @@ void vrpn_PeerMutex::addRequestGrantedCallback(void *ud, int (*f)(void *))
 {
     mutexCallback *cb = NULL;
     try { cb = new mutexCallback; }
-    catch (int) {
+    catch (...) {
         fprintf(stderr, "vrpn_PeerMutex::addRequestGrantedCallback:  "
                         "Out of memory.\n");
         return;
@@ -1046,7 +1046,7 @@ void vrpn_PeerMutex::addRequestDeniedCallback(void *ud, int (*f)(void *))
 {
     mutexCallback *cb = NULL;
     try { cb = new mutexCallback; }
-    catch (int) {
+    catch (...) {
         fprintf(stderr, "vrpn_PeerMutex::addRequestDeniedCallback:  "
                         "Out of memory.\n");
         return;
@@ -1062,7 +1062,7 @@ void vrpn_PeerMutex::addTakeCallback(void *ud, int (*f)(void *))
 {
     mutexCallback *cb = NULL;
     try { cb = new mutexCallback; }
-    catch (int) {
+    catch (...) {
         fprintf(stderr, "vrpn_PeerMutex::addTakeCallback:  Out of memory.\n");
         return;
     }
@@ -1078,7 +1078,7 @@ void vrpn_PeerMutex::addReleaseCallback(void *ud, int (*f)(void *))
 {
     mutexCallback *cb = NULL;
     try { cb = new mutexCallback; }
-    catch (int) {
+    catch (...) {
         fprintf(stderr, "vrpn_PeerMutex::addReleaseCallback:  "
                         "Out of memory.\n");
         return;
@@ -1398,7 +1398,7 @@ void vrpn_PeerMutex::checkGrantMutex(void)
 void vrpn_PeerMutex::init(const char *name)
 {
     try { d_mutexName = new char[1 + strlen(name)]; }
-    catch (int) {
+    catch (...) {
         fprintf(stderr, "vrpn_PeerMutex::init:  Out of memory.\n");
         return;
     }

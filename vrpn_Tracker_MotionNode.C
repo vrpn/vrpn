@@ -155,7 +155,7 @@ vrpn_Tracker_MotionNode::vrpn_Tracker_MotionNode(const char *name,
 
     sampler_type *sampler = NULL;
     try { sampler = new sampler_type(address, port); }
-    catch (int) {
+    catch (...) {
       vrpn_Tracker::status = vrpn_TRACKER_FAIL;
       return;
     }
