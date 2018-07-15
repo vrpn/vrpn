@@ -215,7 +215,7 @@ getScript( ) const
 {
   char* retval = NULL;
   try {
-    new char[strlen(this->script) + 1];
+    retval = new char[strlen(this->script) + 1];
     strcpy(retval, this->script);
   } catch (...) {
     return NULL;
