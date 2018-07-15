@@ -1096,14 +1096,6 @@ vrpn_int32 vrpn_TypeDispatcher::addType(const char *name)
         return -1;
     }
 
-    if (!d_types[d_numTypes].name) {
-        if (!d_types[d_numTypes].name) {
-            fprintf(stderr, "vrpn_TypeDispatcher::addType:  "
-                            "Can't allocate memory for new record.\n");
-            return -1;
-        }
-    }
-
     // Add this one into the list and return its index
     vrpn_strcpy(d_types[d_numTypes].name, name);
     d_types[d_numTypes].who_cares = NULL;
