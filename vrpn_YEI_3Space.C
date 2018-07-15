@@ -43,8 +43,8 @@ vrpn_YEI_3Space::vrpn_YEI_3Space (const char * p_name
     ptr++;
   }
   if (d_reset_command_count > 0) {
-    d_reset_commands = new char *[d_reset_command_count];
-    if (d_reset_commands == NULL) {
+    try { d_reset_commands = new char *[d_reset_command_count]; }
+    catch (...) {
       fprintf(stderr,"vrpn_YEI_3Space::vrpn_YEI_3Space(): Out of memory, ignoring reset commands\n");
       d_reset_command_count = 0;
     }
@@ -53,8 +53,8 @@ vrpn_YEI_3Space::vrpn_YEI_3Space (const char * p_name
   // Copy any reset commands.
   ptr = reset_commands;
   for (int i = 0; i < d_reset_command_count; i++) {
-    d_reset_commands[i] = new char[strlen(reset_commands[i]) + 1];
-    if (d_reset_commands[i] == NULL) {
+    try { d_reset_commands[i] = new char[strlen(reset_commands[i]) + 1]; }
+    catch (...) {
       fprintf(stderr,"vrpn_YEI_3Space::vrpn_YEI_3Space(): Out of memory, giving up\n");
       return;
     }
@@ -561,8 +561,9 @@ bool vrpn_YEI_3Space_Sensor::send_ascii_command (const char *p_cmd)
 
   // Allocate space for the command plus padding and zero terminator
   int buflen = static_cast<int>(strlen(p_cmd) + 3);
-  unsigned char *buffer = new unsigned char[buflen];
-  if (buffer == NULL) {
+  unsigned char *buffer;
+  try { buffer = new unsigned char[buflen]; }
+  catch (...) {
     return false;
   }
 
