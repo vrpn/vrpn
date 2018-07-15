@@ -40,8 +40,8 @@ vrpn_inertiamouse::vrpn_inertiamouse (const char* name,
     vrpn_Button::num_buttons = numbuttons_;
     vrpn_Analog::num_channel = numchannels_;
 
-    vel_ = new double[numchannels_];
-    if (vel_ == NULL) {
+    try { vel_ = new double[numchannels_]; }
+    catch (...) {
       fprintf(stderr,"vrpn_inertiamouse::vrpn_inertiamouse(): Out of memory\n");
     }
     
@@ -57,7 +57,10 @@ vrpn_inertiamouse::create (const char* name,
         const char* port, 
         int baud_rate)
 {
-    return new vrpn_inertiamouse (name, c, port, baud_rate);
+  vrpn_inertiamouse *ret = NULL;
+  try { ret = new vrpn_inertiamouse(name, c, port, baud_rate); }
+  catch (...) { return NULL; }
+  return ret;
 }
 
 

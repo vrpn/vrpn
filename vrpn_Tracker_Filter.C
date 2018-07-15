@@ -60,8 +60,8 @@ vrpn_Tracker_FilterOneEuro::vrpn_Tracker_FilterOneEuro(const char * name, vrpn_C
   , d_channels(channels)
 {
   // Allocate space for the times.  Fill them in with now.
-  d_last_report_times = new struct timeval[channels];
-  if (d_last_report_times == NULL) {
+  try { d_last_report_times = new struct timeval[channels]; }
+  catch (...) {
     fprintf(stderr,"vrpn_Tracker_FilterOneEuro::vrpn_Tracker_FilterOneEuro(): Out of memory\n");
     d_channels = 0;
     return;
@@ -70,9 +70,10 @@ vrpn_Tracker_FilterOneEuro::vrpn_Tracker_FilterOneEuro(const char * name, vrpn_C
   vrpn_gettimeofday(&timestamp, NULL);
 
   // Allocate space for the filters.
-  d_filters = new vrpn_OneEuroFilterVec[channels];
-  d_qfilters = new vrpn_OneEuroFilterQuat[channels];
-  if ( (d_filters == NULL) || (d_qfilters == NULL) ) {
+  try {
+    d_filters = new vrpn_OneEuroFilterVec[channels];
+    d_qfilters = new vrpn_OneEuroFilterQuat[channels];
+  } catch (...) {
     fprintf(stderr,"vrpn_Tracker_FilterOneEuro::vrpn_Tracker_FilterOneEuro(): Out of memory\n");
     d_channels = 0;
     return;
@@ -93,12 +94,16 @@ vrpn_Tracker_FilterOneEuro::vrpn_Tracker_FilterOneEuro(const char * name, vrpn_C
   // If the name starts with the '*' character, use the server
   // connection rather than making a new one.
   if (listen_tracker_name[0] == '*') {
-    d_listen_tracker = new vrpn_Tracker_Remote(&(listen_tracker_name[1]),
-      d_connection);
+    try {
+      d_listen_tracker = new vrpn_Tracker_Remote(&(listen_tracker_name[1]),
+        d_connection);
+    } catch (...) { d_listen_tracker = NULL;}
   } else {
-    d_listen_tracker = new vrpn_Tracker_Remote(listen_tracker_name);
+    try {
+      d_listen_tracker = new vrpn_Tracker_Remote(listen_tracker_name);
+    } catch (...) { d_listen_tracker = NULL;}
   }
-  d_listen_tracker->register_change_handler(this, handle_tracker_update);
+  if (d_listen_tracker) d_listen_tracker->register_change_handler(this, handle_tracker_update);
 }
 
 vrpn_Tracker_FilterOneEuro::~vrpn_Tracker_FilterOneEuro()
@@ -138,11 +143,15 @@ vrpn_Tracker_DeadReckoning_Rotation::vrpn_Tracker_DeadReckoning_Rotation(
     // If the name of the tracker we're using starts with a '*' character,
     // we use our own connection to talk with it.  Otherwise, we open a remote
     // tracker with the specified name.
-    if (origTrackerName[0] == '*') {
+    try {
+      if (origTrackerName[0] == '*') {
         d_origTracker = new vrpn_Tracker_Remote(&(origTrackerName.c_str()[1]), c);
-    }
-    else {
+      } else {
         d_origTracker = new vrpn_Tracker_Remote(origTrackerName.c_str());
+      }
+    } catch (...) {
+      d_origTracker = NULL;
+      return;
     }
 
     // Initialize the rotational state of each sensor.  There has not bee
@@ -388,14 +397,20 @@ int vrpn_Tracker_DeadReckoning_Rotation::test(void)
     // Create a tracker server to be the initator and a dead-reckoning
     // rotation tracker to use it as a base; have it predict 1 second
     // into the future.
-    vrpn_Tracker_Server *t0 = new vrpn_Tracker_Server("Tracker0", c, 2);
-    vrpn_Tracker_DeadReckoning_Rotation *t1 =
-        new vrpn_Tracker_DeadReckoning_Rotation("Tracker1", c, "*Tracker0", 2, 1);
-
     // Create a remote tracker to listen to t1 and set up its callbacks for
     // position and velocity reports.  They will fill in the static structures
     // listed above with whatever values they receive.
-    vrpn_Tracker_Remote *tr = new vrpn_Tracker_Remote("Tracker1", c);
+    vrpn_Tracker_Server *t0, *t1;
+    vrpn_Tracker_Remote *tr;
+    try {
+      t0 = new vrpn_Tracker_Server("Tracker0", c, 2);
+      t1 = new vrpn_Tracker_DeadReckoning_Rotation("Tracker1", c, "*Tracker0", 2, 1);
+      tr = new vrpn_Tracker_Remote("Tracker1", c);
+    } catch (...) {
+      std::cerr << "vrpn_Tracker_DeadReckoning_Rotation::test: Out of memory" << std::endl;
+      return 100;
+    }
+
     tr->register_change_handler(&poseResponse, handle_test_tracker_report);
     tr->register_change_handler(&velResponse, handle_test_tracker_velocity_report);
 

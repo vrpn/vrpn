@@ -61,11 +61,13 @@ bool vrpn_Auxiliary_Logger::pack_log_message_of_type(
     struct timeval now;
     vrpn_int32 bufsize =
         static_cast<vrpn_int32>(4 * sizeof(lil) + lil + lol + ril + rol);
-    char *buf = new char[bufsize];
-    if (buf == NULL) {
-        fprintf(stderr, "vrpn_Auxiliary_Logger::pack_log_message_of_type(): "
-                        "Out of memory.\n");
-        return false;
+    std::vector<char> buf;
+    try {
+      buf.resize(bufsize);
+    } catch (...) {
+      fprintf(stderr, "vrpn_Auxiliary_Logger::pack_log_message_of_type(): "
+        "Out of memory.\n");
+      return false;
     }
 
     // Pack a message with the requested type from our sender ID that has
@@ -73,7 +75,7 @@ bool vrpn_Auxiliary_Logger::pack_log_message_of_type(
     // Do not include the NULL termination of the strings in the buffer.
 
     vrpn_gettimeofday(&now, NULL);
-    char *bpp = buf;
+    char *bpp = buf.data();
     char **bp = &bpp;
     vrpn_int32 bufleft = bufsize;
     vrpn_buffer(bp, &bufleft, lil);
@@ -94,8 +96,7 @@ bool vrpn_Auxiliary_Logger::pack_log_message_of_type(
     }
     int ret =
         d_connection->pack_message(bufsize - bufleft, now, type, d_sender_id,
-                                   buf, vrpn_CONNECTION_RELIABLE);
-    delete[] buf;
+                                   buf.data(), vrpn_CONNECTION_RELIABLE);
     return (ret == 0);
 }
 
@@ -142,7 +143,8 @@ bool vrpn_Auxiliary_Logger::unpack_log_message_from_buffer(
     (*remote_in_logfile_name) = NULL;
     (*remote_out_logfile_name) = NULL;
     if (localInNameLen > 0) {
-        if (((*local_in_logfile_name) = new char[localInNameLen + 1]) == NULL) {
+        try { (*local_in_logfile_name) = new char[localInNameLen + 1]; }
+        catch (...) {
             fprintf(stderr, "vrpn_Auxiliary_Logger::unpack_log_message_from_"
                             "buffer: Out of memory\n");
             return false;
@@ -150,18 +152,12 @@ bool vrpn_Auxiliary_Logger::unpack_log_message_from_buffer(
         memcpy(*local_in_logfile_name, bufptr, localInNameLen);
         (*local_in_logfile_name)[localInNameLen] = '\0';
         bufptr += localInNameLen;
-    }
-    else {
-        if (((*local_in_logfile_name) = new char[2]) == NULL) {
-            fprintf(stderr, "vrpn_Auxiliary_Logger::unpack_log_message_from_"
-                            "buffer: Out of memory\n");
-            return false;
-        }
-        (*local_in_logfile_name)[0] = '\0';
+    } else {
+        (*local_in_logfile_name) = NULL;
     }
     if (localOutNameLen > 0) {
-        if (((*local_out_logfile_name) = new char[localOutNameLen + 1]) ==
-            NULL) {
+        try { (*local_out_logfile_name) = new char[localOutNameLen + 1]; }
+        catch (...) {
             fprintf(stderr, "vrpn_Auxiliary_Logger::unpack_log_message_from_"
                             "buffer: Out of memory\n");
             return false;
@@ -169,18 +165,12 @@ bool vrpn_Auxiliary_Logger::unpack_log_message_from_buffer(
         memcpy(*local_out_logfile_name, bufptr, localOutNameLen);
         (*local_out_logfile_name)[localOutNameLen] = '\0';
         bufptr += localOutNameLen;
-    }
-    else {
-        if (((*local_out_logfile_name) = new char[2]) == NULL) {
-            fprintf(stderr, "vrpn_Auxiliary_Logger::unpack_log_message_from_"
-                            "buffer: Out of memory\n");
-            return false;
-        }
-        (*local_out_logfile_name)[0] = '\0';
+    } else {
+        (*local_out_logfile_name) = NULL;
     }
     if (remoteInNameLen > 0) {
-        if (((*remote_in_logfile_name) = new char[remoteInNameLen + 1]) ==
-            NULL) {
+        try { (*remote_in_logfile_name) = new char[remoteInNameLen + 1]; }
+        catch (...) {
             fprintf(stderr, "vrpn_Auxiliary_Logger::unpack_log_message_from_"
                             "buffer: Out of memory\n");
             return false;
@@ -188,18 +178,12 @@ bool vrpn_Auxiliary_Logger::unpack_log_message_from_buffer(
         memcpy(*remote_in_logfile_name, bufptr, remoteInNameLen);
         (*remote_in_logfile_name)[remoteInNameLen] = '\0';
         bufptr += remoteInNameLen;
-    }
-    else {
-        if (((*remote_in_logfile_name) = new char[2]) == NULL) {
-            fprintf(stderr, "vrpn_Auxiliary_Logger::unpack_log_message_from_"
-                            "buffer: Out of memory\n");
-            return false;
-        }
-        (*remote_in_logfile_name)[0] = '\0';
+    } else {
+        (*remote_in_logfile_name) = NULL;
     }
     if (remoteOutNameLen > 0) {
-        if (((*remote_out_logfile_name) = new char[remoteOutNameLen + 1]) ==
-            NULL) {
+        try { (*remote_out_logfile_name) = new char[remoteOutNameLen + 1]; }
+        catch (...) {
             fprintf(stderr, "vrpn_Auxiliary_Logger::unpack_log_message_from_"
                             "buffer: Out of memory\n");
             return false;
@@ -207,14 +191,8 @@ bool vrpn_Auxiliary_Logger::unpack_log_message_from_buffer(
         memcpy(*remote_out_logfile_name, bufptr, remoteOutNameLen);
         (*remote_out_logfile_name)[remoteOutNameLen] = '\0';
         bufptr += remoteOutNameLen;
-    }
-    else {
-        if (((*remote_out_logfile_name) = new char[2]) == NULL) {
-            fprintf(stderr, "vrpn_Auxiliary_Logger::unpack_log_message_from_"
-                            "buffer: Out of memory\n");
-            return false;
-        }
-        (*remote_out_logfile_name)[0] = '\0';
+    } else {
+        (*remote_out_logfile_name) = NULL;
     }
 
     return true;
@@ -345,8 +323,8 @@ vrpn_Auxiliary_Logger_Server_Generic::vrpn_Auxiliary_Logger_Server_Generic(
         d_connection = NULL;
         return;
     }
-    d_connection_name = new char[strlen(connection_to_log) + 1];
-    if (d_connection_name == NULL) {
+    try { d_connection_name = new char[strlen(connection_to_log) + 1]; }
+    catch (...) {
         fprintf(stderr, "vrpn_Auxiliary_Logger_Server_Generic::vrpn_Auxiliary_"
                         "Logger_Server_Generic: Out of memory\n");
         d_connection = NULL;

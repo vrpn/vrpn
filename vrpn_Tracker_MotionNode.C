@@ -153,7 +153,12 @@ vrpn_Tracker_MotionNode::vrpn_Tracker_MotionNode(const char *name,
       remote_port = port;
     }
 
-    sampler_type *sampler = new sampler_type(address, port);
+    sampler_type *sampler = NULL;
+    try { sampler = new sampler_type(address, port); }
+    catch (...) {
+      vrpn_Tracker::status = vrpn_TRACKER_FAIL;
+      return;
+    }
 
     // Attempt to read a single sample from
     // the stream.

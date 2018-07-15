@@ -12,8 +12,8 @@ vrpn_Imager_Stream_Buffer::vrpn_Imager_Stream_Buffer(
     , d_imager_server_name(NULL)
 {
     // Copy the name of the server we are to connect to when we are logging.
-    d_imager_server_name = new char[strlen(imager_server_name) + 1];
-    if (d_imager_server_name == NULL) {
+    try { d_imager_server_name = new char[strlen(imager_server_name) + 1]; }
+    catch (...) {
         fprintf(stderr, "vrpn_Imager_Stream_Buffer::vrpn_Imager_Stream_Buffer: "
                         "Out of memory\n");
         d_connection = NULL;
@@ -24,8 +24,8 @@ vrpn_Imager_Stream_Buffer::vrpn_Imager_Stream_Buffer(
     // Create the logging thread but do not run it yet.
     vrpn_ThreadData td;
     td.pvUD = this;
-    d_logging_thread = new vrpn_Thread(static_logging_thread_func, td);
-    if (d_logging_thread == NULL) {
+    try { d_logging_thread = new vrpn_Thread(static_logging_thread_func, td); }
+    catch (...) {
         fprintf(stderr, "vrpn_Imager_Stream_Buffer::vrpn_Imager_Stream_Buffer: "
                         "can't create logging thread\n");
         d_connection = NULL;
@@ -568,8 +568,9 @@ bool vrpn_Imager_Stream_Buffer::transcode_and_send(const vrpn_HANDLERPARAM &p)
 {
     // Copy the contents of the buffer to a newly-allocated one that will be
     // passed to the initial thread.
-    char *newbuf = new char[p.payload_len];
-    if (newbuf == NULL) {
+    char *newbuf;
+    try { newbuf = new char[p.payload_len]; }
+    catch (...) {
         fprintf(
             stderr,
             "vrpn_Imager_Stream_Buffer::transcode_and_send(): Out of memory\n");
@@ -892,15 +893,15 @@ void vrpn_Imager_Stream_Buffer::handle_image_description(
     // is at
     // least large enough to hold them all.
     // msgbuf must be float64-aligned!
-    vrpn_float64 *fbuf =
-        new vrpn_float64[vrpn_CONNECTION_TCP_BUFLEN / sizeof(vrpn_float64)];
-    char *buffer = static_cast<char *>(static_cast<void *>(fbuf));
-    if (buffer == NULL) {
+    vrpn_float64 *fbuf;
+    try { fbuf = new vrpn_float64[vrpn_CONNECTION_TCP_BUFLEN / sizeof(vrpn_float64)]; }
+    catch (...) {
         fprintf(stderr, "vrpn_Imager_Stream_Buffer::handle_image_description():"
                         " Out of memory\n");
         me->d_shared_state.time_to_exit(true);
         return;
     }
+    char *buffer = reinterpret_cast<char *>(fbuf);
     int i;
     char *bufptr = buffer;
     vrpn_int32 buflen = sizeof(vrpn_float64) * vrpn_CONNECTION_TCP_BUFLEN /

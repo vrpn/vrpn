@@ -31,19 +31,19 @@ vrpn_Nidaq::vrpn_Nidaq(char *pchName, vrpn_Connection *pConnection,
   : vrpn_Analog(pchName, pConnection), pDAQ(NULL), fNice(fNice), fStop(0),
   fNewData(0), dSampleTime(0) {
 
-	if (cChannels>vrpn_CHANNEL_MAX) {
+    if (cChannels>vrpn_CHANNEL_MAX) {
       cerr << "vrpn_Nidaq::vrpn_Nidaq: vrpn_Analog allows only " 
 	   << vrpn_CHANNEL_MAX << " channels (" << cChannels 
 	   << " requested). DAQ not initialized." << endl;
       return;
     }
     
-	if (fNice) {
-		MMRESULT res = timeBeginPeriod(1);
-		if (res != TIMERR_NOERROR) {
-			cerr << "NidaqServer: timeBeginPeriod() failed!!!\n";
-		}                       
-	}
+    if (fNice) {
+	    MMRESULT res = timeBeginPeriod(1);
+	    if (res != TIMERR_NOERROR) {
+		    cerr << "NidaqServer: timeBeginPeriod() failed!!!\n";
+	    }                       
+    }
 
     num_channel = cChannels;
     daqSample.resize(cChannels);
@@ -80,12 +80,17 @@ vrpn_Nidaq::vrpn_Nidaq(char *pchName, vrpn_Connection *pConnection,
     // the gain to apply to each
     // differential or single ended
     // bipolar (+/-) or just unipolar (+)
-    pDAQ = new DAQ(dSamplingRate, dInterChannelRate, sDeviceNumber, cChannels,
-		   rgsChan, rgsGain, sInputMode, sPolarity );
+    try {
+      pDAQ = new DAQ(dSamplingRate, dInterChannelRate, sDeviceNumber, cChannels,
+        rgsChan, rgsGain, sInputMode, sPolarity);
+    } catch (...) {
+      cerr << "vrpn_Nidaq::vrpn_Nidaq: Out of memory" << endl;
+      return;
+    }
 	
-	// start the DAQ-only thread
-	InitializeCriticalSection(&csAnalogBuffer);
-	hDAQThread = (HANDLE) _beginthreadex(NULL, 0, runThread, this, 0, NULL);
+    // start the DAQ-only thread
+    InitializeCriticalSection(&csAnalogBuffer);
+    hDAQThread = (HANDLE) _beginthreadex(NULL, 0, runThread, this, 0, NULL);
 }
 
 // threadshell for code which actually runs "Inertials"

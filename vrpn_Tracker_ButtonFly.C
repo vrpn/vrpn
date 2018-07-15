@@ -52,10 +52,14 @@ vrpn_Tracker_ButtonFly::vrpn_Tracker_ButtonFly
     // If the name starts with the '*' character, use
     // the server connection rather than making a new one.
     if (params->vel_scale_name[0] == '*') {
-      d_vel_scale = new vrpn_Analog_Remote
-             (&(params->vel_scale_name[1]), d_connection);
+      try {
+        d_vel_scale = new vrpn_Analog_Remote
+        (&(params->vel_scale_name[1]), d_connection);
+      } catch (...) { d_vel_scale = NULL; }
     } else {
-      d_vel_scale = new vrpn_Analog_Remote(params->vel_scale_name);
+      try {
+        d_vel_scale = new vrpn_Analog_Remote(params->vel_scale_name);
+        } catch (...) { d_vel_scale = NULL; }
     }
 
     // Set up the callback handler
@@ -80,10 +84,14 @@ vrpn_Tracker_ButtonFly::vrpn_Tracker_ButtonFly
     // If the name starts with the '*' character, use
     // the server connection rather than making a new one.
     if (params->rot_scale_name[0] == '*') {
-      d_rot_scale = new vrpn_Analog_Remote
-             (&(params->rot_scale_name[1]), d_connection);
+      try {
+        d_rot_scale = new vrpn_Analog_Remote
+        (&(params->rot_scale_name[1]), d_connection);
+      } catch (...) { d_rot_scale = NULL; }
     } else {
-      d_rot_scale = new vrpn_Analog_Remote(params->rot_scale_name);
+      try {
+        d_rot_scale = new vrpn_Analog_Remote(params->rot_scale_name);
+      } catch (...) { d_rot_scale = NULL; }
     }
 
     // Set up the callback handler
@@ -147,14 +155,18 @@ int	vrpn_Tracker_ButtonFly::setup_channel(vrpn_TBF_fullaxis *full)
   // If the name starts with the '*' character, use the server
   // connection rather than making a new one.
   if (full->axis.name[0] == '*') {
-    full->btn = new vrpn_Button_Remote(&(full->axis.name[1]),
+    try {
+      full->btn = new vrpn_Button_Remote(&(full->axis.name[1]),
           d_connection);
+    } catch (...) { full->btn = NULL; }
 #ifdef	VERBOSE
     printf("vrpn_Tracker_ButtonFly: Adding local button %s\n",
               &(full->axis.name[1]));
 #endif
   } else {
-    full->btn = new vrpn_Button_Remote(full->axis.name);
+    try {
+      full->btn = new vrpn_Button_Remote(full->axis.name);
+    } catch (...) { full->btn = NULL; }
 #ifdef	VERBOSE
     printf("vrpn_Tracker_ButtonFly: Adding remote button %s\n",
               full->axis.name);

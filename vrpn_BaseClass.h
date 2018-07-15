@@ -403,10 +403,12 @@ public:
         }
 
         // Allocate and initialize the new entry
-        if ((new_entry = new CHANGELIST_ENTRY) == NULL) {
-            fprintf(stderr,
-                    "vrpn_Callback_List::register_handler(): Out of memory\n");
-            return -1;
+        try {
+          new_entry = new CHANGELIST_ENTRY;
+        } catch (...) {
+          fprintf(stderr,
+            "vrpn_Callback_List::register_handler(): Out of memory\n");
+          return -1;
         }
         new_entry->handler = handler;
         new_entry->userdata = userdata;

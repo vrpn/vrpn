@@ -62,12 +62,20 @@ vrpn_Tracker_AnalogFly::vrpn_Tracker_AnalogFly
 		// If the name starts with the '*' character, use
                 // the server connection rather than making a new one.
 		if (params->reset_name[0] == '*') {
-			d_reset_button = new vrpn_Button_Remote
-                               (&(params->reset_name[1]),
-				d_connection);
+                  try {
+                    d_reset_button = new vrpn_Button_Remote
+                    (&(params->reset_name[1]),
+                      d_connection);
+                  } catch (...) {
+                    d_reset_button = NULL;
+                  }
 		} else {
-			d_reset_button = new vrpn_Button_Remote
-                               (params->reset_name);
+                  try {
+		    d_reset_button = new vrpn_Button_Remote
+                      (params->reset_name);
+                  } catch (...) {
+                    d_reset_button = NULL;
+                  }
 		}
 		if (d_reset_button == NULL) {
 			fprintf(stderr,"vrpn_Tracker_AnalogFly: "
@@ -92,12 +100,20 @@ vrpn_Tracker_AnalogFly::vrpn_Tracker_AnalogFly
 		// If the name starts with the '*' character, use
                 // the server connection rather than making a new one.
 		if (params->clutch_name[0] == '*') {
-			d_clutch_button = new vrpn_Button_Remote
+                  try {
+                    d_clutch_button = new vrpn_Button_Remote
                                (&(params->clutch_name[1]),
 				d_connection);
-		} else {
-			d_clutch_button = new vrpn_Button_Remote
+                  } catch (...) {
+                    d_clutch_button = NULL;
+                  }
+                } else {
+                  try {
+                    d_clutch_button = new vrpn_Button_Remote
                                (params->clutch_name);
+                  } catch (...) {
+                    d_clutch_button = NULL;
+                  }
 		}
 		if (d_clutch_button == NULL) {
 			fprintf(stderr,"vrpn_Tracker_AnalogFly: "
@@ -253,14 +269,19 @@ int	vrpn_Tracker_AnalogFly::setup_channel(vrpn_TAF_fullaxis *full)
 	// If the name starts with the '*' character, use the server
         // connection rather than making a new one.
 	if (full->axis.name[0] == '*') {
-		full->ana = new vrpn_Analog_Remote(&(full->axis.name[1]),
-                      d_connection);
+          try {
+            full->ana = new vrpn_Analog_Remote(&(full->axis.name[1]),
+              d_connection);
+          } catch (...) { full->ana = NULL; }
 #ifdef	VERBOSE
 		printf("vrpn_Tracker_AnalogFly: Adding local analog %s\n",
                           &(full->axis.name[1]));
 #endif
 	} else {
-		full->ana = new vrpn_Analog_Remote(full->axis.name);
+          try {
+            full->ana = new vrpn_Analog_Remote(full->axis.name);
+          } catch (...) { full->ana = NULL; }
+
 #ifdef	VERBOSE
 		printf("vrpn_Tracker_AnalogFly: Adding remote analog %s\n",
                           full->axis.name);

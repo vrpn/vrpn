@@ -5235,7 +5235,14 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(
 
 #define VRPN_ISIT(s) !strcmp(pch = strtok(scrap, " \t"), s)
 #define VRPN_CHECK(s)                                                          \
-    retval = (s)(pch, line, config_file);                                      \
+    try {                                                                      \
+      retval = (s)(pch, line, config_file);                                    \
+    } catch (...) {                                                            \
+        d_doing_okay = false;                                                  \
+        fprintf(stderr, "vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(): " \
+          "Unexpected exception (out of memory?)\n");                          \
+        return;                                                                \
+    }                                                                          \
     if (retval && d_bail_on_open_error) {                                      \
         d_doing_okay = false;                                                  \
         return;                                                                \
@@ -5374,7 +5381,7 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(
                 VRPN_CHECK(setup_DevInput);
             }
             else if (VRPN_ISIT("vrpn_Streaming_Arduino")) {
-              VRPN_CHECK(setup_StreamingArduino);
+                VRPN_CHECK(setup_StreamingArduino);
             }
             else if (VRPN_ISIT("vrpn_Tng3")) {
                 VRPN_CHECK(setup_Tng3);
@@ -5460,11 +5467,11 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(
                     VRPN_CHECK(templated_setup_HID_device_name_only<
                         vrpn_Contour_ShuttleXpress>);
                 }
-				else if (VRPN_ISIT("vrpn_Contour_ShuttlePROv2")) {
-					VRPN_CHECK(templated_setup_HID_device_name_only<
-						vrpn_Contour_ShuttlePROv2>);
-				}
-				else if (VRPN_ISIT("vrpn_Retrolink_GameCube")) {
+		else if (VRPN_ISIT("vrpn_Contour_ShuttlePROv2")) {
+			VRPN_CHECK(templated_setup_HID_device_name_only<
+				vrpn_Contour_ShuttlePROv2>);
+		}
+		else if (VRPN_ISIT("vrpn_Retrolink_GameCube")) {
                     VRPN_CHECK(templated_setup_HID_device_name_only<
                         vrpn_Retrolink_GameCube>);
                 }

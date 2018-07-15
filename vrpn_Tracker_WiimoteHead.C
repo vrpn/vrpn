@@ -175,11 +175,13 @@ void vrpn_Tracker_WiimoteHead::setup_wiimote() {
 	// Open the analog device and point the remote at it.
 	// If the name starts with the '*' character, use the server
 	// connection rather than making a new one.
-	if (d_name[0] == '*') {
-		d_ana = new vrpn_Analog_Remote(&(d_name[1]), d_connection);
-	} else {
-		d_ana = new vrpn_Analog_Remote(d_name);
-	}
+        try {
+	  if (d_name[0] == '*') {
+		  d_ana = new vrpn_Analog_Remote(&(d_name[1]), d_connection);
+	  } else {
+		  d_ana = new vrpn_Analog_Remote(d_name);
+	  }
+        } catch (...) { d_ana = NULL; }
 
 	if (d_ana == NULL) {
 		fprintf(stderr, "vrpn_Tracker_WiimoteHead: "

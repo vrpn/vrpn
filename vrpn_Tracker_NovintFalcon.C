@@ -87,7 +87,8 @@ public:
                 m_falconDevice = NULL;
                 return;
             } else {
-                m_falconDevice = new libnifalcon::FalconDevice;
+                try { m_falconDevice = new libnifalcon::FalconDevice; }
+                catch (...) { m_falconDevice = NULL; return; }
                 m_falconDevice->setFalconFirmware<libnifalcon::FalconFirmwareNovintSDK>();
             }
 
@@ -553,10 +554,13 @@ void vrpn_Tracker_NovintFalcon::clear_values()
         vrpn_Button::buttons[i] = vrpn_Button::lastbuttons[i] = 0;
 
     if (m_obj) delete m_obj;
-    m_obj = new vrpn_NovintFalcon_ForceObjects;
+    try { m_obj = new vrpn_NovintFalcon_ForceObjects; }
+    catch (...) { m_obj = NULL; return; }
 
     // add dummy effect object
-    ForceFieldEffect *ffe = new ForceFieldEffect;
+    ForceFieldEffect *ffe;
+    try { ffe = new ForceFieldEffect; }
+    catch (...) { return; }
     ffe->setDamping(m_damp);
     ffe->stop();
     m_obj->m_FFEffects.push_back(ffe);
@@ -585,12 +589,13 @@ void vrpn_Tracker_NovintFalcon::reset()
     if (m_dev)
         delete m_dev;
 
-    m_dev = new vrpn_NovintFalcon_Device(m_devflags);
-    if (!m_dev) {
+    try { m_dev = new vrpn_NovintFalcon_Device(m_devflags); }
+    catch (...) {
 #ifdef VERBOSE
-                fprintf(stderr, "Device constructor failed!\n");
+        fprintf(stderr, "Device constructor failed!\n");
 #endif
-                status = vrpn_TRACKER_FAIL;
+        status = vrpn_TRACKER_FAIL;
+        m_dev = NULL;
         return;
     }
 

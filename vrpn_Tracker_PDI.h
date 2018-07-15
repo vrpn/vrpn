@@ -94,7 +94,11 @@ public:
 	void Add( int nHub )
 	{
 		HUBMAP_ENTRY *next = p_hub_map;
-		p_hub_map = new HUBMAP_ENTRY( nHub );
+                try { p_hub_map = new HUBMAP_ENTRY(nHub); }
+                catch (...) {
+                  fprintf(stderr, "vrpn_Tracker_G4_HubMap::Add(): Out of memory\n");
+                  return;
+                }
 		p_hub_map->SetNext(next);
 	}
 

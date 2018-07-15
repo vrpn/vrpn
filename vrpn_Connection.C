@@ -400,8 +400,8 @@ vrpn_int32 vrpn_TranslationTable::addRemoteEntry(cName name,
     // at a time other than connection set-up.
 
     if (!d_entry[useEntry].name) {
-        d_entry[useEntry].name = new cName;
-        if (!d_entry[useEntry].name) {
+        try { d_entry[useEntry].name = new cName; }
+        catch (...) {
             fprintf(stderr, "vrpn_TranslationTable::addRemoteEntry:  "
                             "Out of memory.\n");
             return -1;
@@ -472,8 +472,8 @@ vrpn_Log::vrpn_Log(vrpn_TranslationTable *senders, vrpn_TranslationTable *types)
     // Set up default value for the cookie received from the server
     // because if we are using a file connection and want to
     // write a log, we never receive a cookie from the server.
-    d_magicCookie = new char[vrpn_cookie_size() + 1];
-    if (!d_magicCookie) {
+    try { d_magicCookie = new char[vrpn_cookie_size() + 1]; }
+    catch (...) {
         fprintf(stderr, "vrpn_Log:  Out of memory.\n");
         return;
     }
@@ -502,11 +502,14 @@ vrpn_Log::~vrpn_Log(void)
 
 char *vrpn_Log::getName()
 {
-    if (this->d_logFileName == NULL)
+    if (this->d_logFileName == NULL) {
         return NULL;
-    else {
-        char *s = new char[strlen(this->d_logFileName) + 1];
-        strcpy(s, this->d_logFileName);
+    } else {
+        char *s = NULL;
+        try {
+          s = new char[strlen(this->d_logFileName) + 1];
+          strcpy(s, this->d_logFileName);
+        } catch (...) {}
         return s;
     }
 }
@@ -760,8 +763,9 @@ int vrpn_Log::logMessage(vrpn_int32 payloadLen, struct timeval time,
     }
 
     // Make a log structure for the new message
-    lp = new vrpn_LOGLIST;
-    if (!lp) {
+    lp = NULL;
+    try { lp = new vrpn_LOGLIST; }
+    catch (...) {
         fprintf(stderr, "vrpn_Log::logMessage:  "
                         "Out of memory!\n");
         return -1;
@@ -779,8 +783,8 @@ int vrpn_Log::logMessage(vrpn_int32 payloadLen, struct timeval time,
     lp->data.buffer = NULL;
 
     if (payloadLen > 0) {
-        lp->data.buffer = new char[payloadLen];
-        if (!lp->data.buffer) {
+        try { lp->data.buffer = new char[payloadLen]; }
+        catch (...) {
             fprintf(stderr, "vrpn_Log::logMessage:  "
                             "Out of memory!\n");
             delete lp;
@@ -841,11 +845,15 @@ int vrpn_Log::setName(const char *name, size_t len)
 {
     if (d_logFileName) {
         delete[] d_logFileName;
+        d_logFileName = NULL;
     }
-    d_logFileName = new char[1 + len];
-    strncpy(d_logFileName, name, len);
-    d_logFileName[len] = '\0';
-
+    try {
+      d_logFileName = new char[1 + len];
+      strncpy(d_logFileName, name, len);
+      d_logFileName[len] = '\0';
+    } catch (...) {
+      return -1;
+    }
     return 0;
 }
 
@@ -854,8 +862,8 @@ int vrpn_Log::setCookie(const char *cookieBuffer)
     if (d_magicCookie) {
         delete[] d_magicCookie;
     }
-    d_magicCookie = new char[1 + vrpn_cookie_size()];
-    if (!d_magicCookie) {
+    try { d_magicCookie = new char[1 + vrpn_cookie_size()]; }
+    catch (...) {
         fprintf(stderr, "vrpn_Log::setCookie:  Out of memory.\n");
         return -1;
     }
@@ -871,8 +879,8 @@ int vrpn_Log::addFilter(vrpn_LOGFILTER filter, void *userdata)
 {
     vrpnLogFilterEntry *newEntry;
 
-    newEntry = new vrpnLogFilterEntry;
-    if (!newEntry) {
+    try { newEntry = new vrpnLogFilterEntry; }
+    catch (...) {
         fprintf(stderr, "vrpn_Log::addFilter:  Out of memory.\n");
         return -1;
     }
@@ -1088,14 +1096,6 @@ vrpn_int32 vrpn_TypeDispatcher::addType(const char *name)
         return -1;
     }
 
-    if (!d_types[d_numTypes].name) {
-        if (!d_types[d_numTypes].name) {
-            fprintf(stderr, "vrpn_TypeDispatcher::addType:  "
-                            "Can't allocate memory for new record.\n");
-            return -1;
-        }
-    }
-
     // Add this one into the list and return its index
     vrpn_strcpy(d_types[d_numTypes].name, name);
     d_types[d_numTypes].who_cares = NULL;
@@ -1120,8 +1120,8 @@ vrpn_int32 vrpn_TypeDispatcher::addSender(const char *name)
 
         //  fprintf(stderr, "Allocating a new name entry\n");
 
-        d_senders[d_numSenders] = new cName;
-        if (!d_senders[d_numSenders]) {
+        try { d_senders[d_numSenders] = new cName; }
+        catch (...) {
             fprintf(stderr, "vrpn_TypeDispatcher::addSender:  "
                             "Can't allocate memory for new record\n");
             return -1;
@@ -1191,10 +1191,15 @@ int vrpn_TypeDispatcher::addHandler(vrpn_int32 type,
     }
 
     // Allocate and initialize the new entry
-    new_entry = new vrpnMsgCallbackEntry();
-    new_entry->handler = handler;
-    new_entry->userdata = userdata;
-    new_entry->sender = sender;
+    try {
+      new_entry = new vrpnMsgCallbackEntry;
+      new_entry->handler = handler;
+      new_entry->userdata = userdata;
+      new_entry->sender = sender;
+    } catch (...) {
+      fprintf(stderr, "vrpn_TypeDispatcher::addHandler:  Out of memory\n");
+      return -1;
+    }
 
 #ifdef VERBOSE
     printf("Adding user handler for type %ld, sender %ld\n", type, sender);
@@ -2818,24 +2823,12 @@ void vrpn_Endpoint::init(void)
     // sends a message of a type that it has not yet defined.
     // (for example, arriving on the UDP line ahead of its TCP
     // definition).
-    d_senders = new vrpn_TranslationTable();
-    d_types = new vrpn_TranslationTable();
-
-    if (!d_senders || !d_types) {
-        fprintf(stderr, "vrpn_Endpoint::init:  Out of memory!\n");
-        return;
-    }
-
-    d_inLog = new vrpn_Log(d_senders, d_types);
-
-    if (!d_inLog) {
-        fprintf(stderr, "vrpn_Endpoint::init:  Out of memory!\n");
-        return;
-    }
-
-    d_outLog = new vrpn_Log(d_senders, d_types);
-
-    if (!d_outLog) {
+    try {
+      d_senders = new vrpn_TranslationTable;
+      d_types = new vrpn_TranslationTable;
+      d_inLog = new vrpn_Log(d_senders, d_types);
+      d_outLog = new vrpn_Log(d_senders, d_types);
+    } catch (...) {
         fprintf(stderr, "vrpn_Endpoint::init:  Out of memory!\n");
         return;
     }
@@ -3327,17 +3320,17 @@ int vrpn_Endpoint::pack_log_description(void)
         outName = d_remoteOutLogName;
     }
 
-    // Include the NULL termination for the strings in the length of the buffer.
-    size_t bufsize =
-        2 * sizeof(vrpn_int32) + strlen(inName) + 1 + strlen(outName) + 1;
-    char *buf = new char[bufsize];
-
     // If we're not requesting remote logging, don't send any message.
-
     if (!d_remoteLogMode) {
-        delete[] buf;
         return 0;
     }
+
+    // Include the NULL termination for the strings in the length of the buffer.
+    size_t bufsize =
+      2 * sizeof(vrpn_int32) + strlen(inName) + 1 + strlen(outName) + 1;
+    char *buf = NULL;
+    try { buf = new char[bufsize]; }
+    catch (...) { return -1; }
 
     // Pack a message with type vrpn_CONNECTION_LOG_DESCRIPTION whose
     // sender ID is the logging mode to be used by the remote connection
@@ -3768,17 +3761,17 @@ void vrpn_Endpoint_IP::setNICaddress(const char *address)
     if (d_NICaddress) {
         delete[] d_NICaddress;
     }
+    d_NICaddress = NULL;
 
 #ifdef VERBOSE
     fprintf(stderr, "Setting endpoint NIC address to %s.\n", address);
 #endif
 
-    d_NICaddress = NULL;
     if (!address) {
         return;
     }
-    d_NICaddress = new char[1 + strlen(address)];
-    if (!d_NICaddress) {
+    try { d_NICaddress = new char[1 + strlen(address)]; }
+    catch (...) {
         fprintf(stderr, "vrpn_Endpoint::setNICaddress:  Out of memory.\n");
         return;
     }
@@ -4751,7 +4744,11 @@ void vrpn_Connection::init(vrpn_EndpointAllocator epa)
 
     vrpn_gettimeofday(&start_time, NULL);
 
-    d_dispatcher = new vrpn_TypeDispatcher;
+    d_stop_processing_messages_after = 0;
+
+    d_dispatcher = NULL;
+    try { d_dispatcher = new vrpn_TypeDispatcher; }
+    catch (...) { return; }
 
     // These should be among the first senders & types sent over the wire
     d_dispatcher->registerSender(vrpn_CONTROL);
@@ -4766,8 +4763,6 @@ void vrpn_Connection::init(vrpn_EndpointAllocator epa)
                                    vrpn_Endpoint::handle_type_message);
     d_dispatcher->setSystemHandler(vrpn_CONNECTION_DISCONNECT_MESSAGE,
                                    handle_disconnect_message);
-
-    d_stop_processing_messages_after = 0;
 }
 
 /**
@@ -4838,17 +4833,20 @@ vrpn_Connection::vrpn_Connection(const char *local_in_logfile_name,
             return;
         }
         endpoint->d_remoteLogMode = vrpn_LOG_NONE;
-        endpoint->d_remoteInLogName = new char[10];
-        strcpy(endpoint->d_remoteInLogName, "");
-        endpoint->d_remoteOutLogName = new char[10];
-        strcpy(endpoint->d_remoteOutLogName, "");
+        endpoint->d_remoteInLogName = NULL;
+        endpoint->d_remoteOutLogName = NULL;
         // Outgoing messages are logged regardless of connection status.
         endpoint->status = LOGGING;
     }
 
     if (local_in_logfile_name) {
+      try {
         d_serverLogName = new char[1 + strlen(local_in_logfile_name)];
         strcpy(d_serverLogName, local_in_logfile_name);
+      } catch (...) {
+        connectionStatus = BROKEN;
+        return;
+      }
     }
 }
 
@@ -4891,23 +4889,29 @@ vrpn_Connection::vrpn_Connection(const char *local_in_logfile_name,
               ? vrpn_LOG_OUTGOING
               : vrpn_LOG_NONE));
     if (!remote_in_logfile_name) {
-        endpoint->d_remoteInLogName = new char[10];
-        strcpy(endpoint->d_remoteInLogName, "");
-    }
-    else {
+        endpoint->d_remoteInLogName = NULL;
+    } else {
+      try {
         endpoint->d_remoteInLogName =
-            new char[strlen(remote_in_logfile_name) + 1];
+          new char[strlen(remote_in_logfile_name) + 1];
         strcpy(endpoint->d_remoteInLogName, remote_in_logfile_name);
+      } catch (...) {
+        connectionStatus = BROKEN;
+        return;
+      }
     }
 
     if (!remote_out_logfile_name) {
-        endpoint->d_remoteOutLogName = new char[10];
-        strcpy(endpoint->d_remoteOutLogName, "");
-    }
-    else {
+        endpoint->d_remoteOutLogName = NULL;
+    } else {
+      try {
         endpoint->d_remoteOutLogName =
             new char[strlen(remote_out_logfile_name) + 1];
         strcpy(endpoint->d_remoteOutLogName, remote_out_logfile_name);
+      } catch (...) {
+        connectionStatus = BROKEN;
+        return;
+      }
     }
 
     // If we are doing local logging, turn it on here. If we
@@ -5102,22 +5106,29 @@ void vrpn_Connection::get_log_names(char **local_in_logname,
 
     if (remote_in_logname != NULL) {
         if (endpoint->d_remoteInLogName != NULL) {
+          try {
             *remote_in_logname =
-                new char[strlen(endpoint->d_remoteInLogName) + 1];
+              new char[strlen(endpoint->d_remoteInLogName) + 1];
             strcpy(*remote_in_logname, endpoint->d_remoteInLogName);
-        }
-        else {
+          } catch (...) {
+            *remote_in_logname = NULL;
+          }
+        } else {
             *remote_in_logname = NULL;
         }
     }
 
     if (remote_out_logname != NULL) {
         if (endpoint->d_remoteOutLogName != NULL) {
+          try {
             *remote_out_logname =
-                new char[strlen(endpoint->d_remoteOutLogName) + 1];
+              new char[strlen(endpoint->d_remoteOutLogName) + 1];
             strcpy(*remote_out_logname, endpoint->d_remoteOutLogName);
-        }
-        else {
+          }
+          catch (...) {
+            *remote_out_logname = NULL;
+          }
+        } else {
             *remote_out_logname = NULL;
         }
     }
@@ -5130,7 +5141,11 @@ void vrpn_Connection::updateEndpoints(void) {}
 vrpn_Endpoint_IP *vrpn_Connection::allocateEndpoint(vrpn_Connection *me,
                                                     vrpn_int32 *connectedEC)
 {
-    return new vrpn_Endpoint_IP(me->d_dispatcher, connectedEC);
+  vrpn_Endpoint_IP *ret = NULL;
+  try {
+    ret = new vrpn_Endpoint_IP(me->d_dispatcher, connectedEC);
+  } catch (...) {}
+  return ret;
 }
 
 // This is called when a disconnect message is found in the logfile.
@@ -5259,21 +5274,29 @@ vrpn_Connection *vrpn_get_connection_by_name(
         int is_file = !strncmp(cname, "file:", 5);
 
         if (is_file) {
+          try {
             c = new vrpn_File_Connection(cname, local_in_logfile_name,
-                                         local_out_logfile_name);
-        }
-        else {
+              local_out_logfile_name);
+          } catch (...) {
+            fprintf(stderr, "vrpn_get_connection_by_name(): Out of memory.");
+            return NULL;
+          }
+        } else {
             int port = vrpn_get_port_number(cname);
-            c = new vrpn_Connection_IP(
+            try {
+              c = new vrpn_Connection_IP(
                 cname, port, local_in_logfile_name, local_out_logfile_name,
                 remote_in_logfile_name, remote_out_logfile_name, NIC_IPaddress);
+            } catch (...) {
+              fprintf(stderr, "vrpn_get_connection_by_name(): Out of memory.");
+              return NULL;
+            }
         }
 
         if (c) {                          // creation succeeded
             c->setAutoDeleteStatus(true); // destroy when refcount hits zero.
-        }
-        else { // creation failed
-            fprintf(stderr, "Could not create new connection.");
+        } else { // creation failed
+            fprintf(stderr, "vrpn_get_connection_by_name(): Could not create new connection.");
             return NULL;
         }
     }
@@ -5334,11 +5357,14 @@ vrpn_create_server_connection(const char *cname,
         delete[] location;
         return NULL;
 #endif
-    }
-    else if (is_loopback) {
+    } else if (is_loopback) {
+      try {
         c = new vrpn_Connection_Loopback();
-    }
-    else {
+      } catch (...) {
+        fprintf(stderr, "vrpn_create_server_connection(): Out of memory\n");
+        return NULL;
+      }
+    } else {
         // Not Loopback or MPI port, so we presume that we are a standard VRPN
         // UDP/TCP
         // port.  Open that kind, based on the machine and port name.  If we
@@ -5347,11 +5373,15 @@ vrpn_create_server_connection(const char *cname,
         // have
         // one, we pass it to the NIC address.
         if (strlen(location) == 0) {
+          try {
             c = new vrpn_Connection_IP(vrpn_DEFAULT_LISTEN_PORT_NO,
-                                       local_in_logfile_name,
-                                       local_out_logfile_name);
-        }
-        else {
+              local_in_logfile_name,
+              local_out_logfile_name);
+          } catch (...) {
+            fprintf(stderr, "vrpn_create_server_connection(): Out of memory\n");
+            return NULL;
+          }
+        } else {
             // Find machine name and port number.  Port number returns default
             // if there is not one specified.  If the machine name is zero
             // length
@@ -5363,8 +5393,13 @@ vrpn_create_server_connection(const char *cname,
             }
             unsigned short port =
                 static_cast<unsigned short>(vrpn_get_port_number(location));
+            try {
             c = new vrpn_Connection_IP(port, local_in_logfile_name,
                                        local_out_logfile_name, machine);
+            } catch (...) {
+              fprintf(stderr, "vrpn_create_server_connection(): Out of memory\n");
+              return NULL;
+            }
             if (machine) {
                 delete[] machine;
             }
@@ -5619,7 +5654,14 @@ void vrpn_Connection_IP::server_check_for_incoming_connections(
         // things down.  This was happening to one user who had a
         // network device that was lobbing mal-formed UDP packets at
         // the incoming port on his machine.
-        char *checkHost = new char[strlen(msg) + 1];
+        char *checkHost = NULL;
+        try {
+          checkHost = new char[strlen(msg) + 1];
+        } catch (...) {
+          fprintf(stderr, "vrpn_Connection_IP::server_check_for_incoming_connections(): "
+            "Out of memory\n");
+          return;
+        }
         int checkPort;
         if (sscanf(msg, "%s %d", checkHost, &checkPort) != 2) {
             fprintf(
@@ -5883,10 +5925,14 @@ vrpn_Connection_IP::vrpn_Connection_IP(
 {
     // Copy the NIC_IPaddress so that we do not have to rely on the caller
     // to keep it from changing.
-    if (NIC_IPaddress != NULL) {
+    if (NIC_IPaddress != NULL) try {
         char *IP = new char[strlen(NIC_IPaddress) + 1];
         strcpy(IP, NIC_IPaddress);
         d_NIC_IP = IP;
+    } catch (...) {
+      fprintf(stderr, "vrpn_Connection_IP::vrpn_Connection_IP(): Out of memory.\n");
+      connectionStatus = BROKEN;
+      return;
     }
 
     // Initialize the things that must be for any constructor
@@ -5940,10 +5986,14 @@ vrpn_Connection_IP::vrpn_Connection_IP(
 
     // Copy the NIC_IPaddress so that we do not have to rely on the caller
     // to keep it from changing.
-    if (NIC_IPaddress != NULL) {
+    if (NIC_IPaddress != NULL) try {
         char *IP = new char[strlen(NIC_IPaddress) + 1];
         strcpy(IP, NIC_IPaddress);
         d_NIC_IP = IP;
+    } catch (...) {
+      fprintf(stderr, "vrpn_Connection_IP::vrpn_Connection_IP(): Out of memory.\n");
+      connectionStatus = BROKEN;
+      return;
     }
 
     isrsh = (strstr(station_name, "x-vrsh:") ? VRPN_TRUE : VRPN_FALSE);
@@ -6241,15 +6291,16 @@ char *vrpn_copy_service_name(const char *fullname)
 {
     if (fullname == NULL) {
         return NULL;
-    }
-    else {
+    } else {
         size_t len = 1 + strcspn(fullname, "@");
-        char *tbuf = new char[len];
-        if (!tbuf) {
+        char *tbuf = NULL;
+        try {
+          tbuf = new char[len];
+          strncpy(tbuf, fullname, len - 1);
+          tbuf[len - 1] = 0;
+        } catch (...) {
             fprintf(stderr, "vrpn_copy_service_name:  Out of memory!\n");
-        } else {
-            strncpy(tbuf, fullname, len - 1);
-            tbuf[len - 1] = 0;
+            return NULL;
         }
         return tbuf;
     }
@@ -6264,19 +6315,21 @@ char *vrpn_copy_service_location(const char *fullname)
         offset = -1;                // We add one to it below.
         len = strlen(fullname) + 1; // We subtract one from it below.
     }
-    char *tbuf = new char[len];
-    if (!tbuf) {
-        fprintf(stderr, "vrpn_copy_service_name:  Out of memory!\n");
-    } else {
-        strncpy(tbuf, fullname + offset + 1, len - 1);
-        tbuf[len - 1] = 0;
+    char *tbuf = NULL;
+    try {
+      tbuf = new char[len];
+      strncpy(tbuf, fullname + offset + 1, len - 1);
+      tbuf[len - 1] = 0;
+    } catch (...) {
+        fprintf(stderr, "vrpn_copy_service_location:  Out of memory!\n");
+        return NULL;
     }
     return tbuf;
 }
 
 char *vrpn_copy_file_name(const char *filespecifier)
 {
-    char *filename;
+    char *filename = NULL;
     const char *fp;
     size_t len;
 
@@ -6285,18 +6338,19 @@ char *vrpn_copy_file_name(const char *filespecifier)
 
     if (!strncmp(fp, "file://", 7)) {
         fp += 7;
-    }
-    else if (!strncmp(fp, "file:", 5)) {
+    } else if (!strncmp(fp, "file:", 5)) {
         fp += 5;
     }
 
     len = 1 + strlen(fp);
-    filename = new char[len];
-    if (!filename) {
+    filename = NULL;
+    try {
+      filename = new char[len];
+      strncpy(filename, fp, len - 1);
+      filename[len - 1] = 0;
+    } catch (...) {
         fprintf(stderr, "vrpn_copy_file_name:  Out of memory!\n");
-    } else {
-        strncpy(filename, fp, len - 1);
-        filename[len - 1] = 0;
+        return NULL;
     }
     return filename;
 }
@@ -6355,12 +6409,14 @@ char *vrpn_copy_machine_name(const char *hostspecifier)
     faroffset = strcspn(hostspecifier + nearoffset, ":/");
     len = 1 + faroffset;
 
-    tbuf = new char[len];
-    if (!tbuf) {
+    tbuf = NULL;
+    try {
+      tbuf = new char[len];
+      strncpy(tbuf, hostspecifier + nearoffset, len - 1);
+      tbuf[len - 1] = 0;
+    } catch (...) {
         fprintf(stderr, "vrpn_copy_machine_name:  Out of memory!\n");
-    } else {
-        strncpy(tbuf, hostspecifier + nearoffset, len - 1);
-        tbuf[len - 1] = 0;
+        return NULL;
     }
     return tbuf;
 }
@@ -6390,7 +6446,7 @@ char *vrpn_copy_rsh_program(const char *hostspecifier)
     size_t nearoffset = 0; // location of first char after machine name
     size_t faroffset;      // location of last character of program name
     size_t len;
-    char *tbuf;
+    char *tbuf = NULL;
 
     nearoffset += header_len(hostspecifier);
 
@@ -6398,14 +6454,14 @@ char *vrpn_copy_rsh_program(const char *hostspecifier)
     nearoffset++; // step past the '/'
     faroffset = strcspn(hostspecifier + nearoffset, ",");
     len = 1 + (faroffset ? faroffset : strlen(hostspecifier) - nearoffset);
-    tbuf = new char[len];
-
-    if (!tbuf) {
+    try {
+      tbuf = new char[len];
+      strncpy(tbuf, hostspecifier + nearoffset, len - 1);
+      tbuf[len - 1] = 0;
+      // fprintf(stderr, "server program: '%s'.\n", tbuf);
+    } catch (...) {
         fprintf(stderr, "vrpn_copy_rsh_program: Out of memory!\n");
-    } else {
-        strncpy(tbuf, hostspecifier + nearoffset, len - 1);
-        tbuf[len - 1] = 0;
-        // fprintf(stderr, "server program: '%s'.\n", tbuf);
+        return NULL;
     }
     return tbuf;
 }
@@ -6415,7 +6471,7 @@ char *vrpn_copy_rsh_arguments(const char *hostspecifier)
     size_t nearoffset = 0; // location of first char after server name
     size_t faroffset;      // location of last character
     size_t len;
-    char *tbuf;
+    char *tbuf = NULL;
 
     nearoffset += header_len(hostspecifier);
 
@@ -6423,14 +6479,14 @@ char *vrpn_copy_rsh_arguments(const char *hostspecifier)
     nearoffset += strcspn(hostspecifier + nearoffset, ",");
     faroffset = strlen(hostspecifier);
     len = 1 + faroffset - nearoffset;
-    tbuf = new char[len];
-
-    if (!tbuf) {
+    try {
+      tbuf = new char[len];
+      strncpy(tbuf, hostspecifier + nearoffset, len - 1);
+      tbuf[len - 1] = 0;
+      // fprintf(stderr, "server args: '%s'.\n", tbuf);
+    } catch (...) {
         fprintf(stderr, "vrpn_copy_rsh_arguments: Out of memory!\n");
-    } else {
-        strncpy(tbuf, hostspecifier + nearoffset, len - 1);
-        tbuf[len - 1] = 0;
-        // fprintf(stderr, "server args: '%s'.\n", tbuf);
+        return NULL;
     }
     return tbuf;
 }
@@ -6451,21 +6507,29 @@ char *vrpn_set_service_name(const char *specifier, const char *newServiceName)
 
     if (atSymbolIndex == inputLength) {
         // no @ symbol present; just a location.
-        location = new char[inputLength + 1];
-        strcpy(location, specifier); // take the whole thing to be the location
-    }
-    else {
+        try {
+          location = new char[inputLength + 1];
+          strcpy(location, specifier); // take the whole thing to be the location
+        } catch (...) {
+          return NULL;
+        }
+    } else {
         // take everything after the @ symbol to be the location
         location = vrpn_copy_service_location(specifier);
     }
 
     // prepend newServiceName to location.
     size_t len = strlen(location) + strlen(newServiceName);
-    char *newSpecifier = new char[len + 2]; // extra space for '@'
-                                            //  and terminal '/0'
-    strcpy(newSpecifier, newServiceName);
-    strcat(newSpecifier, "@");
-    strcat(newSpecifier, location);
+    char *newSpecifier = NULL;
+    try {
+      newSpecifier = new char[len + 2]; // extra space for '@' and terminal '/0'
+      strcpy(newSpecifier, newServiceName);
+      strcat(newSpecifier, "@");
+      strcat(newSpecifier, location);
+    } catch (...) {
+      delete[] location;
+      return NULL;
+    }
     delete[] location;
     return newSpecifier;
 }

@@ -47,13 +47,12 @@ int vrpn_ConnectionForwarder::forward(const char *sourceName,
                                       const char *destinationServiceId,
                                       vrpn_uint32 classOfService)
 {
-
-    vrpn_CONNECTIONFORWARDERRECORD *newList =
+    vrpn_CONNECTIONFORWARDERRECORD *newList = NULL;
+    try { newList =
         new vrpn_CONNECTIONFORWARDERRECORD(
             d_source, d_destination, sourceName, sourceServiceId,
             destinationName, destinationServiceId, classOfService);
-
-    if (!newList) return -1;
+    } catch (...) { return -1; }
 
     newList->next = d_list;
     d_list = newList;
@@ -211,11 +210,10 @@ int vrpn_StreamForwarder::forward(const char *sourceName,
                                   const char *destinationName,
                                   vrpn_uint32 classOfService)
 {
-
-    vrpn_STREAMFORWARDERRECORD *newList = new vrpn_STREAMFORWARDERRECORD(
+    vrpn_STREAMFORWARDERRECORD *newList = NULL;
+    try { newList = new vrpn_STREAMFORWARDERRECORD(
         d_source, d_destination, sourceName, destinationName, classOfService);
-
-    if (!newList) return -1;
+    } catch (...) { return -1; }
 
     newList->next = d_list;
     d_list = newList;

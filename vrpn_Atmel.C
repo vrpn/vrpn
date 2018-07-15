@@ -116,7 +116,9 @@ vrpn_Atmel::Create(char* name, vrpn_Connection *c,
   }
 #endif 
  
-  vrpn_Atmel * self = new vrpn_Atmel(name, c, fd);
+  vrpn_Atmel * self = NULL;
+  try { self = new vrpn_Atmel(name, c, fd); }
+  catch (...) { return NULL; }
       
   if ( (self->vrpn_Analog_Server::setNumChannels(channel_count) != channel_count) 
      || (self->vrpn_Analog_Output_Server::setNumChannels(channel_count) != channel_count) ) {

@@ -15,12 +15,9 @@ vrpn_Tracker_NDI_Polaris::vrpn_Tracker_NDI_Polaris(const char *name,
 												   int numOfRigidBodies,
 												   const char** rigidBodyNDIRomFileNames) : vrpn_Tracker(name,c)
 {
-	latestResponseStr=new unsigned char[MAX_NDI_RESPONSE_LENGTH];
-
 	/////////////////////////////////////////////////////////
 	//STEP 1: open com port at NDI's default speed
 	/////////////////////////////////////////////////////////
-	
 	
 	serialFd=vrpn_open_commport(port,9600);
 	if (serialFd==-1){
@@ -242,7 +239,13 @@ int vrpn_Tracker_NDI_Polaris::convertBinaryFileToAsciiEncodedHex(const char* fil
 	}
 	
 	// allocate memory to contain the whole file:
-	unsigned char* rawBytesFromRomFile = (unsigned char*) new unsigned char[fileSizeInBytes];
+        unsigned char* rawBytesFromRomFile;
+        try { rawBytesFromRomFile = new unsigned char[fileSizeInBytes]; }
+        catch (...) {
+          fprintf(stderr, "vrpn_Tracker_NDI_Polaris: Out of memory!\n");
+          fclose(fptr);
+          return(-1);
+        }
 	
 	// copy the file into the buffer:
 	size_t result = fread (rawBytesFromRomFile,1,fileSizeInBytes,fptr);
