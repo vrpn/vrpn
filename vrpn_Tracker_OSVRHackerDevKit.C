@@ -39,11 +39,15 @@ static const vrpn_float64 vrpn_HDK_DT = 1.0 / 50;
 
 static vrpn_HidAcceptor *makeHDKHidAcceptor()
 {
-    return new vrpn_HidBooleanOrAcceptor(
-        new vrpn_HidProductAcceptor(vrpn_OSVR_VENDOR,
-                                    vrpn_OSVR_HACKER_DEV_KIT_HMD),
-        new vrpn_HidProductAcceptor(vrpn_OSVR_ALT_VENDOR,
-                                    vrpn_OSVR_ALT_HACKER_DEV_KIT_HMD));
+  vrpn_HidAcceptor *ret;
+  try {
+    ret = new vrpn_HidBooleanOrAcceptor(
+      new vrpn_HidProductAcceptor(vrpn_OSVR_VENDOR,
+        vrpn_OSVR_HACKER_DEV_KIT_HMD),
+      new vrpn_HidProductAcceptor(vrpn_OSVR_ALT_VENDOR,
+        vrpn_OSVR_ALT_HACKER_DEV_KIT_HMD));
+  } catch (int) { return NULL; }
+  return ret;
 }
 
 // NOTE: Cannot use the vendor-and-product parameters in the

@@ -106,7 +106,7 @@ protected:
 
 int serialFd; //the fid for the serial port
 int numOfRigidBodies;
-unsigned char* latestResponseStr;
+unsigned char latestResponseStr[MAX_NDI_RESPONSE_LENGTH];
 
 
 protected:
