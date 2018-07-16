@@ -51,8 +51,16 @@ vrpn_Joylin::vrpn_Joylin(const char * name,
 
 vrpn_Joylin::~vrpn_Joylin()
 {
+  if (fd >= 0) {
+    close(fd);
+    fd = -1;
+  }
+  if (device != NULL) {
+    free device;
+    device = NULL;
+  }
   if (devname != NULL) {
-	delete [] devname;
+	free devname;
 	devname = NULL;
   }
 }
