@@ -293,6 +293,7 @@ void vrpn_TextPrinter::set_ostream_to_use(FILE *o)
 */
 
 vrpn_BaseClass::vrpn_BaseClass(const char *name, vrpn_Connection *c)
+  : vrpn_BaseClassUnique()
 {
     // Has a constructor on this BaseClassUnique been called before?
     // Note that this might also be true if it was called once before but
@@ -313,8 +314,7 @@ vrpn_BaseClass::vrpn_BaseClass(const char *name, vrpn_Connection *c)
         if (c) { // using existing connection.
             d_connection = c;
             d_connection->addReference();
-        }
-        else {
+        } else {
             // This will implicitly add the reference to the connection.
             d_connection = vrpn_get_connection_by_name(name);
         }
