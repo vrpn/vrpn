@@ -54,9 +54,9 @@ vrpn_Tracker_JoyFly::vrpn_Tracker_JoyFly
 	}
       }
     }
-  }  
+    fclose(fp);
+  }
 
-  fclose(fp);
   q_matrix_copy(currentMatrix, initMatrix);
 }
 
