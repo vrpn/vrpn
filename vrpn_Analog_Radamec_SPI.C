@@ -47,6 +47,8 @@ vrpn_Radamec_SPI::vrpn_Radamec_SPI (const char * name, vrpn_Connection * c,
 	// Set the parameters in the parent classes
 	vrpn_Analog::num_channel = _numchannels;
 
+        vrpn_gettimeofday(&timestamp, NULL);	// Set watchdog now
+
 	// Set the status of the buttons and analogs to 0 to start
 	clear_values();
 

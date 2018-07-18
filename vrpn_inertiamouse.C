@@ -41,6 +41,8 @@ vrpn_inertiamouse::vrpn_inertiamouse (const char* name,
     vrpn_Analog::num_channel = numchannels_;
 
     vel_ = new double[numchannels_];
+
+    vrpn_gettimeofday(&timestamp, NULL);	// Set watchdog now
     
     clear_values();
     
