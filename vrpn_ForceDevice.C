@@ -21,9 +21,6 @@
 enum TrimeshType { GHOST, HCOLLIDE };
 #endif
 
-#define CHECK(a)                                                               \
-    if (a == -1) return -1
-
 #if 0
 // c = a x b
 static void vector_cross (const vrpn_float64 a [3], const vrpn_float64 b [3],
@@ -248,7 +245,7 @@ vrpn_int32 vrpn_ForceDevice::decode_force(const char *buffer,
     }
 
     for (i = 0; i < 3; i++)
-        CHECK(vrpn_unbuffer(&mptr, &(force[i])));
+        (vrpn_unbuffer(&mptr, &(force[i])));
 
     return 0;
 }
@@ -299,8 +296,8 @@ vrpn_int32 vrpn_ForceDevice::decode_custom_effect(const char *buffer,
         return -1;
     }
 
-    CHECK(vrpn_unbuffer(&mptr, effectId));
-    CHECK(vrpn_unbuffer(&mptr, nbParams));
+    (vrpn_unbuffer(&mptr, effectId));
+    (vrpn_unbuffer(&mptr, nbParams));
 
     if ((vrpn_uint32)(len) <
         (2 * sizeof(vrpn_uint32) + (*nbParams) * sizeof(vrpn_float32))) {
@@ -320,7 +317,7 @@ vrpn_int32 vrpn_ForceDevice::decode_custom_effect(const char *buffer,
     }
 
     for (vrpn_uint32 i = 0; i < (*nbParams); i++) {
-        CHECK(vrpn_unbuffer(&mptr, &((*params)[i])));
+        (vrpn_unbuffer(&mptr, &((*params)[i])));
     }
 
     return 0;
@@ -370,9 +367,9 @@ vrpn_int32 vrpn_ForceDevice::decode_scp(const char *buffer,
     }
 
     for (i = 0; i < 3; i++)
-        CHECK(vrpn_unbuffer(&mptr, &(pos[i])));
+        (vrpn_unbuffer(&mptr, &(pos[i])));
     for (i = 0; i < 4; i++)
-        CHECK(vrpn_unbuffer(&mptr, &(quat[i])));
+        (vrpn_unbuffer(&mptr, &(quat[i])));
 
     return 0;
 }
@@ -430,13 +427,13 @@ vrpn_int32 vrpn_ForceDevice::decode_plane(
     }
 
     for (i = 0; i < 4; i++)
-        CHECK(vrpn_unbuffer(&mptr, &(plane[i])));
-    CHECK(vrpn_unbuffer(&mptr, kspring));
-    CHECK(vrpn_unbuffer(&mptr, kdamp));
-    CHECK(vrpn_unbuffer(&mptr, fdyn));
-    CHECK(vrpn_unbuffer(&mptr, fstat));
-    CHECK(vrpn_unbuffer(&mptr, plane_index));
-    CHECK(vrpn_unbuffer(&mptr, n_rec_cycles));
+        (vrpn_unbuffer(&mptr, &(plane[i])));
+    (vrpn_unbuffer(&mptr, kspring));
+    (vrpn_unbuffer(&mptr, kdamp));
+    (vrpn_unbuffer(&mptr, fdyn));
+    (vrpn_unbuffer(&mptr, fstat));
+    (vrpn_unbuffer(&mptr, plane_index));
+    (vrpn_unbuffer(&mptr, n_rec_cycles));
 
     return 0;
 }
@@ -487,12 +484,12 @@ vrpn_int32 vrpn_ForceDevice::decode_surface_effects(
         return -1;
     }
 
-    CHECK(vrpn_unbuffer(&mptr, k_adhesion_normal));
-    CHECK(vrpn_unbuffer(&mptr, k_adhesion_lateral));
-    CHECK(vrpn_unbuffer(&mptr, tex_amp));
-    CHECK(vrpn_unbuffer(&mptr, tex_wl));
-    CHECK(vrpn_unbuffer(&mptr, buzz_amp));
-    CHECK(vrpn_unbuffer(&mptr, buzz_freq));
+    (vrpn_unbuffer(&mptr, k_adhesion_normal));
+    (vrpn_unbuffer(&mptr, k_adhesion_lateral));
+    (vrpn_unbuffer(&mptr, tex_amp));
+    (vrpn_unbuffer(&mptr, tex_wl));
+    (vrpn_unbuffer(&mptr, buzz_amp));
+    (vrpn_unbuffer(&mptr, buzz_freq));
 
     return 0;
 }
@@ -543,11 +540,11 @@ vrpn_int32 vrpn_ForceDevice::decode_vertex(const char *buffer,
         return -1;
     }
 
-    CHECK(vrpn_unbuffer(&mptr, objNum));
-    CHECK(vrpn_unbuffer(&mptr, vertNum));
-    CHECK(vrpn_unbuffer(&mptr, x));
-    CHECK(vrpn_unbuffer(&mptr, y));
-    CHECK(vrpn_unbuffer(&mptr, z));
+    (vrpn_unbuffer(&mptr, objNum));
+    (vrpn_unbuffer(&mptr, vertNum));
+    (vrpn_unbuffer(&mptr, x));
+    (vrpn_unbuffer(&mptr, y));
+    (vrpn_unbuffer(&mptr, z));
 
     return 0;
 }
@@ -600,11 +597,11 @@ vrpn_int32 vrpn_ForceDevice::decode_normal(const char *buffer,
         return -1;
     }
 
-    CHECK(vrpn_unbuffer(&mptr, objNum));
-    CHECK(vrpn_unbuffer(&mptr, vertNum));
-    CHECK(vrpn_unbuffer(&mptr, x));
-    CHECK(vrpn_unbuffer(&mptr, y));
-    CHECK(vrpn_unbuffer(&mptr, z));
+    (vrpn_unbuffer(&mptr, objNum));
+    (vrpn_unbuffer(&mptr, vertNum));
+    (vrpn_unbuffer(&mptr, x));
+    (vrpn_unbuffer(&mptr, y));
+    (vrpn_unbuffer(&mptr, z));
 
     return 0;
 }
@@ -654,14 +651,14 @@ vrpn_int32 vrpn_ForceDevice::decode_triangle(
         return -1;
     }
 
-    CHECK(vrpn_unbuffer(&mptr, objNum));
-    CHECK(vrpn_unbuffer(&mptr, triNum));
-    CHECK(vrpn_unbuffer(&mptr, vert0));
-    CHECK(vrpn_unbuffer(&mptr, vert1));
-    CHECK(vrpn_unbuffer(&mptr, vert2));
-    CHECK(vrpn_unbuffer(&mptr, norm0));
-    CHECK(vrpn_unbuffer(&mptr, norm1));
-    CHECK(vrpn_unbuffer(&mptr, norm2));
+    (vrpn_unbuffer(&mptr, objNum));
+    (vrpn_unbuffer(&mptr, triNum));
+    (vrpn_unbuffer(&mptr, vert0));
+    (vrpn_unbuffer(&mptr, vert1));
+    (vrpn_unbuffer(&mptr, vert2));
+    (vrpn_unbuffer(&mptr, norm0));
+    (vrpn_unbuffer(&mptr, norm1));
+    (vrpn_unbuffer(&mptr, norm2));
 
     return 0;
 }
@@ -705,8 +702,8 @@ vrpn_int32 vrpn_ForceDevice::decode_removeTriangle(const char *buffer,
         return -1;
     }
 
-    CHECK(vrpn_unbuffer(&mptr, objNum));
-    CHECK(vrpn_unbuffer(&mptr, triNum));
+    (vrpn_unbuffer(&mptr, objNum));
+    (vrpn_unbuffer(&mptr, triNum));
 
     return 0;
 }
@@ -755,11 +752,11 @@ vrpn_int32 vrpn_ForceDevice::decode_updateTrimeshChanges(
         return -1;
     }
 
-    CHECK(vrpn_unbuffer(&mptr, objNum));
-    CHECK(vrpn_unbuffer(&mptr, kspring));
-    CHECK(vrpn_unbuffer(&mptr, kdamp));
-    CHECK(vrpn_unbuffer(&mptr, fstat));
-    CHECK(vrpn_unbuffer(&mptr, fdyn));
+    (vrpn_unbuffer(&mptr, objNum));
+    (vrpn_unbuffer(&mptr, kspring));
+    (vrpn_unbuffer(&mptr, kdamp));
+    (vrpn_unbuffer(&mptr, fstat));
+    (vrpn_unbuffer(&mptr, fdyn));
 
     return 0;
 }
@@ -804,8 +801,8 @@ vrpn_int32 vrpn_ForceDevice::decode_setTrimeshType(const char *buffer,
         return -1;
     }
 
-    CHECK(vrpn_unbuffer(&mptr, objNum));
-    CHECK(vrpn_unbuffer(&mptr, type));
+    (vrpn_unbuffer(&mptr, objNum));
+    (vrpn_unbuffer(&mptr, type));
 
     return 0;
 }
@@ -850,9 +847,9 @@ vrpn_int32 vrpn_ForceDevice::decode_trimeshTransform(const char *buffer,
         return -1;
     }
 
-    CHECK(vrpn_unbuffer(&mptr, objNum));
+    (vrpn_unbuffer(&mptr, objNum));
     for (i = 0; i < 16; i++)
-        CHECK(vrpn_unbuffer(&mptr, &(homMatrix[i])));
+        (vrpn_unbuffer(&mptr, &(homMatrix[i])));
 
     return 0;
 }
@@ -892,8 +889,8 @@ vrpn_int32 vrpn_ForceDevice::decode_addObject(const char *buffer,
         return -1;
     }
 
-    CHECK(vrpn_unbuffer(&mptr, objNum));
-    CHECK(vrpn_unbuffer(&mptr, ParentNum));
+    (vrpn_unbuffer(&mptr, objNum));
+    (vrpn_unbuffer(&mptr, ParentNum));
 
     return 0;
 }
@@ -930,7 +927,7 @@ vrpn_int32 vrpn_ForceDevice::decode_addObjectExScene(const char *buffer,
         return -1;
     }
 
-    CHECK(vrpn_unbuffer(&mptr, objNum));
+    (vrpn_unbuffer(&mptr, objNum));
 
     return 0;
 }
@@ -973,10 +970,10 @@ vrpn_int32 vrpn_ForceDevice::decode_objectPosition(const char *buffer,
         return -1;
     }
 
-    CHECK(vrpn_unbuffer(&mptr, objNum));
-    CHECK(vrpn_unbuffer(&mptr, &Pos[0]));
-    CHECK(vrpn_unbuffer(&mptr, &Pos[1]));
-    CHECK(vrpn_unbuffer(&mptr, &Pos[2]));
+    (vrpn_unbuffer(&mptr, objNum));
+    (vrpn_unbuffer(&mptr, &Pos[0]));
+    (vrpn_unbuffer(&mptr, &Pos[1]));
+    (vrpn_unbuffer(&mptr, &Pos[2]));
 
     return 0;
 }
@@ -1023,11 +1020,11 @@ vrpn_int32 vrpn_ForceDevice::decode_objectOrientation(const char *buffer,
         return -1;
     }
 
-    CHECK(vrpn_unbuffer(&mptr, objNum));
-    CHECK(vrpn_unbuffer(&mptr, &axis[0]));
-    CHECK(vrpn_unbuffer(&mptr, &axis[1]));
-    CHECK(vrpn_unbuffer(&mptr, &axis[2]));
-    CHECK(vrpn_unbuffer(&mptr, angle));
+    (vrpn_unbuffer(&mptr, objNum));
+    (vrpn_unbuffer(&mptr, &axis[0]));
+    (vrpn_unbuffer(&mptr, &axis[1]));
+    (vrpn_unbuffer(&mptr, &axis[2]));
+    (vrpn_unbuffer(&mptr, angle));
 
     return 0;
 }
@@ -1070,10 +1067,10 @@ vrpn_int32 vrpn_ForceDevice::decode_objectScale(const char *buffer,
         return -1;
     }
 
-    CHECK(vrpn_unbuffer(&mptr, objNum));
-    CHECK(vrpn_unbuffer(&mptr, &Scale[0]));
-    CHECK(vrpn_unbuffer(&mptr, &Scale[1]));
-    CHECK(vrpn_unbuffer(&mptr, &Scale[2]));
+    (vrpn_unbuffer(&mptr, objNum));
+    (vrpn_unbuffer(&mptr, &Scale[0]));
+    (vrpn_unbuffer(&mptr, &Scale[1]));
+    (vrpn_unbuffer(&mptr, &Scale[2]));
 
     return 0;
 }
@@ -1110,7 +1107,7 @@ vrpn_int32 vrpn_ForceDevice::decode_removeObject(const char *buffer,
         return -1;
     }
 
-    CHECK(vrpn_unbuffer(&mptr, objNum));
+    (vrpn_unbuffer(&mptr, objNum));
 
     return 0;
 }
@@ -1147,7 +1144,7 @@ vrpn_int32 vrpn_ForceDevice::decode_clearTrimesh(const char *buffer,
         return -1;
     }
 
-    CHECK(vrpn_unbuffer(&mptr, objNum));
+    (vrpn_unbuffer(&mptr, objNum));
 
     return 0;
 }
@@ -1189,8 +1186,8 @@ vrpn_int32 vrpn_ForceDevice::decode_moveToParent(const char *buffer,
         return -1;
     }
 
-    CHECK(vrpn_unbuffer(&mptr, objNum));
-    CHECK(vrpn_unbuffer(&mptr, parentNum));
+    (vrpn_unbuffer(&mptr, objNum));
+    (vrpn_unbuffer(&mptr, parentNum));
 
     return 0;
 }
@@ -1241,12 +1238,12 @@ vrpn_int32 vrpn_ForceDevice::decode_setHapticOrigin(const char *buffer,
     }
 
     for (i = 0; i < 3; i++)
-        CHECK(vrpn_unbuffer(&mptr, &Pos[i]));
+        (vrpn_unbuffer(&mptr, &Pos[i]));
 
     for (i = 0; i < 3; i++)
-        CHECK(vrpn_unbuffer(&mptr, &axis[i]));
+        (vrpn_unbuffer(&mptr, &axis[i]));
 
-    CHECK(vrpn_unbuffer(&mptr, angle));
+    (vrpn_unbuffer(&mptr, angle));
     return 0;
 }
 
@@ -1283,7 +1280,7 @@ vrpn_int32 vrpn_ForceDevice::decode_setHapticScale(const char *buffer,
         return -1;
     }
 
-    CHECK(vrpn_unbuffer(&mptr, scale));
+    (vrpn_unbuffer(&mptr, scale));
 
     return 0;
 }
@@ -1334,12 +1331,12 @@ vrpn_int32 vrpn_ForceDevice::decode_setSceneOrigin(const char *buffer,
     }
 
     for (i = 0; i < 3; i++)
-        CHECK(vrpn_unbuffer(&mptr, &Pos[i]));
+        (vrpn_unbuffer(&mptr, &Pos[i]));
 
     for (i = 0; i < 3; i++)
-        CHECK(vrpn_unbuffer(&mptr, &axis[i]));
+        (vrpn_unbuffer(&mptr, &axis[i]));
 
-    CHECK(vrpn_unbuffer(&mptr, angle));
+    (vrpn_unbuffer(&mptr, angle));
 
     return 0;
 }
@@ -1381,8 +1378,8 @@ vrpn_int32 vrpn_ForceDevice::decode_setObjectIsTouchable(const char *buffer,
         return -1;
     }
 
-    CHECK(vrpn_unbuffer(&mptr, objNum));
-    CHECK(vrpn_unbuffer(&mptr, IsTouchable));
+    (vrpn_unbuffer(&mptr, objNum));
+    (vrpn_unbuffer(&mptr, IsTouchable));
 
     return 0;
 }
@@ -1438,16 +1435,16 @@ vrpn_int32 vrpn_ForceDevice::decode_forcefield(
     }
 
     for (i = 0; i < 3; i++)
-        CHECK(vrpn_unbuffer(&mptr, &(origin[i])));
+        (vrpn_unbuffer(&mptr, &(origin[i])));
 
     for (i = 0; i < 3; i++)
-        CHECK(vrpn_unbuffer(&mptr, &(force[i])));
+        (vrpn_unbuffer(&mptr, &(force[i])));
 
     for (i = 0; i < 3; i++)
         for (j = 0; j < 3; j++)
-            CHECK(vrpn_unbuffer(&mptr, &(jacobian[i][j])));
+            (vrpn_unbuffer(&mptr, &(jacobian[i][j])));
 
-    CHECK(vrpn_unbuffer(&mptr, radius));
+    (vrpn_unbuffer(&mptr, radius));
 
     return 0;
 }
@@ -1486,7 +1483,7 @@ vrpn_int32 vrpn_ForceDevice::decode_error(const char *buffer,
         return -1;
     }
 
-    CHECK(vrpn_unbuffer(&mptr, error_code));
+    (vrpn_unbuffer(&mptr, error_code));
 
     return 0;
 }
@@ -1574,7 +1571,7 @@ vrpn_int32 vrpn_ForceDevice::decode_enableConstraint(const char *buffer,
         return -1;
     }
 
-    CHECK(vrpn_unbuffer(&mptr, enable));
+    (vrpn_unbuffer(&mptr, enable));
 
     return 0;
 }
@@ -1636,7 +1633,7 @@ vrpn_int32 vrpn_ForceDevice::decode_setConstraintMode(const char *buffer,
         return -1;
     }
 
-    CHECK(vrpn_unbuffer(&mptr, &modeint));
+    (vrpn_unbuffer(&mptr, &modeint));
 
     switch (modeint) {
     case 0:
@@ -1785,7 +1782,7 @@ vrpn_int32 vrpn_ForceDevice::decode_setConstraintKSpring(const char *buffer,
         return -1;
     }
 
-    CHECK(vrpn_unbuffer(&mptr, k));
+    (vrpn_unbuffer(&mptr, k));
 
     return 0;
 }
@@ -1831,9 +1828,9 @@ vrpn_int32 vrpn_ForceDevice::decodePoint(const char *buffer,
         return -1;
     }
 
-    CHECK(vrpn_unbuffer(&mptr, x));
-    CHECK(vrpn_unbuffer(&mptr, y));
-    CHECK(vrpn_unbuffer(&mptr, z));
+    (vrpn_unbuffer(&mptr, x));
+    (vrpn_unbuffer(&mptr, y));
+    (vrpn_unbuffer(&mptr, z));
 
     return 0;
 }

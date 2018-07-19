@@ -96,20 +96,17 @@ protected:
         }
     }
 
-    inline bool unbuffer(const char **buffer)
+    inline void unbuffer(const char **buffer)
     {
         vrpn_uint32 compression;
-        if (vrpn_unbuffer(buffer, &minVal) || vrpn_unbuffer(buffer, &maxVal) ||
-            vrpn_unbuffer(buffer, &offset) || vrpn_unbuffer(buffer, &scale) ||
-            vrpn_unbuffer(buffer, &compression) ||
-            vrpn_unbuffer(buffer, name, sizeof(name)) ||
-            vrpn_unbuffer(buffer, units, sizeof(units))) {
-            return false;
-        }
-        else {
-            d_compression = (ChannelCompression)compression;
-            return true;
-        }
+        vrpn_unbuffer(buffer, &minVal);
+        vrpn_unbuffer(buffer, &maxVal);
+        vrpn_unbuffer(buffer, &offset);
+        vrpn_unbuffer(buffer, &scale);
+        vrpn_unbuffer(buffer, &compression);
+        vrpn_unbuffer(buffer, name, sizeof(name));
+        vrpn_unbuffer(buffer, units, sizeof(units));
+        d_compression = (ChannelCompression)compression;
     }
 
     typedef enum { NONE = 0 } ChannelCompression;
