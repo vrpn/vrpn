@@ -55,14 +55,11 @@ vrpn_Joylin::~vrpn_Joylin()
     close(fd);
     fd = -1;
   }
-  if (device != NULL) {
-    free(device);
-    device = NULL;
-  }
-  if (devname != NULL) {
-	free(devname);
-	devname = NULL;
-  }
+  free(device);
+  device = NULL;
+
+  free(devname);
+  devname = NULL;
 }
 
 /****************************************************************************/
