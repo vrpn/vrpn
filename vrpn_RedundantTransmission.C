@@ -340,8 +340,9 @@ int vrpn_RedundantController::handle_enable(void *ud, vrpn_HANDLERPARAM p)
 vrpn_RedundantRemote::vrpn_RedundantRemote(vrpn_Connection *c)
     : vrpn_BaseClass("vrpn Redundant Transmission Controller", c)
 {
-
     vrpn_BaseClass::init();
+    d_protocol.d_enable_type = 0;
+    d_protocol.d_set_type = 0;
 }
 
 vrpn_RedundantRemote::~vrpn_RedundantRemote(void) {}
