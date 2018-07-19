@@ -61,6 +61,8 @@ vrpn_YEI_3Space::vrpn_YEI_3Space (const char * p_name
   memset(buttons, 0, sizeof(buttons));
   memset(lastbuttons, 0, sizeof(lastbuttons));
 
+  vrpn_gettimeofday(&timestamp, NULL);
+
   // We're constructed, but not yet initialized.
   d_status = STATUS_NOT_INITIALIZED;
 }
