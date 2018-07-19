@@ -1119,9 +1119,7 @@ int vrpn_Imager_Server::handle_throttle_message(void *userdata,
 
     // Get the requested number of frames from the buffer
     vrpn_int32 frames_to_send;
-    if (vrpn_unbuffer(&bufptr, &frames_to_send)) {
-        return -1;
-    }
+    vrpn_unbuffer(&bufptr, &frames_to_send);
 
     // If the requested number of frames is negative, then we set
     // for unbounded sending.  The next time a begin_frame message
@@ -1215,16 +1213,12 @@ int vrpn_Imager_Remote::handle_description_message(void *userdata,
     int i;
 
     // Get my new information from the buffer
-    if (vrpn_unbuffer(&bufptr, &me->d_nDepth) ||
-        vrpn_unbuffer(&bufptr, &me->d_nRows) ||
-        vrpn_unbuffer(&bufptr, &me->d_nCols) ||
-        vrpn_unbuffer(&bufptr, &me->d_nChannels)) {
-        return -1;
-    }
+    vrpn_unbuffer(&bufptr, &me->d_nDepth);
+    vrpn_unbuffer(&bufptr, &me->d_nRows);
+    vrpn_unbuffer(&bufptr, &me->d_nCols);
+    vrpn_unbuffer(&bufptr, &me->d_nChannels);
     for (i = 0; i < me->d_nChannels; i++) {
-        if (!me->d_channels[i].unbuffer(&bufptr)) {
-            return -1;
-        }
+      me->d_channels[i].unbuffer(&bufptr);
     }
 
     // Go down the list of callbacks that have been registered.
@@ -1248,18 +1242,14 @@ int vrpn_Imager_Remote::handle_region_message(void *userdata,
     // the start of the data in the buffer).  Set it to valid and then
     // call the user callback and then set it to invalid before
     // deleting it.
-    if (vrpn_unbuffer(&bufptr, &reg.d_chanIndex) ||
-        vrpn_unbuffer(&bufptr, &reg.d_dMin) ||
-        vrpn_unbuffer(&bufptr, &reg.d_dMax) ||
-        vrpn_unbuffer(&bufptr, &reg.d_rMin) ||
-        vrpn_unbuffer(&bufptr, &reg.d_rMax) ||
-        vrpn_unbuffer(&bufptr, &reg.d_cMin) ||
-        vrpn_unbuffer(&bufptr, &reg.d_cMax) ||
-        vrpn_unbuffer(&bufptr, &reg.d_valType)) {
-        fprintf(stderr, "vrpn_Imager_Remote::handle_region_message(): Can't "
-                        "unbuffer parameters!\n");
-        return -1;
-    }
+    vrpn_unbuffer(&bufptr, &reg.d_chanIndex);
+    vrpn_unbuffer(&bufptr, &reg.d_dMin);
+    vrpn_unbuffer(&bufptr, &reg.d_dMax);
+    vrpn_unbuffer(&bufptr, &reg.d_rMin);
+    vrpn_unbuffer(&bufptr, &reg.d_rMax);
+    vrpn_unbuffer(&bufptr, &reg.d_cMin);
+    vrpn_unbuffer(&bufptr, &reg.d_cMax);
+    vrpn_unbuffer(&bufptr, &reg.d_valType);
     reg.d_valBuf = bufptr;
     reg.d_valid = true;
 
@@ -1295,13 +1285,12 @@ int vrpn_Imager_Remote::handle_begin_frame_message(void *userdata,
     vrpn_IMAGERBEGINFRAMECB bf;
 
     bf.msg_time = p.msg_time;
-    if (vrpn_unbuffer(&bufptr, &bf.dMin) || vrpn_unbuffer(&bufptr, &bf.dMax) ||
-        vrpn_unbuffer(&bufptr, &bf.rMin) || vrpn_unbuffer(&bufptr, &bf.rMax) ||
-        vrpn_unbuffer(&bufptr, &bf.cMin) || vrpn_unbuffer(&bufptr, &bf.cMax)) {
-        fprintf(stderr, "vrpn_Imager_Remote::handle_begin_frame_message(): "
-                        "Can't unbuffer parameters!\n");
-        return -1;
-    }
+    vrpn_unbuffer(&bufptr, &bf.dMin);
+    vrpn_unbuffer(&bufptr, &bf.dMax);
+    vrpn_unbuffer(&bufptr, &bf.rMin);
+    vrpn_unbuffer(&bufptr, &bf.rMax);
+    vrpn_unbuffer(&bufptr, &bf.cMin);
+    vrpn_unbuffer(&bufptr, &bf.cMax);
 
     // ONLY if we have gotten a description message,
     // Go down the list of callbacks that have been registered.
@@ -1321,13 +1310,12 @@ int vrpn_Imager_Remote::handle_end_frame_message(void *userdata,
     vrpn_IMAGERENDFRAMECB ef;
 
     ef.msg_time = p.msg_time;
-    if (vrpn_unbuffer(&bufptr, &ef.dMin) || vrpn_unbuffer(&bufptr, &ef.dMax) ||
-        vrpn_unbuffer(&bufptr, &ef.rMin) || vrpn_unbuffer(&bufptr, &ef.rMax) ||
-        vrpn_unbuffer(&bufptr, &ef.cMin) || vrpn_unbuffer(&bufptr, &ef.cMax)) {
-        fprintf(stderr, "vrpn_Imager_Remote::handle_end_frame_message(): Can't "
-                        "unbuffer parameters!\n");
-        return -1;
-    }
+    vrpn_unbuffer(&bufptr, &ef.dMin);
+    vrpn_unbuffer(&bufptr, &ef.dMax);
+    vrpn_unbuffer(&bufptr, &ef.rMin);
+    vrpn_unbuffer(&bufptr, &ef.rMax);
+    vrpn_unbuffer(&bufptr, &ef.cMin);
+    vrpn_unbuffer(&bufptr, &ef.cMax);
 
     // ONLY if we have gotten a description message,
     // Go down the list of callbacks that have been registered.
@@ -1347,11 +1335,7 @@ int vrpn_Imager_Remote::handle_discarded_frames_message(void *userdata,
     vrpn_IMAGERDISCARDEDFRAMESCB df;
 
     df.msg_time = p.msg_time;
-    if (vrpn_unbuffer(&bufptr, &df.count)) {
-        fprintf(stderr, "vrpn_Imager_Remote::handle_discarded_frames_message():"
-                        " Can't unbuffer parameters!\n");
-        return -1;
-    }
+    vrpn_unbuffer(&bufptr, &df.count);
 
     // ONLY if we have gotten a description message,
     // Go down the list of callbacks that have been registered.
@@ -2013,20 +1997,18 @@ int vrpn_ImagerPose_Remote::handle_description_message(void *userdata,
     vrpn_ImagerPose_Remote *me = (vrpn_ImagerPose_Remote *)userdata;
 
     // Get my new information from the buffer
-    if (vrpn_unbuffer(&bufptr, &me->d_origin[0]) ||
-        vrpn_unbuffer(&bufptr, &me->d_origin[1]) ||
-        vrpn_unbuffer(&bufptr, &me->d_origin[2]) ||
-        vrpn_unbuffer(&bufptr, &me->d_dDepth[0]) ||
-        vrpn_unbuffer(&bufptr, &me->d_dDepth[1]) ||
-        vrpn_unbuffer(&bufptr, &me->d_dDepth[2]) ||
-        vrpn_unbuffer(&bufptr, &me->d_dRow[0]) ||
-        vrpn_unbuffer(&bufptr, &me->d_dRow[1]) ||
-        vrpn_unbuffer(&bufptr, &me->d_dRow[2]) ||
-        vrpn_unbuffer(&bufptr, &me->d_dCol[0]) ||
-        vrpn_unbuffer(&bufptr, &me->d_dCol[1]) ||
-        vrpn_unbuffer(&bufptr, &me->d_dCol[2])) {
-        return -1;
-    }
+    vrpn_unbuffer(&bufptr, &me->d_origin[0]);
+    vrpn_unbuffer(&bufptr, &me->d_origin[1]);
+    vrpn_unbuffer(&bufptr, &me->d_origin[2]);
+    vrpn_unbuffer(&bufptr, &me->d_dDepth[0]);
+    vrpn_unbuffer(&bufptr, &me->d_dDepth[1]);
+    vrpn_unbuffer(&bufptr, &me->d_dDepth[2]);
+    vrpn_unbuffer(&bufptr, &me->d_dRow[0]);
+    vrpn_unbuffer(&bufptr, &me->d_dRow[1]);
+    vrpn_unbuffer(&bufptr, &me->d_dRow[2]);
+    vrpn_unbuffer(&bufptr, &me->d_dCol[0]);
+    vrpn_unbuffer(&bufptr, &me->d_dCol[1]);
+    vrpn_unbuffer(&bufptr, &me->d_dCol[2]);
 
     // Go down the list of callbacks that have been registered.
     // Fill in the parameter and call each.

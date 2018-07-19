@@ -19,9 +19,6 @@
 #include <netinet/in.h> // for htonl, htons
 #endif
 
-#define CHECK(a) \
-    if (a == -1) return -1
-
 #if defined(VRPN_USE_WINSOCK_SOCKETS)
 /* from HP-UX */
 struct timezone {
@@ -317,17 +314,15 @@ VRPN_API int vrpn_buffer(char **insertPt, vrpn_int32 *buflen,
     the VRPN defined wire protocol.
 */
 
-VRPN_API int vrpn_unbuffer(const char **buffer, timeval *t)
+VRPN_API void vrpn_unbuffer(const char **buffer, timeval *t)
 {
     vrpn_int32 sec, usec;
 
-    CHECK(vrpn_unbuffer(buffer, &sec));
-    CHECK(vrpn_unbuffer(buffer, &usec));
+    vrpn_unbuffer(buffer, &sec);
+    vrpn_unbuffer(buffer, &usec);
 
     t->tv_sec = sec;
     t->tv_usec = usec;
-
-    return 0;
 }
 
 /** Utility routine for taking a string of specified length from a buffer that

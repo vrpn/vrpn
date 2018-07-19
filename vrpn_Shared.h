@@ -214,7 +214,7 @@ extern VRPN_API int vrpn_unbuffer(const char **buffer, char *string,
                                   vrpn_int32 length);
 
 // Read and write timeval.
-extern VRPN_API int vrpn_unbuffer(const char **buffer, timeval *t);
+extern VRPN_API void vrpn_unbuffer(const char **buffer, timeval *t);
 extern VRPN_API int vrpn_buffer(char **insertPt, vrpn_int32 *buflen,
                                 const timeval t);
 
@@ -492,10 +492,9 @@ inline int vrpn_buffer(ByteT **insertPt, vrpn_int32 *buflen, const T inVal)
 }
 
 template <typename T, typename ByteT>
-inline int vrpn_unbuffer(ByteT **input, T *lvalue)
+inline void vrpn_unbuffer(ByteT **input, T *lvalue)
 {
     *lvalue = ::vrpn_unbuffer<T, ByteT>(*input);
-    return 0;
 }
 
 // Returns true if tests work and false if they do not.

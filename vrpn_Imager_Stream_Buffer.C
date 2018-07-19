@@ -249,9 +249,7 @@ int vrpn_Imager_Stream_Buffer::static_handle_throttle_message(
 
     // Get the requested number of frames from the buffer
     vrpn_int32 frames_to_send;
-    if (vrpn_unbuffer(&bufptr, &frames_to_send)) {
-        return -1;
-    }
+    vrpn_unbuffer(&bufptr, &frames_to_send);
 
     me->d_shared_state.set_throttle_request(frames_to_send);
     return 0;

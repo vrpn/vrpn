@@ -162,13 +162,7 @@ vrpn_int32 vrpn_FunctionGenerator_function_script::
 decode_from( const char** buf, vrpn_int32& len )
 {
 	vrpn_int32 newlen;
-	if( 0 > vrpn_unbuffer( buf, &newlen ) )
-	{
-		fprintf( stderr, "vrpn_FunctionGenerator_function_script::decode_from:  "
-				"payload error (couldn't unbuffer length).\n" );
-		fflush( stderr );
-		return -1;
-	}
+        vrpn_unbuffer(buf, &newlen);
 	len -= sizeof( vrpn_uint32);
 
 	if( len < newlen )
@@ -313,13 +307,7 @@ decode_from( const char** buf, vrpn_int32& len )
 		return -1;
 	}
 	int myCode;
-	if( 0 > vrpn_unbuffer( buf, &myCode ) )
-	{
-		fprintf( stderr, "vrpn_FunctionGenerator_channel::decode_from:  "
-				"unable to unbuffer function type.\n" );
-		fflush( stderr );
-		return -1;
-	}
+        vrpn_unbuffer(buf, &myCode);
 	// if we don't have the right function type, create a new
 	// one of the appropriate type and delete the old one
 	if( myCode != function->getFunctionCode() )
@@ -1576,13 +1564,7 @@ decode_channel( const char* buf, const vrpn_int32 len, vrpn_uint32& channelNum,
 	const char* mybuf = buf;
 	vrpn_int32 mylen = len;
 	vrpn_uint32 myNum = 0;
-	if( 0 > vrpn_unbuffer( &mybuf, &myNum ) )
-	{
-		fprintf( stderr, "vrpn_FunctionGenerator_Server::decode_channel:  "
-				"message payload error (couldn't unbuffer)\n" );
-		fflush( stderr );
-		return -1;
-	}
+        vrpn_unbuffer(&mybuf, &myNum);
 	mylen -= sizeof( myNum );
 	channelNum = myNum;
 	if( 0 > channel.decode_from( &mybuf, mylen ) )
@@ -1661,13 +1643,7 @@ decode_channel_reply( const char* buf, const vrpn_int32 len, vrpn_uint32& channe
 	const char* mybuf = buf;
 	vrpn_int32 mylen = len;
 	vrpn_uint32 myNum = 0;
-	if( 0 > vrpn_unbuffer( &mybuf, &myNum ) )
-	{
-		fprintf( stderr, "vrpn_FunctionGenerator_Remote::decode_channel_reply:  "
-				"unable to unbuffer channel number.\n" );
-		fflush( stderr );
-		return -1;
-	}
+        vrpn_unbuffer(&mybuf, &myNum);
 	if( myNum >= vrpn_FUNCTION_CHANNELS_MAX )
 	{
 		fprintf( stderr, "vrpn_FunctionGenerator_Remote::decode_channel_reply:  "
@@ -1728,13 +1704,7 @@ decode_channel_request( const char* buf, const vrpn_int32 len, vrpn_uint32& chan
 		return -1;
 	}
 	const char* mybuf = buf;
-	if( 0 > vrpn_unbuffer( &mybuf, &channelNum ) )
-	{
-		fprintf( stderr, "vrpn_FunctionGenerator_Server::decode_channel_request:  "
-				"unable to unbuffer channel %d", channelNum );
-		fflush( stderr );
-		return -1;
-	}
+        vrpn_unbuffer(&mybuf, &channelNum);
 	return 0;
 }
 
@@ -1783,13 +1753,7 @@ decode_sampleRate_request( const char* buf, const vrpn_int32 len, vrpn_float32& 
 		return -1;
 	}
 	const char* mybuf = buf;
-	if( 0 > vrpn_unbuffer( &mybuf, &sampleRate ) )
-	{
-		fprintf( stderr, "vrpn_FunctionGenerator_Server::decode_sampleRate_request:  "
-				"unable to unbuffer sample rate" );
-		fflush( stderr );
-		return -1;
-	}
+        vrpn_unbuffer(&mybuf, &sampleRate);
 	return 0;
 }
 
@@ -1829,13 +1793,7 @@ decode_start_reply( const char* buf, const vrpn_int32 len, vrpn_bool& isStarted 
 		return -1;
 	}
 	const char* mybuf = buf;
-	if( 0 > vrpn_unbuffer( &mybuf, &isStarted ) )
-	{
-		fprintf( stderr, "vrpn_FunctionGenerator_Remote::decode_start_reply:  "
-				"unable to unbuffer stop condition.\n" );
-		fflush( stderr );
-		return -1;
-	}
+        vrpn_unbuffer(&mybuf, &isStarted);
 	return 0;
 }
 
@@ -1874,13 +1832,7 @@ decode_stop_reply( const char* buf, const vrpn_int32 len, vrpn_bool& isStopped )
 		fflush( stderr );
 		return -1;
 	}
-	if( 0 > vrpn_unbuffer( &buf, &isStopped ) )
-	{
-		fprintf( stderr, "vrpn_FunctionGenerator_Remote::decode_stop_reply:  "
-				"unable to unbuffer stop condition.\n" );
-		fflush( stderr );
-		return -1;
-	}
+        vrpn_unbuffer(&buf, &isStopped);
 	return 0;
 }
 
@@ -1920,13 +1872,7 @@ decode_sampleRate_reply( const char* buf, const vrpn_int32 len )
 		return -1;
 	}
 	vrpn_float32 myRate = 0;
-	if( 0 > vrpn_unbuffer( &buf, &myRate ) )
-	{
-		fprintf( stderr, "vrpn_FunctionGenerator_Remote::decode_sampleRate_reply:  "
-				"unable to unbuffer sample rate.\n" );
-		fflush( stderr );
-		return -1;
-	}
+        vrpn_unbuffer(&buf, &myRate);
 	this->sampleRate = myRate;
 	return 0;
 }
@@ -1976,13 +1922,7 @@ decode_interpreterDescription_reply( const char* buf, const vrpn_int32 len, char
 		return -1;
 	}
 	vrpn_int32 dlength = 0;
-	if( 0 > vrpn_unbuffer( &buf, &dlength ) )
-	{
-		fprintf( stderr, "vrpn_FunctionGenerator_Remote::decode_interpreterDescription_reply:  "
-				"unable to unbuffer description length.\n" );
-		fflush( stderr );
-		return -1;
-	}
+        vrpn_unbuffer(&buf, &dlength);
         try { *desc = new char[dlength + 1]; }
         catch (...) {
           fprintf(stderr, "vrpn_FunctionGenerator_Remote::decode_interpreterDescription_reply:  "
@@ -2041,14 +1981,8 @@ decode_error_reply( const char* buf, const vrpn_int32 len, FGError& error, vrpn_
 	}
 	int myError = NO_FG_ERROR;
 	vrpn_int32 myChannel = -1;
-	if( 0 > vrpn_unbuffer( &buf, &myError ) 
-		|| 0 > vrpn_unbuffer( &buf, &myChannel ) )
-	{
-		fprintf( stderr, "vrpn_FunctionGenerator_Remote::decode_error_reply:  "
-				"unable to unbuffer error & channel.\n" );
-		fflush( stderr );
-		return -1;
-	}
+        vrpn_unbuffer(&buf, &myError);
+        vrpn_unbuffer(&buf, &myChannel);
 	error = FGError( myError );
 	channel = myChannel;
 	return 0;
