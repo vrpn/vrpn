@@ -79,6 +79,11 @@ UTMCoord::UTMCoord ()
   m_requireLatLonConvert = false;
   m_requireUTMConvert = false;
   setLatLonCoord (0.0, 0.0);
+
+  m_utmXZone = 0;
+  m_utmYZone = 0;
+  m_easting = 0;
+  m_northing = 0;
 }
 
 

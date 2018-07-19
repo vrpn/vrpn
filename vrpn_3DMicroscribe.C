@@ -63,6 +63,8 @@ vrpn_3DMicroscribe::vrpn_3DMicroscribe (const char * name, vrpn_Connection * c,
 	// Set the status of the buttons and analogs to 0 to start
 	clear_values();
 
+        vrpn_gettimeofday(&timestamp, NULL);	// Set watchdog now
+
 #ifdef VRPN_USE_MICROSCRIBE
 	int iResult;
 	iResult=ArmStart(NULL);

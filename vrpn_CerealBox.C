@@ -68,6 +68,8 @@ vrpn_CerealBox::vrpn_CerealBox (const char * name, vrpn_Connection * c,
 	vrpn_Analog::num_channel = _numchannels;
 	vrpn_Dial::num_dials = _numencoders;
 
+        vrpn_gettimeofday(&timestamp, NULL);	// Set watchdog now
+
 	// Set the status of the buttons, analogs and encoders to 0 to start
 	clear_values();
 

@@ -5199,9 +5199,9 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(
                         line);
                 if (d_bail_on_open_error) {
                     d_doing_okay = false;
+                    fclose(config_file);
                     return;
-                }
-                else {
+                } else {
                     continue; // Skip this line
                 }
             }
@@ -5241,18 +5241,20 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(
         d_doing_okay = false;                                                  \
         fprintf(stderr, "vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(): " \
           "Unexpected exception (%s)\n", e.what());                            \
+        fclose(config_file);                                                   \
         return;                                                                \
     } catch (...) {                                                            \
         d_doing_okay = false;                                                  \
         fprintf(stderr, "vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(): " \
           "Unexpected exception (out of memory?)\n");                          \
+        fclose(config_file);                                                   \
         return;                                                                \
     }                                                                          \
     if (retval && d_bail_on_open_error) {                                      \
         d_doing_okay = false;                                                  \
+        fclose(config_file);                                                   \
         return;                                                                \
-    }                                                                          \
-    else {                                                                     \
+    } else {                                                                   \
         continue;                                                              \
     }
 
@@ -5739,6 +5741,7 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(
                     fprintf(stderr, "vrpn_server: Unknown Device: %s\n", s1);
                     if (d_bail_on_open_error) {
                         d_doing_okay = false;
+                        fclose(config_file);                                                   \
                         return;
                     }
                     else {

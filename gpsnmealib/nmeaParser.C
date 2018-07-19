@@ -40,18 +40,20 @@ void NMEAData::reset()
   lon       = 0.0;
   altitude  = 0.0;
   speed     = 0.0;
+  track     = 0.0;
+  magVariation = 0.0;
+  hdop      = 1.0;
+  nStd      = 1.0;
+  eStd      = 1.0;
+  zStd      = 1.0;
+  hStd      = 1.0;
+  numSats   = 0;
   UTCYear   = 94;
   UTCMonth  = 6;
   UTCDay    = 1;
   UTCHour   = 0;
   UTCMinute = 0;
   UTCSecond = 0;
-  track     = 0.0;
-  magVariation = 0.0;
-  hdop      = 1.0;
-  eStd      = 1.0;
-  nStd      = 1.0;
-  numSats   = 0;
 
   // All data stored by this object is currently invalid.
   isValidLat      = false;
@@ -69,8 +71,9 @@ void NMEAData::reset()
   isValidHStd     = false;
   isValidSatData  = false;
   isValidRangeResidualData = false;
+  isValidHStd     = false;
   isValidFixQuality = false;
-  
+
   // Last fix was invalid.
   lastFixQuality = FIX_AUTONOMOUS;
 

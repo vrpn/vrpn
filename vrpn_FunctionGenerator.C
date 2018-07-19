@@ -216,10 +216,10 @@ getScript( ) const
   char* retval = NULL;
   try {
     retval = new char[strlen(this->script) + 1];
-    strcpy(retval, this->script);
   } catch (...) {
     return NULL;
   }
+  if (this->script) { strcpy(retval, this->script); }
   return retval;
 }
 

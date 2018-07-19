@@ -40,6 +40,8 @@ vrpn_5dt16::vrpn_5dt16 (const char * p_name, vrpn_Connection * p_c, const char *
   // Set the parameters in the parent classes
   vrpn_Analog::num_channel = _numchannels;
 
+  vrpn_gettimeofday(&timestamp, NULL);	// Set watchdog now
+
   // Set the status of the buttons and analogs to 0 to start
   clear_values();
 

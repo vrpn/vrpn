@@ -53,6 +53,9 @@ vrpn_3DConnexion::vrpn_3DConnexion(vrpn_HidAcceptor *filter, unsigned num_button
   memset(channel, 0, sizeof(channel));
   memset(last, 0, sizeof(last));
 
+  // Initialize the timestamp.
+  vrpn_gettimeofday(&_timestamp, NULL);
+
 // There is a non-HID Linux-based driver for this device that has a capability
 // not implemented in the HID interface.  It is implemented using the Event
 // interface.
