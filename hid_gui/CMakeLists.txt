@@ -29,12 +29,22 @@ set(UIS
 	mainwindow.ui
 	plot.ui)
 
-find_package(Qt4 4.7)
-if(QT_FOUND)
+find_package(Qt5 COMPONENTS Gui Widgets)
+if(NOT TARGET Qt5::Core)
+	message("No Qt5")
+	find_package(Qt4 4.7)
+endif()
+
+if(TARGET Qt5::Core)
+	qt5_wrap_ui(GENERATED_SOURCES ${UIS})
+	qt5_wrap_cpp(GENERATED_SOURCES ${MOCS})
+elseif(QT_FOUND)
 	include(${QT_USE_FILE})
 	qt4_wrap_ui(GENERATED_SOURCES ${UIS})
 	qt4_wrap_cpp(GENERATED_SOURCES ${MOCS})
+endif()
 
+if(TARGET Qt5::Core OR QT_FOUND)
 	source_group("Generated Sources - Do Not Edit"
 		FILES
 		${GENERATED_SOURCES})
@@ -51,4 +61,10 @@ if(QT_FOUND)
 		${RESOURCES})
 	target_link_libraries(vrpn_hid_gui ${QT_LIBRARIES} vrpnserver)
 endif()
-
+if(TARGET Qt5::Core)
+	qt5_wrap_ui(GENERATED_SOURCES ${UIS})
+	qt5_wrap_cpp(GENERATED_SOURCES ${MOCS})
+	qt5_use_modules(vrpn_hid_gui Widgets)
+elseif(QT_FOUND)
+	target_link_libraries(vrpn_hid_gui ${QT_LIBRARIES})
+endif()

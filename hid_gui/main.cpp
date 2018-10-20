@@ -22,7 +22,12 @@
 #include "vrpn_HumanInterface.h"
 
 // Library/third-party includes
-#include <QtGui/QApplication>
+#include <QtGlobal>
+#if QT_VERSION >= 0x050000
+    #include <QApplication>
+#else
+    #include <QtGui/QApplication>
+#endif
 
 // Standard includes
 #include <sstream>
@@ -38,7 +43,7 @@ int usage(char * argv0) {
 
 	       "%s VEND PROD [N]\n"
 	       "	Open HID device number N (default to 0) that matches\n"
-	       "	vendor VEND and product PROD, in _decimal_\n\n"
+	       "	vendor VEND and product PROD, in hex\n\n"
 
 	       ,
 	       argv0, argv0, argv0);
@@ -60,15 +65,17 @@ int main(int argc, char *argv[]) {
 	unsigned N = 0; // Which device to open?
 	if (argc >= 3) {
 		vrpn_uint16 vend;
-		std::istringstream vendS(argv[1]);
+		std::stringstream vendS(argv[1]);
+		vendS << std::hex << argv[1];
 		if (!(vendS >> vend)) {
-			return failedOnArgument(1, "a decimal vendor ID", argv);
+			return failedOnArgument(1, "a hex vendor ID (four characters)", argv);
 		}
 
 		vrpn_uint16 prod;
-		std::istringstream prodS(argv[2]);
+		std::stringstream prodS;
+		prodS << std::hex << argv[2];
 		if (!(prodS >> prod)) {
-			return failedOnArgument(2, "a decimal product ID", argv);
+			return failedOnArgument(2, "a hex product ID (four characters)", argv);
 		}
 
 		if (argc >= 4) {
