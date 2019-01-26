@@ -136,7 +136,13 @@ void vrpn_Hash<TKey, TValue>::Clear()
 	ClearItems();
 
 	m_NrItems = 0;
-        delete m_Items; m_Items = NULL;
+        try {
+          delete[] m_Items;
+        } catch (...) {
+          fprintf(stderr, "vrpn_Hash::Clear(): delete failed\n");
+          return;
+        }
+        m_Items = NULL;
         m_First = 0;
         m_CurrentItem = 0;
 
