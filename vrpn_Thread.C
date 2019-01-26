@@ -187,7 +187,12 @@ bool vrpn_Semaphore::destroy()
             "vrpn_Semaphore::destroy: error destroying semaphore.\n");
         return false;
     }
-    delete semaphore;
+    try {
+      delete semaphore;
+    } catch (...) {
+      fprintf(stderr, "vrpn_Semaphore::destroy(): delete failed\n");
+      return false;
+    }
 #endif
     semaphore = NULL;
     return true;

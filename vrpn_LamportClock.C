@@ -1,5 +1,6 @@
 #include "vrpn_LamportClock.h"
 #include <string.h>
+#include <stdio.h>
 
 vrpn_LamportTimestamp::vrpn_LamportTimestamp (int vectorLength,
                                               vrpn_uint32 * vector) :
@@ -23,7 +24,12 @@ vrpn_LamportTimestamp::vrpn_LamportTimestamp
 
 vrpn_LamportTimestamp::~vrpn_LamportTimestamp (void) {
   if (d_timestamp) {
-    delete [] d_timestamp;
+    try {
+      delete[] d_timestamp;
+    } catch (...) {
+      fprintf(stderr, "vrpn_LamportTimestamp::~vrpn_LamportTimestamp(): delete failed\n");
+      return;
+    }
   }
 }
 
@@ -31,7 +37,12 @@ vrpn_LamportTimestamp & vrpn_LamportTimestamp::operator =
         (const vrpn_LamportTimestamp & r) {
 
   if (d_timestamp) {
-    delete [] d_timestamp;
+    try {
+      delete[] d_timestamp;
+    } catch (...) {
+      fprintf(stderr, "vrpn_LamportTimestamp::operator =(): delete failed\n");
+      return *this;
+    }
     d_timestamp = NULL;
   }
 
@@ -119,7 +130,12 @@ vrpn_LamportClock::vrpn_LamportClock (int numHosts, int ourIndex) :
 
 vrpn_LamportClock::~vrpn_LamportClock (void) {
   if (d_currentTimestamp) {
-    delete [] d_currentTimestamp;
+    try {
+      delete[] d_currentTimestamp;
+    } catch (...) {
+      fprintf(stderr, "vrpn_LamportClock::~vrpn_LamportClock(): delete failed\n");
+      return;
+    }
   }
 }
 

@@ -124,10 +124,14 @@ vrpn_Hash<TKey, TValue>::vrpn_Hash(unsigned int (*func)(const TKey &key), int in
 
 template <class TKey,class TValue>
 vrpn_Hash<TKey, TValue>::~vrpn_Hash()
-{
-	
+{	
 	ClearItems();
-	delete[] m_Items;
+        try {
+          delete[] m_Items;
+        } catch (...) {
+          fprintf(stderr, "vrpn_Hash::~vrpn_Hash(): delete failed\n");
+          return;
+        }
 }
 
 template <class TKey,class TValue>
@@ -270,7 +274,12 @@ bool vrpn_Hash<TKey, TValue>::Remove(TKey key)
 		}
 
 		//--free memory
-		delete m_Items[ HashValue ]; //free( m_Items[ HashValue ] );
+                try {
+                  delete m_Items[HashValue]; //free( m_Items[ HashValue ] );
+                } catch (...) {
+                  fprintf(stderr, "vrpn_Hash::Remove(): delete failed\n");
+                  return;
+                }
 		m_Items[ HashValue ] = 0;
 	}
     }
@@ -367,7 +376,12 @@ void vrpn_Hash<TKey, TValue>::ReHash()			//--- these functions do not implement 
 	ClearItems();
 	m_First = NewFirst;
 
-	delete m_Items; //free( m_Items );
+        try {
+          delete[] m_Items;
+        } catch (...) {
+          fprintf(stderr, "vrpn_Hash::ReHash(): delete failed\n");
+          return;
+        }
 	m_Items = temp;
 }
 
@@ -379,7 +393,12 @@ void vrpn_Hash<TKey, TValue>::ClearItems()
 	{
 		HashItem *it = item;
 		item = item->next;
-		delete it;
+                try {
+                  delete it;
+                } catch (...) {
+                  fprintf(stderr, "vrpn_Hash::ClearItems(): delete failed\n");
+                  return;
+                }
 	}
 	m_CurrentItem = 0;
 }
