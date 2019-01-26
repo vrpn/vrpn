@@ -106,13 +106,16 @@ vrpn_FunctionGenerator_function_script( const vrpn_FunctionGenerator_function_sc
 }
 
 
-vrpn_FunctionGenerator_function_script::
-~vrpn_FunctionGenerator_function_script( )
+vrpn_FunctionGenerator_function_script::~vrpn_FunctionGenerator_function_script( )
 {
-	if( script != NULL )
-	{
-		delete [] script;
-		script = NULL;
+	if( script != NULL ) {
+          try {
+            delete[] script;
+          } catch (...) {
+            fprintf(stderr, "vrpn_FunctionGenerator_function_script::~vrpn_FunctionGenerator_function_script(): delete failed\n");
+            return;
+          }
+	  script = NULL;
 	}
 }
 
@@ -191,13 +194,24 @@ decode_from( const char** buf, vrpn_int32& len )
 	{
 		fprintf( stderr, "vrpn_FunctionGenerator_function_script::decode_from:  "
 				"payload error (couldn't unbuffer).\n" );
-		delete [] newscript;
+                try {
+                  delete[] newscript;
+                } catch (...) {
+                  fprintf(stderr, "vrpn_FunctionGenerator_function_script::decode_from(): delete failed\n");
+                  return -1;
+                }
 		fflush( stderr );
 		return -1;
 	}
 	newscript[newlen] = '\0';
-	if( this->script != NULL )
-		delete [] this->script;
+        if (this->script != NULL) {
+                try {
+                  delete[] this->script;
+                } catch (...) {
+                  fprintf(stderr, "vrpn_FunctionGenerator_function_script::decode_from(): delete failed\n");
+                  return -1;
+                }
+        }
 	this->script = newscript;
 	len -= newlen;
 	return newlen + sizeof( vrpn_uint32 );
@@ -224,12 +238,16 @@ getScript( ) const
 }
 
 
-vrpn_bool vrpn_FunctionGenerator_function_script::
-setScript( char* script )
+vrpn_bool vrpn_FunctionGenerator_function_script::setScript( char* script )
 {
 	if( script == NULL ) return false;
         if (this->script != NULL) {
-          delete[] this->script;
+            try {
+              delete[] this->script;
+            } catch (...) {
+              fprintf(stderr, "vrpn_FunctionGenerator_function_script::setScript(): delete failed\n");
+              return false;
+            }
         }
         try {
           this->script = new char[strlen(script) + 1];
@@ -264,18 +282,26 @@ vrpn_FunctionGenerator_channel( vrpn_FunctionGenerator_function* function )
 }
 
 
-vrpn_FunctionGenerator_channel::
-~vrpn_FunctionGenerator_channel( )
+vrpn_FunctionGenerator_channel::~vrpn_FunctionGenerator_channel( )
 {
-	delete function;
+    try {
+      delete function;
+    } catch (...) {
+      fprintf(stderr, "vrpn_FunctionGenerator_channel::~vrpn_FunctionGenerator_channel(): delete failed\n");
+      return;
+    }
 }
 
 
-void vrpn_FunctionGenerator_channel::
-setFunction( vrpn_FunctionGenerator_function* function )
+void vrpn_FunctionGenerator_channel::setFunction( vrpn_FunctionGenerator_function* function )
 {
-	delete (this->function);
-	this->function = function->clone();
+    try {
+      delete (this->function);
+    } catch (...) {
+      fprintf(stderr, "vrpn_FunctionGenerator_channel::setFunction(): delete failed\n");
+      return;
+    }
+    this->function = function->clone();
 }
 
 
@@ -348,7 +374,12 @@ decode_from( const char** buf, vrpn_int32& len )
               fflush(stderr);
               return -1;
             }
-	    delete oldFunc;
+            try {
+              delete oldFunc;
+            } catch (...) {
+              fprintf(stderr, "vrpn_FunctionGenerator_channel::decode_from(): delete failed\n");
+              return -1;
+            }
 	}
 	return this->function->decode_from( buf, len );
 }
@@ -380,13 +411,17 @@ vrpn_FunctionGenerator( const char* name, vrpn_Connection * c )
 }
 
 
-vrpn_FunctionGenerator::
-~vrpn_FunctionGenerator( )
+vrpn_FunctionGenerator::~vrpn_FunctionGenerator( )
 {
 	unsigned i;
 	for( i = 0; i <= vrpn_FUNCTION_CHANNELS_MAX - 1; i++ )
 	{
-		 delete channels[i];
+          try {
+            delete channels[i];
+          } catch (...) {
+            fprintf(stderr, "vrpn_FunctionGenerator::~vrpn_FunctionGenerator(): delete failed\n");
+            return;
+          }
 	}
 }
 

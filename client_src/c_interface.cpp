@@ -57,7 +57,11 @@ extern "C" vrpn_c_bool vrpn_c_close_tracker(void *device)
 	if (device == NULL) { return false; }
 	vrpn_Tracker_Remote *tkr = (vrpn_Tracker_Remote *)device;
 
-	delete tkr;
+        try {
+          delete tkr;
+        } catch (...) {
+          return false;
+        }
 	return true;
 };
 
@@ -103,7 +107,12 @@ extern "C" vrpn_c_bool vrpn_c_close_button(void *device)
 	if (device == NULL) { return false; }
 	vrpn_Button_Remote *btn = (vrpn_Button_Remote *)device;
 
-	delete btn;
+        try {
+          delete btn;
+        }
+        catch (...) {
+          return false;
+        }
 	return true;
 };
 

@@ -44,7 +44,12 @@ namespace vrpn {
             {
                 if (obj) {
                     obj->drop_connection();
-                    delete obj;
+                    try {
+                      delete obj;
+                    } catch (...) {
+                      fprintf(stderr, "EndpointCloser: delete failed\n");
+                      return;
+                    }
                 }
             }
         };
@@ -108,7 +113,12 @@ namespace vrpn {
             needsCompact_ = true;
             VRPN_EC_TRACE(endpoint << " destroyed at location "
                                    << (it - begin_()));
-            delete *it;
+            try {
+              delete *it;
+            } catch (...) {
+              fprintf(stderr, "EndpointContainer::destroy: delete failed\n");
+              return false;
+            }
             *it = NULL;
             return true;
         }

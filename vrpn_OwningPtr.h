@@ -30,11 +30,25 @@ namespace vrpn {
 
     /// default deleter
     template <typename T> struct DefaultDeleter {
-        void operator()(T* ptr) const { delete ptr; }
+        void operator()(T* ptr) const { 
+          try {
+            delete ptr;
+          } catch (...) {
+            fprintf(stderr, "DefaultDeleter: delete failed\n");
+            return;
+          }
+        }
     };
     /// handle arrays with delete []
     template <typename T> struct DefaultDeleter<T[]> {
-        void operator()(T* ptr) const { delete[] ptr; }
+        void operator()(T* ptr) const {
+          try {
+            delete[] ptr;
+          } catch (...) {
+            fprintf(stderr, "DefaultDeleter: delete[] failed\n");
+            return;
+          }
+        }
     };
     namespace traits {
         /// Default trait.

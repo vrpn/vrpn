@@ -176,8 +176,22 @@ vrpn_Forwarder_Server::~vrpn_Forwarder_Server(void)
     // Destroy my list of forwarders
     vrpn_Forwarder_List *fp;
     for (fp = d_myForwarders; fp; fp = fp->next) {
-        if (fp->connection) delete fp->connection;
-        if (fp->forwarder) delete fp->forwarder;
+      if (fp->connection) {
+        try {
+          delete fp->connection;
+        } catch (...) {
+          fprintf(stderr, "vrpn_Forwarder_Server::~vrpn_Forwarder_Server(): delete failed\n");
+          return;
+        }
+      }
+      if (fp->forwarder) {
+        try {
+          delete fp->forwarder;
+        } catch (...) {
+          fprintf(stderr, "vrpn_Forwarder_Server::~vrpn_Forwarder_Server(): delete failed\n");
+          return;
+        }
+      }
     }
 }
 
@@ -286,8 +300,13 @@ int vrpn_Forwarder_Server::handle_forward(void *userdata, vrpn_HANDLERPARAM p)
     if (!servicebuffer || !typebuffer) return -1; // memory allocation failure
     me->forward_message_type(port, servicebuffer, typebuffer);
 
-    delete[] servicebuffer;
-    delete[] typebuffer;
+    try {
+      delete[] servicebuffer;
+      delete[] typebuffer;
+    } catch (...) {
+      fprintf(stderr, "vrpn_Forwarder_Server::handle_forward(): delete failed\n");
+      return -1;
+    }
     return 0;
 }
 
@@ -312,7 +331,12 @@ vrpn_bool vrpn_Forwarder_Controller::start_remote_forwarding(vrpn_int32 remote_p
 
     int ret = d_connection->pack_message(length, now, d_start_forwarding_type, d_myId,
                                buffer, vrpn_CONNECTION_RELIABLE);
-    delete[] buffer;
+    try {
+      delete[] buffer;
+    } catch (...) {
+      fprintf(stderr, "vrpn_Forwarder_Server::start_remote_forwarding(): delete failed\n");
+      return false;
+    }
     return ret == 0;
 }
 
@@ -332,5 +356,10 @@ void vrpn_Forwarder_Controller::forward_message_type(vrpn_int32 remote_port,
 
     d_connection->pack_message(length, now, d_forward_type, d_myId, buffer,
                                vrpn_CONNECTION_RELIABLE);
-    delete[] buffer;
+    try {
+      delete[] buffer;
+    } catch (...) {
+      fprintf(stderr, "vrpn_Forwarder_Server::forward_message_type(): delete failed\n");
+      return;
+    }
 }

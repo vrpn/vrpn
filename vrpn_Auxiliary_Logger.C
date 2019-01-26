@@ -295,16 +295,36 @@ int vrpn_Auxiliary_Logger_Server::static_handle_request_logging(
     me->handle_request_logging(localInName, localOutName, remoteInName,
                                remoteOutName);
     if (localInName) {
+      try {
         delete[] localInName;
+      } catch (...) {
+        fprintf(stderr, "vrpn_Auxiliary_Logger_Server::static_handle_request_logging: delete failed\n");
+        return -1;
+      }
     };
     if (localOutName) {
+      try {
         delete[] localOutName;
+      } catch (...) {
+        fprintf(stderr, "vrpn_Auxiliary_Logger_Server::static_handle_request_logging: delete failed\n");
+        return -1;
+      }
     };
     if (remoteInName) {
+      try {
         delete[] remoteInName;
+      } catch (...) {
+        fprintf(stderr, "vrpn_Auxiliary_Logger_Server::static_handle_request_logging: delete failed\n");
+        return -1;
+      }
     };
     if (remoteOutName) {
+      try {
         delete[] remoteOutName;
+      } catch (...) {
+        fprintf(stderr, "vrpn_Auxiliary_Logger_Server::static_handle_request_logging: delete failed\n");
+        return -1;
+      }
     };
     return 0;
 }
@@ -330,12 +350,22 @@ vrpn_Auxiliary_Logger_Server_Generic::vrpn_Auxiliary_Logger_Server_Generic(
 vrpn_Auxiliary_Logger_Server_Generic::~vrpn_Auxiliary_Logger_Server_Generic()
 {
     if (d_logging_connection) {
-        delete d_logging_connection;
+        try {
+          delete d_logging_connection;
+        } catch (...) {
+          fprintf(stderr, "vrpn_Auxiliary_Logger_Server_Generic::~vrpn_Auxiliary_Logger_Server_Generic: delete failed\n");
+          return;
+        }
         d_logging_connection = NULL;
     }
 
     if (d_connection_name) {
-        delete[] d_connection_name;
+        try {
+          delete[] d_connection_name;
+        } catch (...) {
+          fprintf(stderr, "vrpn_Auxiliary_Logger_Server_Generic::~vrpn_Auxiliary_Logger_Server_Generic: delete failed\n");
+          return;
+        }
         d_connection_name = NULL;
     }
 }
@@ -382,7 +412,12 @@ void vrpn_Auxiliary_Logger_Server_Generic::handle_request_logging(
                           now, vrpn_TEXT_ERROR);
         send_report_logging(NULL, NULL, NULL, NULL);
         if (d_logging_connection) {
-            delete d_logging_connection;
+            try {
+              delete d_logging_connection;
+            } catch (...) {
+              fprintf(stderr, "vrpn_Auxiliary_Logger_Server_Generic::handle_request_logging: delete failed\n");
+              return;
+            }
             d_logging_connection = NULL;
         }
         return;
@@ -402,10 +437,38 @@ void vrpn_Auxiliary_Logger_Server_Generic::handle_request_logging_status()
     d_logging_connection->get_log_names(&local_in, &local_out, &remote_in,
                                         &remote_out);
     send_report_logging(local_in, local_out, remote_in, remote_out);
-    if (local_in) delete[] local_in;
-    if (local_out) delete[] local_out;
-    if (remote_in) delete[] remote_in;
-    if (remote_out) delete[] remote_out;
+    if (local_in) {
+      try {
+        delete[] local_in;
+      } catch (...) {
+        fprintf(stderr, "vrpn_Auxiliary_Logger_Server_Generic::handle_request_logging_status: delete failed\n");
+        return;
+      }
+    }
+    if (local_out) {
+      try {
+        delete[] local_out;
+      } catch (...) {
+        fprintf(stderr, "vrpn_Auxiliary_Logger_Server_Generic::handle_request_logging_status: delete failed\n");
+        return;
+      }
+    }
+    if (remote_in) {
+      try {
+        delete[] remote_in;
+      } catch (...) {
+        fprintf(stderr, "vrpn_Auxiliary_Logger_Server_Generic::handle_request_logging_status: delete failed\n");
+        return;
+      }
+    }
+    if (remote_out) {
+      try {
+        delete[] remote_out;
+      } catch (...) {
+        fprintf(stderr, "vrpn_Auxiliary_Logger_Server_Generic::handle_request_logging_status: delete failed\n");
+        return;
+      }
+    }
 }
 
 void vrpn_Auxiliary_Logger_Remote::mainloop(void)
@@ -470,16 +533,36 @@ vrpn_Auxiliary_Logger_Remote::handle_report_message(void *userdata,
 
     // Clean up memory and return.
     if (localInName) {
+      try {
         delete[] localInName;
+      } catch (...) {
+        fprintf(stderr, "vrpn_Auxiliary_Logger_Server_Generic::handle_report_message: delete failed\n");
+        return -1;
+      }
     };
     if (localOutName) {
+      try {
         delete[] localOutName;
+      } catch (...) {
+        fprintf(stderr, "vrpn_Auxiliary_Logger_Server_Generic::handle_report_message: delete failed\n");
+        return -1;
+      }
     };
     if (remoteInName) {
+      try {
         delete[] remoteInName;
+      } catch (...) {
+        fprintf(stderr, "vrpn_Auxiliary_Logger_Server_Generic::handle_report_message: delete failed\n");
+        return -1;
+      }
     };
     if (remoteOutName) {
+      try {
         delete[] remoteOutName;
+      } catch (...) {
+        fprintf(stderr, "vrpn_Auxiliary_Logger_Server_Generic::handle_report_message: delete failed\n");
+        return -1;
+      }
     };
     return 0;
 }
