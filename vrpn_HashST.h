@@ -278,7 +278,7 @@ bool vrpn_Hash<TKey, TValue>::Remove(TKey key)
                   delete m_Items[HashValue]; //free( m_Items[ HashValue ] );
                 } catch (...) {
                   fprintf(stderr, "vrpn_Hash::Remove(): delete failed\n");
-                  return;
+                  return false;
                 }
 		m_Items[ HashValue ] = 0;
 	}
