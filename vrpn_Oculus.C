@@ -44,7 +44,12 @@ vrpn_Oculus::vrpn_Oculus(vrpn_uint16 product_id, vrpn_uint8 num_channels,
 
 vrpn_Oculus::~vrpn_Oculus()
 {
-  delete m_acceptor;
+  try {
+    delete m_acceptor;
+  } catch (...) {
+    fprintf(stderr, "vrpn_Oculus::~vrpn_Oculus(): delete failed\n");
+    return;
+  }
 }
 
 // Copied from Oliver Kreylos' OculusRift.cpp; he has given permission

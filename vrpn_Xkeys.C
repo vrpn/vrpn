@@ -33,7 +33,12 @@ vrpn_Xkeys::vrpn_Xkeys(vrpn_HidAcceptor *filter, const char *name,
 
 vrpn_Xkeys::~vrpn_Xkeys()
 {
-  delete _filter;
+  try {
+    delete _filter;
+  } catch (...) {
+    fprintf(stderr, "vrpn_Xkeys::~vrpn_Xkeys(): delete failed\n");
+    return;
+  }
 }
 
 void vrpn_Xkeys::init_hid() {

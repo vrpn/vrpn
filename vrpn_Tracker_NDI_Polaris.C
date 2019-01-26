@@ -251,7 +251,12 @@ int vrpn_Tracker_NDI_Polaris::convertBinaryFileToAsciiEncodedHex(const char* fil
 	size_t result = fread (rawBytesFromRomFile,1,fileSizeInBytes,fptr);
 	if (result != (unsigned int) fileSizeInBytes) {
 		fprintf(stderr,"vrpn_Tracker_NDI_Polaris: error while reading .rom file!\n");
-		delete rawBytesFromRomFile;
+                try {
+                  delete rawBytesFromRomFile;
+                } catch (...) {
+                  fprintf(stderr, "vrpn_Tracker_NDI_Polaris::convertBinaryFileToAsciiEncodedHex(): delete failed\n");
+                  return -1;
+                }
 		fclose(fptr);
 		return(-1);
 	}
@@ -282,7 +287,12 @@ int vrpn_Tracker_NDI_Polaris::convertBinaryFileToAsciiEncodedHex(const char* fil
 	asciiEncodedHexStr[byteIndex*2]='\0'; //end of string marker, which is used just for debugging
 	
 	//printf("DEBUG: >>%s<<\n",asciiEncodedHexStr);
-	delete rawBytesFromRomFile;
+        try {
+          delete rawBytesFromRomFile;
+        } catch (...) {
+          fprintf(stderr, "vrpn_Tracker_NDI_Polaris::convertBinaryFileToAsciiEncodedHex(): delete failed\n");
+          return -1;
+        }
 	
 	return paddedFileSizeInBytes;
 }

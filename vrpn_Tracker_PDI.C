@@ -55,7 +55,12 @@ vrpn_Tracker_G4::~vrpn_Tracker_G4(void){
 
 	if (m_pHMap)
 	{
-		delete m_pHMap;
+          try {
+            delete m_pHMap;
+          } catch (...) {
+            fprintf(stderr, "vrpn_Tracker_G4::~vrpn_Tracker_G4(): delete failed\n");
+            return;
+          }
 	}
 }
 
@@ -1082,8 +1087,14 @@ vrpn_Tracker_FastrakPDI::~vrpn_Tracker_FastrakPDI(void)
 
 	  for (int i=0; i<FT_MAX_SENSORS; i++)
 	  {
-		  if (FTstylusBtns[i])
-			  delete FTstylusBtns[i];
+            if (FTstylusBtns[i]) {
+              try {
+                delete FTstylusBtns[i];
+              } catch (...) {
+                fprintf(stderr, "vrpn_Tracker_FastrakPDI::~vrpn_Tracker_FastrakPDI(): delete failed\n");
+                return;
+              }
+            }
 	  }
   }
 
@@ -1644,8 +1655,14 @@ vrpn_Tracker_LibertyPDI::~vrpn_Tracker_LibertyPDI(void){
 
 	  for (int i=0; i<LIBERTY_MAX_SENSORS; i++)
 	  {
-		  if (StylusBtns[i])
-			  delete StylusBtns[i];
+            if (StylusBtns[i]) {
+              try {
+                delete StylusBtns[i];
+              } catch (...) {
+                fprintf(stderr, "vrpn_Tracker_LibertyPDI::~vrpn_Tracker_LibertyPDI(): delete failed\n");
+                return;
+              }
+            }
 	  }
   }
 

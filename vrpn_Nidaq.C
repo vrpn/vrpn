@@ -132,7 +132,12 @@ vrpn_Nidaq::~vrpn_Nidaq() {
 	if (fNice) {
 	  timeEndPeriod(1);
   }
-  delete pDAQ;
+  try {
+    delete pDAQ;
+  } catch (...) {
+    fprintf(stderr, "vrpn_Nidaq::~vrpn_Nidaq(): delete failed\n");
+    return;
+  }
 }
 
 void vrpn_Nidaq::mainloop(void) {

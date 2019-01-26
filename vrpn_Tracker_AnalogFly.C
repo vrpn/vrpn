@@ -179,14 +179,24 @@ vrpn_Tracker_AnalogFly::~vrpn_Tracker_AnalogFly (void)
 	if (d_reset_button != NULL) {
 		d_reset_button->unregister_change_handler(this,
                                         handle_reset_press);
-		delete d_reset_button;
+                try {
+                  delete d_reset_button;
+                } catch (...) {
+                  fprintf(stderr, "vrpn_Tracker_AnalogFly::~vrpn_Tracker_AnalogFly(): delete failed\n");
+                  return;
+                }
 	}
 
 	// Tear down the clutch button update callback and remote (if there is one)
 	if (d_clutch_button != NULL) {
 		d_clutch_button->unregister_change_handler(this,
                                         handle_clutch_press);
-		delete d_clutch_button;
+                try {
+                  delete d_clutch_button;
+                } catch (...) {
+                  fprintf(stderr, "vrpn_Tracker_AnalogFly::~vrpn_Tracker_AnalogFly(): delete failed\n");
+                  return;
+                }
 	}
 }
 
@@ -312,7 +322,12 @@ int	vrpn_Tracker_AnalogFly::teardown_channel(vrpn_TAF_fullaxis *full)
                           handle_analog_update);
 
 	// Delete the analog device.
-	delete full->ana;
+        try {
+          delete full->ana;
+        } catch (...) {
+          fprintf(stderr, "vrpn_Tracker_AnalogFly::teardown_channel(): delete failed\n");
+          return -1;
+        }
 
 	return ret;
 }

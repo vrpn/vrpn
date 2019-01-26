@@ -137,11 +137,21 @@ vrpn_Tracker_ButtonFly::~vrpn_Tracker_ButtonFly (void)
   // Tear down the analog update callbacks and remotes (if they exist)
   if (d_vel_scale != NULL) {
     d_vel_scale->unregister_change_handler(this, handle_velocity_update);
-    delete d_vel_scale;
+    try {
+      delete d_vel_scale;
+    } catch (...) {
+      fprintf(stderr, "vrpn_Tracker_ButtonFly::~vrpn_Tracker_ButtonFly(): delete failed\n");
+      return;
+    }
   }
   if (d_rot_scale != NULL) {
     d_rot_scale->unregister_change_handler(this, handle_rotation_update);
-    delete d_rot_scale;
+    try {
+      delete d_rot_scale;
+    } catch (...) {
+      fprintf(stderr, "vrpn_Tracker_ButtonFly::~vrpn_Tracker_ButtonFly(): delete failed\n");
+      return;
+    }
   }
 }
 
@@ -196,7 +206,12 @@ int	vrpn_Tracker_ButtonFly::teardown_channel(vrpn_TBF_fullaxis *full)
   ret = full->btn->unregister_change_handler((void*)full, handle_button_update);
 
   // Delete the analog device and point the remote at it.
-  delete full->btn;
+  try {
+    delete full->btn;
+  } catch (...) {
+    fprintf(stderr, "vrpn_Tracker_ButtonFly::teardown_channel(): delete failed\n");
+    return -1;
+  }
 
   return ret;
 }

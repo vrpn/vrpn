@@ -28,7 +28,12 @@ vrpn_nVidia_shield::vrpn_nVidia_shield(vrpn_HidAcceptor *filter,
 
 vrpn_nVidia_shield::~vrpn_nVidia_shield(void)
 {
-  delete d_filter;
+  try {
+    delete d_filter;
+  } catch (...) {
+    fprintf(stderr, "vrpn_nVidia_shield::~vrpn_nVidia_shield(): delete failed\n");
+    return;
+  }
 }
 
 void vrpn_nVidia_shield::init_hid(void) {

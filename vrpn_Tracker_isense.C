@@ -173,12 +173,22 @@ vrpn_Tracker_InterSense::~vrpn_Tracker_InterSense()
     // Delete any button and analog devices that were created
     for (i = 0; i < ISD_MAX_STATIONS; i++) {
 		if (is900_buttons[i]) {
-		    delete is900_buttons[i];
+                    try {
+                      delete is900_buttons[i];
+                    } catch (...) {
+                      fprintf(stderr, "vrpn_Tracker_InterSense::~vrpn_Tracker_InterSense(): delete failed\n");
+                      return;
+                    }
                     is900_buttons[i] = NULL;
 		}
 		if (is900_analogs[i]) {
-			delete is900_analogs[i];
-                        is900_analogs[i] = NULL;
+                    try {
+                      delete is900_analogs[i];
+                    } catch (...) {
+                      fprintf(stderr, "vrpn_Tracker_InterSense::~vrpn_Tracker_InterSense(): delete failed\n");
+                      return;
+                    }
+                    is900_analogs[i] = NULL;
 		}
     }
 #endif

@@ -65,12 +65,17 @@ vrpn_Tracker_Fastrak::~vrpn_Tracker_Fastrak()
 
     // Delete any button and analog devices that were created
     for (i = 0; i < num_stations; i++) {
-	if (is900_buttons[i]) {
-	    delete is900_buttons[i];
-	}
-	if (is900_analogs[i]) {
-	    delete is900_analogs[i];
-	}
+      try {
+        if (is900_buttons[i]) {
+          delete is900_buttons[i];
+        }
+        if (is900_analogs[i]) {
+          delete is900_analogs[i];
+        }
+      } catch (...) {
+        fprintf(stderr, "vrpn_Tracker_Fastrak::~vrpn_Tracker_Fastrak(): delete failed\n");
+        return;
+      }
     }
 }
 

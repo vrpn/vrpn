@@ -94,10 +94,20 @@ vrpn_Tracker_FilterOneEuro::vrpn_Tracker_FilterOneEuro(const char * name, vrpn_C
 vrpn_Tracker_FilterOneEuro::~vrpn_Tracker_FilterOneEuro()
 {
   d_listen_tracker->unregister_change_handler(this, handle_tracker_update);
-  delete d_listen_tracker;
-  if (d_qfilters) { delete [] d_qfilters; d_qfilters = NULL; }
-  if (d_filters) { delete [] d_filters; d_filters = NULL; }
-  if (d_last_report_times) { delete [] d_last_report_times; d_last_report_times = NULL; }
+  try {
+    delete d_listen_tracker;
+  } catch (...) {
+    fprintf(stderr, "vrpn_Tracker_FilterOneEuro::~vrpn_Tracker_FilterOneEuro(): delete failed\n");
+    return;
+  }
+  try {
+    if (d_qfilters) { delete[] d_qfilters; d_qfilters = NULL; }
+    if (d_filters) { delete[] d_filters; d_filters = NULL; }
+    if (d_last_report_times) { delete[] d_last_report_times; d_last_report_times = NULL; }
+  } catch (...) {
+    fprintf(stderr, "vrpn_Tracker_FilterOneEuro::~vrpn_Tracker_FilterOneEuro(): delete failed\n");
+    return;
+  }
 }
 
 void vrpn_Tracker_FilterOneEuro::mainloop()
@@ -168,7 +178,12 @@ void vrpn_Tracker_DeadReckoning_Rotation::mainloop()
 
 vrpn_Tracker_DeadReckoning_Rotation::~vrpn_Tracker_DeadReckoning_Rotation()
 {
+  try {
     delete d_origTracker;
+  } catch (...) {
+    fprintf(stderr, "vrpn_Tracker_DeadReckoning_Rotation::~vrpn_Tracker_DeadReckoning_Rotation(): delete failed\n");
+    return;
+  }
 }
 
 void vrpn_Tracker_DeadReckoning_Rotation::sendNewPrediction(vrpn_int32 sensor)
@@ -437,9 +452,14 @@ int vrpn_Tracker_DeadReckoning_Rotation::test(void)
             << " from sensor " << poseResponse.sensor
             << " at time " << poseResponse.time.tv_sec << ":" << poseResponse.time.tv_usec
             << std::endl;
-        delete tr;
-        delete t1;
-        delete t0;
+        try {
+          delete tr;
+          delete t1;
+          delete t0;
+        } catch (...) {
+          std::cerr << "vrpn_Tracker_DeadReckoning_Rotation::test(): delete failed" << std::endl;
+          return 1;
+        }
         c->removeReference();
         return 1;
     }
@@ -477,9 +497,14 @@ int vrpn_Tracker_DeadReckoning_Rotation::test(void)
             << poseResponse.quat[Q_Z] << ", " << poseResponse.quat[Q_W] << ")"
             << " from sensor " << poseResponse.sensor
             << std::endl;
-        delete tr;
-        delete t1;
-        delete t0;
+        try {
+          delete tr;
+          delete t1;
+          delete t0;
+        } catch (...) {
+          std::cerr << "vrpn_Tracker_DeadReckoning_Rotation::test(): delete failed" << std::endl;
+          return 1;
+        }
         c->removeReference();
         return 2;
     }
@@ -512,9 +537,14 @@ int vrpn_Tracker_DeadReckoning_Rotation::test(void)
             << poseResponse.quat[Q_Z] << ", " << poseResponse.quat[Q_W] << ")"
             << " from sensor " << poseResponse.sensor
             << std::endl;
-        delete tr;
-        delete t1;
-        delete t0;
+        try {
+          delete tr;
+          delete t1;
+          delete t0;
+        } catch (...) {
+          std::cerr << "vrpn_Tracker_DeadReckoning_Rotation::test(): delete failed" << std::endl;
+          return 1;
+        }
         c->removeReference();
         return 3;
     }
@@ -554,9 +584,14 @@ int vrpn_Tracker_DeadReckoning_Rotation::test(void)
             << poseResponse.quat[Q_Z] << ", " << poseResponse.quat[Q_W] << ")"
             << " from sensor " << poseResponse.sensor
             << std::endl;
-        delete tr;
-        delete t1;
-        delete t0;
+        try {
+          delete tr;
+          delete t1;
+          delete t0;
+        } catch (...) {
+          std::cerr << "vrpn_Tracker_DeadReckoning_Rotation::test(): delete failed" << std::endl;
+          return 1;
+        }
         c->removeReference();
         return 4;
     }
@@ -602,18 +637,28 @@ int vrpn_Tracker_DeadReckoning_Rotation::test(void)
             << "; axis = (" << x << ", " << y << ", " << z << "), angle = "
             << angle
             << std::endl;
-        delete tr;
-        delete t1;
-        delete t0;
+        try {
+          delete tr;
+          delete t1;
+          delete t0;
+        } catch (...) {
+          std::cerr << "vrpn_Tracker_DeadReckoning_Rotation::test(): delete failed" << std::endl;
+          return 1;
+        }
         c->removeReference();
         return 5;
     }
 
     // Done; delete our objects and return 0 to indicate that
     // everything worked.
-    delete tr;
-    delete t1;
-    delete t0;
+    try {
+      delete tr;
+      delete t1;
+      delete t0;
+    } catch (...) {
+      std::cerr << "vrpn_Tracker_DeadReckoning_Rotation::test(): delete failed" << std::endl;
+      return 1;
+    }
     c->removeReference();
     return 0;
 }

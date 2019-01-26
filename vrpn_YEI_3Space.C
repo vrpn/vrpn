@@ -75,12 +75,17 @@ vrpn_YEI_3Space::~vrpn_YEI_3Space()
 {
   // Free the space used to store the additional reset commands,
   // then free the array used to store the pointers.
-  for (int i = 0; i < d_reset_command_count; i++) {
-    delete [] d_reset_commands[i];
-  }
-  if (d_reset_commands != NULL) {
-    delete [] d_reset_commands;
-    d_reset_commands = NULL;
+  try {
+    for (int i = 0; i < d_reset_command_count; i++) {
+      delete[] d_reset_commands[i];
+    }
+    if (d_reset_commands != NULL) {
+      delete[] d_reset_commands;
+      d_reset_commands = NULL;
+    }
+  } catch (...) {
+    fprintf(stderr, "vrpn_YEI_3Space::~vrpn_YEI_3Space(): delete failed\n");
+    return;
   }
 }
 
@@ -569,7 +574,12 @@ bool vrpn_YEI_3Space_Sensor::send_ascii_command (const char *p_cmd)
   int l_ret = vrpn_write_characters (d_serial_fd, buffer, buflen);
 
   // Free the buffer.
-  delete [] buffer;
+  try {
+    delete[] buffer;
+  } catch (...) {
+    fprintf(stderr, "vrpn_YEI_3Space_Sensor::send_ascii_command(): delete failed\n");
+    return false;
+  }
 
   // Tell if sending worked.
   if (l_ret == buflen) {

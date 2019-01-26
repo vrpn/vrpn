@@ -185,7 +185,12 @@ vrpn_Tracker_MotionNode::vrpn_Tracker_MotionNode(const char *name,
     // Clean up resources now if the sampler was never
     // copied into this object.
     if ((NULL == m_handle) && (NULL != sampler)) {
-      delete sampler;
+      try {
+        delete sampler;
+      } catch (...) {
+        fprintf(stderr, "vrpn_Tracker_MotionNode::vrpn_Tracker_MotionNode(): delete failed\n");
+        return;
+      }
     }
   }
 
@@ -208,7 +213,12 @@ vrpn_Tracker_MotionNode::~vrpn_Tracker_MotionNode()
 
   if (NULL != m_handle) {
     sampler_type *sampler = reinterpret_cast<sampler_type *>(m_handle);
-    delete sampler;
+    try {
+      delete sampler;
+    } catch (...) {
+      fprintf(stderr, "vrpn_Tracker_MotionNode::~vrpn_Tracker_MotionNode(): delete failed\n");
+      return;
+    }
 
     m_handle = NULL;
   }
