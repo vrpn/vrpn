@@ -25,6 +25,7 @@
 
 // Standard includes
 #include <utility>
+#include <iostream>
 
 namespace vrpn {
 
@@ -34,7 +35,7 @@ namespace vrpn {
           try {
             delete ptr;
           } catch (...) {
-            fprintf(stderr, "DefaultDeleter: delete failed\n");
+            std::cerr << "DefaultDeleter: delete failed" << std::endl;;
             return;
           }
         }
@@ -45,7 +46,7 @@ namespace vrpn {
           try {
             delete[] ptr;
           } catch (...) {
-            fprintf(stderr, "DefaultDeleter: delete[] failed\n");
+            std::cerr << "DefaultDeleter: delete failed" << std::endl;;
             return;
           }
         }
