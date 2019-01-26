@@ -2,6 +2,7 @@
 #include <stdio.h>                      // for fprintf, stderr, NULL, etc
 #include <stdlib.h>                     // for atof, exit, atoi
 #include <string.h>                     // for strcmp, strncmp
+#include <vector>
 #include <vrpn_Configure.h>             // for VRPN_CALLBACK
 #include <vrpn_Button.h>                // for vrpn_BUTTONCB
 #include <vrpn_Shared.h>                // for vrpn_SleepMsecs
@@ -109,25 +110,25 @@ void init (const char * station_name,
            const char * remote_in_logfile, const char * remote_out_logfile,
            const char * NIC)
 {
-	char devicename [1000];
+	std::vector<char> devicename(strlen(station_name)+12);
 	//char * hn;
 
-  vrpn_int32 gotConn_type;
+        vrpn_int32 gotConn_type;
 
 	// explicitly open up connections with the proper logging parameters
 	// these will be entered in the table and found by the
 	// vrpn_get_connection_by_name() inside vrpn_Tracker and vrpn_Button
 
-	sprintf(devicename, "Tracker0@%s", station_name);
+	sprintf(devicename.data(), "Tracker0@%s", station_name);
 	if (!strncmp(station_name, "file:", 5)) {
-fprintf(stderr, "Opening file %s.\n", station_name);
+        fprintf(stderr, "Opening file %s.\n", station_name);
 	  c = new vrpn_File_Connection (station_name);  // now unnecessary!
           if (local_in_logfile || local_out_logfile ||
               remote_in_logfile || remote_out_logfile) {
             fprintf(stderr, "Warning:  Reading from file, so not logging.\n");
           }
 	} else {
-fprintf(stderr, "Connecting to host %s.\n", station_name);
+        fprintf(stderr, "Connecting to host %s.\n", station_name);
 	  c = vrpn_get_connection_by_name
                     (station_name,
 		    local_in_logfile, local_out_logfile,
@@ -146,16 +147,15 @@ fprintf(stderr, "Connecting to host %s.\n", station_name);
 	    rc = new vrpn_RedundantRemote (c);
 	}
 
-fprintf(stderr, "Tracker's name is %s.\n", devicename);
-	tkr = new vrpn_Tracker_Remote (devicename);
+        fprintf(stderr, "Tracker's name is %s.\n", devicename.data());
+	tkr = new vrpn_Tracker_Remote (devicename.data());
 
-
-	sprintf(devicename, "Button0@%s", station_name);
-fprintf(stderr, "Button's name is %s.\n", devicename);
-	btn = new vrpn_Button_Remote (devicename);
-	sprintf(devicename, "Button1@%s", station_name);
-fprintf(stderr, "Button 2's name is %s.\n", devicename);
-	btn2 = new vrpn_Button_Remote (devicename);
+	sprintf(devicename.data(), "Button0@%s", station_name);
+        fprintf(stderr, "Button's name is %s.\n", devicename.data());
+	btn = new vrpn_Button_Remote (devicename.data());
+	sprintf(devicename.data(), "Button1@%s", station_name);
+        fprintf(stderr, "Button 2's name is %s.\n", devicename.data());
+	btn2 = new vrpn_Button_Remote (devicename.data());
 
 
 	// Set up the tracker callback handler
@@ -169,9 +169,9 @@ fprintf(stderr, "Button 2's name is %s.\n", devicename);
 	btn->register_change_handler(NULL, handle_button);
 	btn2->register_change_handler(NULL, handle_button);
 
-  gotConn_type = c->register_message_type(vrpn_got_connection);
+        gotConn_type = c->register_message_type(vrpn_got_connection);
 
-  c->register_handler(gotConn_type, handle_gotConnection, NULL);
+        c->register_handler(gotConn_type, handle_gotConnection, NULL);
 
 }	/* init */
 
