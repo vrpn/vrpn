@@ -47,7 +47,12 @@ vrpn_Futaba::vrpn_Futaba(vrpn_HidAcceptor *filter, const char *name, vrpn_Connec
 
 vrpn_Futaba::~vrpn_Futaba(void)
 {
-  delete _filter;
+  try {
+    delete _filter;
+  } catch (...) {
+    fprintf(stderr, "vrpn_Futaba::~vrpn_Futaba(): delete failed\n");
+    return;
+  }
 }
 
 void vrpn_Futaba::init_hid(void) {

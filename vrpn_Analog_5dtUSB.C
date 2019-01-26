@@ -75,7 +75,12 @@ vrpn_Analog_5dtUSB::vrpn_Analog_5dtUSB(vrpn_HidAcceptor *filter,
 }
 
 vrpn_Analog_5dtUSB::~vrpn_Analog_5dtUSB() {
-	delete m_acceptor;
+  try {
+    delete m_acceptor;
+  } catch (...) {
+    fprintf(stderr, "vrpn_Analog_5dtUSB::~vrpn_Analog_5dtUSB(): delete failed\n");
+    return;
+  }
 }
 std::string vrpn_Analog_5dtUSB::get_description() const {
 	std::ostringstream ss;

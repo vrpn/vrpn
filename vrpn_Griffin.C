@@ -42,7 +42,12 @@ vrpn_Griffin::vrpn_Griffin(vrpn_HidAcceptor *filter, const char *name, vrpn_Conn
 
 vrpn_Griffin::~vrpn_Griffin(void)
 {
-  delete _filter;
+  try {
+    delete _filter;
+  } catch (...) {
+    fprintf(stderr, "vrpn_Griffin::~vrpn_Griffin(): delete failed\n");
+    return;
+  }
 }
 
 void vrpn_Griffin::init_hid(void) {
