@@ -444,7 +444,12 @@ void vrpn_TranslationTable::clear(void)
 
     for (i = 0; i < d_numEntries; i++) {
         if (d_entry[i].name) {
-            delete[] d_entry[i].name;
+            try {
+              delete[] d_entry[i].name;
+            } catch (...) {
+              fprintf(stderr, "vrpn_TranslationTable::clear: delete failed\n");
+              return;
+            }
             d_entry[i].name = NULL;
         }
         d_entry[i].local_id = -1;
@@ -490,13 +495,23 @@ vrpn_Log::~vrpn_Log(void)
         vrpnLogFilterEntry *next;
         while (d_filters) {
             next = d_filters->next;
-            delete d_filters;
+            try {
+              delete d_filters;
+            } catch (...) {
+              fprintf(stderr, "vrpn_Log::~vrpn_Log: delete failed\n");
+              return;
+            }
             d_filters = next;
         }
     }
 
     if (d_magicCookie) {
-        delete[] d_magicCookie;
+        try {
+          delete[] d_magicCookie;
+        } catch (...) {
+          fprintf(stderr, "vrpn_Log::~vrpn_Log: delete failed\n");
+          return;
+        }
     }
 }
 
@@ -589,7 +604,12 @@ int vrpn_Log::close(void)
     d_file = NULL;
 
     if (d_logFileName) {
-        delete[] d_logFileName;
+        try {
+          delete[] d_logFileName;
+        } catch (...) {
+          fprintf(stderr, "vrpn_Log::close: delete failed\n");
+          return -1;
+        }
         d_logFileName = NULL;
     }
 
@@ -694,9 +714,19 @@ int vrpn_Log::saveLogSoFar(void)
     while (d_logTail) {
         lp = d_logTail->next;
         if (d_logTail->data.buffer) {
-            delete[] d_logTail->data.buffer; // ugly cast
+            try {
+              delete[] d_logTail->data.buffer; // ugly cast
+            } catch (...) {
+              fprintf(stderr, "vrpn_Log::saveLogSoFar: delete failed\n");
+              return -1;
+            }
         }
-        delete d_logTail;
+        try {
+          delete d_logTail;
+        } catch (...) {
+          fprintf(stderr, "vrpn_Log::saveLogSoFar: delete failed\n");
+          return -1;
+        }
         d_logTail = lp;
     }
 
@@ -787,7 +817,7 @@ int vrpn_Log::logMessage(vrpn_int32 payloadLen, struct timeval time,
         catch (...) {
             fprintf(stderr, "vrpn_Log::logMessage:  "
                             "Out of memory!\n");
-            delete lp;
+            try { delete lp; } catch (...) {};
             return -1;
         }
 
@@ -844,7 +874,12 @@ int vrpn_Log::setName(const char *name) { return setName(name, strlen(name)); }
 int vrpn_Log::setName(const char *name, size_t len)
 {
     if (d_logFileName) {
-        delete[] d_logFileName;
+        try {
+          delete[] d_logFileName;
+        } catch (...) {
+          fprintf(stderr, "vrpn_Log::setName: delete failed\n");
+          return -1;
+        }
         d_logFileName = NULL;
     }
     try {
@@ -860,7 +895,12 @@ int vrpn_Log::setName(const char *name, size_t len)
 int vrpn_Log::setCookie(const char *cookieBuffer)
 {
     if (d_magicCookie) {
-        delete[] d_magicCookie;
+        try {
+          delete[] d_magicCookie;
+        } catch (...) {
+          fprintf(stderr, "vrpn_Log::setCookie: delete failed\n");
+          return -1;
+        }
     }
     try { d_magicCookie = new char[1 + vrpn_cookie_size()]; }
     catch (...) {
@@ -1023,7 +1063,12 @@ vrpn_TypeDispatcher::~vrpn_TypeDispatcher(void)
         while (pVMCB) {
             pVMCB_Del = pVMCB;
             pVMCB = pVMCB_Del->next;
-            delete pVMCB_Del;
+            try {
+              delete pVMCB_Del;
+            } catch (...) {
+              fprintf(stderr, "vrpn_TypeDispatcher::~vrpn_TypeDispatcher: delete failed\n");
+              return;
+            }
         }
     }
 
@@ -1032,7 +1077,12 @@ vrpn_TypeDispatcher::~vrpn_TypeDispatcher(void)
     while (pVMCB) {
         pVMCB_Del = pVMCB;
         pVMCB = pVMCB_Del->next;
-        delete pVMCB_Del;
+        try {
+          delete pVMCB_Del;
+        } catch (...) {
+          fprintf(stderr, "vrpn_TypeDispatcher::~vrpn_TypeDispatcher: delete failed\n");
+          return;
+        }
     }
 
     // Clear out any entries in the table.
@@ -1265,7 +1315,12 @@ int vrpn_TypeDispatcher::removeHandler(vrpn_int32 type,
 
     // Remove the entry from the list
     *snitch = victim->next;
-    delete victim;
+    try {
+      delete victim;
+    } catch (...) {
+      fprintf(stderr, "vrpn_TypeDispatcher::removeHandler: delete failed\n");
+      return -1;
+    }
 
     return 0;
 }
@@ -1408,7 +1463,12 @@ void vrpn_TypeDispatcher::clear(void)
 
     for (i = 0; i < vrpn_CONNECTION_MAX_SENDERS; i++) {
         if (d_senders[i] != NULL) {
+          try {
             delete[] d_senders[i];
+          } catch (...) {
+            fprintf(stderr, "vrpn_TypeDispatcher::clear: delete failed\n");
+            return;
+          }
         }
         d_senders[i] = NULL;
     }
@@ -1426,13 +1486,23 @@ vrpn_ConnectionManager::~vrpn_ConnectionManager(void)
     while (d_kcList) {
         vrpn_Connection *ptr = d_kcList->connection;
         d_semaphore.v();
-        delete ptr;
+        try {
+          delete ptr;
+        } catch (...) {
+          fprintf(stderr, "vrpn_ConnectionManager::~vrpn_ConnectionManager: delete failed\n");
+          return;
+        }
         d_semaphore.p();
     }
     while (d_anonList) {
         vrpn_Connection *ptr = d_anonList->connection;
         d_semaphore.v();
-        delete ptr;
+        try {
+          delete ptr;
+        } catch (...) {
+          fprintf(stderr, "vrpn_ConnectionManager::~vrpn_ConnectionManager: delete failed\n");
+          return;
+        }
         d_semaphore.p();
     }
 }
@@ -1498,7 +1568,12 @@ void vrpn_ConnectionManager::deleteConnection(vrpn_Connection *c,
     }
     else {
         *snitch = victim->next;
-        delete victim;
+        try {
+          delete victim;
+        } catch (...) {
+          fprintf(stderr, "vrpn_ConnectionManager::deleteConnection: delete failed\n");
+          return;
+        }
     }
 }
 
@@ -2725,28 +2800,58 @@ vrpn_Endpoint::~vrpn_Endpoint(void)
 
     // Delete type and sender arrays
     if (d_senders) {
-        delete d_senders;
+        try {
+          delete d_senders;
+        } catch (...) {
+          fprintf(stderr, "vrpn_Endpoint::~vrpn_Endpoint: delete failed\n");
+          return;
+        }
     }
     if (d_types) {
-        delete d_types;
+        try {
+          delete d_types;
+        } catch (...) {
+          fprintf(stderr, "vrpn_Endpoint::~vrpn_Endpoint: delete failed\n");
+          return;
+        }
     }
 
     // Delete the log, if any
     if (d_inLog) {
         // close() is called by destructor IFF necessary
-        delete d_inLog;
+        try {
+          delete d_inLog;
+        } catch (...) {
+          fprintf(stderr, "vrpn_Endpoint::~vrpn_Endpoint: delete failed\n");
+          return;
+        }
     }
     if (d_outLog) {
         // close() is called by destructor IFF necessary
-        delete d_outLog;
+        try {
+          delete d_outLog;
+        } catch (...) {
+          fprintf(stderr, "vrpn_Endpoint::~vrpn_Endpoint: delete failed\n");
+          return;
+        }
     }
 
     // Delete any file names created during the running
     if (d_remoteInLogName) {
-        delete[] d_remoteInLogName;
+        try {
+          delete[] d_remoteInLogName;
+        } catch (...) {
+          fprintf(stderr, "vrpn_Endpoint::~vrpn_Endpoint: delete failed\n");
+          return;
+        }
     }
     if (d_remoteOutLogName) {
-        delete[] d_remoteOutLogName;
+        try {
+          delete[] d_remoteOutLogName;
+        } catch (...) {
+          fprintf(stderr, "vrpn_Endpoint::~vrpn_Endpoint: delete failed\n");
+          return;
+        }
     }
 }
 
@@ -2778,17 +2883,32 @@ vrpn_Endpoint_IP::~vrpn_Endpoint_IP(void)
 
     // Delete the buffers created in the constructor
     if (d_tcpOutbuf) {
-        delete[] d_tcpOutbuf;
+        try {
+          delete[] d_tcpOutbuf;
+        } catch (...) {
+          fprintf(stderr, "vrpn_Endpoint_IP::~vrpn_Endpoint_IP: delete failed\n");
+          return;
+        }
         d_tcpOutbuf = NULL;
     }
     if (d_udpOutbuf) {
-        delete[] d_udpOutbuf;
+        try {
+          delete[] d_udpOutbuf;
+        } catch (...) {
+          fprintf(stderr, "vrpn_Endpoint_IP::~vrpn_Endpoint_IP: delete failed\n");
+          return;
+        }
         d_udpOutbuf = NULL;
     }
 
     // Delete the remote machine name, if it has been set
     if (d_remote_machine_name) {
-        delete[] d_remote_machine_name;
+        try {
+          delete[] d_remote_machine_name;
+        } catch (...) {
+          fprintf(stderr, "vrpn_Endpoint_IP::~vrpn_Endpoint_IP: delete failed\n");
+          return;
+        }
         d_remote_machine_name = NULL;
     }
 }
@@ -3352,7 +3472,12 @@ int vrpn_Endpoint::pack_log_description(void)
     int ret = pack_message(static_cast<vrpn_uint32>(bufsize - bufleft), now,
                            vrpn_CONNECTION_LOG_DESCRIPTION, d_remoteLogMode,
                            buf, vrpn_CONNECTION_RELIABLE);
-    delete[] buf;
+    try {
+      delete[] buf;
+    } catch (...) {
+      fprintf(stderr, "vrpn_Endpoint::pack_log_description: delete failed\n");
+      return -1;
+    }
     return ret;
 }
 
@@ -3760,7 +3885,12 @@ void vrpn_Endpoint_IP::clearBuffers(void)
 void vrpn_Endpoint_IP::setNICaddress(const char *address)
 {
     if (d_NICaddress) {
+      try {
         delete[] d_NICaddress;
+      } catch (...) {
+        fprintf(stderr, "vrpn_Endpoint_IP::setNICaddress: delete failed\n");
+        return;
+      }
     }
     d_NICaddress = NULL;
 
@@ -4960,7 +5090,12 @@ vrpn_Connection::~vrpn_Connection(void)
 
     // Clean up types, senders, and callbacks.
     if (d_dispatcher) {
-        delete d_dispatcher;
+        try {
+          delete d_dispatcher;
+        } catch (...) {
+          fprintf(stderr, "vrpn_Connection::~vrpn_Connection: delete failed\n");
+          return;
+        }
         d_dispatcher = NULL;
     }
 
@@ -4984,9 +5119,13 @@ void vrpn_Connection::removeReference()
 {
     d_references--;
     if (d_references == 0 && d_autoDeleteStatus == true) {
-        delete this;
-    }
-    else if (d_references < 0) { // this shouldn't happen.
+        try {
+          delete this;
+        } catch (...) {
+          fprintf(stderr, "vrpn_Connection::removeReference: delete failed\n");
+          return;
+        }
+    } else if (d_references < 0) { // this shouldn't happen.
         // sanity check
         fprintf(stderr, "vrpn_Connection::removeReference: "
           "Negative reference count.  This shouldn't happen.");
@@ -5366,7 +5505,12 @@ vrpn_create_server_connection(const char *cname,
         fprintf(stderr, "vrpn_create_server_connection(): MPI support not "
                         "compiled in.  Set VRPN_USE_MPI in vrpn_Configure.h "
                         "and recompile.\n");
-        delete[] location;
+        try {
+          delete[] location;
+        } catch (...) {
+          fprintf(stderr, "vrpn_create_server_connection: delete failed\n");
+          return NULL;
+        }
         return NULL;
 #endif
     } else if (is_loopback) {
@@ -5400,7 +5544,12 @@ vrpn_create_server_connection(const char *cname,
             // (just got :port) then use NULL, which means the default NIC.
             char *machine = vrpn_copy_machine_name(location);
             if (strlen(machine) == 0) {
-                delete[] machine;
+                try {
+                  delete[] machine;
+                } catch (...) {
+                  fprintf(stderr, "vrpn_create_server_connection(): delete failed\n");
+                  return NULL;
+                }
                 machine = NULL;
             }
             unsigned short port =
@@ -5413,11 +5562,21 @@ vrpn_create_server_connection(const char *cname,
               return NULL;
             }
             if (machine) {
-                delete[] machine;
+                try {
+                  delete[] machine;
+                } catch (...) {
+                  fprintf(stderr, "vrpn_create_server_connection(): delete failed\n");
+                  return NULL;
+                }
             }
         }
     }
-    delete[] location;
+    try {
+      delete[] location;
+    } catch (...) {
+      fprintf(stderr, "vrpn_create_server_connection(): delete failed\n");
+      return NULL;
+    }
 
     if (!c) { // creation failed
         fprintf(stderr, "vrpn_create_server_connection(): Could not create new "
@@ -5680,13 +5839,23 @@ void vrpn_Connection_IP::server_check_for_incoming_connections(
             fprintf(
                 stderr,
                 "server_check_for_incoming_connections(): Malformed request\n");
-            delete[] checkHost;
+            try {
+              delete[] checkHost;
+            } catch (...) {
+              fprintf(stderr, "server_check_for_incoming_connections(): delete failed\n");
+              return;
+            }
             return;
         }
         if (checkPort < 1024) {
             fprintf(stderr,
                     "server_check_for_incoming_connections(): Bad port\n");
-            delete[] checkHost;
+            try {
+              delete[] checkHost;
+            } catch (...) {
+              fprintf(stderr, "server_check_for_incoming_connections(): delete failed\n");
+              return;
+            }
             return;
         }
         // Check all of the characters in the hostname to make sure they are
@@ -5698,11 +5867,21 @@ void vrpn_Connection_IP::server_check_for_incoming_connections(
                 fprintf(
                     stderr,
                     "server_check_for_incoming_connections(): Bad hostname\n");
-                delete[] checkHost;
+                try {
+                  delete[] checkHost;
+                } catch (...) {
+                  fprintf(stderr, "server_check_for_incoming_connections(): delete failed\n");
+                  return;
+                }
                 return;
             }
         }
-        delete[] checkHost;
+        try {
+          delete[] checkHost;
+        } catch (...) {
+          fprintf(stderr, "server_check_for_incoming_connections(): delete failed\n");
+          return;
+        }
 
         // Make sure that we have room for a new connection
         if (d_endpoints.full()) {
@@ -6214,9 +6393,30 @@ vrpn_Connection_IP::vrpn_Connection_IP(
 
         endpoint->d_tcpSocket = vrpn_start_server(machinename, server_program,
                                                   server_args, NIC_IPaddress);
-        if (machinename) delete[](char *)machinename;
-        if (server_program) delete[](char *)server_program;
-        if (server_args) delete[](char *)server_args;
+        if (machinename) {
+          try {
+            delete[](char *)machinename;
+          } catch (...) {
+            fprintf(stderr, "vrpn_Connection_IP: delete failed\n");
+            return;
+          }
+        }
+        if (server_program) {
+          try {
+            delete[](char *)server_program;
+          } catch (...) {
+            fprintf(stderr, "vrpn_Connection_IP: delete failed\n");
+            return;
+          }
+        }
+        if (server_args) {
+          try {
+            delete[](char *)server_args;
+          } catch (...) {
+            fprintf(stderr, "vrpn_Connection_IP: delete failed\n");
+            return;
+          }
+        }
 
         if (endpoint->d_tcpSocket < 0) {
             fprintf(stderr, "vrpn_Connection_IP:  "
@@ -6261,7 +6461,12 @@ vrpn_Connection_IP::~vrpn_Connection_IP(void)
     }
 
     if (d_NIC_IP) {
-        delete[] d_NIC_IP;
+        try {
+          delete[] d_NIC_IP;
+        } catch (...) {
+          fprintf(stderr, "vrpn_Connection_IP::~vrpn_Connection_IP: delete failed\n");
+          return;
+        }
         d_NIC_IP = NULL;
     }
 
@@ -6542,9 +6747,19 @@ char *vrpn_set_service_name(const char *specifier, const char *newServiceName)
       strcat(newSpecifier, location);
     } catch (...) {
       fprintf(stderr, "vrpn_set_service_name: Out of memory!\n");
-      delete[] location;
+      try {
+        delete[] location;
+      } catch (...) {
+        fprintf(stderr, "vrpn_set_service_name: delete failed\n");
+        return NULL;
+      }
       return NULL;
     }
-    delete[] location;
+    try {
+      delete[] location;
+    } catch (...) {
+      fprintf(stderr, "vrpn_set_service_name: delete failed\n");
+      return NULL;
+    }
     return newSpecifier;
 }

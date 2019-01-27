@@ -117,7 +117,12 @@ namespace detail {
         virtual ~TypedMainloopObject()
         {
             if (_do_delete) {
-                delete _instance;
+                try {
+                  delete _instance;
+                } catch (...) {
+                  fprintf(stderr, "TypedMainloopObject::~TypedMainloopObject: delete failed\n");
+                  return;
+                }
                 VRPN_MAINLOOPOBJECT_MSG("Deleted contained vrpn object "
                                         << _instance)
             }

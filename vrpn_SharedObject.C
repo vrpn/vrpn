@@ -67,10 +67,20 @@ vrpn_SharedObject::~vrpn_SharedObject(void)
     vrpn_int32 gotConnection_type;
 
     if (d_name) {
+      try {
         delete[] d_name;
+      } catch (...) {
+        fprintf(stderr, "vrpn_SharedObject::~vrpn_SharedObject(): delete failed\n");
+        return;
+      }
     }
     if (d_typename) {
+      try {
         delete[] d_typename;
+      } catch (...) {
+        fprintf(stderr, "vrpn_SharedObject::~vrpn_SharedObject(): delete failed\n");
+        return;
+      }
     }
     if (d_connection) {
         d_connection->unregister_handler(d_update_type, handle_update, this,
@@ -454,7 +464,12 @@ void vrpn_Shared_int32::unregister_handler(vrpnSharedIntCallback cb,
     }
 
     *snitch = e->next;
-    delete e;
+    try {
+      delete e;
+    } catch (...) {
+      fprintf(stderr, "vrpn_Shared_int32::unregister_handler(): delete failed\n");
+      return;
+    }
 }
 
 vrpn_bool vrpn_Shared_int32::register_handler(vrpnTimedSharedIntCallback cb,
@@ -492,7 +507,12 @@ void vrpn_Shared_int32::unregister_handler(vrpnTimedSharedIntCallback cb,
     }
 
     *snitch = e->next;
-    delete e;
+    try {
+      delete e;
+    } catch (...) {
+      fprintf(stderr, "vrpn_Shared_int32::unregister_handler(): delete failed\n");
+      return;
+    }
 }
 
 void vrpn_Shared_int32::setSerializerPolicy(vrpn_SerializerPolicy policy,
@@ -680,7 +700,12 @@ void vrpn_Shared_int32::decodeLamport(const char **buffer, vrpn_int32 *,
     try { ret = new vrpn_LamportTimestamp(size, array); }
     catch (...) {}
     *t = ret;
-    delete[] array;
+    try {
+      delete[] array;
+    } catch (...) {
+      fprintf(stderr, "vrpn_Shared_int32::decodeLamport(): delete failed\n");
+      return;
+    }
 }
 
 void vrpn_Shared_int32::sendUpdate(void) { sendUpdate(d_value, d_lastUpdate); }
@@ -696,7 +721,12 @@ void vrpn_Shared_int32::sendUpdate(vrpn_int32 newValue, timeval when)
             vrpn_LamportTimestamp *t;
             t = d_lClock->getTimestampAndAdvance();
             encodeLamport(&bp, &buflen, newValue, when, t);
-            delete t;
+            try {
+              delete t;
+            } catch (...) {
+              fprintf(stderr, "vrpn_Shared_int32::sendUpdate(): delete failed\n");
+              return;
+            }
         } else {
             encode(&bp, &buflen, newValue, when);
         }
@@ -761,7 +791,12 @@ int vrpn_Shared_int32::handle_lamportUpdate(void *ud, vrpn_HANDLERPARAM p)
     s->set(newValue, when, vrpn_FALSE, t);
 
     if (s->d_lastLamportUpdate) {
+      try {
         delete s->d_lastLamportUpdate;
+      } catch (...) {
+        fprintf(stderr, "vrpn_Shared_int32::handle_lamportUpdate(): delete failed\n");
+        return -1;
+      }
     }
     s->d_lastLamportUpdate = t;
 
@@ -896,7 +931,12 @@ void vrpn_Shared_float64::unregister_handler(vrpnSharedFloatCallback cb,
     }
 
     *snitch = e->next;
-    delete e;
+    try {
+      delete e;
+    } catch (...) {
+      fprintf(stderr, "vrpn_Shared_float64::unregister_handler(): delete failed\n");
+      return;
+    }
 }
 
 void vrpn_Shared_float64::register_handler(vrpnTimedSharedFloatCallback cb,
@@ -932,7 +972,12 @@ void vrpn_Shared_float64::unregister_handler(vrpnTimedSharedFloatCallback cb,
     }
 
     *snitch = e->next;
-    delete e;
+    try {
+      delete e;
+    } catch (...) {
+      fprintf(stderr, "vrpn_Shared_float64::unregister_handler(): delete failed\n");
+      return;
+    }
 }
 
 void vrpn_Shared_float64::setSerializerPolicy(vrpn_SerializerPolicy policy,
@@ -1178,7 +1223,12 @@ vrpn_Shared_String::vrpn_Shared_String(const char *name,
 vrpn_Shared_String::~vrpn_Shared_String(void)
 {
     if (d_value) {
+      try {
         delete[] d_value;
+      } catch (...) {
+        fprintf(stderr, "vrpn_Shared_String::~vrpn_Shared_String(): delete failed\n");
+        return;
+      }
     }
     // if (d_connection) {
     // d_connection->unregister_handler(d_becomeSerializer_type,
@@ -1237,7 +1287,12 @@ void vrpn_Shared_String::unregister_handler(vrpnSharedStringCallback cb,
     }
 
     *snitch = e->next;
-    delete e;
+    try {
+      delete e;
+    } catch (...) {
+      fprintf(stderr, "vrpn_Shared_String::unregister_handler(): delete failed\n");
+      return;
+    }
 }
 
 vrpn_bool vrpn_Shared_String::register_handler(vrpnTimedSharedStringCallback cb,
@@ -1275,7 +1330,12 @@ void vrpn_Shared_String::unregister_handler(vrpnTimedSharedStringCallback cb,
     }
 
     *snitch = e->next;
-    delete e;
+    try {
+      delete e;
+    } catch (...) {
+      fprintf(stderr, "vrpn_Shared_String::unregister_handler(): delete failed\n");
+      return;
+    }
 }
 
 void vrpn_Shared_String::setSerializerPolicy(vrpn_SerializerPolicy policy,
@@ -1297,7 +1357,12 @@ vrpn_Shared_String &vrpn_Shared_String::set(const char *newValue, timeval when,
 
         if ((d_value == NULL) || (strcmp(d_value, newValue) != 0)) {
             if (d_value) {
+              try {
                 delete[] d_value;
+              } catch (...) {
+                fprintf(stderr, "vrpn_Shared_String::set(): delete failed\n");
+                return *this;
+              }
             }
             try { d_value = new char[1 + strlen(newValue)]; }
             catch (...) {

@@ -170,10 +170,20 @@ int vrpn_Tracker::register_types(void)
 vrpn_Tracker::~vrpn_Tracker(void)
 {
     if (unit2sensor != NULL) {
+      try {
         delete[] unit2sensor;
+      } catch (...) {
+        fprintf(stderr, "vrpn_Tracker::~vrpn_Tracker(): delete failed\n");
+        return;
+      }
     }
     if (unit2sensor_quat != NULL) {
+      try {
         delete[] unit2sensor_quat;
+      } catch (...) {
+        fprintf(stderr, "vrpn_Tracker::~vrpn_Tracker(): delete failed\n");
+        return;
+      }
     }
     num_unit2sensors = 0;
 }
@@ -216,10 +226,20 @@ bool vrpn_Tracker::ensure_enough_unit2sensors(unsigned num)
 
         // Switch the new lists in for the old, and delete the old.
         if (unit2sensor != NULL) {
+          try {
             delete[] unit2sensor;
+          } catch (...) {
+            fprintf(stderr, "vrpn_Tracker::ensure_enough_unit2sensors(): delete failed\n");
+            return false;
+          }
         }
         if (unit2sensor_quat != NULL) {
+          try {
             delete[] unit2sensor_quat;
+          } catch (...) {
+            fprintf(stderr, "vrpn_Tracker::ensure_enough_unit2sensors(): delete failed\n");
+            return false;
+          }
         }
         unit2sensor = newlist;
         unit2sensor_quat = newqlist;
@@ -1322,7 +1342,12 @@ vrpn_Tracker_Remote::vrpn_Tracker_Remote(const char *name, vrpn_Connection *cn)
 vrpn_Tracker_Remote::~vrpn_Tracker_Remote()
 {
     if (sensor_callbacks != NULL) {
+      try {
         delete[] sensor_callbacks;
+      } catch (...) {
+        fprintf(stderr, "vrpn_Tracker_Remote::~vrpn_Tracker_Remote(): delete failed\n");
+        return;
+      }
     }
     num_sensor_callbacks = 0;
 }
@@ -1356,7 +1381,12 @@ bool vrpn_Tracker_Remote::ensure_enough_sensor_callbacks(unsigned num)
 
         // Switch the new list in for the old, and delete the old.
         if (sensor_callbacks != NULL) {
+          try {
             delete[] sensor_callbacks;
+          } catch (...) {
+            fprintf(stderr, "vrpn_Tracker_Remote::ensure_enough_sensor_callbacks(): delete failed\n");
+            return false;
+          }
         }
         sensor_callbacks = newlist;
         num_sensor_callbacks = num;

@@ -158,8 +158,14 @@ vrpn_LUDL_USBMAC6000::~vrpn_LUDL_USBMAC6000()
   }
 
   // Get rid of the arrays we allocated in the constructor
-  if (_axis_moving != NULL) { delete [] _axis_moving; _axis_moving = NULL; }
-  if (_axis_destination != NULL) { delete [] _axis_destination; _axis_destination = NULL; }
+  try {
+    if (_axis_moving != NULL) { delete[] _axis_moving; _axis_moving = NULL; }
+    if (_axis_destination != NULL) { delete[] _axis_destination; _axis_destination = NULL; }
+  } catch (...) {
+    fprintf(stderr, "vrpn_LUDL_USBMAC6000::~vrpn_LUDL_USBMAC6000(): delete failed\n");
+    return;
+  }
+
 }
 
 bool vrpn_LUDL_USBMAC6000::check_for_data(void)

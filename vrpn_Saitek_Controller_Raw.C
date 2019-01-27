@@ -79,7 +79,12 @@ vrpn_Saitek_Controller_Raw::vrpn_Saitek_Controller_Raw(vrpn_HidAcceptor *filter,
 
 vrpn_Saitek_Controller_Raw::~vrpn_Saitek_Controller_Raw(void)
 {
-	delete _filter;
+  try {
+    delete _filter;
+  } catch (...) {
+    fprintf(stderr, "vrpn_Saitek_Controller_Raw::~vrpn_Saitek_Controller_Raw(): delete failed\n");
+    return;
+  }
 }
 
 void vrpn_Saitek_Controller_Raw::init_hid()

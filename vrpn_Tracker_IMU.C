@@ -132,7 +132,12 @@ int	vrpn_IMU_Magnetometer::teardown_vector(vrpn_IMU_Vector *vector)
                           handle_analog_update);
 
 	// Delete the analog device.
-	delete vector->ana;
+        try {
+          delete vector->ana;
+        } catch (...) {
+          fprintf(stderr, "vrpn_IMU_Magnetometer::teardown_vector(): delete failed\n");
+          return -1;
+        }
 
 	return ret;
 }
@@ -352,7 +357,12 @@ int	vrpn_IMU_SimpleCombiner::teardown_vector(vrpn_IMU_Vector *vector,
   ret = vector->ana->unregister_change_handler((void*)vector, f);
 
   // Delete the analog device.
-  delete vector->ana;
+  try {
+    delete vector->ana;
+  } catch (...) {
+    fprintf(stderr, "vrpn_IMU_SimpleCombiner::teardown_vector(): delete failed\n");
+    return -1;
+  }
 
   return ret;
 }

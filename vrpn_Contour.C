@@ -45,7 +45,12 @@ vrpn_Contour::vrpn_Contour(vrpn_HidAcceptor *filter, const char *name, vrpn_Conn
 
 vrpn_Contour::~vrpn_Contour(void)
 {
-  delete _filter;
+  try {
+    delete _filter;
+  } catch (...) {
+    fprintf(stderr, "vrpn_Contour::~vrpn_Contour(): delete failed\n");
+    return;
+  }
 }
 
 void vrpn_Contour::init_hid(void) {

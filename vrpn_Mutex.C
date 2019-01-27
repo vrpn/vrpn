@@ -134,7 +134,12 @@ vrpn_Mutex::vrpn_Mutex(const char *name, vrpn_Connection *c)
     }
 
     if (servicename) {
+      try {
         delete[] servicename;
+      } catch (...) {
+        fprintf(stderr, "vrpn_Mutex::vrpn_Mutex(): delete failed\n");
+        return;
+      }
     }
 }
 
@@ -331,7 +336,12 @@ int vrpn_Mutex_Server::handle_requestIndex(void *userdata, vrpn_HANDLERPARAM p)
     }
 
     me->d_remoteIndex++;
-    delete[] buffer;
+    try {
+      delete[] buffer;
+    } catch (...) {
+      fprintf(stderr, "vrpn_Mutex_Server::handle_requestIndex(): delete failed\n");
+      return -1;
+    }
     return 0;
 }
 
@@ -450,7 +460,12 @@ void vrpn_Mutex_Remote::requestIndex(void)
     vrpn_gettimeofday(&now, NULL);
     d_connection->pack_message(buflen, now, d_requestIndex_type, d_myId, buf,
                                vrpn_CONNECTION_RELIABLE);
-    delete[] buf;
+    try {
+      delete[] buf;
+    } catch (...) {
+      fprintf(stderr, "vrpn_Mutex_Remote::requestIndex(): delete failed\n");
+      return;
+    }
     return;
 }
 
@@ -854,7 +869,12 @@ vrpn_PeerMutex::~vrpn_PeerMutex(void)
     }
 
     if (d_mutexName) {
+      try {
         delete[] d_mutexName;
+      } catch (...) {
+        fprintf(stderr, "vrpn_PeerMutex::~vrpn_PeerMutex(): delete failed\n");
+        return;
+      }
     }
     for (int i = 0; i < d_numPeers; ++i) {
         if (d_peer[i]) {
@@ -862,7 +882,12 @@ vrpn_PeerMutex::~vrpn_PeerMutex(void)
         }
     }
     if (d_peer) {
+      try {
         delete[] d_peer;
+      } catch (...) {
+        fprintf(stderr, "vrpn_PeerMutex::~vrpn_PeerMutex(): delete failed\n");
+        return;
+      }
     }
 
     if (d_server) {
@@ -998,10 +1023,20 @@ vrpn_bool vrpn_PeerMutex::addPeer(const char *stationName)
             newg[i] = d_peerData[i];
         }
         if (d_peer) {
-            delete[] d_peer;
+            try {
+              delete[] d_peer;
+            } catch (...) {
+              fprintf(stderr, "vrpn_PeerMutex::addPeer(): delete failed\n");
+              return false;
+            }
         }
         if (d_peerData) {
+          try {
             delete[] d_peerData;
+          } catch (...) {
+            fprintf(stderr, "vrpn_PeerMutex::addPeer(): delete failed\n");
+            return false;
+          }
         }
         d_peer = newc;
         d_peerData = newg;
@@ -1286,7 +1321,12 @@ int vrpn_PeerMutex::handle_losePeer(void *userdata, vrpn_HANDLERPARAM)
     me->d_numPeers--;
     me->d_peer[i] = me->d_peer[me->d_numPeers];
 
-    delete data;
+    try {
+      delete data;
+    } catch (...) {
+      fprintf(stderr, "vrpn_PeerMutex::handle_losePeer(): delete failed\n");
+      return -1;
+    }
 
     return 0;
 }

@@ -434,7 +434,12 @@ vrpn_RedundantReceiver::~vrpn_RedundantReceiver(void)
         while (pVMCB) {
             pVMCB_Del = pVMCB;
             pVMCB = pVMCB_Del->next;
-            delete pVMCB_Del;
+            try {
+              delete pVMCB_Del;
+            } catch (...) {
+              fprintf(stderr, "vrpn_RedundantReceiver::~vrpn_RedundantReceiver(): delete failed\n");
+              return;
+            }
         }
     }
 
@@ -443,7 +448,12 @@ vrpn_RedundantReceiver::~vrpn_RedundantReceiver(void)
     while (pVMCB) {
         pVMCB_Del = pVMCB;
         pVMCB = pVMCB_Del->next;
-        delete pVMCB_Del;
+        try {
+          delete pVMCB_Del;
+        } catch (...) {
+          fprintf(stderr, "vrpn_RedundantReceiver::~vrpn_RedundantReceiver(): delete failed\n");
+          return;
+        }
     }
 
     if (d_connection) {
@@ -474,7 +484,12 @@ int vrpn_RedundantReceiver::register_handler(vrpn_int32 type,
     } else if (type < 0) {
         fprintf(stderr, "vrpn_RedundantReceiver::register_handler:  "
                         "Negative type passed in.\n");
-        delete ce;
+        try {
+          delete ce;
+        } catch (...) {
+          fprintf(stderr, "vrpn_RedundantReceiver::register_handler(): delete failed\n");
+          return -1;
+        }
         return -1;
     } else {
         ce->next = d_records[type].cb;
@@ -524,7 +539,12 @@ int vrpn_RedundantReceiver::unregister_handler(vrpn_int32 type,
 
     // Remove the entry from the list
     *snitch = victim->next;
-    delete victim;
+    try {
+      delete victim;
+    } catch (...) {
+      fprintf(stderr, "vrpn_RedundantReceiver::unregister_handler(): delete failed\n");
+      return -1;
+    }
 
     return 0;
 }
@@ -570,7 +590,12 @@ void vrpn_RedundantReceiver::clearMemory(void)
 
     for (mp = d_memory; d_memory; mp = d_memory) {
         d_memory = mp->next;
-        delete mp;
+        try {
+          delete mp;
+        } catch (...) {
+          fprintf(stderr, "vrpn_RedundantReceiver::clearMemory(): delete failed\n");
+          return;
+        }
     }
 
     d_lastMemory = NULL;

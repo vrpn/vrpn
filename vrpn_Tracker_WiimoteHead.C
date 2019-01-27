@@ -150,7 +150,12 @@ vrpn_Tracker_WiimoteHead::~vrpn_Tracker_WiimoteHead(void) {
 	ret = d_ana->unregister_change_handler(this, handle_analog_update);
 
 	// Delete the analog device.
-	delete d_ana;
+        try {
+          delete d_ana;
+        } catch (...) {
+          fprintf(stderr, "vrpn_Tracker_WiimoteHead::~vrpn_Tracker_WiimoteHead(): delete failed\n");
+          return;
+        }
 	d_ana = NULL;
 }
 
@@ -168,7 +173,12 @@ void vrpn_Tracker_WiimoteHead::setup_wiimote() {
 		// Turn off the callback handler and delete old analog
 		// if we already have an analog source
 		d_ana->unregister_change_handler(this, handle_analog_update);
-		delete d_ana;
+                try {
+                  delete d_ana;
+                } catch (...) {
+                  fprintf(stderr, "vrpn_Tracker_WiimoteHead::setup_wiimote(): delete failed\n");
+                  return;
+                }
 		d_ana = NULL;
 	}
 
@@ -194,7 +204,12 @@ void vrpn_Tracker_WiimoteHead::setup_wiimote() {
 	if (ret == -1) {
 		fprintf(stderr, "vrpn_Tracker_WiimoteHead: "
 		        "Can't setup change handler on Analog %s\n", d_name);
-		delete d_ana;
+                try {
+                  delete d_ana;
+                } catch (...) {
+                  fprintf(stderr, "vrpn_Tracker_WiimoteHead::setup_wiimote(): delete failed\n");
+                  return;
+                }
 		d_ana = NULL;
 		return;
 	}

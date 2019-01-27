@@ -39,8 +39,14 @@ public:
 	};
 	~vrpn_Tracker_G4_HubMap_El()
 	{
-		if (pBtnSrv)
-			delete pBtnSrv;
+          if (pBtnSrv) {
+            try {
+              delete pBtnSrv;
+            } catch (...) {
+              fprintf(stderr, "vrpn_Tracker_G4_HubMap_El::~vrpn_Tracker_G4_HubMap_El(): delete failed\n");
+              return;
+            }
+          }
 	}
 
 	void ButtonName( char * NewName )
@@ -86,7 +92,12 @@ public:
 		while (p_hub_map != NULL)
 		{
 			HUBMAP_ENTRY *next = p_hub_map->Next();
-			delete p_hub_map;
+                        try {
+                          delete p_hub_map;
+                        } catch (...) {
+                          fprintf(stderr, "vrpn_Tracker_G4_HubMap::~vrpn_Tracker_G4_HubMap(): delete failed\n");
+                          return;
+                        }
 			p_hub_map = next;
 		}
 	}

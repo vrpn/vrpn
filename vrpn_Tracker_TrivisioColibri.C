@@ -159,7 +159,12 @@ vrpn_Tracker_TrivisioColibri::~vrpn_Tracker_TrivisioColibri()
         colibriClose(imu[i]);
     }
 
-    delete [] imu;
+    try {
+      delete[] imu;
+    } catch (...) {
+      fprintf(stderr, "vrpn_Tracker_TrivisioColibri::~vrpn_Tracker_TrivisioColibri(): delete failed\n");
+      return;
+    }
 }
 
 void vrpn_Tracker_TrivisioColibri::mainloop()

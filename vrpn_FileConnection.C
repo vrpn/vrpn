@@ -211,16 +211,31 @@ vrpn_File_Connection::~vrpn_File_Connection(void)
     vrpn_ConnectionManager::instance().deleteConnection(this);
 
     close_file();
-    delete[] d_fileName;
+    try {
+      delete[] d_fileName;
+    } catch (...) {
+      fprintf(stderr, "vrpn_File_Connection::~vrpn_File_Connection: delete failed\n");
+      return;
+    }
     d_fileName = NULL;
 
     // Delete any messages that are in memory, and their data buffers.
     while (d_logHead) {
         np = d_logHead->next;
         if (d_logHead->data.buffer) {
-            delete[]d_logHead -> data.buffer;
+            try {
+              delete[] d_logHead->data.buffer;
+            } catch (...) {
+              fprintf(stderr, "vrpn_File_Connection::~vrpn_File_Connection: delete failed\n");
+              return;
+            }
         }
-        delete d_logHead;
+        try {
+          delete d_logHead;
+        } catch (...) {
+          fprintf(stderr, "vrpn_File_Connection::~vrpn_File_Connection: delete failed\n");
+          return;
+        }
         d_logHead = np;
     }
 }
@@ -849,9 +864,20 @@ vrpn_File_Connection::vrpn_FileBookmark::vrpn_FileBookmark()
 vrpn_File_Connection::vrpn_FileBookmark::~vrpn_FileBookmark()
 {
     if (oldCurrentLogEntryCopy == NULL) return;
-    if (oldCurrentLogEntryCopy->data.buffer != NULL)
-        delete[](oldCurrentLogEntryCopy->data.buffer);
-    delete oldCurrentLogEntryCopy;
+    if (oldCurrentLogEntryCopy->data.buffer != NULL) {
+      try {
+        delete[] (oldCurrentLogEntryCopy->data.buffer);
+      } catch (...) {
+        fprintf(stderr, "vrpn_File_Connection::vrpn_FileBookmark::~vrpn_FileBookmark: delete failed\n");
+        return;
+      }
+    }
+    try {
+      delete oldCurrentLogEntryCopy;
+    } catch (...) {
+      fprintf(stderr, "vrpn_File_Connection::vrpn_FileBookmark::~vrpn_FileBookmark: delete failed\n");
+      return;
+    }
 }
 
 bool vrpn_File_Connection::store_stream_bookmark()
@@ -875,9 +901,20 @@ bool vrpn_File_Connection::store_stream_bookmark()
         if (d_currentLogEntry == NULL) // at the end of the file
         {
             if (d_bookmark.oldCurrentLogEntryCopy != NULL) {
-                if (d_bookmark.oldCurrentLogEntryCopy->data.buffer != NULL)
-                    delete[](d_bookmark.oldCurrentLogEntryCopy->data.buffer);
+              if (d_bookmark.oldCurrentLogEntryCopy->data.buffer != NULL) {
+                try {
+                  delete[](d_bookmark.oldCurrentLogEntryCopy->data.buffer);
+                } catch (...) {
+                  fprintf(stderr, "vrpn_File_Connection::store_stream_bookmark: delete failed\n");
+                  return false;
+                }
+              }
+              try {
                 delete d_bookmark.oldCurrentLogEntryCopy;
+              } catch (...) {
+                fprintf(stderr, "vrpn_File_Connection::store_stream_bookmark: delete failed\n");
+                return false;
+              }
             }
             d_bookmark.oldCurrentLogEntryCopy = NULL;
         }
@@ -906,7 +943,12 @@ bool vrpn_File_Connection::store_stream_bookmark()
             d_bookmark.oldCurrentLogEntryCopy->data.payload_len =
                 d_currentLogEntry->data.payload_len;
             if (d_bookmark.oldCurrentLogEntryCopy->data.buffer != NULL) {
-                delete[]d_bookmark.oldCurrentLogEntryCopy->data.buffer;
+              try {
+                delete[] d_bookmark.oldCurrentLogEntryCopy->data.buffer;
+              } catch (...) {
+                fprintf(stderr, "vrpn_File_Connection::store_stream_bookmark: delete failed\n");
+                return false;
+              }
             }
             try { d_bookmark.oldCurrentLogEntryCopy->data.buffer =
                 new char[d_currentLogEntry->data.payload_len]; }
@@ -975,7 +1017,14 @@ bool vrpn_File_Connection::return_to_bookmark()
             memcpy(const_cast<char *>(d_currentLogEntry->data.buffer),
                    d_bookmark.oldCurrentLogEntryCopy->data.buffer,
                    d_currentLogEntry->data.payload_len);
-            if (temp) delete[] temp;
+            if (temp) {
+              try {
+                delete[] temp;
+              } catch (...) {
+                fprintf(stderr, "vrpn_File_Connection::return_to_bookmark: delete failed\n");
+                return false;
+              }
+            }
             d_logHead = d_logTail = d_currentLogEntry;
         }
     }
@@ -1064,7 +1113,12 @@ int vrpn_File_Connection::read_entry(void)
             fprintf(stderr, "vrpn_File_Connection::read_entry: no open file\n");
             memcpy(&d_last_told, &now, sizeof(d_last_told));
         }
-        delete newEntry;
+        try {
+          delete newEntry;
+        } catch (...) {
+          fprintf(stderr, "vrpn_File_Connection::read_entry: delete failed\n");
+          return -1;
+        }
         return -1;
     }
 
@@ -1084,7 +1138,12 @@ int vrpn_File_Connection::read_entry(void)
     // the latter isn't an error state
     if (retval <= 0) {
         // Don't close the file because we might get a reset message...
-        delete newEntry;
+        try {
+          delete newEntry;
+        } catch (...) {
+          fprintf(stderr, "vrpn_File_Connection::read_entry: delete failed\n");
+          return -1;
+        }
         return 1;
     }
 
@@ -1144,9 +1203,19 @@ int vrpn_File_Connection::read_entry(void)
         // to the same message.
         if (d_logTail) {
             if (d_logTail->data.buffer) {
-                delete[]d_logTail -> data.buffer;
+                try {
+                  delete[] d_logTail->data.buffer;
+                } catch (...) {
+                  fprintf(stderr, "vrpn_File_Connection::read_entry: delete failed\n");
+                  return -1;
+                }
             }
-            delete d_logTail;
+            try {
+              delete d_logTail;
+            } catch (...) {
+              fprintf(stderr, "vrpn_File_Connection::read_entry: delete failed\n");
+              return -1;
+            }
         }
 
         // This is the only message in memory, so it is both the

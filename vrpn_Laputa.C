@@ -34,7 +34,15 @@ vrpn_Laputa::vrpn_Laputa(const char *name, vrpn_Connection *c)
     memset(last, 0, sizeof(last));
 }
 
-vrpn_Laputa::~vrpn_Laputa() { delete m_acceptor; }
+vrpn_Laputa::~vrpn_Laputa()
+{
+  try {
+    delete m_acceptor;
+  } catch (...) {
+    fprintf(stderr, "vrpn_Laputa::~vrpn_Laputa(): delete failed\n");
+    return;
+  }
+}
 
 inline void unpackVector(const vrpn_uint8 raw[8], int vector[3])
 {

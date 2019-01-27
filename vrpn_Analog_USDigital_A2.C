@@ -157,7 +157,12 @@ vrpn_Analog_USDigital_A2::~vrpn_Analog_USDigital_A2()
     }
 
     //  deallocate the list of device addresses.
-    delete _devAddr ; 
+    try {
+      delete _devAddr;
+    } catch (...) {
+      fprintf(stderr, "vrpn_Analog_USDigital_A2::~vrpn_Analog_USDigital_A2(): delete failed\n");
+      return;
+    }
     _devAddr = 0 ;
 #endif
 }    //  destructor

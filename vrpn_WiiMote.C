@@ -488,15 +488,25 @@ vrpn_WiiMote::~vrpn_WiiMote() {
 		acquireMessageLock();
 	}
 
-	delete connectThread;
-	delete sharedData;
+        try {
+          delete connectThread;
+          delete sharedData;
+        } catch (...) {
+          fprintf(stderr, "vrpn_WiiMote::~vrpn_WiiMote(): delete failed\n");
+          return;
+        }
 #endif
 	// Close the device and delete
 
 	if (wiimote->connected) {
 		wiiuse_disconnect(wiimote->device);
 	}
-	delete wiimote;
+        try {
+          delete wiimote;
+        } catch (...) {
+          fprintf(stderr, "vrpn_WiiMote::~vrpn_WiiMote(): delete failed\n");
+          return;
+        }
 }
 
 // VRPN main loop

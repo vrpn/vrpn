@@ -933,12 +933,18 @@ vrpn_SoundID vrpn_Sound_Client::loadSound(const char *sound,
     vrpn_gettimeofday(&timestamp, NULL);
 
     if (vrpn_Sound::d_connection->pack_message(len, timestamp, load_sound_local,
-                                               d_sender_id, buf,
-                                               vrpn_CONNECTION_RELIABLE))
-        fprintf(stderr,
-                "vrpn_Sound_Client: cannot write message load: tossing\n");
+        d_sender_id, buf,
+        vrpn_CONNECTION_RELIABLE)) {
+      fprintf(stderr,
+        "vrpn_Sound_Client: cannot write message load: tossing\n");
+    }
 
-    delete[] buf;
+    try {
+      delete[] buf;
+    } catch (...) {
+      fprintf(stderr, "vrpn_Sound_Client::loadSound(): delete failed\n");
+      return -1;
+    }
     return id;
 }
 
@@ -1448,7 +1454,12 @@ int vrpn_Sound_Server::handle_loadSoundLocal(void *userdata,
     me->decodeSound_local(p.buffer, &filename, &id, &soundDef,
                           p.payload_len);
     me->loadSoundLocal(filename, id, soundDef);
-    delete[] filename;
+    try {
+      delete[] filename;
+    } catch (...) {
+      fprintf(stderr, "vrpn_Sound_Server::handle_loadSoundLocal(): delete failed\n");
+      return -1;
+    }
     return 0;
 }
 
@@ -1630,7 +1641,12 @@ int vrpn_Sound_Server::handle_loadModelLocal(void *userdata,
 
     me->decodeLoadModel_local(p.buffer, &filename, p.payload_len);
     me->loadModelLocal(filename);
-    delete[] filename;
+    try {
+      delete[] filename;
+    } catch (...) {
+      fprintf(stderr, "vrpn_Sound_Server::handle_loadModelLocal(): delete failed\n");
+      return -1;
+    }
     return 0;
 }
 

@@ -25,16 +25,31 @@
 
 // Standard includes
 #include <utility>
+#include <iostream>
 
 namespace vrpn {
 
     /// default deleter
     template <typename T> struct DefaultDeleter {
-        void operator()(T* ptr) const { delete ptr; }
+        void operator()(T* ptr) const { 
+          try {
+            delete ptr;
+          } catch (...) {
+            std::cerr << "DefaultDeleter: delete failed" << std::endl;;
+            return;
+          }
+        }
     };
     /// handle arrays with delete []
     template <typename T> struct DefaultDeleter<T[]> {
-        void operator()(T* ptr) const { delete[] ptr; }
+        void operator()(T* ptr) const {
+          try {
+            delete[] ptr;
+          } catch (...) {
+            std::cerr << "DefaultDeleter: delete failed" << std::endl;;
+            return;
+          }
+        }
     };
     namespace traits {
         /// Default trait.

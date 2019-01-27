@@ -90,7 +90,12 @@ vrpn_Imager_Stream_Buffer::~vrpn_Imager_Stream_Buffer()
 {
     stop_logging_thread();
     if (d_imager_server_name) {
-        delete[] d_imager_server_name;
+        try {
+          delete[] d_imager_server_name;
+        } catch (...) {
+          fprintf(stderr, "vrpn_Imager_Stream_Buffer::~vrpn_Imager_Stream_Buffer(): delete failed\n");
+          return;
+        }
         d_imager_server_name = NULL;
     }
 }
@@ -110,7 +115,12 @@ void vrpn_Imager_Stream_Buffer::mainloop(void)
         for (i = 0; i < d_nChannels; i++) {
             d_channels[i].unbuffer(&bufptr);
         }
-        delete[] const_cast<char *>(channelBuffer);
+        try {
+          delete[] const_cast<char *>(channelBuffer);
+        } catch (...) {
+          fprintf(stderr, "vrpn_Imager_Stream_Buffer::mainloop(): delete failed\n");
+          return;
+        }
         send_description();
     }
 
@@ -149,7 +159,12 @@ void vrpn_Imager_Stream_Buffer::mainloop(void)
                                 "not pack message\n");
                 break;
             }
-            delete[] const_cast<char *>(p.buffer);
+            try {
+              delete[] const_cast<char *>(p.buffer);
+            } catch (...) {
+              fprintf(stderr, "vrpn_Imager_Stream_Buffer::mainloop(): delete failed\n");
+              return;
+            }
         }
     }
 }
@@ -199,7 +214,12 @@ void vrpn_Imager_Stream_Buffer::handle_got_first_connection(void)
         send_text_message(
             "handle_got_first_connection: Failed to start logging thread", now,
             vrpn_TEXT_ERROR);
-        delete d_logging_thread;
+        try {
+          delete d_logging_thread;
+        } catch (...) {
+          fprintf(stderr, "vrpn_Imager_Stream_Buffer::handle_got_first_connection(): delete failed\n");
+          return;
+        }
         d_logging_thread = NULL;
         return;
     }
@@ -214,7 +234,12 @@ void vrpn_Imager_Stream_Buffer::handle_got_first_connection(void)
             for (i = 0; i < d_nChannels; i++) {
                 d_channels[i].unbuffer(&bufptr);
             }
-            delete[] const_cast<char *>(channelBuffer);
+            try {
+              delete[] const_cast<char *>(channelBuffer);
+            } catch (...) {
+              fprintf(stderr, "vrpn_Imager_Stream_Buffer::handle_got_first_connection(): delete failed\n");
+              return;
+            }
             return;
         }
 
@@ -364,10 +389,15 @@ void vrpn_Imager_Stream_Buffer::logging_thread_func(void)
                 d_shared_state.set_logfile_result("", "", "", "");
             }
             // Delete the allocated space only if there were return values.
-            delete[] lil;
-            delete[] lol;
-            delete[] ril;
-            delete[] rol;
+            try {
+              delete[] lil;
+              delete[] lol;
+              delete[] ril;
+              delete[] rol;
+            } catch (...) {
+              fprintf(stderr, "vrpn_Imager_Stream_Buffer::logging_thread_func(): delete failed\n");
+              return;
+            }
         }
 
         // Handle all of the messages coming from the server.
@@ -384,7 +414,12 @@ void vrpn_Imager_Stream_Buffer::logging_thread_func(void)
 
     // Now that we've been told to die, clean up everything and return.
     if (d_imager_remote) {
-        delete d_imager_remote;
+        try {
+          delete d_imager_remote;
+        } catch (...) {
+          fprintf(stderr, "vrpn_Imager_Stream_Buffer::logging_thread_func(): delete failed\n");
+          return;
+        }
         d_imager_remote = NULL;
     }
     if (d_log_connection) {
@@ -591,7 +626,12 @@ bool vrpn_Imager_Stream_Buffer::transcode_and_send(const vrpn_HANDLERPARAM &p)
         fprintf(stderr, "vrpn_Imager_Stream_Buffer::transcode_and_send(): "
                         "Unknown type (%d)\n",
                 static_cast<int>(p.type));
-        delete[] newbuf;
+        try {
+          delete[] newbuf;
+        } catch (...) {
+          fprintf(stderr, "vrpn_Imager_Stream_Buffer::transcode_and_send(): delete failed\n");
+          return false;
+        }
         return false;
     }
 
@@ -673,7 +713,12 @@ vrpn_Connection *vrpn_Imager_Stream_Buffer::open_new_log_connection(
         fprintf(stderr, "vrpn_Imager_Stream_Buffer::open_new_log_connection: "
                         "Could not create connection (files already exist?)");
         if (ret) {
-            delete ret;
+            try {
+              delete ret;
+            } catch (...) {
+              fprintf(stderr, "vrpn_Imager_Stream_Buffer::open_new_log_connection(): delete failed\n");
+              return NULL;
+            }
             return NULL;
         }
     }
@@ -751,7 +796,12 @@ bool vrpn_Imager_Stream_Buffer::teardown_handlers_for_logging_connection(
         vrpn_ANY_TYPE, static_handle_server_messages, this,
         c->register_sender(vrpn_copy_service_name(d_imager_server_name)));
 
-    delete d_imager_remote;
+    try {
+      delete d_imager_remote;
+    } catch (...) {
+      fprintf(stderr, "vrpn_Imager_Stream_Buffer::teardown_handlers_for_logging_connection(): delete failed\n");
+      return false;
+    }
     d_imager_remote = NULL;
     return true;
 }
@@ -850,10 +900,15 @@ void vrpn_Imager_Stream_Buffer::handle_request_logging(
         char *lil, *lol, *ril, *rol;
         if (d_shared_state.get_logfile_result(&lil, &lol, &ril, &rol)) {
             send_report_logging(lil, lol, ril, rol);
-            delete[] lil;
-            delete[] lol;
-            delete[] ril;
-            delete[] rol;
+            try {
+              delete[] lil;
+              delete[] lol;
+              delete[] ril;
+              delete[] rol;
+            } catch (...) {
+              fprintf(stderr, "vrpn_Imager_Stream_Buffer::handle_request_logging(): delete failed\n");
+              return;
+            }
             return;
         }
         vrpn_SleepMsecs(1);
@@ -874,10 +929,15 @@ void vrpn_Imager_Stream_Buffer::handle_request_logging_status()
     d_shared_state.get_logfile_names(&local_in, &local_out, &remote_in,
                                      &remote_out);
     send_report_logging(local_in, local_out, remote_in, remote_out);
-    if (local_in) delete[] local_in;
-    if (local_out) delete[] local_out;
-    if (remote_in) delete[] remote_in;
-    if (remote_out) delete[] remote_out;
+    try {
+      if (local_in) delete[] local_in;
+      if (local_out) delete[] local_out;
+      if (remote_in) delete[] remote_in;
+      if (remote_out) delete[] remote_out;
+    } catch (...) {
+      fprintf(stderr, "vrpn_Imager_Stream_Buffer::handle_request_logging_status(): delete failed\n");
+      return;
+    }
 }
 
 /* Static */

@@ -114,7 +114,16 @@ public: // construction/destruction
             const char* port, 
             int baud_rate);
     // dtor
-    ~vrpn_inertiamouse () { if (vel_) { delete [] vel_;} };
+    ~vrpn_inertiamouse () {
+      if (vel_) {
+        try {
+          delete[] vel_;
+        } catch (...) {
+          fprintf(stderr, "vrpn_inertiamouse::~vrpn_inertiamouse(): delete failed\n");
+          return;
+        }
+      }
+    };
 
 public: // virtual methods
 

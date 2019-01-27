@@ -124,7 +124,12 @@ vrpn_Atmel::Create(char* name, vrpn_Connection *c,
      || (self->vrpn_Analog_Output_Server::setNumChannels(channel_count) != channel_count) ) {
   
       fprintf(stderr,"vrpn_Atmel: the requested number of channels is not available\n");
-      delete self;
+      try {
+        delete self;
+      } catch (...) {
+        fprintf(stderr, "vrpn_Atmel::Create(): delete failed\n");
+        return NULL;
+      }
 
       return NULL;
   }

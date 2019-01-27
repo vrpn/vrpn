@@ -51,8 +51,14 @@ vrpn_Tracker_ThalmicLabsMyo::vrpn_Tracker_ThalmicLabsMyo(const char *name, vrpn_
 
 vrpn_Tracker_ThalmicLabsMyo::~vrpn_Tracker_ThalmicLabsMyo()
 {
-	if (hub != NULL)
-		delete hub;
+  if (hub != NULL) {
+    try {
+      delete hub;
+    } catch (...) {
+      fprintf(stderr, "vrpn_Tracker_ThalmicLabsMyo::~vrpn_Tracker_ThalmicLabsMyo(): delete failed\n");
+      return;
+    }
+  }
 }
 
 void vrpn_Tracker_ThalmicLabsMyo::mainloop() {

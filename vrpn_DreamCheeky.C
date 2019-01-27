@@ -25,7 +25,12 @@ vrpn_DreamCheeky::vrpn_DreamCheeky(vrpn_HidAcceptor *filter, const char *name, v
 
 vrpn_DreamCheeky::~vrpn_DreamCheeky()
 {
-	delete _filter;
+  try {
+    delete _filter;
+  } catch (...) {
+    fprintf(stderr, "vrpn_DreamCheeky::~vrpn_DreamCheeky(): delete failed\n");
+    return;
+  }
 }
 
 void vrpn_DreamCheeky::on_data_received(size_t bytes, vrpn_uint8 *buffer)

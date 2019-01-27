@@ -19,7 +19,6 @@ vrpn_ConnectionForwarder::vrpn_ConnectionForwarder(vrpn_Connection *source,
 
 vrpn_ConnectionForwarder::~vrpn_ConnectionForwarder(void)
 {
-
     vrpn_CONNECTIONFORWARDERRECORD *dlp;
 
     while (d_list) {
@@ -28,8 +27,12 @@ vrpn_ConnectionForwarder::~vrpn_ConnectionForwarder(void)
         if (d_source)
             d_source->unregister_handler(d_list->sourceId, handle_message, this,
                                          d_list->sourceServiceId);
-
-        delete d_list;
+        try {
+          delete d_list;
+        } catch (...) {
+          fprintf(stderr, "vrpn_ConnectionForwarder::~vrpn_ConnectionForwarder(): delete failed\n");
+          return;
+        }
         d_list = dlp;
     }
 
@@ -89,7 +92,12 @@ int vrpn_ConnectionForwarder::unforward(const char *sourceName,
             (victim->destinationServiceId == ds) &&
             (victim->classOfService == classOfService)) {
             (*snitch)->next = victim->next;
-            delete victim;
+            try {
+              delete victim;
+            } catch (...) {
+              fprintf(stderr, "vrpn_ConnectionForwarder::unforward(): delete failed\n");
+              return -1;
+            }
             victim = *snitch;
         }
     }
@@ -194,7 +202,12 @@ vrpn_StreamForwarder::~vrpn_StreamForwarder(void)
             d_source->unregister_handler(d_list->sourceId, handle_message, this,
                                          d_sourceService);
 
-        delete d_list;
+        try {
+          delete d_list;
+        } catch (...) {
+          fprintf(stderr, "vrpn_StreamForwarder::~vrpn_StreamForwarder(): delete failed\n");
+          return;
+        }
         d_list = dlp;
     }
 
@@ -244,7 +257,12 @@ int vrpn_StreamForwarder::unforward(const char *sourceName,
         if ((victim->sourceId == st) && (victim->destinationId == dt) &&
             (victim->classOfService == classOfService)) {
             (*snitch)->next = victim->next;
-            delete victim;
+            try {
+              delete victim;
+            } catch (...) {
+              fprintf(stderr, "vrpn_StreamForwarder::unforward(): delete failed\n");
+              return -1;
+            }
             victim = *snitch;
         }
     }

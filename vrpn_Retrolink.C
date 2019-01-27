@@ -93,7 +93,12 @@ vrpn_Retrolink::vrpn_Retrolink(vrpn_HidAcceptor *filter, const char *name, vrpn_
 
 vrpn_Retrolink::~vrpn_Retrolink(void)
 {
-  delete _filter;
+  try {
+    delete _filter;
+  } catch (...) {
+    fprintf(stderr, "vrpn_Retrolink::~vrpn_Retrolink(): delete failed\n");
+    return;
+  }
 }
 
 void vrpn_Retrolink::init_hid(void) {

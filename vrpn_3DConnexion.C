@@ -114,7 +114,12 @@ vrpn_3DConnexion::~vrpn_3DConnexion()
 #if defined(VRPN_USING_3DCONNEXION_EVENT_IFACE)
 	set_led(0);
 #endif
-        delete _filter;
+        try {
+          delete _filter;
+        } catch (...) {
+          fprintf(stderr, "vrpn_3DConnexion::~vrpn_3DConnexion(): delete failed\n");
+          return;
+        }
 }
 
 #if defined(VRPN_USE_HID)

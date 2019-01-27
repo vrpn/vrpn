@@ -101,7 +101,12 @@ void vrpn_Tracker_OSVRHackerDevKit::shared_init() {
 
 vrpn_Tracker_OSVRHackerDevKit::~vrpn_Tracker_OSVRHackerDevKit()
 {
+  try {
     delete m_acceptor;
+  } catch (...) {
+    fprintf(stderr, "vrpn_Tracker_OSVRHackerDevKit::~vrpn_Tracker_OSVRHackerDevKit(): delete failed\n");
+    return;
+  }
 }
 
 void vrpn_Tracker_OSVRHackerDevKit::on_data_received(std::size_t bytes,

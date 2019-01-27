@@ -80,7 +80,12 @@ vrpn_Logitech_Controller_Raw::vrpn_Logitech_Controller_Raw(vrpn_HidAcceptor *fil
 
 vrpn_Logitech_Controller_Raw::~vrpn_Logitech_Controller_Raw(void)
 {
-	delete _filter;
+  try {
+    delete _filter;
+  } catch (...) {
+    fprintf(stderr, "vrpn_Logitech_Controller_Raw::~vrpn_Logitech_Controller_Raw(): delete failed\n");
+    return;
+  }
 }
 
 void vrpn_Logitech_Controller_Raw::init_hid()

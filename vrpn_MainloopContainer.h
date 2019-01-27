@@ -100,7 +100,12 @@ inline void vrpn_MainloopContainer::clear()
     }
     /// Delete in reverse order
     for (int i = int(_vrpn.size()) - 1; i >= 0; --i) {
-        delete _vrpn[i];
+        try {
+          delete _vrpn[i];
+        } catch (...) {
+          fprintf(stderr, "vrpn_MainloopContainer::clear: delete failed\n");
+          return;
+        }
         _vrpn[i] = NULL;
     }
     _vrpn.clear();

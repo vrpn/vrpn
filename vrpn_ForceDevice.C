@@ -89,7 +89,12 @@ void vrpn_ForceDevice::setCustomEffect(vrpn_int32 effectId,
 {
     customEffectId = effectId;
     if (customEffectParams != NULL) {
-        delete[] customEffectParams;
+        try {
+          delete[] customEffectParams;
+        } catch (...) {
+          fprintf(stderr, "vrpn_ForceDevice::setCustomEffect(): delete failed\n");
+          return;
+        }
         customEffectParams = NULL;
     }
     try { customEffectParams = new vrpn_float32[nbParams]; }
@@ -188,7 +193,12 @@ int vrpn_ForceDevice::register_types(void)
 vrpn_ForceDevice::~vrpn_ForceDevice(void)
 {
     if (customEffectParams != NULL) {
-        delete[] customEffectParams;
+        try {
+          delete[] customEffectParams;
+        } catch (...) {
+          fprintf(stderr, "vrpn_ForceDevice::~vrpn_ForceDevice(): delete failed\n");
+          return;
+        }
     }
 }
 
@@ -312,11 +322,18 @@ vrpn_int32 vrpn_ForceDevice::decode_custom_effect(const char *buffer,
         return -2;
     }
 
-    if (*params != NULL) delete[] * params;
+    if (*params != NULL) {
+        try {
+          delete[] * params;
+        } catch (...) {
+          fprintf(stderr, "vrpn_ForceDevice::decode_custom_effect(): delete failed\n");
+          return -3;
+        }
+    }
     try { *params = new vrpn_float32[(*nbParams)]; }
     catch (...) {
       fprintf(stderr, "vrpn_ForceDevice::decode_custom_effect(): Out of memory\n");
-      return -3;
+      return -4;
     }
 
     for (vrpn_uint32 i = 0; i < (*nbParams); i++) {
@@ -1533,7 +1550,12 @@ void vrpn_ForceDevice::sendError(int error_code)
                                        vrpn_CONNECTION_RELIABLE)) {
             fprintf(stderr, "Phantom: cannot write message: tossing\n");
         }
-        delete[] msgbuf;
+        try {
+          delete[] msgbuf;
+        } catch (...) {
+          fprintf(stderr, "vrpn_ForceDevice::sendError(): delete failed\n");
+          return;
+        }
     }
 }
 
@@ -1901,7 +1923,12 @@ void vrpn_ForceDevice_Remote::sendSurface(void)
                                        vrpn_CONNECTION_LOW_LATENCY)) {
             fprintf(stderr, "Phantom: cannot write message: tossing\n");
         }
-        delete[] msgbuf;
+        try {
+          delete[] msgbuf;
+        } catch (...) {
+          fprintf(stderr, "vrpn_ForceDevice::sendSurface(): delete failed\n");
+          return;
+        }
 
         msgbuf = encode_surface_effects(
             len, SurfaceKadhesionNormal, SurfaceKadhesionLateral,
@@ -1912,7 +1939,12 @@ void vrpn_ForceDevice_Remote::sendSurface(void)
                                        vrpn_CONNECTION_LOW_LATENCY)) {
             fprintf(stderr, "Phantom: cannot write message: tossing\n");
         }
-        delete[] msgbuf;
+        try {
+          delete[] msgbuf;
+        } catch (...) {
+          fprintf(stderr, "vrpn_ForceDevice::sendSurface(): delete failed\n");
+          return;
+        }
     }
 }
 
@@ -1935,7 +1967,12 @@ void vrpn_ForceDevice_Remote::startSurface(void)
                                        vrpn_CONNECTION_RELIABLE)) {
             fprintf(stderr, "Phantom: cannot write message: tossing\n");
         }
-        delete[] msgbuf;
+        try {
+          delete[] msgbuf;
+        } catch (...) {
+          fprintf(stderr, "vrpn_ForceDevice::startSurface(): delete failed\n");
+          return;
+        }
     }
 }
 
@@ -1960,7 +1997,12 @@ void vrpn_ForceDevice_Remote::stopSurface(void)
                                        vrpn_CONNECTION_RELIABLE)) {
             fprintf(stderr, "Phantom: cannot write message: tossing\n");
         }
-        delete[] msgbuf;
+        try {
+          delete[] msgbuf;
+        } catch (...) {
+          fprintf(stderr, "vrpn_ForceDevice::stopSurface(): delete failed\n");
+          return;
+        }
     }
 }
 
@@ -2027,7 +2069,12 @@ void vrpn_ForceDevice_Remote::addObject(vrpn_int32 objNum,
                                        vrpn_CONNECTION_RELIABLE)) {
             fprintf(stderr, "Phantom: cannot write message: tossing\n");
         }
-        delete[] msgbuf;
+        try {
+          delete[] msgbuf;
+        } catch (...) {
+          fprintf(stderr, "vrpn_ForceDevice::addObject(): delete failed\n");
+          return;
+        }
     }
 }
 
@@ -2051,7 +2098,12 @@ void vrpn_ForceDevice_Remote::addObjectExScene(vrpn_int32 objNum)
                                        msgbuf, vrpn_CONNECTION_RELIABLE)) {
             fprintf(stderr, "Phantom: cannot write message: tossing\n");
         }
-        delete[] msgbuf;
+        try {
+          delete[] msgbuf;
+        } catch (...) {
+          fprintf(stderr, "vrpn_ForceDevice::addObectExScene(): delete failed\n");
+          return;
+        }
     }
 }
 
@@ -2076,7 +2128,12 @@ void vrpn_ForceDevice_Remote::setObjectVertex(vrpn_int32 objNum,
                                        vrpn_CONNECTION_RELIABLE)) {
             fprintf(stderr, "Phantom: cannot write message: tossing\n");
         }
-        delete[] msgbuf;
+        try {
+          delete[] msgbuf;
+        } catch (...) {
+          fprintf(stderr, "vrpn_ForceDevice::setObjVert(): delete failed\n");
+          return;
+        }
     }
 }
 
@@ -2102,7 +2159,12 @@ void vrpn_ForceDevice_Remote::setObjectNormal(vrpn_int32 objNum,
                                        vrpn_CONNECTION_RELIABLE)) {
             fprintf(stderr, "Phantom: cannot write message: tossing\n");
         }
-        delete[] msgbuf;
+        try {
+          delete[] msgbuf;
+        } catch (...) {
+          fprintf(stderr, "vrpn_ForceDevice::setObjectNormal(): delete failed\n");
+          return;
+        }
     }
 }
 
@@ -2127,7 +2189,12 @@ void vrpn_ForceDevice_Remote::setObjectTriangle(
                                        vrpn_CONNECTION_RELIABLE)) {
             fprintf(stderr, "Phantom: cannot write message: tossing\n");
         }
-        delete[] msgbuf;
+        try {
+          delete[] msgbuf;
+        } catch (...) {
+          fprintf(stderr, "vrpn_ForceDevice::setObjectTriangle(): delete failed\n");
+          return;
+        }
     }
 }
 
@@ -2149,7 +2216,12 @@ void vrpn_ForceDevice_Remote::removeObjectTriangle(vrpn_int32 objNum,
                                        msgbuf, vrpn_CONNECTION_RELIABLE)) {
             fprintf(stderr, "Phantom: cannot write message: tossing\n");
         }
-        delete[] msgbuf;
+        try {
+          delete[] msgbuf;
+        } catch (...) {
+          fprintf(stderr, "vrpn_ForceDevice::removeObjectTriangle(): delete failed\n");
+          return;
+        }
     }
 }
 
@@ -2174,7 +2246,12 @@ void vrpn_ForceDevice_Remote::updateObjectTrimeshChanges(vrpn_int32 objNum)
                 msgbuf, vrpn_CONNECTION_RELIABLE)) {
             fprintf(stderr, "Phantom: cannot write message: tossing\n");
         }
-        delete[] msgbuf;
+        try {
+          delete[] msgbuf;
+        } catch (...) {
+          fprintf(stderr, "vrpn_ForceDevice::updateObjectTrimeshChanges(): delete failed\n");
+          return;
+        }
     }
 }
 
@@ -2197,7 +2274,12 @@ void vrpn_ForceDevice_Remote::setObjectTrimeshTransform(
                                        msgbuf, vrpn_CONNECTION_RELIABLE)) {
             fprintf(stderr, "Phantom: cannot write message: tossing\n");
         }
-        delete[] msgbuf;
+        try {
+          delete[] msgbuf;
+        } catch (...) {
+          fprintf(stderr, "vrpn_ForceDevice::setObjectTrimeshTransform(): delete failed\n");
+          return;
+        }
     }
 }
 
@@ -2220,7 +2302,12 @@ void vrpn_ForceDevice_Remote::setObjectPosition(vrpn_int32 objNum,
                 msgbuf, vrpn_CONNECTION_RELIABLE)) {
             fprintf(stderr, "Phantom: cannot write message: tossing\n");
         }
-        delete[] msgbuf;
+        try {
+          delete[] msgbuf;
+        } catch (...) {
+          fprintf(stderr, "vrpn_ForceDevice::setObjectPosition(): delete failed\n");
+          return;
+        }
     }
 }
 
@@ -2244,7 +2331,12 @@ void vrpn_ForceDevice_Remote::setObjectOrientation(vrpn_int32 objNum,
                 msgbuf, vrpn_CONNECTION_RELIABLE)) {
             fprintf(stderr, "Phantom: cannot write message: tossing\n");
         }
-        delete[] msgbuf;
+        try {
+          delete[] msgbuf;
+        } catch (...) {
+          fprintf(stderr, "vrpn_ForceDevice::setObjectOrientation(): delete failed\n");
+          return;
+        }
     }
 }
 
@@ -2267,7 +2359,12 @@ void vrpn_ForceDevice_Remote::setObjectScale(vrpn_int32 objNum,
                                        msgbuf, vrpn_CONNECTION_RELIABLE)) {
             fprintf(stderr, "Phantom: cannot write message: tossing\n");
         }
-        delete[] msgbuf;
+        try {
+          delete[] msgbuf;
+        } catch (...) {
+          fprintf(stderr, "vrpn_ForceDevice::setObjectScale(): delete failed\n");
+          return;
+        }
     }
 }
 
@@ -2289,7 +2386,12 @@ void vrpn_ForceDevice_Remote::removeObject(vrpn_int32 objNum)
                                        vrpn_CONNECTION_RELIABLE)) {
             fprintf(stderr, "Phantom: cannot write message: tossing\n");
         }
-        delete[] msgbuf;
+        try {
+          delete[] msgbuf;
+        } catch (...) {
+          fprintf(stderr, "vrpn_ForceDevice::removeObject(): delete failed\n");
+          return;
+        }
     }
 }
 
@@ -2310,7 +2412,12 @@ void vrpn_ForceDevice_Remote::clearObjectTrimesh(vrpn_int32 objNum)
                                        vrpn_CONNECTION_RELIABLE)) {
             fprintf(stderr, "Phantom: cannot write message: tossing\n");
         }
-        delete[] msgbuf;
+        try {
+          delete[] msgbuf;
+        } catch (...) {
+          fprintf(stderr, "vrpn_ForceDevice::clearObjectTrimesh(): delete failed\n");
+          return;
+        }
     }
 }
 
@@ -2335,7 +2442,12 @@ void vrpn_ForceDevice_Remote::moveToParent(vrpn_int32 objNum,
                                        vrpn_CONNECTION_RELIABLE)) {
             fprintf(stderr, "Phantom: cannot write message: tossing\n");
         }
-        delete[] msgbuf;
+        try {
+          delete[] msgbuf;
+        } catch (...) {
+          fprintf(stderr, "vrpn_ForceDevice::moveToParent(): delete failed\n");
+          return;
+        }
     }
 }
 
@@ -2359,7 +2471,12 @@ void vrpn_ForceDevice_Remote::setHapticOrigin(vrpn_float32 Pos[3],
                                        msgbuf, vrpn_CONNECTION_RELIABLE)) {
             fprintf(stderr, "Phantom: cannot write message: tossing\n");
         }
-        delete[] msgbuf;
+        try {
+          delete[] msgbuf;
+        } catch (...) {
+          fprintf(stderr, "vrpn_ForceDevice::setHapticOrigin(): delete failed\n");
+          return;
+        }
     }
 }
 
@@ -2381,7 +2498,12 @@ void vrpn_ForceDevice_Remote::setHapticScale(vrpn_float32 Scale)
                                        msgbuf, vrpn_CONNECTION_RELIABLE)) {
             fprintf(stderr, "Phantom: cannot write message: tossing\n");
         }
-        delete[] msgbuf;
+        try {
+          delete[] msgbuf;
+        } catch (...) {
+          fprintf(stderr, "vrpn_ForceDevice::setHapticScale(): delete failed\n");
+          return;
+        }
     }
 }
 
@@ -2404,7 +2526,12 @@ void vrpn_ForceDevice_Remote::setSceneOrigin(vrpn_float32 Pos[3],
                                        msgbuf, vrpn_CONNECTION_RELIABLE)) {
             fprintf(stderr, "Phantom: cannot write message: tossing\n");
         }
-        delete[] msgbuf;
+        try {
+          delete[] msgbuf;
+        } catch (...) {
+          fprintf(stderr, "vrpn_ForceDevice::setSceneOrigin(): delete failed\n");
+          return;
+        }
     }
 }
 
@@ -2434,7 +2561,12 @@ void vrpn_ForceDevice_Remote::setObjectIsTouchable(
                 msgbuf, vrpn_CONNECTION_RELIABLE)) {
             fprintf(stderr, "Phantom: cannot write message: tossing\n");
         }
-        delete[] msgbuf;
+        try {
+          delete[] msgbuf;
+        } catch (...) {
+          fprintf(stderr, "vrpn_ForceDevice::setObjectIsTouchable(): delete failed\n");
+          return;
+        }
     }
 }
 
@@ -2456,7 +2588,12 @@ void vrpn_ForceDevice_Remote::useHcollide(void)
                                        msgbuf, vrpn_CONNECTION_RELIABLE)) {
             fprintf(stderr, "Phantom: cannot write message: tossing\n");
         }
-        delete[] msgbuf;
+        try {
+          delete[] msgbuf;
+        } catch (...) {
+          fprintf(stderr, "vrpn_ForceDevice::useHcollide(): delete failed\n");
+          return;
+        }
     }
 }
 
@@ -2477,7 +2614,12 @@ void vrpn_ForceDevice_Remote::useGhost(void)
                                        msgbuf, vrpn_CONNECTION_RELIABLE)) {
             fprintf(stderr, "Phantom: cannot write message: tossing\n");
         }
-        delete[] msgbuf;
+        try {
+          delete[] msgbuf;
+        } catch (...) {
+          fprintf(stderr, "vrpn_ForceDevice::useGhost(): delete failed\n");
+          return;
+        }
     }
 }
 
@@ -2500,7 +2642,12 @@ void vrpn_ForceDevice_Remote::startEffect(void)
                                        vrpn_CONNECTION_RELIABLE)) {
             fprintf(stderr, "Phantom: cannot write message: tossing\n");
         }
-        delete[] msgbuf;
+        try {
+          delete[] msgbuf;
+        } catch (...) {
+          fprintf(stderr, "vrpn_ForceDevice::startEffect(): delete failed\n");
+          return;
+        }
     }
 }
 
@@ -2524,7 +2671,12 @@ void vrpn_ForceDevice_Remote::stopEffect(void)
                                        vrpn_CONNECTION_RELIABLE)) {
             fprintf(stderr, "Phantom: cannot write message: tossing\n");
         }
-        delete[] msgbuf;
+        try {
+          delete[] msgbuf;
+        } catch (...) {
+          fprintf(stderr, "vrpn_ForceDevice::stopEffect(): delete failed\n");
+          return;
+        }
     }
 }
 // fin ajout ONDIM
@@ -2685,7 +2837,12 @@ void vrpn_ForceDevice_Remote::sendForceField(vrpn_float32 origin[3],
                                        vrpn_CONNECTION_LOW_LATENCY)) {
             fprintf(stderr, "Phantom: cannot write message: tossing\n");
         }
-        delete[] msgbuf;
+        try {
+          delete[] msgbuf;
+        } catch (...) {
+          fprintf(stderr, "vrpn_ForceDevice::sendForceField(): delete failed\n");
+          return;
+        }
     }
 }
 
@@ -2712,7 +2869,12 @@ void vrpn_ForceDevice_Remote::stopForceField(void)
                                        vrpn_CONNECTION_RELIABLE)) {
             fprintf(stderr, "Phantom: cannot write message: tossing\n");
         }
-        delete[] msgbuf;
+        try {
+          delete[] msgbuf;
+        } catch (...) {
+          fprintf(stderr, "vrpn_ForceDevice::stopForceField(): delete failed\n");
+          return;
+        }
     }
 }
 
@@ -2785,7 +2947,12 @@ void vrpn_ForceDevice_Remote::send(const char *msgbuf, vrpn_int32 len,
         }
     }
 
-    delete[]msgbuf;
+    try {
+      delete[] msgbuf;
+    } catch (...) {
+      fprintf(stderr, "vrpn_ForceDevice_Remote::send(): delete failed\n");
+      return;
+    }
 }
 
 #ifdef FD_SPRINGS_AS_FIELDS
