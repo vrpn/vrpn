@@ -62,6 +62,7 @@
 #include "vrpn_OmegaTemperature.h" // for vrpn_OmegaTemperature
 #include "vrpn_OzzMaker.h"   // for vrpn_OzzMaker_BerryIMU
 #include "vrpn_Phantom.h"
+#include "vrpn_OpenHaptics.h"			// 2015.03.18 UMA modification //for Phantom OpenHaptics server
 #include "vrpn_Poser_Analog.h"          // for vrpn_Poser_AnalogParam, etc
 #include "vrpn_Poser.h"                 // for vrpn_Poser
 #include "vrpn_Poser_Tek4662.h"         // for vrpn_Poser_Tek4662
@@ -358,6 +359,67 @@ int vrpn_Generic_Server_Object::setup_Phantom(char *&pch, char *line,
                     "VRPN_USE_PHANTOM_SERVER not defined in "
                     "vrpn_Configure.h!\n");
     return -1;
+#endif
+}
+
+// 2015.03.18 UMA modification
+//Phantom OpenHaptics server
+int vrpn_Generic_Server_Object::setup_OpenHaptics(char *&pch, char *line,
+	FILE * /*config_file*/)
+{
+	char s2[512]; // String parameters
+	int i1;       // Integer parameters
+	float f1;     // Float parameters
+	float f2;     // Float parameters
+	float f3;     // Float parameters
+	// Jean SIMARD <jean.simard@limsi.fr>
+	// Add the variable for the configuration name of the PHANToM interface
+	char sconf[512];
+
+	VRPN_CONFIG_NEXT();
+
+	// Jean SIMARD <jean.simard@limsi.fr>
+	// Modify the analyse of the configuration name of 'vrpn.cfg'
+	// The new version use the advantages of 'strtok' function
+	if (!(sscanf(strtok(pch, " \t"), "%511s", s2) &&
+		sscanf(strtok(NULL, " \t"), "%d", &i1) &&
+		sscanf(strtok(NULL, " \t"), "%f", &f1) &&
+		sscanf(strtok(NULL, " \t"), "%f", &f2) &&
+		sscanf(strtok(NULL, " \t"), "%f", &f3) &&
+		sscanf(strtok(NULL, "\n"), "%511[^\n]", sconf))) {
+		fprintf(stderr, "Bad vrpn_OpenHaptics line: %s\n", line);
+		return -1;
+	}
+
+#ifdef VRPN_USE_PHANTOM_SERVER
+	// Jean SIMARD <jean.simard@limsi.fr>
+	// Put a more verbose version when a PHANToM connection is opened.
+	if (verbose) {
+		printf("Opening vrpn_Phantom:\n");
+		printf("\tVRPN name: %s\n", s2);
+		printf("\tConfiguration name: \"%s\"\n", sconf);
+		printf("\tCalibration: %s\n", ((i1 == 0) ? "no" : "yes"));
+		printf("\tFrequence: %.3f\n", f1);
+	}
+
+	// i1 is a boolean that tells whether to let the user establish the reset
+	// position or not.
+	if (i1) {
+		printf("Initializing phantom, you have 10 seconds to establish reset "
+			"position\n");
+		vrpn_SleepMsecs(10000);
+	}
+
+	// Jean SIMARD <jean.simard@limsi.fr>
+	// Modification of the call of the constructor
+	_devices->add(new vrpn_OpenHaptics(s2, connection, f1, f2, f3, sconf));
+
+	return 0;
+#else
+	fprintf(stderr, "vrpn_server: Can't open Phantom server: "
+		"VRPN_USE_PHANTOM_SERVER not defined in "
+		"vrpn_Configure.h!\n");
+	return -1;
 #endif
 }
 
@@ -5419,6 +5481,9 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(
                 else if (VRPN_ISIT("vrpn_Phantom")) {
                     VRPN_CHECK(setup_Phantom);
                 }
+				else if (VRPN_ISIT("vrpn_OpenHaptics")) {			// 2015.03.23 UMA modification
+					VRPN_CHECK(setup_OpenHaptics);
+				}
                 else if (VRPN_ISIT("vrpn_ADBox")) {
                     VRPN_CHECK(setup_ADBox);
                 }

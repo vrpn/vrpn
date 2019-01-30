@@ -68,6 +68,21 @@ protected:
     handle_setObjectIsTouchable_message(void *userdata, vrpn_HANDLERPARAM p);
     static int VRPN_CALLBACK
     handle_clearTrimesh_message(void *userdata, vrpn_HANDLERPARAM p);
+	
+	/*UMA**************************************************************************/	
+	static int VRPN_CALLBACK handle_setTransformMatrix_message(void *userdata, vrpn_HANDLERPARAM p);
+	static int VRPN_CALLBACK handle_setEffect_message(void *userdata, vrpn_HANDLERPARAM p);
+	static int VRPN_CALLBACK handle_start_effect_message(void *userdata, vrpn_HANDLERPARAM p);
+	static int VRPN_CALLBACK handle_stop_effect_message(void *userdata, vrpn_HANDLERPARAM p);
+	static int VRPN_CALLBACK handle_setHapticProperty_message(void *userdata, vrpn_HANDLERPARAM p);
+	static int VRPN_CALLBACK handle_setEnvironmentParameters_message(void *userdata, vrpn_HANDLERPARAM p);
+	static int VRPN_CALLBACK handle_setTouchableFace_message(void *userdata, vrpn_HANDLERPARAM p);
+	static int VRPN_CALLBACK handle_setWorkspaceProjectionMatrix_message(void *userdata, vrpn_HANDLERPARAM p);
+	static int VRPN_CALLBACK handle_setWorkspaceBoundingBox_message(void *userdata, vrpn_HANDLERPARAM p);
+	static int VRPN_CALLBACK handle_setObjectNumber_message(void *userdata, vrpn_HANDLERPARAM p);
+	static int VRPN_CALLBACK handle_resetScene_message(void *userdata, vrpn_HANDLERPARAM p);
+	/******************************************************************************/
+
     // Add an object to the haptic scene as root (parent -1 = default) or as
     // child (ParentNum =the number of the parent)
     virtual bool addObject(vrpn_int32 objNum, vrpn_int32 ParentNum = -1) = 0;
@@ -121,7 +136,18 @@ protected:
     // make an object touchable or not
     virtual bool setObjectIsTouchable(vrpn_int32 objNum,
                                       vrpn_bool IsTouchable = true) = 0;
-
+	/*UMA*****************************************************************************/
+	virtual bool setObjectNumber(vrpn_int32 n) = 0;	
+	virtual bool setTransformMatrix(vrpn_int32 CurrentObject, vrpn_float64 *transformMatrix) = 0;
+	virtual bool setEffect(vrpn_int8 *type, vrpn_int32 effect_index, vrpn_float64 gain, vrpn_float64 magnitude, vrpn_float64 duration, vrpn_float64 frequency, vrpn_float64 position[3], vrpn_float64 direction[3]) = 0;
+	virtual bool startEffect(vrpn_int32 effectId) = 0;
+	virtual bool stopEffect(vrpn_int32 effectId) = 0;
+	virtual bool setHapticProperty(vrpn_int32 objNum, char *type, vrpn_float32 k) = 0;	
+	virtual bool setTouchableFace(vrpn_int32 TFace) = 0;
+	virtual bool setWorkspaceProjectionMatrix(vrpn_float64 *modelMatrix, vrpn_float64 *Matrix) = 0;
+	virtual bool setWorkspaceBoundingBox(vrpn_float64 *modelMatrix, vrpn_float64 *Matrix) = 0;
+	virtual bool resetDevice(void) = 0;
+	/*********************************************************************************/
 protected:
     vrpn_DISPLAYABLEHASH m_hObjectList;
 };

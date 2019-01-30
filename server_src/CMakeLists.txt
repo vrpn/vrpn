@@ -34,7 +34,9 @@ if(VRPN_USE_PHANTOM_SERVER AND OPENGL_FOUND)
 		plane.C
 		texture_plane.C
 		trimesh.C
-		vrpn_Phantom.C)
+		vrpn_Phantom.C
+		vrpn_OpenHaptics.C      # 2015.03.18 UMA modification
+		glWindow.C)  			# 2015.05.20 UMA modification
 
 	set(PHANTOM_HEADERS
 		ghostEffects/InstantBuzzEffect.h
@@ -45,7 +47,10 @@ if(VRPN_USE_PHANTOM_SERVER AND OPENGL_FOUND)
 		plane.h
 		texture_plane.h
 		trimesh.h
-		vrpn_Phantom.h)
+		vrpn_Phantom.h
+		vrpn_OpenHaptics.h   						# 2015.03.18 UMA modification
+		vrpn_OpenHaptics_Structures.h 				#2015.05.25 UMA modification
+		glWindow.h)  								# 2015.05.20 UMA modification		
 	include_directories(${VRPN_SOURCE_DIR}/server_src/ghostEffects)
 	if(VRPN_USE_GHOST AND GHOST_STL_INCLUDE_DIR)
 		include_directories(${GHOST_STL_INCLUDE_DIR})

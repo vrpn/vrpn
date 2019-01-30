@@ -104,6 +104,7 @@ protected:
     int setup_Timecode_Generator(char *&pch, char *line,
                                  FILE * /*config_file*/);
     int setup_Phantom(char *&pch, char *line, FILE * /*config_file*/);
+	int setup_OpenHaptics(char *&pch, char *line, FILE * /*config_file*/);			//# 2015.03.18 UMA modification
     int setup_JoyFly(char *&pch, char *line, FILE * /*config_file*/);
     int setup_Tracker_3DMouse(char *&pch, char *line, FILE * /*config_file*/);
     int setup_Mouse(char *&pch, char *line, FILE * /*config_file*/);

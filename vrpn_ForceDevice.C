@@ -186,6 +186,38 @@ int vrpn_ForceDevice::register_types(void)
         d_connection->register_message_type("vrpn_ForceDevice Custom Effect");
     // fin ajout ONDIM
 
+	/*UMA****************************************************************************************/
+	//Set OpenHaptics Server UMA messages ID
+	setTransformMatrix_message_id =
+		d_connection->register_message_type("vrpn_ForceDevice setTransformMatrix");
+	effect_message_id =
+		d_connection->register_message_type("vrpn_ForceDevice Effect");
+	start_effect_message_id =
+		d_connection->register_message_type("vrpn_ForceDevice startEffect");
+	stop_effect_message_id =
+		d_connection->register_message_type("vrpn_ForceDevice stopEffect");
+	setObjectNumber_message_id =
+		d_connection->register_message_type("vrpn_ForceDevice setObjectNumber");
+	setWorkspaceProjectionMatrix_message_id =
+		d_connection->register_message_type("vrpn_ForceDevice setWorkspaceProjectionMatrix");
+	setWorkspaceBoundingBox_message_id =
+		d_connection->register_message_type("vrpn_ForceDevice setWorkspaceBoundingBox");
+	setHapticProperty_message_id =
+		d_connection->register_message_type("vrpn_ForceDevice setHapticProperty");
+	setTouchableFace_message_id =
+		d_connection->register_message_type("vrpn_ForceDevice setTouchableFace");
+	resetScene_message_id =
+		d_connection->register_message_type("vrpn_ForceDevice resetScene");
+	dop_message_id =
+		d_connection->register_message_type("vrpn_ForceDevice DOP");
+	isTouching_message_id =
+		d_connection->register_message_type("vrpn_ForceDevice isTouching");
+	TouchedObject_message_id =
+		d_connection->register_message_type("vrpn_ForceDevice TouchedObject");
+	angle_message_id =
+		d_connection->register_message_type("vrpn_ForceDevice Angle");
+	/********************************************************************************************/
+
     return 0;
 }
 
@@ -1860,6 +1892,544 @@ vrpn_int32 vrpn_ForceDevice::decodePoint(const char *buffer,
     return 0;
 }
 
+/*UMA**********************************************************************************/
+// Encode methods to encode OpenHaptics Server messages
+char *vrpn_ForceDevice::encode_setTransformMatrix(vrpn_int32 &len, const vrpn_int32 CurrentObject, const vrpn_float64 *transformMatrix)
+{
+	char *buf;
+	char *mptr;
+	vrpn_int32 mlen;
+
+	len = sizeof(vrpn_int32) + 16 * sizeof(vrpn_float64);
+	mlen = len;
+
+	buf = new char[len];
+	mptr = buf;
+
+	vrpn_buffer(&mptr, &mlen, CurrentObject);
+	for (int i = 0; i < 16; i++){
+		vrpn_buffer(&mptr, &mlen, transformMatrix[i]);
+	}
+	return buf;
+}
+
+vrpn_int32 vrpn_ForceDevice::decode_setTransformMatrix(const char *buffer, const vrpn_int32 len, vrpn_int32 *CurrentObject, vrpn_float64 *transformMatrix)
+{
+	const char *mptr = buffer;
+
+	if (len != sizeof(vrpn_int32) + (16 * sizeof(vrpn_float64))) {
+		fprintf(stderr, "vrpn_ForceDevice: force message payload error\n");
+		fprintf(stderr, "             (got %d, expected %d)\n",
+			len, sizeof(vrpn_int32) + 16 * sizeof(vrpn_float64));
+		return -1;
+	}
+
+	CHECK(vrpn_unbuffer(&mptr, CurrentObject));
+
+	for (int i = 0; i < 16; i++){
+		CHECK(vrpn_unbuffer(&mptr, &(transformMatrix[i])));
+	}
+	return 0;
+
+}
+
+char *vrpn_ForceDevice::encode_effect(vrpn_int32 &len, const vrpn_int8 *type, const vrpn_int32 effect_index, const vrpn_float64 gain,
+	const vrpn_float64 magnitude, const vrpn_float64 duration, const vrpn_float64 frequency,
+	const vrpn_float64 *position, const vrpn_float64 *direction)
+
+{
+	int i;
+	char *buf;
+	char *mptr;
+	vrpn_int32 mlen;
+
+	len = 10 * sizeof(vrpn_float64) + sizeof(vrpn_int32) + 20 * sizeof(vrpn_int8);
+	mlen = len;
+
+	buf = new char[len];
+	mptr = buf;
+
+	for (int j = 0; j < 20; j++){
+		vrpn_buffer(&mptr, &mlen, type[j]);
+	}
+	vrpn_buffer(&mptr, &mlen, effect_index);
+	vrpn_buffer(&mptr, &mlen, gain);
+	vrpn_buffer(&mptr, &mlen, magnitude);
+	vrpn_buffer(&mptr, &mlen, duration);
+	vrpn_buffer(&mptr, &mlen, frequency);
+	for (i = 0; i < 3; i++){
+		vrpn_buffer(&mptr, &mlen, position[i]);
+	}
+	for (i = 0; i < 3; i++){
+		vrpn_buffer(&mptr, &mlen, direction[i]);
+	}
+
+	return buf;
+}
+
+vrpn_int32 vrpn_ForceDevice::decode_effect(const char *buffer, const vrpn_int32 len,
+	vrpn_int8 *type, vrpn_int32 *effect_index, vrpn_float64 *gain, vrpn_float64 *magnitude,
+	vrpn_float64 *duration, vrpn_float64 *frequency,
+	vrpn_float64 *position, vrpn_float64 *direction)
+{
+	int i;
+	const char *mptr = buffer;
+
+	if (len != 10 * sizeof(vrpn_float64) + sizeof(vrpn_int32) + 20 * sizeof(vrpn_int8)){
+		fprintf(stderr, "vrpn_ForceDevice: effect message payload error\n");
+		fprintf(stderr, "             (got %d, expected %d)\n",
+			len, 10 * sizeof(vrpn_float64) + sizeof(vrpn_int32) + 20 * sizeof(vrpn_int8));
+		return -1;
+	}
+
+	for (int j = 0; j < 20; j++){
+		CHECK(vrpn_unbuffer(&mptr, &(type[j])));
+	}
+	CHECK(vrpn_unbuffer(&mptr, effect_index));
+	CHECK(vrpn_unbuffer(&mptr, gain));
+	CHECK(vrpn_unbuffer(&mptr, magnitude));
+	CHECK(vrpn_unbuffer(&mptr, duration));
+	CHECK(vrpn_unbuffer(&mptr, frequency));
+	for (i = 0; i < 3; i++){
+		CHECK(vrpn_unbuffer(&mptr, &(position[i])));
+	}
+	for (i = 0; i < 3; i++){
+		CHECK(vrpn_unbuffer(&mptr, &(direction[i])));
+	}
+
+
+	return 0;
+}
+
+char *vrpn_ForceDevice::encode_start_effect(vrpn_int32 &len, const vrpn_int32 effectId)
+{
+	char *buf;
+	char *mptr;
+	vrpn_int32 mlen;
+
+	len = sizeof(vrpn_int32);
+	mlen = len;
+
+	buf = new char[len];
+	mptr = buf;
+
+	vrpn_buffer(&mptr, &mlen, effectId);
+	return buf;
+}
+
+vrpn_int32 vrpn_ForceDevice::decode_start_effect(const char *buffer, const vrpn_int32 len, vrpn_int32 *effect)
+{
+	const char *mptr = buffer;
+
+	if (len != sizeof(vrpn_int32)){
+		fprintf(stderr, "vrpn_ForceDevice: start effect message payload");
+		fprintf(stderr, " error\n             (got %d, expected %d)\n", len, sizeof(vrpn_int32));
+		return -1;
+	}
+
+	CHECK(vrpn_unbuffer(&mptr, effect));
+	return 0;
+
+}
+
+char *vrpn_ForceDevice::encode_stop_effect(vrpn_int32 &len, const vrpn_int32 effectId)
+{
+	char *buf;
+	char *mptr;
+	vrpn_int32 mlen;
+
+	len = sizeof(vrpn_int32);
+	mlen = len;
+
+	buf = new char[len];
+	mptr = buf;
+
+	vrpn_buffer(&mptr, &mlen, effectId);
+	return buf;
+}
+
+vrpn_int32 vrpn_ForceDevice::decode_stop_effect(const char *buffer, const vrpn_int32 len, vrpn_int32 *effectId)
+{
+	const char *mptr = buffer;
+
+	if (len != sizeof(vrpn_int32)){
+		fprintf(stderr, "vrpn_ForceDevice: start effect message payload");
+		fprintf(stderr, " error\n             (got %d, expected %d)\n", len, sizeof(vrpn_int32));
+		return -1;
+	}
+
+	CHECK(vrpn_unbuffer(&mptr, effectId));
+	return 0;
+}
+
+char *vrpn_ForceDevice::encode_setObjectNumber(vrpn_int32 & len, const vrpn_int32 objNum)
+{
+	char * buf;
+	char * mptr;
+	vrpn_int32 mlen;
+
+	len = sizeof(vrpn_float32);
+	mlen = len;
+
+	buf = new char[len];
+	mptr = buf;
+
+	vrpn_buffer(&mptr, &mlen, objNum);
+
+	return buf;
+}
+
+vrpn_int32 vrpn_ForceDevice::decode_setObjectNumber(const char * buffer, const vrpn_int32 len, vrpn_int32 * objNum)
+{
+	const char * mptr = buffer;
+
+	if (len != sizeof(vrpn_int32)) {
+		fprintf(stderr, "vrpn_ForceDevice:set damping message payload error\n");
+		fprintf(stderr, "             (got %d, expected %d)\n", len, sizeof(vrpn_int32));
+		return -1;
+	}
+
+	CHECK(vrpn_unbuffer(&mptr, objNum));
+
+	return 0;
+
+}
+
+char *vrpn_ForceDevice::encode_projectionMatrix(vrpn_int32 &len, const vrpn_float64 *modelMatrix, const vrpn_float64 *projMatrix)
+{
+	int i;
+	char *buf;
+	char *mptr;
+	vrpn_int32 mlen;
+
+	len = 16 * sizeof(vrpn_float64) + 16 * sizeof(vrpn_float64);
+	mlen = len;
+
+	buf = new char[len];
+	mptr = buf;
+
+	for (i = 0; i < 16; i++){
+		vrpn_buffer(&mptr, &mlen, modelMatrix[i]);
+	}
+	for (i = 0; i < 16; i++){
+		vrpn_buffer(&mptr, &mlen, projMatrix[i]);
+	}
+
+	return buf;
+}
+
+vrpn_int32 vrpn_ForceDevice::decode_projectionMatrix(const char *buffer, const vrpn_int32 len, vrpn_float64 *modelMatrix, vrpn_float64 *projMatrix)
+{
+	int i;
+
+	const char *mptr = buffer;
+
+	if (len != (16 * sizeof(vrpn_float64) + 16 * sizeof(vrpn_float64))) {
+		fprintf(stderr, "vrpn_ForceDevice: force message payload error\n");
+		fprintf(stderr, "             (got %d, expected %d)\n", len, 16 * sizeof(vrpn_float64) + 16 * sizeof(vrpn_float64));
+		return -1;
+	}
+
+	for (i = 0; i < 16; i++){
+		CHECK(vrpn_unbuffer(&mptr, &(modelMatrix[i])));
+	}
+
+	for (i = 0; i < 16; i++){
+		CHECK(vrpn_unbuffer(&mptr, &(projMatrix[i])));
+	}
+
+	return 0;
+}
+
+char *vrpn_ForceDevice::encode_boundingBox(vrpn_int32 &len, const vrpn_float64 *modelMatrix, const vrpn_float64 *boundingBoxMatrix)
+{
+	int i;
+	char *buf;
+	char *mptr;
+	vrpn_int32 mlen;
+
+	len = 16 * sizeof(vrpn_float64) + 6 * sizeof(vrpn_float64);
+	mlen = len;
+
+	buf = new char[len];
+	mptr = buf;
+
+	for (i = 0; i < 16; i++){
+		vrpn_buffer(&mptr, &mlen, modelMatrix[i]);
+	}
+	for (i = 0; i < 6; i++){
+		vrpn_buffer(&mptr, &mlen, boundingBoxMatrix[i]);
+	}
+
+	return buf;
+}
+
+vrpn_int32 vrpn_ForceDevice::decode_boundingBox(const char *buffer, const vrpn_int32 len, vrpn_float64 *modelMatrix, vrpn_float64 *boundingBoxMatrix)
+{
+	int i;
+
+	const char *mptr = buffer;
+
+	if (len != (16 * sizeof(vrpn_float64) + 6 * sizeof(vrpn_float64))) {
+		fprintf(stderr, "vrpn_ForceDevice: force message payload error\n");
+		fprintf(stderr, "             (got %d, expected %d)\n", len, 16 * sizeof(double) + 6 * sizeof(double));
+		return -1;
+	}
+
+
+	for (i = 0; i < 16; i++){
+		CHECK(vrpn_unbuffer(&mptr, &(modelMatrix[i])));
+	}
+
+	for (i = 0; i < 6; i++){
+		CHECK(vrpn_unbuffer(&mptr, &(boundingBoxMatrix[i])));
+	}
+
+
+	return 0;
+
+}
+
+char *vrpn_ForceDevice::encode_hapticProperty(vrpn_int32 & len, const vrpn_int32 objNum, const char *type, vrpn_float32 s)
+{
+	char * buf;
+	char * mptr;
+	vrpn_int32 mlen;
+
+	len = sizeof(vrpn_float32) + 20 * sizeof(vrpn_int8) + sizeof(vrpn_int32);
+	mlen = len;
+
+	buf = new char[len];
+	mptr = buf;
+
+	vrpn_buffer(&mptr, &mlen, objNum);
+	for (int i = 0; i <20; i++){
+		vrpn_buffer(&mptr, &mlen, type[i]);
+	}
+	vrpn_buffer(&mptr, &mlen, s);
+
+	return buf;
+}
+
+vrpn_int32 vrpn_ForceDevice::decode_hapticProperty(const char * buffer, const vrpn_int32 len, vrpn_int32 * objNum, char *type, vrpn_float32 * s)
+{
+	const char * mptr = buffer;
+
+	if (len != sizeof(vrpn_int32) + sizeof(vrpn_float32) + 20 * sizeof(vrpn_int8)) {
+		fprintf(stderr, "vrpn_ForceDevice:  ");
+		fprintf(stderr, "set stiffness message payload error\n");
+		fprintf(stderr, "             (got %d, expected %d)\n", len, sizeof(vrpn_int32) + sizeof(vrpn_float32) + 20 * sizeof(vrpn_int8));
+		return -1;
+	}
+
+	CHECK(vrpn_unbuffer(&mptr, objNum));
+	for (int i = 0; i < 20; i++){
+		CHECK(vrpn_unbuffer(&mptr, &type[i]));
+	}
+	CHECK(vrpn_unbuffer(&mptr, s));
+
+	return 0;
+
+}
+
+char *vrpn_ForceDevice::encode_setTouchableFace(vrpn_int32 & len, vrpn_int32 i)
+{
+	char * buf;
+	char * mptr;
+	vrpn_int32 mlen;
+
+	len = sizeof(vrpn_int32);
+	mlen = len;
+
+	buf = new char[len];
+	mptr = buf;
+
+	vrpn_buffer(&mptr, &mlen, i);
+
+	return buf;
+}
+
+vrpn_int32 vrpn_ForceDevice::decode_setTouchableFace(const char * buffer, const vrpn_int32 len, vrpn_int32 * i)
+{
+	const char * mptr = buffer;
+
+	if (len != sizeof(vrpn_int32)) {
+		fprintf(stderr, "vrpn_ForceDevice:set touchable face message payload error\n");
+		fprintf(stderr, "             (got %d, expected %d)\n", len, sizeof(vrpn_int32));
+		return -1;
+	}
+
+	CHECK(vrpn_unbuffer(&mptr, i));
+
+	return 0;
+
+}
+
+char * vrpn_ForceDevice::encode_resetScene(vrpn_int32 & len)
+{
+	char * buf;
+	char * mptr;
+	vrpn_int32 mlen;
+
+	len = 1;
+	mlen = len;
+
+	buf = new char[len];
+	mptr = buf;
+
+	return buf;
+}
+
+vrpn_int32 vrpn_ForceDevice::decode_resetScene(const char * buffer, const vrpn_int32 len)
+{
+	const char * mptr = buffer;
+
+	if (len != 1) {
+		fprintf(stderr, "vrpn_ForceDevice:  "
+			"reset Scene message payload error\n"
+			"             (got %d, expected %d)\n",
+			len, 1);
+		return -1;
+	}
+
+	return 0;
+}
+
+char *vrpn_ForceDevice::encode_dop(vrpn_int32 &len, const vrpn_float64 dop)
+{
+	char *buf;
+	char *mptr;
+	vrpn_int32 mlen;
+
+	len = sizeof(vrpn_float64);
+	mlen = len;
+
+	buf = new char[len];
+	mptr = buf;
+
+	vrpn_buffer(&mptr, &mlen, dop);
+
+	return buf;
+}
+
+vrpn_int32 vrpn_ForceDevice::decode_dop(const char *buffer, const vrpn_int32 len, vrpn_float64 *dop)
+{
+	const char *mptr = buffer;
+	int  desiredLen = sizeof(vrpn_float64);
+
+	if (len != desiredLen){
+		fprintf(stderr, "vrpn_ForceDevice: scp message payload error\n");
+		fprintf(stderr, "             (got %d, expected %d)\n", len, desiredLen);
+		return -1;
+	}
+
+	CHECK(vrpn_unbuffer(&mptr, dop));
+
+	return 0;
+
+}
+
+char *vrpn_ForceDevice::encode_isTouching(vrpn_int32 &len, const vrpn_bool isTouching)
+{
+	char *buf;
+	char *mptr;
+	vrpn_int32 mlen;
+
+	len = sizeof(vrpn_bool);
+	mlen = len;
+
+	buf = new char[len];
+	mptr = buf;
+
+	vrpn_buffer(&mptr, &mlen, isTouching);
+
+	return buf;
+}
+
+vrpn_int32 vrpn_ForceDevice::decode_isTouching(const char *buffer, const vrpn_int32 len, vrpn_bool *isTouching)
+{
+
+	const char *mptr = buffer;
+
+	if (len != sizeof(vrpn_bool)){
+		fprintf(stderr, "vrpn_ForceDevice: isTouching message payload");
+		fprintf(stderr, " error\n             (got %d, expected %d)\n", len, sizeof(vrpn_bool));
+		return -1;
+	}
+
+	CHECK(vrpn_unbuffer(&mptr, isTouching));
+	return 0;
+
+}
+
+char *vrpn_ForceDevice::encode_TouchedObject(vrpn_int32 &len, const vrpn_int32 objectNum)
+{
+	char * buf;
+	char * mptr;
+	vrpn_int32 mlen;
+
+	len = sizeof(vrpn_int32);
+	mlen = len;
+
+	buf = new char[len];
+	mptr = buf;
+
+	vrpn_buffer(&mptr, &mlen, objectNum);
+
+	return buf;
+}
+
+vrpn_int32 vrpn_ForceDevice::decode_TouchedObject(const char *buffer, const vrpn_int32 len, vrpn_int32 *objectNum)
+{
+
+	const char *mptr = buffer;
+
+	if (len != sizeof(vrpn_int32)){
+		fprintf(stderr, "vrpn_ForceDevice: TouchedObject message payload");
+		fprintf(stderr, " error\n             (got %d, expected %d)\n", len, sizeof(vrpn_int32));
+		return -1;
+	}
+
+	CHECK(vrpn_unbuffer(&mptr, objectNum));
+	return 0;
+}
+
+char *vrpn_ForceDevice::encode_angle(vrpn_int32 &len, const vrpn_float64 angle, const vrpn_bool touch)
+{
+	char * buf;
+	char * mptr;
+	vrpn_int32 mlen;
+
+	len = sizeof(vrpn_float64) + sizeof(vrpn_bool);
+	mlen = len;
+
+	buf = new char[len];
+	mptr = buf;
+
+	vrpn_buffer(&mptr, &mlen, angle);
+	vrpn_buffer(&mptr, &mlen, touch);
+
+	return buf;
+}
+
+vrpn_int32 vrpn_ForceDevice::decode_angle(const char *buffer, const vrpn_int32 len, vrpn_float64 *angle, vrpn_bool *touch)
+{
+
+	const char *mptr = buffer;
+
+	if (len != sizeof(vrpn_float64) + sizeof(vrpn_bool)){
+		fprintf(stderr, "vrpn_ForceDevice: Angle message payload");
+		fprintf(stderr, " error\n             (got %d, expected %d)\n", len, sizeof(vrpn_float64) + sizeof(vrpn_bool));
+		return -1;
+	}
+
+	CHECK(vrpn_unbuffer(&mptr, angle));
+	CHECK(vrpn_unbuffer(&mptr, touch));
+	return 0;
+}
+/*END UMA*********************************************************************************/
+
+
 /* ******************** vrpn_ForceDevice_Remote ********************** */
 
 vrpn_ForceDevice_Remote::vrpn_ForceDevice_Remote(const char *name,
@@ -1896,6 +2466,36 @@ vrpn_ForceDevice_Remote::vrpn_ForceDevice_Remote(const char *name,
         fprintf(stderr, "vrpn_ForceDevice_Remote:can't register handler\n");
         d_connection = NULL;
     }
+
+	/*UMA***********************************************************************************/
+	// Register a handler for the dop change callback from this device.
+	if (register_autodeleted_handler(dop_message_id,
+		handle_dop_change_message, this, d_sender_id)) {
+		fprintf(stderr, "vrpn_ForceDevice_Remote:can't register handler dop\n");
+		d_connection = NULL;
+	}
+
+	// Register a handler for get object touched change callback from this device.
+	if (register_autodeleted_handler(TouchedObject_message_id,
+		handle_touchedObject_change_message, this, d_sender_id)) {
+		fprintf(stderr, "vrpn_ForceDevice_Remote:can't register handler touched object\n");
+		d_connection = NULL;
+	}
+
+	// Register a handler for the object is touching change callback from this device.
+	if (register_autodeleted_handler(isTouching_message_id,
+		handle_isTouching_change_message, this, d_sender_id)) {
+		fprintf(stderr, "vrpn_ForceDevice_Remote:can't register handler is touching\n");
+		d_connection = NULL;
+	}
+
+	// Register a handler for the angle change callback from this device.
+	if (register_autodeleted_handler(angle_message_id,
+		handle_angle_change_message, this, d_sender_id)) {
+		fprintf(stderr, "vrpn_ForceDevice_Remote:can't register handler angle\n");
+		d_connection = NULL;
+	}
+	/************************************************************************************/
 
     // Find out what time it is and put this into the timestamp
     vrpn_gettimeofday(&timestamp, NULL);
@@ -2681,6 +3281,219 @@ void vrpn_ForceDevice_Remote::stopEffect(void)
 }
 // fin ajout ONDIM
 
+/*UMA*****************************************************************************************************************************************************************************/
+void vrpn_ForceDevice_Remote::setEffect(vrpn_int8 *type, vrpn_int32 effect_index, vrpn_float64 gain, vrpn_float64 magnitude, vrpn_float64 duration, vrpn_float64 frequency, vrpn_float64 position[3], vrpn_float64 direction[3])
+{
+	char	*msgbuf;
+	vrpn_int32		len;
+	struct timeval current_time;
+
+	vrpn_gettimeofday(&current_time, NULL);
+	timestamp.tv_sec = current_time.tv_sec;
+	timestamp.tv_usec = current_time.tv_usec;
+
+	if (d_connection) {
+		msgbuf = encode_effect(len, type, effect_index, gain, magnitude, duration, frequency, position, direction);
+		if (d_connection->pack_message(len, timestamp, effect_message_id,
+			d_sender_id, msgbuf, vrpn_CONNECTION_LOW_LATENCY)) {
+			fprintf(stderr, "Phantom: cannot write message: tossing\n");
+		}
+		delete[] msgbuf;
+	}
+}
+
+//Start the indicated force effect
+void vrpn_ForceDevice_Remote::startEffect(int effect_index)
+{
+	char	*msgbuf;
+	vrpn_int32		len;
+	struct timeval current_time;
+
+	vrpn_gettimeofday(&current_time, NULL);
+	timestamp.tv_sec = current_time.tv_sec;
+	timestamp.tv_usec = current_time.tv_usec;
+
+	if (d_connection){
+		msgbuf = encode_start_effect(len, effect_index);
+		if (d_connection->pack_message(len, timestamp, start_effect_message_id,
+			d_sender_id, msgbuf, vrpn_CONNECTION_RELIABLE)) {
+			fprintf(stderr, "Phantom: cannot write message: tossing\n");
+		}
+		delete[] msgbuf;
+	}
+}
+
+//Stop the indicated force effect
+void vrpn_ForceDevice_Remote::stopEffect(int effect_index)
+{
+	char	*msgbuf;
+	vrpn_int32		len;
+	struct timeval current_time;
+
+	vrpn_gettimeofday(&current_time, NULL);
+	timestamp.tv_sec = current_time.tv_sec;
+	timestamp.tv_usec = current_time.tv_usec;
+
+	if (d_connection) {
+		msgbuf = encode_stop_effect(len, effect_index);
+		if (d_connection->pack_message(len, timestamp, stop_effect_message_id,
+			d_sender_id, msgbuf, vrpn_CONNECTION_RELIABLE)) {
+			fprintf(stderr, "Phantom: cannot write message: tossing\n");
+		}
+		delete[] msgbuf;
+	}
+}
+
+void vrpn_ForceDevice_Remote::resetScene(void)
+{
+	char	*msgbuf;
+	vrpn_int32		len;
+	struct timeval current_time;
+
+	vrpn_gettimeofday(&current_time, NULL);
+	timestamp.tv_sec = current_time.tv_sec;
+	timestamp.tv_usec = current_time.tv_usec;
+
+	if (d_connection){
+		msgbuf = encode_resetScene(len);
+		if (d_connection->pack_message(len, timestamp, resetScene_message_id,
+			d_sender_id, msgbuf, vrpn_CONNECTION_RELIABLE)) {
+			fprintf(stderr, "Phantom: cannot write message: tossing\n");
+		}
+		delete[] msgbuf;
+	}
+}
+
+// Set transform matrix of an object. It contains position,orientation & scale, row ordered.
+void vrpn_ForceDevice_Remote::setTransformMatrix(vrpn_int32 CurrentObject, vrpn_float64 *transformMatrix)
+{
+	char	*msgbuf;
+	vrpn_int32		len;
+	struct timeval current_time;
+
+	vrpn_gettimeofday(&current_time, NULL);
+	timestamp.tv_sec = current_time.tv_sec;
+	timestamp.tv_usec = current_time.tv_usec;
+
+	if (d_connection){
+		msgbuf = encode_setTransformMatrix(len, CurrentObject, transformMatrix);
+		if (d_connection->pack_message(len, timestamp, setTransformMatrix_message_id,
+			d_sender_id, msgbuf, vrpn_CONNECTION_RELIABLE)) {
+			fprintf(stderr, "Phantom: cannot write message: tossing\n");
+		}
+		delete[] msgbuf;
+	}
+}
+
+
+// Set Haptics Property parameters value for the indicated object
+void vrpn_ForceDevice_Remote::setHapticProperty(vrpn_int32 objNum, const char *type, float k)
+{
+	char	*msgbuf;
+	vrpn_int32		len;
+	struct timeval current_time;
+
+	vrpn_gettimeofday(&current_time, NULL);
+	timestamp.tv_sec = current_time.tv_sec;
+	timestamp.tv_usec = current_time.tv_usec;
+
+	if (d_connection){
+		msgbuf = encode_hapticProperty(len, objNum, type, k);
+		if (d_connection->pack_message(len, timestamp, setHapticProperty_message_id,
+			d_sender_id, msgbuf, vrpn_CONNECTION_RELIABLE)) {
+			fprintf(stderr, "Phantom: cannot write message: tossing\n");
+		}
+		delete[] msgbuf;
+	}
+}
+
+
+// Set the number of objects that are in the haptic scene
+void vrpn_ForceDevice_Remote::setObjectNumber(vrpn_int32 objNum)
+{
+	char	*msgbuf;
+	vrpn_int32		len;
+	struct timeval current_time;
+	vrpn_gettimeofday(&current_time, NULL);
+	timestamp.tv_sec = current_time.tv_sec;
+	timestamp.tv_usec = current_time.tv_usec;
+
+	if (d_connection){
+		msgbuf = encode_setObjectNumber(len, objNum);
+		if (d_connection->pack_message(len, timestamp, setObjectNumber_message_id,
+			d_sender_id, msgbuf, vrpn_CONNECTION_RELIABLE)) {
+			fprintf(stderr, "Phantom: cannot write message: tossing\n");
+		}
+		delete[] msgbuf;
+	}
+}
+
+// Set the workspace of the haptic scene. 
+void vrpn_ForceDevice_Remote::setWorkspaceProjectionMatrix(const vrpn_float64 modelMatrix[16], const vrpn_float64 projectionMatrix[16])
+{
+	char	*msgbuf;
+	vrpn_int32		len;
+	struct timeval current_time;
+
+
+	vrpn_gettimeofday(&current_time, NULL);
+	timestamp.tv_sec = current_time.tv_sec;
+	timestamp.tv_usec = current_time.tv_usec;
+
+	if (d_connection){
+		msgbuf = encode_projectionMatrix(len, modelMatrix, projectionMatrix);
+		if (d_connection->pack_message(len, timestamp, setWorkspaceProjectionMatrix_message_id,
+			d_sender_id, msgbuf, vrpn_CONNECTION_RELIABLE)) {
+			fprintf(stderr, "Phantom: cannot write message: tossing\n");
+		}
+		delete[] msgbuf;
+	}
+}
+
+//void vrpn_ForceDevice_Remote::setWorkspaceBoundingBox(const double modelMatrix[16], vrpn_BOUNDINGBOX bBox)
+void vrpn_ForceDevice_Remote::setWorkspaceBoundingBox(const vrpn_float64 modelMatrix[16], const vrpn_float64 boundingBoxMatrix[6])
+{
+	char	*msgbuf;
+	vrpn_int32		len;
+	struct timeval current_time;
+
+	vrpn_gettimeofday(&current_time, NULL);
+	timestamp.tv_sec = current_time.tv_sec;
+	timestamp.tv_usec = current_time.tv_usec;
+
+
+	if (d_connection){
+		msgbuf = encode_boundingBox(len, modelMatrix, boundingBoxMatrix);
+		if (d_connection->pack_message(len, timestamp, setWorkspaceBoundingBox_message_id,
+			d_sender_id, msgbuf, vrpn_CONNECTION_RELIABLE)) {
+			fprintf(stderr, "Phantom: cannot write message: tossing\n");
+		}
+		delete[] msgbuf;
+	}
+}
+
+// Establish the object faces that will be touchable: 0- front 1- back 2- front and back
+void vrpn_ForceDevice_Remote::setTouchableFace(int TFace)
+{
+	char	*msgbuf;
+	vrpn_int32		len;
+	struct timeval current_time;
+
+	vrpn_gettimeofday(&current_time, NULL);
+	timestamp.tv_sec = current_time.tv_sec;
+	timestamp.tv_usec = current_time.tv_usec;
+
+	if (d_connection){
+		msgbuf = encode_setTouchableFace(len, TFace);
+		if (d_connection->pack_message(len, timestamp, setTouchableFace_message_id,
+			d_sender_id, msgbuf, vrpn_CONNECTION_RELIABLE)) {
+			fprintf(stderr, "Phantom: cannot write message: tossing\n");
+		}
+		delete[] msgbuf;
+	}
+}
+/**************************************************************************************************/
+
 //
 // constraint methods
 //
@@ -2954,6 +3767,66 @@ void vrpn_ForceDevice_Remote::send(const char *msgbuf, vrpn_int32 len,
       return;
     }
 }
+
+/*UMA*********************************************************************************************/
+int vrpn_ForceDevice_Remote::handle_dop_change_message(void *userdata,
+	vrpn_HANDLERPARAM p)
+{
+	vrpn_ForceDevice_Remote *me = (vrpn_ForceDevice_Remote *)userdata;
+	vrpn_DOPCB tp;
+
+	tp.msg_time = p.msg_time;
+	decode_dop(p.buffer, p.payload_len, &(tp.dop));
+	me->d_dop_change_list.call_handlers(tp);
+
+	return 0;
+}
+
+
+int vrpn_ForceDevice_Remote::handle_touchedObject_change_message(void *userdata,
+	vrpn_HANDLERPARAM p)
+{
+	vrpn_ForceDevice_Remote *me = (vrpn_ForceDevice_Remote *)userdata;
+	vrpn_TOUCHEDOBJECTCB tp;
+
+	tp.msg_time = p.msg_time;
+	decode_TouchedObject(p.buffer, p.payload_len, &(tp.ObjectNum));
+
+	me->d_touchedObject_change_list.call_handlers(tp);
+
+	return 0;
+}
+
+int vrpn_ForceDevice_Remote::handle_isTouching_change_message(void *userdata,
+	vrpn_HANDLERPARAM p)
+{
+	vrpn_ForceDevice_Remote *me = (vrpn_ForceDevice_Remote *)userdata;
+	vrpn_ISTOUCHINGCB tp;
+
+	tp.msg_time = p.msg_time;
+	decode_isTouching(p.buffer, p.payload_len, &(tp.isTouching));
+
+	me->d_isTouching_change_list.call_handlers(tp);
+
+	return 0;
+}
+
+
+
+int vrpn_ForceDevice_Remote::handle_angle_change_message(void *userdata,
+	vrpn_HANDLERPARAM p)
+{
+	vrpn_ForceDevice_Remote *me = (vrpn_ForceDevice_Remote *)userdata;
+	vrpn_ANGLECB tp;
+
+	tp.msg_time = p.msg_time;
+	decode_angle(p.buffer, p.payload_len, &(tp.angle), &(tp.isTouching));
+
+	me->d_angle_change_list.call_handlers(tp);
+
+	return 0;
+}
+/***********************************************************************************************/
 
 #ifdef FD_SPRINGS_AS_FIELDS
 

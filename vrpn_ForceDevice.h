@@ -189,6 +189,24 @@ protected:
     // ajout ONDIM
     vrpn_int32 custom_effect_message_id;
     // fni ajout ONDIM
+	
+	/*UMA**************************************************************************************/
+	//OpenHaptic server messages types
+	vrpn_int32 setTransformMatrix_message_id;
+	vrpn_int32 effect_message_id;
+	vrpn_int32 start_effect_message_id;
+	vrpn_int32 stop_effect_message_id;
+	vrpn_int32 setObjectNumber_message_id;
+	vrpn_int32 setWorkspaceProjectionMatrix_message_id;
+	vrpn_int32 setWorkspaceBoundingBox_message_id;
+	vrpn_int32 setHapticProperty_message_id;
+	vrpn_int32 setTouchableFace_message_id;
+	vrpn_int32 resetScene_message_id;
+	vrpn_int32 dop_message_id;
+	vrpn_int32 isTouching_message_id;
+	vrpn_int32 TouchedObject_message_id;
+	vrpn_int32 angle_message_id;
+	/*****************************************************************************************/
 
     // ENCODING
     // ajout ONDIM
@@ -276,6 +294,25 @@ protected:
                                    const vrpn_float32 jacobian[3][3],
                                    const vrpn_float32 radius);
     static char *encode_error(vrpn_int32 &len, const vrpn_int32 error_code);
+	/*UMA**************************************************************************************/
+	//Encodes to handle OpenHaptic Server messages
+	static char *encode_setTransformMatrix(vrpn_int32 &len, const vrpn_int32 CurrentObject, const vrpn_float64 *transformMatrix);
+	static char *encode_effect(vrpn_int32 &len, const vrpn_int8 *type, const vrpn_int32 effect_index, const vrpn_float64 gain,
+		const vrpn_float64 magnitude, const vrpn_float64 duration, const vrpn_float64 frequency,
+		const vrpn_float64 *position, const vrpn_float64 *direction);
+	static char *encode_start_effect(vrpn_int32 &len, const vrpn_int32 effectId);
+	static char *encode_stop_effect(vrpn_int32 &len, const vrpn_int32 effectId);
+	static char *encode_setObjectNumber(vrpn_int32 & len, const vrpn_int32 objNum);
+	static char *encode_projectionMatrix(vrpn_int32 &len, const vrpn_float64 *modelMatrix, const vrpn_float64 *projMatrix);
+	static char *encode_boundingBox(vrpn_int32 &len, const vrpn_float64 *modelMatrix, const vrpn_float64 *boundingBoxMatrix);
+	static char *encode_hapticProperty(vrpn_int32 & len, const vrpn_int32 objNum, const char *type, vrpn_float32 s);
+	static char *encode_setTouchableFace(vrpn_int32 & len, vrpn_int32 i);
+	static char *encode_resetScene(vrpn_int32 & len);
+	static char *encode_dop(vrpn_int32 &len, const vrpn_float64 dop);
+	static char *encode_isTouching(vrpn_int32 &len, const vrpn_bool isTouching);
+	static char *encode_TouchedObject(vrpn_int32 &len, const vrpn_int32 objectNum);
+	static char *encode_angle(vrpn_int32 &len, const vrpn_float64 angle, const vrpn_bool touch);
+	/*END UMA***********************************************************************************/
 
     // DECODING
     // ajout ONDIM
@@ -376,6 +413,24 @@ protected:
                       vrpn_float32 jacobian[3][3], vrpn_float32 *radius);
     static vrpn_int32 decode_error(const char *buffer, const vrpn_int32 len,
                                    vrpn_int32 *error_code);
+
+	/*UMA**************************************************************************************/
+	//Decodes to handle OpenHaptic Server messages
+	static vrpn_int32 decode_setTransformMatrix(const char *buffer, const vrpn_int32 len, vrpn_int32 *CurrentObject, vrpn_float64 *transformMatrix);
+	static vrpn_int32 decode_effect(const char *buffer, const vrpn_int32 len, vrpn_int8 *type, vrpn_int32 *effect_index, vrpn_float64 *gain, vrpn_float64 *magnitude, vrpn_float64 *duration, vrpn_float64 *frequency, vrpn_float64 *position, vrpn_float64 *direction);
+	static vrpn_int32 decode_start_effect(const char *buffer, const vrpn_int32 len, vrpn_int32 *effectId);
+	static vrpn_int32 decode_stop_effect(const char *buffer, const vrpn_int32 len, vrpn_int32 *effectId);
+	static vrpn_int32 decode_setObjectNumber(const char * buffer, const vrpn_int32 len, vrpn_int32 * objNum);
+	static vrpn_int32 decode_projectionMatrix(const char *buffer, const vrpn_int32 len, vrpn_float64 *modelMatrix, vrpn_float64 *projMatrix);
+	static vrpn_int32 decode_boundingBox(const char *buffer, const vrpn_int32 len, vrpn_float64 *modelMatrix, vrpn_float64 *boundingBoxMatrix);
+	static vrpn_int32 decode_hapticProperty(const char * buffer, const vrpn_int32 len, vrpn_int32 * objNum, vrpn_int8 *type, vrpn_float32 * s);
+	static vrpn_int32 decode_setTouchableFace(const char * buffer, const vrpn_int32 len, vrpn_int32 * i);
+	static vrpn_int32 decode_resetScene(const char * buffer, const vrpn_int32 len);
+	static vrpn_int32 decode_dop(const char *buffer, const vrpn_int32 len, vrpn_float64 *dop);
+	static vrpn_int32 decode_isTouching(const char *buffer, const vrpn_int32 len, vrpn_bool *isTouching);
+	static vrpn_int32 decode_TouchedObject(const char *buffer, const vrpn_int32 len, vrpn_int32 *objectNum);
+	static vrpn_int32 decode_angle(const char *buffer, const vrpn_int32 len, vrpn_float64 *angle, vrpn_bool *touch);
+	/*END UMA *********************************************************************************/
 
     // constraint encoding & decoding
 
@@ -513,6 +568,38 @@ typedef struct _vrpn_FORCEERRORCB {
 typedef void(VRPN_CALLBACK *vrpn_FORCEERRORHANDLER)(
     void *userdata, const vrpn_FORCEERRORCB info);
 
+/*UMA*******************************************************************************/
+//Data structures to handle OpenHaptic server messages
+typedef struct _vrpn_DOPCB {
+	struct		timeval msg_time;	// time of the depth of penetration report
+	vrpn_float64		dop;		// dop value
+} vrpn_DOPCB;
+typedef void (VRPN_CALLBACK *vrpn_DOPHANDLER) (void *userdata,
+	const vrpn_DOPCB info);
+
+typedef struct _vrpn_TOUCHEDOBJECTCB {
+	struct		timeval msg_time;	// time of the object name report
+	vrpn_int32		ObjectNum;		// Object ID
+} vrpn_TOUCHEDOBJECTCB;
+typedef void (VRPN_CALLBACK *vrpn_TOUCHEDOBJECTHANDLER) (void *userdata,
+	const vrpn_TOUCHEDOBJECTCB info);
+
+typedef struct _vrpn_ISTOUCHINGCB {
+	struct		timeval msg_time;	// time of the object touching report
+	vrpn_bool		isTouching;		// if the object is touching
+} vrpn_ISTOUCHINGCB;
+typedef void (VRPN_CALLBACK *vrpn_ISTOUCHINGHANDLER) (void *userdata,
+	const vrpn_ISTOUCHINGCB info);
+
+typedef struct _vrpn_ANGLECB {
+	struct		timeval msg_time;	// time of the angle report
+	vrpn_float64		angle;		// value of the angle
+	vrpn_bool		isTouching;		// if the object is touching = true
+} vrpn_ANGLECB;
+typedef void (VRPN_CALLBACK *vrpn_ANGLEHANDLER) (void *userdata,
+	const vrpn_ANGLECB info);
+/************************************************************************************/
+
 class VRPN_API vrpn_ForceDevice_Remote : public vrpn_ForceDevice {
 public:
     // The name of the force device to connect to.
@@ -602,6 +689,29 @@ public:
     // the next time we send a trimesh we will use the following type
     void useHcollide();
     void useGhost();
+	
+	/*UMA*******************************************************************************/
+	//Methods to set OpenHaptic Server parameters
+	//Send a force effect to the device
+	void setEffect(vrpn_int8 *type, vrpn_int32 effect_index, vrpn_float64 gain, vrpn_float64 magnitude, vrpn_float64 duration, vrpn_float64 frequency, vrpn_float64 position[3], vrpn_float64 direction[3]);
+	//Start the indicated force effect
+	void startEffect(vrpn_int32 effect_index);
+	//Stop the indicated force effect
+	void stopEffect(vrpn_int32 effect_index);
+	// Reset Haptic Scene
+	void resetScene(void);
+	// set transform matrix of an object. It contains position,orientation & scale, row ordered.
+	void setTransformMatrix(vrpn_int32 CurrentObject, vrpn_float64 *transformMatrix);
+	// Set Haptics Property parameters value for the indicated object
+	void setHapticProperty(vrpn_int32 objNum, const char *type, vrpn_float32 k);
+	// Set the number of objects that are in the haptic scene
+	void setObjectNumber(vrpn_int32 objNum);
+	// set the workspace of the haptic scene. 
+	void setWorkspaceProjectionMatrix(const vrpn_float64 modelMatrix[16], const vrpn_float64 projectionMatrix[16]);
+	void setWorkspaceBoundingBox(const vrpn_float64 modelMatrix[16], const vrpn_float64 boundingBoxMatrix[6]);
+	// Establish the object faces that will be touchable: 1- front 2- back 3- front and back
+	void setTouchableFace(vrpn_int32 TFace = 3);
+	/*************************************************************************************/
 
     // Generalized constraint code.
     // Constrains as a spring connected to a point, sliding along a line
@@ -683,6 +793,51 @@ public:
     {
         return d_error_change_list.unregister_handler(userdata, handler);
     };
+	
+	/*UMA*****************************************************************/
+	//Callbacks to handle OpenHaptic Server messages
+	// (un)Register a callback handler to handle a depth of penetration change
+	virtual int register_dop_change_handler(void *userdata,
+		vrpn_DOPHANDLER handler) {
+		return d_dop_change_list.register_handler(userdata, handler);
+	};
+	virtual int unregister_dop_change_handler(void *userdata,
+		vrpn_DOPHANDLER handler) {
+		return d_dop_change_list.unregister_handler(userdata, handler);
+	};
+
+	// (un)Register a callback handler to handle an object is touching change.
+	virtual int register_isTouching_handler(void *userdata,
+		vrpn_ISTOUCHINGHANDLER handler) {
+		return d_isTouching_change_list.register_handler(userdata, handler);
+	};
+	virtual int unregister_isTouching_handler(void *userdata,
+		vrpn_ISTOUCHINGHANDLER handler) {
+		return d_isTouching_change_list.unregister_handler(userdata, handler);
+	};
+
+
+	// (un)Register a callback handler to handle an touched object change.
+	virtual int register_touchedObject_handler(void *userdata,
+		vrpn_TOUCHEDOBJECTHANDLER handler) {
+		return d_touchedObject_change_list.register_handler(userdata, handler);
+	};
+	virtual int unregister_touchedObject_handler(void *userdata,
+		vrpn_TOUCHEDOBJECTHANDLER handler) {
+		return d_touchedObject_change_list.unregister_handler(userdata, handler);
+	};
+
+
+	// (un)Register a callback handler to handle an angle.
+	virtual int register_angle_handler(void *userdata,
+		vrpn_ANGLEHANDLER handler) {
+		return d_angle_change_list.register_handler(userdata, handler);
+	};
+	virtual int unregister_angle_handler(void *userdata,
+		vrpn_ANGLEHANDLER handler) {
+		return d_angle_change_list.unregister_handler(userdata, handler);
+	};
+	/******************************************************************/
 
 protected:
     vrpn_Callback_List<vrpn_FORCECB> d_change_list;
@@ -696,6 +851,26 @@ protected:
     vrpn_Callback_List<vrpn_FORCEERRORCB> d_error_change_list;
     static int VRPN_CALLBACK
     handle_error_change_message(void *userdata, vrpn_HANDLERPARAM p);
+
+	/*UMA*************************************************************************/
+	//Callbacks list to handle OpenHaptic Server messages
+
+	vrpn_Callback_List<vrpn_DOPCB>  d_dop_change_list;
+	static int VRPN_CALLBACK handle_dop_change_message(void *userdata,
+		vrpn_HANDLERPARAM p);
+
+	vrpn_Callback_List<vrpn_TOUCHEDOBJECTCB>  d_touchedObject_change_list;
+	static int VRPN_CALLBACK handle_touchedObject_change_message(void *userdata,
+		vrpn_HANDLERPARAM p);
+
+	vrpn_Callback_List<vrpn_ISTOUCHINGCB>  d_isTouching_change_list;
+	static int VRPN_CALLBACK handle_isTouching_change_message(void *userdata,
+		vrpn_HANDLERPARAM p);
+
+	vrpn_Callback_List<vrpn_ANGLECB>  d_angle_change_list;
+	static int VRPN_CALLBACK handle_angle_change_message(void *userdata,
+		vrpn_HANDLERPARAM p);
+	/**************************************************************************/
 
     // constraint types
 
