@@ -646,7 +646,7 @@ int vrpn_Tracker_Liberty::get_report(void)
 
        // Convert from the float in MILLIseconds to the struct timeval
        delta_time.tv_sec = (long)(read_time / 1000);	// Integer trunction to seconds
-       vrpn_uint32 read_time_milliseconds = read_time_milliseconds = read_time - delta_time.tv_sec * 1000;	// Subtract out what we just counted
+       vrpn_uint32 read_time_milliseconds = read_time - delta_time.tv_sec * 1000;	// Subtract out what we just counted
        delta_time.tv_usec = (long)(read_time_milliseconds * 1000);	// Convert remainder to MICROseconds
 
        // The time that the report was generated
