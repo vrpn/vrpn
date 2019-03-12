@@ -1448,9 +1448,10 @@ void vrpn_PeerMutex::init(const char *name)
 {
     d_mutexName = NULL;
     try {
-      d_mutexName = new char[1 + strlen(name)];
+      size_t n = 1 + strlen(name);
+      d_mutexName = new char[n];
       // This is guaranteed to fit because of the new allocation above.
-      strncpy(d_mutexName, name, strlen(name));
+      strncpy(d_mutexName, name, n);
     } catch (...) {
         fprintf(stderr, "vrpn_PeerMutex::init:  Out of memory.\n");
     }
