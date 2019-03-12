@@ -6562,7 +6562,7 @@ char *vrpn_copy_file_name(const char *filespecifier)
     filename = NULL;
     try {
       filename = new char[len];
-      strncpy(filename, fp, len - 1);
+      strncpy(filename, fp, len);
       filename[len - 1] = 0;
     } catch (...) {
         fprintf(stderr, "vrpn_copy_file_name:  Out of memory!\n");
