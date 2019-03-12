@@ -146,8 +146,8 @@ vrpn_Tracker_WiimoteHead::~vrpn_Tracker_WiimoteHead(void) {
 	}
 
 	// Turn off the callback handler
-	int	ret;
-	ret = d_ana->unregister_change_handler(this, handle_analog_update);
+	int	ret = d_ana->unregister_change_handler(this, handle_analog_update);
+	(void)ret;
 
 	// Delete the analog device.
         try {

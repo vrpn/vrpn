@@ -91,7 +91,6 @@ void vrpn_Joylin::mainloop(void)
   struct timeval zerotime;
   fd_set fdset;
   struct js_event js;
-  int i;
 
   zerotime.tv_sec = 0;
   zerotime.tv_usec = 0;
