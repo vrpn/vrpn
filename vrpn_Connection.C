@@ -1825,8 +1825,8 @@ int vrpn_noint_select(int width, fd_set *readfds, fd_set *writefds,
 
 int vrpn_noint_block_write(int outfile, const char buffer[], size_t length)
 {
-    register int sofar = 0; /* How many characters sent so far */
-    register int ret;       /* Return value from write() */
+    int sofar = 0; /* How many characters sent so far */
+    int ret;       /* Return value from write() */
 
     do {
         /* Try to write the remaining data */
@@ -1860,8 +1860,8 @@ int vrpn_noint_block_write(int outfile, const char buffer[], size_t length)
 
 int vrpn_noint_block_read(int infile, char buffer[], size_t length)
 {
-    register int sofar; /* How many we read so far */
-    register int ret;   /* Return value from the read() */
+    int sofar; /* How many we read so far */
+    int ret;   /* Return value from the read() */
 
     // TCH 4 Jan 2000 - hackish - Cygwin will block forever on a 0-length
     // read(), and from the man pages this is close enough to in-spec that
@@ -1957,9 +1957,8 @@ int vrpn_noint_block_read(SOCKET insock, char *buffer, size_t length)
 
 int vrpn_noint_block_read_timeout(SOCKET infile, char buffer[], size_t length,
                                   struct timeval *timeout)
-{
-    size_t sofar;     /* How many we read so far */
-    register int ret; /* Return value from the read() */
+{ 
+    int ret; /* Return value from the read() */
     struct timeval timeout2;
     struct timeval *timeout2ptr;
     struct timeval start, stop, now;
@@ -1988,7 +1987,7 @@ int vrpn_noint_block_read_timeout(SOCKET infile, char buffer[], size_t length,
         timeout2ptr = timeout;
     }
 
-    sofar = 0;
+    size_t sofar = 0;/* How many we read so far */
     do {
         int sel_ret;
         fd_set readfds, exceptfds;
@@ -2030,7 +2029,7 @@ int vrpn_noint_block_read_timeout(SOCKET infile, char buffer[], size_t length,
         }
 
 #ifndef VRPN_USE_WINSOCK_SOCKETS
-        ret = read(infile, buffer + sofar, length - sofar);
+        int ret = read(infile, buffer + sofar, length - sofar);
         sofar += ret;
 
         /* Ignore interrupted system calls - retry */
@@ -2040,8 +2039,7 @@ int vrpn_noint_block_read_timeout(SOCKET infile, char buffer[], size_t length,
         }
 #else
         {
-            int nread;
-            nread = recv(infile, buffer + sofar,
+            int nread = recv(infile, buffer + sofar,
                          static_cast<int>(length - sofar), 0);
             sofar += nread;
             ret = nread;
@@ -6564,7 +6562,7 @@ char *vrpn_copy_file_name(const char *filespecifier)
     filename = NULL;
     try {
       filename = new char[len];
-      strncpy(filename, fp, len - 1);
+      strncpy(filename, fp, len);
       filename[len - 1] = 0;
     } catch (...) {
         fprintf(stderr, "vrpn_copy_file_name:  Out of memory!\n");

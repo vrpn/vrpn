@@ -18,6 +18,7 @@ profile
 *.pyo
 
 # Build/Output Files Directories
+build/
 
 # Anjuta files
 .anjuta/
@@ -38,3 +39,7 @@ Release/
 _UpgradeReport_Files/
 *.sln.cache
 *.tmp*.vcproj
+.vscode/
+
+# Profiling files
+*.profraw

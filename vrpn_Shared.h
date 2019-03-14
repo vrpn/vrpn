@@ -509,11 +509,11 @@ extern bool vrpn_test_pack_unpack(void);
 
 template <size_t charCount> void vrpn_strcpy(char (&to)[charCount], const char* pSrc)
 {
-  // Copy the string — don’t copy too many bytes.
+  // Copy the string - don't copy too many bytes.
 #ifdef _WIN32
   strncpy_s(to, pSrc, charCount);
 #else
-  strncpy(to, pSrc, charCount);
+  strncpy(to, pSrc, charCount - 1);
 #endif
   // Ensure null-termination.
   to[charCount - 1] = 0;
