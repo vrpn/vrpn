@@ -880,6 +880,20 @@ if(VRPN_USE_COLIBRIAPI)
 endif()
 
 ###
+# Occipital Structure Core PerceptionEngine
+###
+find_package(StructurePerceptionEngine ${QUIET_IF_SUBPROJECT})
+option_requires(VRPN_USE_STRUCTUREPERCEPTIONENGINE
+	"Build with Occipital Structure Core PerceptionEngine library support"
+	${DEFAULT_OFF_IF_SUBPROJECT}
+	STRUCTUREPERCEPTIONENGINE_FOUND)
+
+if(VRPN_USE_STRUCTUREPERCEPTIONENGINE)
+	include_directories(${STRUCTUREPERCEPTIONENGINE_INCLUDE_DIRS})
+	list(APPEND SERVER_EXTRA_LIBS ${STRUCTUREPERCEPTIONENGINE_LIBRARIES})
+endif()
+
+###
 # XXX Other libraries needing detection and handling (TODO)
 ###
 # National Instruments Nidaq traditional

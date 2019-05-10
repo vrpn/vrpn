@@ -294,6 +294,12 @@
 // that uses WiiUse in Windows.
 #cmakedefine VRPN_USE_WIIUSE
 
+//------------------------
+// Instructs VRPN to compile code for the Occipital Structure Core,
+// Note that the Structure.dll needs to be in the path when running a server
+// that uses WiiUse in Windows.
+#cmakedefine VRPN_USE_STRUCTUREPERCEPTIONENGINE
+
 // Instructs VRPN to compile code to handle Hillcrest Labs' Freespace
 // devices such as the Loop, and FRCM.  You will also need the libfreespace
 // library which is available at
