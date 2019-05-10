@@ -91,6 +91,7 @@
 #include "vrpn_Tracker_MotionNode.h"
 #include "vrpn_Tracker_NDI_Polaris.h" // for vrpn_Tracker_NDI_Polaris
 #include "vrpn_Tracker_NovintFalcon.h"
+#include "vrpn_Tracker_Occipital.h"       // for vrpn_OccipitalStructureCore
 #include "vrpn_Tracker_OSVRHackerDevKit.h" // for vrpn_Tracker_OSVRHackerDevKit
 #include "vrpn_Tracker_PDI.h"
 #include "vrpn_Tracker_PhaseSpace.h"
@@ -4008,6 +4009,34 @@ int vrpn_Generic_Server_Object::setup_Tracker_Colibri (char * & pch, char * line
 #endif
 }
 
+int vrpn_Generic_Server_Object::setup_Tracker_OccipitalStructureCore(
+    char *&pch, char *line, FILE * /*config_file*/)
+{
+    char s2[LINESIZE];
+
+    VRPN_CONFIG_NEXT();
+    // Get the arguments
+    if (sscanf(pch, "%511s", s2) != 1) {
+        fprintf(stderr, "Bad vrpn_Tracker_OccipitalStructureCore line: %s\n", line);
+        return -1;
+    }
+
+#ifdef VRPN_USE_STRUCTUREPERCEPTIONENGINE
+    // Open the Structure Core if we can.
+    if (verbose) {
+        printf("Opening vrpn_Tracker_OccipitalStructureCore: %s\n", s2);
+    }
+
+    _devices->add(new vrpn_Tracker_OccipitalStructureCore(s2, connection));
+    return 0;
+#else
+    fprintf(stderr, "vrpn_server: Can't open vrpn_Tracker_OccipitalStructureCore: "
+                    "VRPN_USE_STRUCTUREPERCEPTIONENGINE not defined in "
+                    "vrpn_Configure.h!\n");
+    return -1;
+#endif
+}
+
 int vrpn_Generic_Server_Object::setup_LUDL_USBMAC6000(char *&pch, char *line,
                                                       FILE * /*config_file*/)
 {
@@ -5626,6 +5655,9 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(
                 }
                 else if (VRPN_ISIT ("vrpn_Tracker_Colibri")) {
                     VRPN_CHECK (setup_Tracker_Colibri);
+                }
+                else if (VRPN_ISIT("vrpn_Tracker_OccipitalStructureCore")) {
+                    VRPN_CHECK(setup_Tracker_OccipitalStructureCore);
                 }
                 else if (VRPN_ISIT("vrpn_Tracker_SpacePoint")) {
                     VRPN_CHECK(setup_SpacePoint);

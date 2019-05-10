@@ -135,6 +135,8 @@ protected:
     int setup_Tracker_TrivisioColibri(char *&pch, char *line,
                                       FILE * /*config_file*/);
     int setup_Tracker_Colibri (char * &pch, char * line, FILE * /*config_file*/);
+    int setup_Tracker_OccipitalStructureCore(char *&pch, char *line,
+                                      FILE * /*config_file*/);
     int setup_Tracker_GameTrak(char *pch, char *line, FILE *config_file);
     int setup_LUDL_USBMAC6000(char *&pch, char *line, FILE * /*config_file*/);
     int setup_Analog_5dtUSB_Glove5Left(char *&pch, char *line,
