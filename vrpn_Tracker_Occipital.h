@@ -17,6 +17,7 @@
 #ifdef VRPN_USE_STRUCTUREPERCEPTIONENGINE
 
 #include "vrpn_Tracker.h" 
+#include <ST/XRSession.h>
 
 class vrpn_Tracker_OccipitalStructureCore : public vrpn_Tracker {
 public:
@@ -48,8 +49,11 @@ public:
 	virtual void mainloop();
 
 protected:
-    virtual void get_report();
-    virtual void send_report();
+    void reset();
+    void get_report();
+    void send_report();
+
+    ST::XRSession m_session;
 };
 
 #endif

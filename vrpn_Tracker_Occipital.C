@@ -12,17 +12,39 @@
 #include "vrpn_Tracker_Occipital.h"
 
 #ifdef VRPN_USE_STRUCTUREPERCEPTIONENGINE
-#include <ST/XRSession.h>
+#include <vrpn_MessageMacros.h>
+#include <string>
 
 vrpn_Tracker_OccipitalStructureCore::vrpn_Tracker_OccipitalStructureCore(
-    const char* name, vrpn_Connection* c) :
-    vrpn_Tracker(name, c)
+    const char* name, vrpn_Connection* c)
+    : vrpn_Tracker(name, c)
 {
-    /// @todo
-    num_sensors = 0;
-    
-    // VRPN stuff
+    // Generic VRPN stuff
+    num_sensors = 1;
     register_server_handlers();
+
+    // Occipital-specific stuff
+    reset();
+}
+
+void vrpn_Tracker_OccipitalStructureCore::reset()
+{
+    if (m_session.connectToServer() != ST::XRStatus::Good) {
+        std::string errMsg = "vrpn_Tracker_OccipitalStructureCore: Unable to "
+                             "connect to server: ";
+        errMsg += m_session.lastSessionError();
+        VRPN_MSG_ERROR(errMsg.c_str());
+        return;
+    }
+
+    ST::XRSessionSettings settings;
+    if (m_session.startTracking(settings) != ST::XRStatus::Good) {
+        std::string errMsg = "vrpn_Tracker_OccipitalStructureCore: Unable to "
+                             "start tracking: ";
+        errMsg += m_session.lastSessionError();
+        VRPN_MSG_ERROR(errMsg.c_str());
+        return;
+    }
 }
 
 vrpn_Tracker_OccipitalStructureCore::~vrpn_Tracker_OccipitalStructureCore()
@@ -32,8 +54,22 @@ vrpn_Tracker_OccipitalStructureCore::~vrpn_Tracker_OccipitalStructureCore()
 
 void vrpn_Tracker_OccipitalStructureCore::mainloop()
 {
+    // Nothing to do if tracking is not running
+    if (!m_session.isTrackingRunning()) {
+        return;
+    }
+
     // Call the generic server mainloop, since we are a server
     server_mainloop();
+
+    // Reset if we haven't heard anything in too long
+    struct timeval now;
+    vrpn_gettimeofday(&now, NULL);
+    if (vrpn_TimevalDurationSeconds(now, timestamp) > 1) {
+        VRPN_MSG_ERROR("vrpn_Tracker_OccipitalStructureCore::mainloop(): "
+                       "Timeout talking to traker, resetting");
+        reset();
+    }
 
     // Get latest data
     get_report();
@@ -66,7 +102,7 @@ void vrpn_Tracker_OccipitalStructureCore::send_report()
         int len = encode_to(msgbuf);
         if (d_connection->pack_message(len, timestamp, position_m_id, d_sender_id, msgbuf, 
                                        vrpn_CONNECTION_LOW_LATENCY)) {
-			fprintf(stderr, "Tracker: cannot write message: tossing\n");
+            VRPN_MSG_ERROR("vrpn_Tracker_OccipitalStructureCore::send_report(): cannot write message: tossing");
 		}
     }
 }
