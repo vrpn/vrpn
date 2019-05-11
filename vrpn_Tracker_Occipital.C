@@ -12,6 +12,7 @@
 #include "vrpn_Tracker_Occipital.h"
 
 #ifdef VRPN_USE_STRUCTUREPERCEPTIONENGINE
+#include <ST/XRSession.h>
 
 vrpn_Tracker_OccipitalStructureCore::vrpn_Tracker_OccipitalStructureCore(
     const char* name, vrpn_Connection* c) :
