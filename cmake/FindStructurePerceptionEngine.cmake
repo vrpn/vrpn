@@ -47,7 +47,7 @@ get_filename_component(_libdir "${STRUCTUREPERCEPTIONENGINE_LIBRARY}" PATH)
 
 find_path(STRUCTUREPERCEPTIONENGINE_INCLUDE_DIR
 	NAMES
-	XRSesion.h
+	ST/XRSession.h
 	HINTS
 	"${_libdir}"
 	"${_libdir}/.."
