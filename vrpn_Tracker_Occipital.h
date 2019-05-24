@@ -43,10 +43,10 @@ public:
     vrpn_Tracker_OccipitalStructureCore(const char* name, vrpn_Connection* c);
     ~vrpn_Tracker_OccipitalStructureCore();
 
-	/// This function should be called each time through the main loop
-	/// of the server code. It checks for a report from the tracker and
-	/// sends it if there is one.
-	virtual void mainloop();
+    /// This function should be called each time through the main loop
+    /// of the server code. It checks for a report from the tracker and
+    /// sends it if there is one.
+    virtual void mainloop();
 
 protected:
     void reset();
