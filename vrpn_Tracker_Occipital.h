@@ -52,8 +52,12 @@ protected:
     void reset();
     void get_report();
     void send_report();
+    static int VRPN_CALLBACK handle_update_rate_request(void* userdata,
+                                                        vrpn_HANDLERPARAM p);
 
     ST::XRSession m_session;
+    double m_update_rate = 120;
+    struct timeval m_last_report = {};
 };
 
 #endif

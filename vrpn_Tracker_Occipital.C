@@ -24,6 +24,13 @@ vrpn_Tracker_OccipitalStructureCore::vrpn_Tracker_OccipitalStructureCore(
     num_sensors = 1;
     register_server_handlers();
 
+    if (d_connection) {
+      // Register a handler for the update change callback
+      if (register_autodeleted_handler(
+              update_rate_id, handle_update_rate_request, this, d_sender_id))
+          fprintf(stderr, "vrpn_Tracker_OccipitalStructureCore: Can't register update-rate handler\n");
+    }
+
     // Occipital-specific stuff
     reset();
 }
@@ -85,8 +92,12 @@ void vrpn_Tracker_OccipitalStructureCore::mainloop()
     // Call the generic server mainloop, since we are a server
     server_mainloop();
 
-    // Get latest data
-    get_report();
+    // Get current pose if it has been long enough since the last
+    // report.
+    if (vrpn_TimevalDurationSeconds(now, m_last_report) > 1/m_update_rate) {
+        get_report();
+        m_last_report = now;
+    }
 }
 
 void vrpn_Tracker_OccipitalStructureCore::get_report()
@@ -145,9 +156,28 @@ void vrpn_Tracker_OccipitalStructureCore::send_report()
         int len = encode_to(msgbuf);
         if (d_connection->pack_message(len, timestamp, position_m_id, d_sender_id, msgbuf, 
                                        vrpn_CONNECTION_LOW_LATENCY)) {
-            VRPN_MSG_ERROR("vrpn_Tracker_OccipitalStructureCore::send_report(): cannot write message: tossing");
-		}
+            VRPN_MSG_ERROR("vrpn_Tracker_OccipitalStructureCore::send_report(): cannot write pose message: tossing");
+	}
+        len = encode_vel_to(msgbuf);
+        if (d_connection->pack_message(len, timestamp, velocity_m_id,
+                                       d_sender_id, msgbuf,
+                                       vrpn_CONNECTION_LOW_LATENCY)) {
+            VRPN_MSG_ERROR("vrpn_Tracker_OccipitalStructureCore::send_report():"
+                           " cannot write velocity message: tossing");
+        }
     }
+}
+
+int vrpn_Tracker_OccipitalStructureCore::handle_update_rate_request(
+    void* userdata,
+                                                        vrpn_HANDLERPARAM p)
+{
+    vrpn_Tracker_OccipitalStructureCore* thistracker =
+        (vrpn_Tracker_OccipitalStructureCore*)userdata;
+    vrpn_float64 update_rate = 0;
+    vrpn_unbuffer(&p.buffer, &update_rate);
+    thistracker->m_update_rate = update_rate;
+    return 0;
 }
 
 #endif
