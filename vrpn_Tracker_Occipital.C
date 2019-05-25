@@ -125,25 +125,45 @@ void vrpn_Tracker_OccipitalStructureCore::get_report()
     d_quat[Q_Z] = qPose.quat[Q_Z];
     d_quat[Q_W] = qPose.quat[Q_W];
 
-    // Record the velocity
-    /// @todo Ensure that the coordinate system is correct
-    vel[0] = vel[1] = vel[2] = 0;
-    /*
+    // Record the velocity, which is reported in world space.
     vel[0] = pose.linearVelocity[0];
     vel[1] = pose.linearVelocity[1];
     vel[2] = pose.linearVelocity[2];
-    */
 
-    // Record the angular velocity and units
-    /// @todo Convert to proper format
-    vel_quat[Q_X] = vel_quat[Q_Y] = vel_quat[Q_Z] = 0;
-    vel_quat[Q_W] = 1;
-    vel_quat_dt = 1;
-    /*
-    vel_quat[Q_X] = pose.angularVelocity[0];
-    vel_quat[Q_Y] = pose.angularVelocity[1];
-    vel_quat[Q_Z] = pose.angularVelocity[2];
-    */
+    // Record the angular velocity, converting to a differential
+    // Quaternion with 1/100th of second dt.
+    // The angular velocity is reported in the local coordinate
+    // system of the device, not in world space.  Its first entry
+    // is rotation about X, second Y, and third Z.  They are in radians
+    // per second.
+    // We need to first transform from the local coordinate system
+    // to the global, and also pack in the order expected by Quatlib, and
+    // the scale to convert to a differential Quaternion with dt
+    // time scale so we never wrap around.
+    double dt = 1 / 10.0;
+
+    // Convert rotation from local to global coordinates by transforming the
+    // XYZ Euler angles into world space.
+    q_vec_type dRot;
+    dRot[Q_X] = pose.angularVelocity[Q_X] * dt;
+    dRot[Q_Y] = pose.angularVelocity[Q_Y] * dt;
+    dRot[Q_Z] = pose.angularVelocity[Q_Z] * dt;
+    q_xform(dRot, d_quat, dRot);
+
+    // Convert from an XYZ vector into a Roll, Pitch Yaw vector
+    // in Quatlib order.  Then convert this into a Quaternion.
+    q_vec_type euler;
+    euler[Q_ROLL] = dRot[Q_X] * dt;
+    euler[Q_PITCH] = dRot[Q_Y] * dt;
+    euler[Q_YAW] = dRot[Q_Z] * dt;
+    q_type q;
+    q_from_euler(q, euler[Q_YAW], euler[Q_PITCH], euler[Q_ROLL]);
+
+    // Put into the VRPN structure.
+    vel_quat[Q_X] = q[Q_X];
+    vel_quat[Q_Y] = q[Q_Y];
+    vel_quat[Q_Z] = q[Q_Z];
+    vel_quat[Q_W] = q[Q_W];
 
     // Send the report for sensor 0
     d_sensor = 0;
