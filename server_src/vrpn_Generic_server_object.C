@@ -4013,10 +4013,11 @@ int vrpn_Generic_Server_Object::setup_Tracker_OccipitalStructureCore(
     char *&pch, char *line, FILE * /*config_file*/)
 {
     char s2[LINESIZE];
+    float f1;
 
     VRPN_CONFIG_NEXT();
     // Get the arguments
-    if (sscanf(pch, "%511s", s2) != 1) {
+    if (sscanf(pch, "%511s%g", s2, &f1) != 2) {
         fprintf(stderr, "Bad vrpn_Tracker_OccipitalStructureCore line: %s\n", line);
         return -1;
     }
@@ -4024,10 +4025,11 @@ int vrpn_Generic_Server_Object::setup_Tracker_OccipitalStructureCore(
 #ifdef VRPN_USE_STRUCTUREPERCEPTIONENGINE
     // Open the Structure Core if we can.
     if (verbose) {
-        printf("Opening vrpn_Tracker_OccipitalStructureCore: %s\n", s2);
+        printf("Opening vrpn_Tracker_OccipitalStructureCore: %s "
+          "with update rate %g\n", s2, f1);
     }
 
-    _devices->add(new vrpn_Tracker_OccipitalStructureCore(s2, connection));
+    _devices->add(new vrpn_Tracker_OccipitalStructureCore(s2, connection, f1));
     return 0;
 #else
     fprintf(stderr, "vrpn_server: Can't open vrpn_Tracker_OccipitalStructureCore: "

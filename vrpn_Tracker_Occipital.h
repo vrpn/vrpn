@@ -27,20 +27,10 @@ public:
     //
     // c:           VRPN connection to use
     //
-    // numSensors:  The number of devices to connect to
+    // updateRate:          Update rate in Hertz
     //
-    // Hz:          Update rate in Hertz
-    //
-    // bufLen:      The buffer length for reading data. 
-    //
-    //              From the reference manual:
-    //
-    // An short buffer (0) ensures minimal delay until the sensor measurement is available at the risk
-    // of lost measurements. A long buffer guarantees that no data is dropped, at
-    // the same time if data is not read fast enough there is a potential risk of a
-    // bufLenfrequency before the measurement becomes available.
-    //
-    vrpn_Tracker_OccipitalStructureCore(const char* name, vrpn_Connection* c);
+    vrpn_Tracker_OccipitalStructureCore(const char* name, vrpn_Connection* c,
+      float updateRate = 120);
     ~vrpn_Tracker_OccipitalStructureCore();
 
     /// This function should be called each time through the main loop
@@ -56,7 +46,7 @@ protected:
                                                         vrpn_HANDLERPARAM p);
 
     ST::XRSession m_session;
-    double m_update_rate = 120;
+    double m_update_rate;
     struct timeval m_last_report = {};
 };
 

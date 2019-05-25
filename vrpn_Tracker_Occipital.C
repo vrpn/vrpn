@@ -17,8 +17,9 @@
 #include <quat.h>
 
 vrpn_Tracker_OccipitalStructureCore::vrpn_Tracker_OccipitalStructureCore(
-    const char* name, vrpn_Connection* c)
+    const char* name, vrpn_Connection* c, float updateRate)
     : vrpn_Tracker(name, c)
+    , m_update_rate(updateRate)
 {
     // Generic VRPN stuff
     num_sensors = 1;
