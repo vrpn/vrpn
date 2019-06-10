@@ -2029,7 +2029,7 @@ int vrpn_noint_block_read_timeout(SOCKET infile, char buffer[], size_t length,
         }
 
 #ifndef VRPN_USE_WINSOCK_SOCKETS
-        int ret = read(infile, buffer + sofar, length - sofar);
+        ret = read(infile, buffer + sofar, length - sofar);
         sofar += ret;
 
         /* Ignore interrupted system calls - retry */
