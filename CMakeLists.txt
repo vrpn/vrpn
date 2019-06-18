@@ -880,6 +880,23 @@ if(VRPN_USE_COLIBRIAPI)
 endif()
 
 ###
+# Oculus VR SDK for Oculus Rift DK1 and Dk2
+###
+find_package(OVR)
+option_requires(VRPN_USE_OVR
+	"Build with Oculus VR's SDK for Oculus Rift support"
+	${DEFAULT_OFF_IF_SUBPROJECT}
+	OVR_FOUND)
+
+if(VRPN_USE_OVR)
+	include_directories(${OVR_INCLUDE_DIRS})
+	list(APPEND SERVER_EXTRA_LIBS ${OVR_LIBRARIES})
+	if(UNIX)
+		list(APPEND SERVER_EXTRA_LIBS dl)
+	endif()
+endif()
+
+###
 # XXX Other libraries needing detection and handling (TODO)
 ###
 # National Instruments Nidaq traditional
@@ -1144,6 +1161,7 @@ set(VRPN_SERVER_SOURCES
 	vrpn_Tracker_NovintFalcon.C
 	vrpn_Tracker_OSVRHackerDevKit.C
 	vrpn_Tracker_PDI.C
+	vrpn_Tracker_OculusRift.C
 	vrpn_Tracker_PhaseSpace.C
 	vrpn_Tracker_RazerHydra.C
 	vrpn_Tracker_ThalmicLabsMyo.C
@@ -1257,6 +1275,7 @@ set(VRPN_SERVER_PUBLIC_HEADERS
 	vrpn_Tracker_NovintFalcon.h
 	vrpn_Tracker_OSVRHackerDevKit.h
 	vrpn_Tracker_PDI.h
+	vrpn_Tracker_OculusRift.h
 	vrpn_Tracker_PhaseSpace.h
 	vrpn_Tracker_RazerHydra.h
 	vrpn_Tracker_ThalmicLabsMyo.h
@@ -1471,7 +1490,8 @@ set(ALL_GPL_SERVER_FLAGS
 set(ALL_GPLINCOMPAT_SERVER_FLAGS
 	VRPN_INCLUDE_INTERSENSE
 	VRPN_INCLUDE_TIMECODE_SERVER
-	VRPN_USE_PHANTOM_SERVER)
+	VRPN_USE_PHANTOM_SERVER
+	VRPN_USE_OVR)
 
 set(GPL_SERVER_FLAGS)
 foreach(POSSIBLE_GPL_FLAG ${ALL_GPL_SERVER_FLAGS})
