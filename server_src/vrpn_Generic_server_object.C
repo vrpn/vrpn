@@ -5181,7 +5181,7 @@ int vrpn_Generic_Server_Object::setup_Vality_vGlass(char *&pch, char *line, FILE
 
     // Open the Oculus DK2
     if (verbose) {
-        printf("Opening setup_Vality_vGlass\n");
+        printf("Opening Vality_vGlass\n");
     }
 
 #ifdef VRPN_USE_HID
