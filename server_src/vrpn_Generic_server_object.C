@@ -112,6 +112,7 @@
 #include "vrpn_XInputGamepad.h"
 #include "vrpn_Xkeys.h"      // for vrpn_Xkeys_Desktop, etc
 #include "vrpn_YEI_3Space.h" // for vrpn_YEI_3Space_Sensor, etc
+#include "vrpn_Vality.h"
 #include "vrpn_Zaber.h"      // for vrpn_Zaber
 
 class VRPN_API vrpn_Connection;
@@ -5167,6 +5168,32 @@ int vrpn_Generic_Server_Object::setup_Laputa(char *&pch, char *line, FILE *)
   return 0; // successful completion
 }
 
+int vrpn_Generic_Server_Object::setup_Vality_vGlass(char *&pch, char *line, FILE *)
+{
+    char s2[LINESIZE];
+
+    VRPN_CONFIG_NEXT();
+    int ret = sscanf(pch, "%511s", s2);
+    if (ret != 1) {
+        fprintf(stderr, "Bad Vality_vGlass line: %s\n", line);
+        return -1;
+    }
+
+    // Open the Oculus DK2
+    if (verbose) {
+        printf("Opening setup_Vality_vGlass\n");
+    }
+
+#ifdef VRPN_USE_HID
+    // Open the tracker
+    _devices->add(new vrpn_Vality_vGlass(s2, connection));
+#else
+    fprintf(stderr,
+            "Vality_vGlass driver works only with VRPN_USE_HID defined!\n");
+#endif
+    return 0; // successful completion
+}
+
 #undef VRPN_CONFIG_NEXT
 
 vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(
@@ -5769,6 +5796,9 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(
                 }
                 else if (VRPN_ISIT("vrpn_Laputa")){
                     VRPN_CHECK(setup_Laputa);
+                }
+                else if (VRPN_ISIT("vrpn_Vality_vGlass")) {
+                  VRPN_CHECK(setup_Vality_vGlass);
                 }
                 else {                         // Never heard of it
                     sscanf(line, "%511s", s1); // Find out the class name

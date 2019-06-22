@@ -1181,6 +1181,7 @@ set(VRPN_SERVER_SOURCES
 	vrpn_XInputGamepad.C
 	vrpn_Xkeys.C
 	vrpn_Tracker_LibertyHS.C
+	vrpn_Vality.C
 	vrpn_YEI_3Space.C
 	vrpn_Zaber.C
 	server_src/vrpn_Generic_server_object.C
@@ -1295,6 +1296,7 @@ set(VRPN_SERVER_PUBLIC_HEADERS
 	vrpn_XInputGamepad.h
 	vrpn_Xkeys.h
 	vrpn_Tracker_LibertyHS.h
+	vrpn_Vality.h
 	vrpn_YEI_3Space.h
 	vrpn_Zaber.h
 	server_src/vrpn_Generic_server_object.h)
