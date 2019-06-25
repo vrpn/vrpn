@@ -152,7 +152,7 @@ void vrpn_Vality_vGlass::decodePacket(size_t bytes, vrpn_uint8 *buffer)
     // code in the firmware, which is +/- 16G.
     // The data appears to be stored in little-endian format.
     static const double MSS_SCALE = (1.0 / 32767) * 16 * 9.807;
-    bufptr = &buffer[6];
+    bufptr = &buffer[12];
     channel[0] = vrpn_unbuffer_from_little_endian<vrpn_int16>(bufptr) * MSS_SCALE;
     channel[1] = vrpn_unbuffer_from_little_endian<vrpn_int16>(bufptr) * MSS_SCALE;
     channel[2] = vrpn_unbuffer_from_little_endian<vrpn_int16>(bufptr) * MSS_SCALE;
@@ -164,7 +164,7 @@ void vrpn_Vality_vGlass::decodePacket(size_t bytes, vrpn_uint8 *buffer)
     // register setting is 0 (+/- 2000 degrees/second).
     // The data appears to be stored in little-endian format.
     static const double RS_SCALE = (1.0 / 32767) * 2000 * (VRPN_PI/180);
-    bufptr = &buffer[12];
+    bufptr = &buffer[6];
     channel[3] = vrpn_unbuffer_from_little_endian<vrpn_int16>(bufptr) * RS_SCALE;
     channel[4] = vrpn_unbuffer_from_little_endian<vrpn_int16>(bufptr) * RS_SCALE;
     channel[5] = vrpn_unbuffer_from_little_endian<vrpn_int16>(bufptr) * RS_SCALE;
