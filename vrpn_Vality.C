@@ -16,21 +16,6 @@ static const double POLL_INTERVAL = 1e+6 / 30.0;		// If we have not heard, ask.
 static const vrpn_uint16 VALITY_VENDOR = 0x0483;
 static const vrpn_uint16 VALITY_VGLASS = 0x5740;
 
-static void normalize_axis(const unsigned int value, const short deadzone, const vrpn_float64 scale, vrpn_float64& channel) {
-	channel = (static_cast<float>(value) - 128.0f);
-	if (fabs(channel) < deadzone)
-	{
-		channel = 0.0f;
-	}
-	else
-	{
-		channel /= 128.0f;
-	}
-	channel *= scale;
-	if (channel < -1.0) { channel = -1.0; }
-	if (channel > 1.0) { channel = 1.0; }
-}
-
 vrpn_Vality::vrpn_Vality(vrpn_HidAcceptor *filter, const char *name,
                           vrpn_Connection *c,
     vrpn_uint16 vendor, vrpn_uint16 product)
