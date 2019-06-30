@@ -151,11 +151,13 @@ void vrpn_Vality_vGlass::decodePacket(size_t bytes, vrpn_uint8 *buffer)
     // sensitivity from the data sheet and the range set in the initialization
     // code in the firmware, which is +/- 16G.
     // The data appears to be stored in little-endian format.
+    // NOTE: The BMI160 used by the vGlass reports the negative of
+    // the acceleration vector, so we need to invert it after decoding it.
     static const double MSS_SCALE = (1.0 / 32767) * 16 * 9.807;
     bufptr = &buffer[12];
-    channel[0] = vrpn_unbuffer_from_little_endian<vrpn_int16>(bufptr) * MSS_SCALE;
-    channel[1] = vrpn_unbuffer_from_little_endian<vrpn_int16>(bufptr) * MSS_SCALE;
-    channel[2] = vrpn_unbuffer_from_little_endian<vrpn_int16>(bufptr) * MSS_SCALE;
+    channel[0] = -vrpn_unbuffer_from_little_endian<vrpn_int16>(bufptr) * MSS_SCALE;
+    channel[1] = -vrpn_unbuffer_from_little_endian<vrpn_int16>(bufptr) * MSS_SCALE;
+    channel[2] = -vrpn_unbuffer_from_little_endian<vrpn_int16>(bufptr) * MSS_SCALE;
 
     // Decode the rotational velocity values into channels 3=X, 4=Y, 5=Z.
     // Converts from [-1..1] to radians/second using the typical
