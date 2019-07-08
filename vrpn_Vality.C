@@ -158,14 +158,14 @@ void vrpn_Vality_vGlass::decodePacket(size_t bytes, vrpn_uint8 *buffer)
 
     // Decode the magnetometer values into channels 6=X, 7=Y, 8=Z.
     // Converts from [-1..1] to Tesla and then from Tesla to Gauss
-    // using the typical sensitivity from the data sheet and the
-    // specified range of values not quite the entire 16-bit range).
+    // using the typical sensitivity from the AK09916 data sheet and the
+    // specified range of values (not quite the entire 16-bit range).
     // The data appears to be stored in little-endian format.
-    static const double GAUSS_SCALE = (1.0 / -32752) * 4.912 * 0.001;
+    static const double MAG_SCALE = (4912.0 / 32752);
     bufptr = &buffer[18];
-    channel[6] = vrpn_unbuffer_from_little_endian<vrpn_int16>(bufptr) * GAUSS_SCALE;
-    channel[7] = vrpn_unbuffer_from_little_endian<vrpn_int16>(bufptr) * GAUSS_SCALE;
-    channel[8] = vrpn_unbuffer_from_little_endian<vrpn_int16>(bufptr) * GAUSS_SCALE;
+    channel[6] = vrpn_unbuffer_from_little_endian<vrpn_int16>(bufptr) * MAG_SCALE;
+    channel[7] = vrpn_unbuffer_from_little_endian<vrpn_int16>(bufptr) * MAG_SCALE;
+    channel[8] = vrpn_unbuffer_from_little_endian<vrpn_int16>(bufptr) * MAG_SCALE;
 }
 
 // End of VRPN_USE_HID
