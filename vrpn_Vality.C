@@ -161,11 +161,16 @@ void vrpn_Vality_vGlass::decodePacket(size_t bytes, vrpn_uint8 *buffer)
     // using the typical sensitivity from the AK09916 data sheet and the
     // specified range of values (not quite the entire 16-bit range).
     // The data appears to be stored in little-endian format.
+    // NOTE: The data does not appear to be consistent, so these readings
+    // are note very helpful as of 7/11/2019.  Until we can get our hands on
+    // a unit and debug this, we'll leave these readings out.
+    /*
     static const double MAG_SCALE = (4912.0 / 32752);
     bufptr = &buffer[18];
     channel[6] = vrpn_unbuffer_from_little_endian<vrpn_int16>(bufptr) * MAG_SCALE;
     channel[7] = vrpn_unbuffer_from_little_endian<vrpn_int16>(bufptr) * MAG_SCALE;
     channel[8] = vrpn_unbuffer_from_little_endian<vrpn_int16>(bufptr) * MAG_SCALE;
+    */
 }
 
 // End of VRPN_USE_HID
