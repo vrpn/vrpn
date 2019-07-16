@@ -519,6 +519,11 @@ int vrpn_read_available_characters(int comm, unsigned char *buffer,
     printf("vrpn_read_available_characters(): Entering\n");
 #endif
 #if defined(_WIN32) && !defined(__CYGWIN__)
+
+    if ((comm < 0) | (comm >= maxCom)) {
+        fprintf(stderr, "vrpn_read_available_characters: Invalid comm: %d\n", comm);
+        return (-1);
+    }
     BOOL fSuccess;
     DWORD numRead;
     COMSTAT cstat;
