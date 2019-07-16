@@ -86,6 +86,7 @@ vrpn_Tng3::vrpn_Tng3 (const char * name,
 
     // Set the status of the buttons, analogs and encoders to 0 to start
     clear_values();
+    _bufcount = 0;
 
     // Set the mode to reset
     _status = STATUS_RESETTING;
