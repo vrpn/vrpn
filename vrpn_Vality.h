@@ -40,19 +40,6 @@ protected:
   int register_types(void) { return 0; }
 };
 
-/*
-Analogs:
-  analog[0] is the X axis for the accelerometer, in meters / second / second
-  analog[1] is the Y axis for the accelerometer, in meters / second / second
-  analog[2] is the Z axis for the accelerometer, in meters / second / second
-  analog[3] is the X axis for the rate gyro, in radians / second
-  analog[4] is the Y axis for the rate gyro, in radians / second
-  analog[5] is the Z axis for the rate gyro, in radians / second
-  analog[6] is the X axis for the magnetometer, in Gauss
-  analog[7] is the Y axis for the magnetometer, in Gauss
-  analog[8] is the Z axis for the magnetometer, in Gauss
-*/
-
 class vrpn_Vality_vGlass : protected vrpn_Vality,
                                   public vrpn_Analog {
 public:
