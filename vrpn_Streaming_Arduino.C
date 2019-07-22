@@ -51,6 +51,7 @@ vrpn_Streaming_Arduino::vrpn_Streaming_Arduino(std::string name,
 
     // Set the status of the buttons, analogs and encoders to 0 to start
     clear_values();
+    vrpn_gettimeofday(&m_timestamp, NULL);
 
     // Set the mode to reset
     m_status = STATUS_RESETTING;

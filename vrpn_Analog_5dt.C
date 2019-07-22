@@ -51,6 +51,7 @@ vrpn_5dt::vrpn_5dt (const char * p_name, vrpn_Connection * p_c, const char * p_p
 
   // Set the status of the buttons and analogs to 0 to start
   clear_values();
+  vrpn_gettimeofday(&timestamp, NULL);
 
   // Set the mode to reset
   _status = STATUS_RESETTING;

@@ -80,13 +80,17 @@ vrpn_File_Connection::vrpn_File_Connection(const char *station_name,
     d_last_told.tv_sec = 0;
     d_last_told.tv_usec = 0;
 
+    d_earliest_user_time.tv_sec = d_earliest_user_time.tv_usec = 0;
+    d_earliest_user_time_valid = false;
+    d_highest_user_time.tv_sec = d_highest_user_time.tv_usec = 0;
+    d_highest_user_time_valid = false;
+
     // Because we are a file connection, our status should be CONNECTED
     // Later set this to BROKEN if there is a problem opening/reading the file.
     if (!d_endpoints.is_valid(0)) {
         fprintf(stderr, "vrpn_File_Connection::vrpn_File_Connection(): NULL "
                         "zeroeth endpoint\n");
-    }
-    else {
+    } else {
         connectionStatus = CONNECTED;
         d_endpoints.front()->status = CONNECTED;
     }
@@ -149,10 +153,6 @@ vrpn_File_Connection::vrpn_File_Connection(const char *station_name,
         d_startEntry = d_logHead;
         d_start_time = d_startEntry->data.msg_time;
         d_time = d_start_time;
-        d_earliest_user_time.tv_sec = d_earliest_user_time.tv_usec = 0;
-        d_earliest_user_time_valid = false;
-        d_highest_user_time.tv_sec = d_highest_user_time.tv_usec = 0;
-        d_highest_user_time_valid = false;
     }
     else {
         fprintf(stderr, "vrpn_File_Connection: Can't read first message\n");

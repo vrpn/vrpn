@@ -51,6 +51,7 @@ vrpn_Radamec_SPI::vrpn_Radamec_SPI (const char * name, vrpn_Connection * c,
 
 	// Set the status of the buttons and analogs to 0 to start
 	clear_values();
+  _bufcount = 0;
 
 	// Set the mode to reset
 	_status = STATUS_RESETTING;
