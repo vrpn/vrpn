@@ -1,0 +1,21 @@
+# Config file for lgtm.com code analysis
+path_classifiers:
+  library:
+    - submodules
+    - libnifalcon-patches
+    - exclude: "submodules/*.cmake"
+    - exclude: submodules/CMakeLists.txt
+  examples:
+    - client_src
+    - demos
+    - util
+    - server_src
+    # These are common/important enough that we'll consider them "core"
+    - exclude: client_src/vrpn_print_devices.C
+    - exclude: server_src/vrpn.C
+    - exclude: "server_src/vrpn_Generic_server_object.*"
+  bindings:
+    - java_vrpn
+    - python
+    - python_vrpn
+    
