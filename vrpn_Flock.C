@@ -696,6 +696,18 @@ if (vrpn_write_characters(serial_fd, (const unsigned char *) &chPoint, 1 )!=1) {
 vrpn_gettimeofday(&timestamp, NULL);\
 }   
 
+static const char* vrpn_ctime_r(time_t* cur_time, char* buffer, size_t bufsize)
+{
+#if _WIN32
+  if (0 != ctime_s(buffer, bufsize, cur_time)) {
+    return NULL;
+  }
+  return buffer;
+#else
+  return ctime_r(cur_time, buffer);
+#endif
+}
+
 void	vrpn_Tracker_Flock::send_report(void) {
     vrpn_Tracker_Serial::send_report();
 
@@ -739,8 +751,9 @@ void	vrpn_Tracker_Flock::send_report(void) {
 	    (vrpn_TimevalMsecs(vrpn_TimevalDiff(tvNow, 
 						tvLastStatusReport))/1000.0);
 	  time_t tNow = time(NULL);
-	  char *pch = ctime(&tNow);
-	  pch[24]='\0';
+    char pch[28];
+    memset(pch, 0, sizeof(pch));
+	  vrpn_ctime_r(&tNow, pch, sizeof(pch));
 	  fprintf(stderr, "\nFlock: reports being sent at %6.2lf hz "
 		  "(%d sensors, so ~%6.2lf hz per sensor) ( %s )", 
 		  dRate, cSensors, dRate/cSensors, pch);
