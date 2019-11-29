@@ -399,7 +399,6 @@ VRPN_API int vrpn_unbuffer(const char **buffer, char *string, vrpn_int32 length)
 
 #ifdef VRPN_USE_STD_CHRONO
 #include <chrono>
-#include <ctime>
 
 ///////////////////////////////////////////////////////////////
 // With Visual Studio 2013 64-bit, the hires clock produces a clock that has a
