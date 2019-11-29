@@ -403,7 +403,7 @@ vrpn_int32 vrpn_TranslationTable::addRemoteEntry(cName name,
     // at a time other than connection set-up.
 
     if (!d_entry[useEntry].name) {
-        try { d_entry[useEntry].name = new cName; }
+        try { d_entry[useEntry].name = new char[sizeof(cName)]; }
         catch (...) {
             fprintf(stderr, "vrpn_TranslationTable::addRemoteEntry:  "
                             "Out of memory.\n");
@@ -1173,7 +1173,7 @@ vrpn_int32 vrpn_TypeDispatcher::addSender(const char *name)
 
         //  fprintf(stderr, "Allocating a new name entry\n");
 
-        try { d_senders[d_numSenders] = new cName; }
+        try { d_senders[d_numSenders] = new char[sizeof(cName)]; }
         catch (...) {
             fprintf(stderr, "vrpn_TypeDispatcher::addSender:  "
                             "Can't allocate memory for new record\n");
