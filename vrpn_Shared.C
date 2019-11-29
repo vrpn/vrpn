@@ -1,6 +1,7 @@
 #include <math.h>   // for floor, fmod
 #include <stddef.h> // for size_t
 #include <stdio.h>  // for fprintf() and such
+#include <ctime>
 
 #ifdef _MSC_VER
 // Don't tell us about strcpy being dangerous.
