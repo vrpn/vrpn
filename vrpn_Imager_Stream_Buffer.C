@@ -88,7 +88,7 @@ vrpn_Imager_Stream_Buffer::vrpn_Imager_Stream_Buffer(
 
 vrpn_Imager_Stream_Buffer::~vrpn_Imager_Stream_Buffer()
 {
-    stop_logging_thread();
+  if (d_logging_thread) { stop_logging_thread(); }
     if (d_imager_server_name) {
         try {
           delete[] d_imager_server_name;
