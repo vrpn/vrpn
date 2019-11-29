@@ -26,6 +26,9 @@
 #include "vrpn_Connection.h"
 #include <string>
 
+// Maximum representable value in size_t, used to limit overflow.
+static size_t MAX_SIZE_T = (size_t)(-1);
+
 #ifdef VRPN_USE_WINSOCK_SOCKETS
 
 // A socket in Windows can not be closed like it can in unix-land
@@ -6508,14 +6511,19 @@ char *vrpn_copy_service_name(const char *fullname)
     if (fullname == NULL) {
         return NULL;
     } else {
-        size_t len = 1 + strcspn(fullname, "@");
+        size_t len = strcspn(fullname, "@");
+        if (len >= MAX_SIZE_T) {
+            fprintf(stderr, "vrpn_copy_service_name: String too long!\n");
+            return NULL;
+        }
+        len++;
         char *tbuf = NULL;
         try {
           tbuf = new char[len];
           strncpy(tbuf, fullname, len - 1);
           tbuf[len - 1] = 0;
         } catch (...) {
-            fprintf(stderr, "vrpn_copy_service_name:  Out of memory!\n");
+            fprintf(stderr, "vrpn_copy_service_name: Out of memory!\n");
             return NULL;
         }
         return tbuf;
@@ -6623,6 +6631,10 @@ char *vrpn_copy_machine_name(const char *hostspecifier)
     // Note that this may be the beginning of the string, right at
     // nearoffset.
     faroffset = strcspn(hostspecifier + nearoffset, ":/");
+    if (faroffset >= MAX_SIZE_T) {
+        fprintf(stderr, "vrpn_copy_machine_name: String too long!\n");
+        return NULL;
+    }
     len = 1 + faroffset;
 
     tbuf = NULL;
@@ -6631,7 +6643,7 @@ char *vrpn_copy_machine_name(const char *hostspecifier)
       strncpy(tbuf, hostspecifier + nearoffset, len - 1);
       tbuf[len - 1] = 0;
     } catch (...) {
-        fprintf(stderr, "vrpn_copy_machine_name:  Out of memory!\n");
+        fprintf(stderr, "vrpn_copy_machine_name: Out of memory!\n");
         return NULL;
     }
     return tbuf;
@@ -6669,7 +6681,12 @@ char *vrpn_copy_rsh_program(const char *hostspecifier)
     nearoffset += strcspn(hostspecifier + nearoffset, "/");
     nearoffset++; // step past the '/'
     faroffset = strcspn(hostspecifier + nearoffset, ",");
-    len = 1 + (faroffset ? faroffset : strlen(hostspecifier) - nearoffset);
+    len = (faroffset ? faroffset : strlen(hostspecifier) - nearoffset);
+    if (len >= MAX_SIZE_T) {
+        fprintf(stderr, "vrpn_copy_rsh_program: String too long!\n");
+        return NULL;
+    }
+    len++;
     try {
       tbuf = new char[len];
       strncpy(tbuf, hostspecifier + nearoffset, len - 1);
