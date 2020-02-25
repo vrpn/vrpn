@@ -7,7 +7,7 @@
 #include <ctype.h>                      // for isprint
 #include <stdio.h>                      // for fprintf, stderr, sprintf, etc
 #include <stdlib.h>                     // for atoi
-#include <string.h>                     // for strlen, strncpy, strtok
+#include <string.h>                     // for strlen, strtok
 
 #include "quat.h"                       // for Q_W, Q_X, Q_Y, Q_Z
 #include "vrpn_BaseClass.h"             // for ::vrpn_TEXT_ERROR, etc
@@ -39,7 +39,7 @@ vrpn_Tracker_Liberty::vrpn_Tracker_Liberty(const char *name, vrpn_Connection *c,
 	if (additional_reset_commands == NULL) {
 		add_reset_cmd[0] = '\0';
 	} else {
-		strncpy(add_reset_cmd, additional_reset_commands, sizeof(add_reset_cmd)-1);
+		vrpn_strcpy(add_reset_cmd, additional_reset_commands);
 	}
 
 	// Initially, set to no buttons or analogs on the stations.  The
@@ -339,8 +339,7 @@ printf("LIBERTY LATUS STATUS (whoami):\n%s\n\n",statusmsg);
 	printf("  Liberty writing extended reset commands...\n");
 
 	// Make a copy of the additional reset string, since it is consumed
-	strncpy(add_cmd_copy, add_reset_cmd, sizeof(add_cmd_copy));
-	add_cmd_copy[sizeof(add_cmd_copy)-1] = '\0';
+        vrpn_strcpy(add_cmd_copy, add_reset_cmd);
 
 	// Pass through the string, testing each line to see if it is
 	// a sleep command or a line to send to the tracker. Continue until
@@ -647,7 +646,7 @@ int vrpn_Tracker_Liberty::get_report(void)
 
        // Convert from the float in MILLIseconds to the struct timeval
        delta_time.tv_sec = (long)(read_time / 1000);	// Integer trunction to seconds
-       vrpn_uint32 read_time_milliseconds = read_time_milliseconds = read_time - delta_time.tv_sec * 1000;	// Subtract out what we just counted
+       vrpn_uint32 read_time_milliseconds = read_time - delta_time.tv_sec * 1000;	// Subtract out what we just counted
        delta_time.tv_usec = (long)(read_time_milliseconds * 1000);	// Convert remainder to MICROseconds
 
        // The time that the report was generated
@@ -693,8 +692,8 @@ int vrpn_Tracker_Liberty::add_stylus_button(const char *button_device_name, int 
     }
 
     // Add a new button device and set the pointer to point at it.
-    stylus_buttons[sensor] = new vrpn_Button_Server(button_device_name, d_connection, numbuttons);
-    if (stylus_buttons[sensor] == NULL) {
+    try { stylus_buttons[sensor] = new vrpn_Button_Server(button_device_name, d_connection, numbuttons); }
+    catch (...) {
 	VRPN_MSG_ERROR("Cannot open button device");
 	return -1;
     }

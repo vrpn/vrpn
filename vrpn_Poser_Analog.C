@@ -27,17 +27,20 @@ bool vrpn_Poser_Analog::setup_channel(vrpn_PA_fullaxis* full)
     // connection rather than making a new one.
     if (full->axis.ana_name != NULL) {
         if (full->axis.ana_name[0] == '*') {
+          try {
             full->ana = new vrpn_Analog_Output_Remote(&(full->axis.ana_name[1]),
-                                                      d_connection);
-        }
-        else {
-            full->ana = new vrpn_Analog_Output_Remote(full->axis.ana_name);
-        }
-
-        if (full->ana == NULL) {
-            fprintf(stderr, "vrpn_Poser_Analog: Can't open Analog %s\n",
-                    full->axis.ana_name);
+              d_connection);
+          } catch (...) {
+            fprintf(stderr, "vrpn_Poser_Analog: Out of memory\n");
             return false;
+          }
+        } else {
+          try {
+            full->ana = new vrpn_Analog_Output_Remote(full->axis.ana_name);
+          } catch (...) {
+            fprintf(stderr, "vrpn_Poser_Analog: Out of memory\n");
+            return false;
+          }
         }
     }
     else {

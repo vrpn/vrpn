@@ -93,15 +93,24 @@
 // the serial device using the code in the vrpn_Serial_Analog constructor.
 vrpn_Spaceball::vrpn_Spaceball (const char * name, vrpn_Connection * c,
 			const char * port, int baud):
-		vrpn_Serial_Analog(name, c, port, baud),
-		vrpn_Button_Filter(name, c),
-		_numbuttons(12),
-		_numchannels(6),
-		null_radius(8)
+		vrpn_Serial_Analog(name, c, port, baud)
+		, vrpn_Button_Filter(name, c)
+		, _numbuttons(12)
+		, _numchannels(6)
+    , bufpos(0)
+    , packlen(0)
+    , escapedchar(0)
+    , erroroccured(0)
+    , resetoccured(0)
+    , spaceball4000(0)
+    , leftymode4000(0)
+		, null_radius(8)
 {
 	// Set the parameters in the parent classes
 	vrpn_Button::num_buttons = _numbuttons;
 	vrpn_Analog::num_channel = _numchannels;
+
+        vrpn_gettimeofday(&timestamp, NULL);	// Set watchdog now
 
 	// Set the status of the buttons and analogs to 0 to start
 	clear_values();

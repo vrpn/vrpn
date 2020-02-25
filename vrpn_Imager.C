@@ -1,5 +1,5 @@
 #include <stdio.h>  // for fprintf, stderr, printf
-#include <string.h> // for memcpy, NULL, strncpy
+#include <string.h> // for memcpy, NULL
 
 #include "vrpn_Imager.h"
 
@@ -85,8 +85,8 @@ int vrpn_Imager_Server::add_channel(const char *name, const char *units,
     if (static_cast<unsigned>(d_nChannels) >= vrpn_IMAGER_MAX_CHANNELS) {
         return -1;
     }
-    strncpy(d_channels[d_nChannels].name, name, sizeof(cName));
-    strncpy(d_channels[d_nChannels].units, units, sizeof(cName));
+    vrpn_strcpy(d_channels[d_nChannels].name, name);
+    vrpn_strcpy(d_channels[d_nChannels].units, units);
     d_channels[d_nChannels].minVal = minVal;
     d_channels[d_nChannels].maxVal = maxVal;
     if (scale == 0) {

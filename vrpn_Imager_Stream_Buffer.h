@@ -36,7 +36,12 @@ public:
     {
         while (d_first != NULL) {
             struct d_ELEMENT *next = d_first->next;
-            delete d_first;
+            try {
+              delete d_first;
+            } catch (...) {
+              fprintf(stderr, "vrpn_Message_List::~vrpn_Message_List(): delete failed\n");
+              return;
+            }
             d_first = next;
         }
     }
@@ -47,8 +52,9 @@ public:
     // Insert an element into the list.  Return false if fails.
     bool insert_back(const vrpn_HANDLERPARAM &p)
     {
-        struct d_ELEMENT *el = new struct d_ELEMENT;
-        if (el == NULL) {
+        struct d_ELEMENT *el;
+        try { el = new struct d_ELEMENT; }
+        catch (...) {
             return false;
         }
         el->p = p;
@@ -80,7 +86,12 @@ public:
         }
         struct d_ELEMENT *temp = d_first;
         d_first = d_first->next;
-        delete temp;
+        try {
+          delete temp;
+        } catch (...) {
+          fprintf(stderr, "vrpn_Message_List::retrieve_front(): delete failed\n");
+          return false;
+        }
 
         d_count--;
         return true;
@@ -212,14 +223,19 @@ public:
             }
 
             // Delete and NULL the local storage pointers.
-            delete[] d_request_lil;
-            d_request_lil = NULL;
-            delete[] d_request_lol;
-            d_request_lol = NULL;
-            delete[] d_request_ril;
-            d_request_ril = NULL;
-            delete[] d_request_rol;
-            d_request_rol = NULL;
+            try {
+              delete[] d_request_lil;
+              d_request_lil = NULL;
+              delete[] d_request_lol;
+              d_request_lol = NULL;
+              delete[] d_request_ril;
+              d_request_ril = NULL;
+              delete[] d_request_rol;
+              d_request_rol = NULL;
+            } catch (...) {
+              fprintf(stderr, "vrpn_Imager_Stream_Shared_State::get_logfile_request(): delete failed\n");
+              return false;
+            }
         }
         d_new_log_request = false;
         return ret;
@@ -233,19 +249,39 @@ public:
         // delete file names, in case the logging thread hasn't had a chance to
         //  honor the request yet.
         if (d_request_lil) {
-            delete[] d_request_lil;
+            try {
+              delete[] d_request_lil;
+            } catch (...) {
+              fprintf(stderr, "vrpn_Imager_Stream_Shared_State::set_logfile_request(): delete failed\n");
+              return;
+            }
             d_request_lil = NULL;
         }
         if (d_request_lol) {
-            delete[] d_request_lol;
+            try {
+              delete[] d_request_lol;
+            } catch (...) {
+              fprintf(stderr, "vrpn_Imager_Stream_Shared_State::set_logfile_request(): delete failed\n");
+              return;
+            }
             d_request_lol = NULL;
         }
         if (d_request_ril) {
-            delete[] d_request_ril;
+            try {
+              delete[] d_request_ril;
+            } catch (...) {
+              fprintf(stderr, "vrpn_Imager_Stream_Shared_State::set_logfile_request(): delete failed\n");
+              return;
+            }
             d_request_ril = NULL;
         }
         if (d_request_rol) {
-            delete[] d_request_rol;
+            try {
+              delete[] d_request_rol;
+            } catch (...) {
+              fprintf(stderr, "vrpn_Imager_Stream_Shared_State::set_logfile_request(): delete failed\n");
+              return;
+            }
             d_request_rol = NULL;
         }
 
@@ -332,13 +368,41 @@ public:
     {
         vrpn::SemaphoreGuard guard(d_sem);
 
-        if (d_result_lil) delete[] d_result_lil;
+        if (d_result_lil) {
+          try {
+            delete[] d_result_lil;
+          } catch (...) {
+            fprintf(stderr, "vrpn_Imager_Stream_Shared_State::set_logfile_result(): delete failed\n");
+            return;
+          }
+        }
         d_result_lil = NULL;
-        if (d_result_lol) delete[] d_result_lol;
+        if (d_result_lol) {
+          try {
+            delete[] d_result_lol;
+          } catch (...) {
+            fprintf(stderr, "vrpn_Imager_Stream_Shared_State::set_logfile_result(): delete failed\n");
+            return;
+          }
+        }
         d_result_lol = NULL;
-        if (d_result_ril) delete[] d_result_ril;
+        if (d_result_ril) {
+          try {
+            delete[] d_result_ril;
+          } catch (...) {
+            fprintf(stderr, "vrpn_Imager_Stream_Shared_State::set_logfile_result(): delete failed\n");
+            return;
+          }
+        }
         d_result_ril = NULL;
-        if (d_result_rol) delete[] d_result_rol;
+        if (d_result_rol) {
+          try {
+            delete[] d_result_rol;
+          } catch (...) {
+            fprintf(stderr, "vrpn_Imager_Stream_Shared_State::set_logfile_result(): delete failed\n");
+            return;
+          }
+        }
         d_result_rol = NULL;
 
         // Allocate space for each string and then copy into it.

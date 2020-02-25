@@ -39,11 +39,15 @@ static const vrpn_float64 vrpn_HDK_DT = 1.0 / 50;
 
 static vrpn_HidAcceptor *makeHDKHidAcceptor()
 {
-    return new vrpn_HidBooleanOrAcceptor(
-        new vrpn_HidProductAcceptor(vrpn_OSVR_VENDOR,
-                                    vrpn_OSVR_HACKER_DEV_KIT_HMD),
-        new vrpn_HidProductAcceptor(vrpn_OSVR_ALT_VENDOR,
-                                    vrpn_OSVR_ALT_HACKER_DEV_KIT_HMD));
+  vrpn_HidAcceptor *ret;
+  try {
+    ret = new vrpn_HidBooleanOrAcceptor(
+      new vrpn_HidProductAcceptor(vrpn_OSVR_VENDOR,
+        vrpn_OSVR_HACKER_DEV_KIT_HMD),
+      new vrpn_HidProductAcceptor(vrpn_OSVR_ALT_VENDOR,
+        vrpn_OSVR_ALT_HACKER_DEV_KIT_HMD));
+  } catch (...) { return NULL; }
+  return ret;
 }
 
 // NOTE: Cannot use the vendor-and-product parameters in the
@@ -97,7 +101,12 @@ void vrpn_Tracker_OSVRHackerDevKit::shared_init() {
 
 vrpn_Tracker_OSVRHackerDevKit::~vrpn_Tracker_OSVRHackerDevKit()
 {
+  try {
     delete m_acceptor;
+  } catch (...) {
+    fprintf(stderr, "vrpn_Tracker_OSVRHackerDevKit::~vrpn_Tracker_OSVRHackerDevKit(): delete failed\n");
+    return;
+  }
 }
 
 void vrpn_Tracker_OSVRHackerDevKit::on_data_received(std::size_t bytes,

@@ -40,6 +40,8 @@ vrpn_5dt16::vrpn_5dt16 (const char * p_name, vrpn_Connection * p_c, const char *
   // Set the parameters in the parent classes
   vrpn_Analog::num_channel = _numchannels;
 
+  vrpn_gettimeofday(&timestamp, NULL);	// Set watchdog now
+
   // Set the status of the buttons and analogs to 0 to start
   clear_values();
 
@@ -308,7 +310,8 @@ vrpn_Button_5DT_Server::vrpn_Button_5DT_Server(const char *name, const char *dev
         for(int i=0;i<num_buttons;i++) {
                 m_threshold[i]=threshold[i];
 	}
-        d_5dt_button=new vrpn_Analog_Remote(deviceName, d_connection);
+        d_5dt_button = NULL;
+        d_5dt_button = new vrpn_Analog_Remote(deviceName, d_connection);
 #ifdef  VERBOSE
         printf("vrpn_Button_5DT_Server: Adding local analog %s\n",name);
 #endif

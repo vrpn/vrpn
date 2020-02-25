@@ -138,12 +138,8 @@ vrpn_LUDL_USBMAC6000::vrpn_LUDL_USBMAC6000(const char *name, vrpn_Connection *c,
   }
 
   // Allocate space to store the axis status and record that the axes are stopped.
-  if ( (_axis_moving = new bool[o_num_channel]) == NULL) {
-    fprintf(stderr,"vrpn_LUDL_USBMAC6000: Out of memory\n");
-  }
-  if ( (_axis_destination = new vrpn_float64[o_num_channel]) == NULL) {
-    fprintf(stderr,"vrpn_LUDL_USBMAC6000: Out of memory\n");
-  }
+  _axis_moving = new bool[o_num_channel];
+  _axis_destination = new vrpn_float64[o_num_channel];
   int i;
   for (i = 0; i < o_num_channel; i++) {
     _axis_moving[i] = false;
@@ -162,8 +158,14 @@ vrpn_LUDL_USBMAC6000::~vrpn_LUDL_USBMAC6000()
   }
 
   // Get rid of the arrays we allocated in the constructor
-  if (_axis_moving != NULL) { delete [] _axis_moving; _axis_moving = NULL; }
-  if (_axis_destination != NULL) { delete [] _axis_destination; _axis_destination = NULL; }
+  try {
+    if (_axis_moving != NULL) { delete[] _axis_moving; _axis_moving = NULL; }
+    if (_axis_destination != NULL) { delete[] _axis_destination; _axis_destination = NULL; }
+  } catch (...) {
+    fprintf(stderr, "vrpn_LUDL_USBMAC6000::~vrpn_LUDL_USBMAC6000(): delete failed\n");
+    return;
+  }
+
 }
 
 bool vrpn_LUDL_USBMAC6000::check_for_data(void)
@@ -248,8 +250,8 @@ void vrpn_LUDL_USBMAC6000::mainloop()
   vrpn_gettimeofday(&_timestamp, NULL);
   report_changes();
 
-  vrpn_Analog_Output::server_mainloop();
-  vrpn_Analog::server_mainloop();
+  // Call the server_mainloop on our unique base class.
+  server_mainloop();
 }
 
 void vrpn_LUDL_USBMAC6000::report(vrpn_uint32 class_of_service)

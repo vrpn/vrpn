@@ -23,18 +23,16 @@ vrpn_Tracker_GameTrak::vrpn_Tracker_GameTrak(const char * name, vrpn_Connection 
 
     // try to open a client connection to the joystick device
     // if the name starts with '*', use the server connection only
-    if (joystick_dev[0] == '*')
-        _analog = new vrpn_Analog_Remote(&(joystick_dev[1]), d_connection);
-    else
-        _analog = new vrpn_Analog_Remote(joystick_dev);
+    if (joystick_dev[0] == '*') {
+      _analog = new vrpn_Analog_Remote(&(joystick_dev[1]), d_connection);
+    } else {
+      _analog = new vrpn_Analog_Remote(joystick_dev);
+    }
 
-    if (_analog == NULL)
-    {
+    if (_analog == NULL) {
         fprintf(stderr, "vrpn_Tracker_GameTrak: "
             "Can't open joystick %s\n", joystick_dev);
-    }
-    else
-    {
+    } else {
         _analog->register_change_handler(this, handle_update);
     }
 }

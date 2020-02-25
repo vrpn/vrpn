@@ -117,7 +117,12 @@ namespace detail {
         virtual ~TypedMainloopObject()
         {
             if (_do_delete) {
-                delete _instance;
+                try {
+                  delete _instance;
+                } catch (...) {
+                  fprintf(stderr, "TypedMainloopObject::~TypedMainloopObject: delete failed\n");
+                  return;
+                }
                 VRPN_MAINLOOPOBJECT_MSG("Deleted contained vrpn object "
                                         << _instance)
             }
@@ -170,13 +175,21 @@ namespace detail {
 
 template <class T> inline vrpn_MainloopObject *vrpn_MainloopObject::wrap(T o)
 {
-    return new detail::TypedMainloopObject<T>(o);
+  vrpn_MainloopObject *ret = NULL;
+  try {
+    ret = new detail::TypedMainloopObject<T>(o);
+  } catch (...) {}
+  return ret;
 }
 
 template <class T>
 inline vrpn_MainloopObject *vrpn_MainloopObject::wrap(T o, bool owner)
 {
-    return new detail::TypedMainloopObject<T>(o, owner);
+  vrpn_MainloopObject *ret = NULL;
+  try {
+    ret = new detail::TypedMainloopObject<T>(o, owner);
+  } catch (...) { }
+  return ret;
 }
 
 #endif // INCLUDED_vrpn_MainloopObject_h_GUID_38f638e4_40e0_4c6d_bebc_21c463794b88

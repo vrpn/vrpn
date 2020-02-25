@@ -17,7 +17,7 @@
 #include "vrpn_Configure.h" // for VRPN_API
 #include "vrpn_Types.h"     // for vrpn_int32, vrpn_float64, etc
 #include "vrpn_Thread.h"
-#include <string.h>         // for memcpy()
+#include <string.h>         // for memcpy(), strncpy()
 #include <stdio.h>          // for fprintf()
 
 #if defined(__ANDROID__)
@@ -501,3 +501,20 @@ inline int vrpn_unbuffer(ByteT **input, T *lvalue)
 // Returns true if tests work and false if they do not.
 extern bool vrpn_test_pack_unpack(void);
 
+/// Null-terminated-string copy function that both guarantees not to overrun
+/// the buffer and guarantees that the last character copied is a NULL terminator
+/// character.  Infers the size of the output buffer by template magic.
+/// See https://randomascii.wordpress.com/2013/04/03/stop-using-strncpy-already/
+/// for a description of how this works.
+
+template <size_t charCount> void vrpn_strcpy(char (&to)[charCount], const char* pSrc)
+{
+  // Copy the string - don't copy too many bytes.
+#ifdef _WIN32
+  strncpy_s(to, pSrc, charCount);
+#else
+  strncpy(to, pSrc, charCount - 1);
+#endif
+  // Ensure null-termination.
+  to[charCount - 1] = 0;
+}

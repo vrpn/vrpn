@@ -1,3 +1,5 @@
+language: cpp
+
 compiler:
   - clang
   - gcc
@@ -7,5 +9,27 @@ before_install:
   - sudo apt-get update -qq
   - sudo apt-get install -qq libgpm-dev freeglut3-dev libxmu-dev libxi-dev libusb-1.0-0-dev libqt4-dev
 
-language: cpp
-script: mkdir build && cd build && cmake -DVRPN_GPL_SERVER=TRUE -D  VRPN_BUILD_EXTRA_COMPILER_WARNINGS=TRUE .. && make && make test
+script:
+  - if [ "${COVERITY_SCAN_BRANCH}" != 1 ]; then
+      mkdir build && cd build && cmake -DVRPN_GPL_SERVER=TRUE -D  VRPN_BUILD_EXTRA_COMPILER_WARNINGS=TRUE .. && make && make test;
+    fi
+
+env:
+  global:
+   # The next declaration is the encrypted COVERITY_SCAN_TOKEN, created
+   # via the "travis encrypt" command using the project repo's public key
+   - secure: "hYZutNHsCMNbiD6bY5UVhIlVb6ju4S/SPEqv+nafTfu/2ffCWQzafp3e/Z4ahGhoZUCZFwlTKpblS9QvEdKBK9kMR87JaVY6q68DKR9WR75dKofaRRJ3VJm+EqHnWXhaisSgNafaMctI405m7h3NC0lp8WSs+VLwx39NXCp/REg="
+
+before_install:
+  - echo -n | openssl s_client -connect https://scan.coverity.com:443 | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' | sudo tee -a /etc/ssl/certs/ca-
+
+addons:
+  coverity_scan:
+    project:
+      name: vrpn/vrpn
+      description: "Build submitted via Travis CI"
+    notification_email: godbyk@gmail.com
+    build_command_prepend: mkdir build && cd build && cmake -DVRPN_GPL_SERVER=TRUE -DVRPN_BUILD_EXTRA_COMPILER_WARNINGS=TRUE .. && make clean
+    build_command: make
+    branch_pattern: coverity_scan
+

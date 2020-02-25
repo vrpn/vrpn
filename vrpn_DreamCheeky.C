@@ -25,7 +25,12 @@ vrpn_DreamCheeky::vrpn_DreamCheeky(vrpn_HidAcceptor *filter, const char *name, v
 
 vrpn_DreamCheeky::~vrpn_DreamCheeky()
 {
-	delete _filter;
+  try {
+    delete _filter;
+  } catch (...) {
+    fprintf(stderr, "vrpn_DreamCheeky::~vrpn_DreamCheeky(): delete failed\n");
+    return;
+  }
 }
 
 void vrpn_DreamCheeky::on_data_received(size_t bytes, vrpn_uint8 *buffer)
@@ -53,15 +58,17 @@ void vrpn_DreamCheeky_Drum_Kit::mainloop()
 	vrpn_gettimeofday(&_timestamp, NULL);
 	report_changes();
 
-	vrpn_Button::server_mainloop();
+	server_mainloop();
 }
 
-void vrpn_DreamCheeky_Drum_Kit::report(void) {
+void vrpn_DreamCheeky_Drum_Kit::report(void)
+{
 	vrpn_Button::timestamp = _timestamp;
 	vrpn_Button::report_changes();
 }
 
-void vrpn_DreamCheeky_Drum_Kit::report_changes(void) {
+void vrpn_DreamCheeky_Drum_Kit::report_changes(void)
+{
 	vrpn_Button::timestamp = _timestamp;
 	vrpn_Button::report_changes();
 }

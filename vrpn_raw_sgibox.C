@@ -143,7 +143,7 @@ int vrpn_raw_SGIBox::reset() {  /* Button/Dial box setup */
   if (serialfd != -1) {
     // for some reason, enabling the dials disables the buttons
     // so we have to enable the dials first
-  	  if (vrpn_write_slowly(serialfd, enabledials,5,1) != 5) {
+  	  if (vrpn_write_slowly(serialfd, enabledials,3,1) != 3) {
 		perror("vrpn_raw_SGIBox::reset(): Can't enable dials");
 		return -1;
 	  }

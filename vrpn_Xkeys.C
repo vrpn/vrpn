@@ -33,7 +33,12 @@ vrpn_Xkeys::vrpn_Xkeys(vrpn_HidAcceptor *filter, const char *name,
 
 vrpn_Xkeys::~vrpn_Xkeys()
 {
-  delete _filter;
+  try {
+    delete _filter;
+  } catch (...) {
+    fprintf(stderr, "vrpn_Xkeys::~vrpn_Xkeys(): delete failed\n");
+    return;
+  }
 }
 
 void vrpn_Xkeys::init_hid() {
@@ -155,15 +160,18 @@ void vrpn_Xkeys_Desktop::mainloop()
 	vrpn_gettimeofday(&_timestamp, NULL);
 	report_changes();
 
-	vrpn_Button::server_mainloop();
+        // Call the server_mainloop on our unique base class.
+        server_mainloop();
 }
 
-void vrpn_Xkeys_Desktop::report(void) {
+void vrpn_Xkeys_Desktop::report(void)
+{
 	vrpn_Button::timestamp = _timestamp;
 	vrpn_Button::report_changes();
 }
 
-void vrpn_Xkeys_Desktop::report_changes(void) {
+void vrpn_Xkeys_Desktop::report_changes(void)
+{
 	vrpn_Button::timestamp = _timestamp;
 	vrpn_Button::report_changes();
 }
@@ -222,9 +230,8 @@ void vrpn_Xkeys_Jog_And_Shuttle::mainloop()
 	vrpn_gettimeofday(&_timestamp, NULL);
 	report_changes();
 
-	vrpn_Analog::server_mainloop();
-	vrpn_Button::server_mainloop();
-	vrpn_Dial::server_mainloop();
+        // Call the server_mainloop on our unique base class.
+        server_mainloop();
 }
 
 void vrpn_Xkeys_Jog_And_Shuttle::report(vrpn_uint32 class_of_service) {
@@ -388,9 +395,8 @@ void vrpn_Xkeys_Jog_And_Shuttle12::mainloop()
 	vrpn_gettimeofday(&_timestamp, NULL);
 	report_changes();
 
-	vrpn_Analog::server_mainloop();
-	vrpn_Button::server_mainloop();
-	vrpn_Dial::server_mainloop();
+        // Call the server_mainloop on our unique base class.
+        server_mainloop();
 }
 
 void vrpn_Xkeys_Jog_And_Shuttle12::report(vrpn_uint32 class_of_service) {
@@ -520,9 +526,8 @@ void vrpn_Xkeys_Jog_And_Shuttle68::mainloop()
 	vrpn_gettimeofday(&_timestamp, NULL);
 	report_changes();
 
-	vrpn_Analog::server_mainloop();
-	vrpn_Button::server_mainloop();
-	vrpn_Dial::server_mainloop();
+        // Call the server_mainloop on our unique base class.
+        server_mainloop();
 }
 
 void vrpn_Xkeys_Jog_And_Shuttle68::report(vrpn_uint32 class_of_service)
@@ -665,9 +670,8 @@ void vrpn_Xkeys_Joystick::mainloop()
 	vrpn_gettimeofday(&_timestamp, NULL);
 	report_changes();
 
-	vrpn_Analog::server_mainloop();
-	vrpn_Button::server_mainloop();
-	vrpn_Dial::server_mainloop();
+        // Call the server_mainloop on our unique base class.
+        server_mainloop();
 }
 
 void vrpn_Xkeys_Joystick::report(vrpn_uint32 class_of_service) {
@@ -828,9 +832,8 @@ void vrpn_Xkeys_Joystick12::mainloop()
 	vrpn_gettimeofday(&_timestamp, NULL);
 	report_changes();
 
-	vrpn_Analog::server_mainloop();
-	vrpn_Button::server_mainloop();
-	vrpn_Dial::server_mainloop();
+        // Call the server_mainloop on our unique base class.
+        server_mainloop();
 }
 
 void vrpn_Xkeys_Joystick12::report(vrpn_uint32 class_of_service) {
@@ -947,7 +950,8 @@ void vrpn_Xkeys_Pro::mainloop()
 	vrpn_gettimeofday(&_timestamp, NULL);
 	report_changes();
 
-	vrpn_Button::server_mainloop();
+        // Call the server_mainloop on our unique base class.
+        server_mainloop();
 }
 
 void vrpn_Xkeys_Pro::report(void) {
@@ -1068,7 +1072,8 @@ void vrpn_Xkeys_XK3::mainloop()
 	vrpn_gettimeofday(&_timestamp, NULL);
 	report_changes();
 
-	vrpn_Button::server_mainloop();
+        // Call the server_mainloop on our unique base class.
+        server_mainloop();
 }
 
 void vrpn_Xkeys_XK3::report(void) {

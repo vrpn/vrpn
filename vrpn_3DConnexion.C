@@ -53,6 +53,9 @@ vrpn_3DConnexion::vrpn_3DConnexion(vrpn_HidAcceptor *filter, unsigned num_button
   memset(channel, 0, sizeof(channel));
   memset(last, 0, sizeof(last));
 
+  // Initialize the timestamp.
+  vrpn_gettimeofday(&_timestamp, NULL);
+
 // There is a non-HID Linux-based driver for this device that has a capability
 // not implemented in the HID interface.  It is implemented using the Event
 // interface.
@@ -98,6 +101,11 @@ vrpn_3DConnexion::vrpn_3DConnexion(vrpn_HidAcceptor *filter, unsigned num_button
 
     // turn the LED on
     set_led(1);
+#else
+#ifndef VRPN_USE_HID
+    fprintf(stderr,"vrpn_3DConnexion::vrpn_3DConnexion(): No implementation compiled in "
+                   "to open this device.  Please recompile.\n");
+#endif
 #endif
 }
 
@@ -106,7 +114,12 @@ vrpn_3DConnexion::~vrpn_3DConnexion()
 #if defined(VRPN_USING_3DCONNEXION_EVENT_IFACE)
 	set_led(0);
 #endif
-        delete _filter;
+        try {
+          delete _filter;
+        } catch (...) {
+          fprintf(stderr, "vrpn_3DConnexion::~vrpn_3DConnexion(): delete failed\n");
+          return;
+        }
 }
 
 #if defined(VRPN_USE_HID)

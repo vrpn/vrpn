@@ -47,7 +47,12 @@ vrpn_Futaba::vrpn_Futaba(vrpn_HidAcceptor *filter, const char *name, vrpn_Connec
 
 vrpn_Futaba::~vrpn_Futaba(void)
 {
-  delete _filter;
+  try {
+    delete _filter;
+  } catch (...) {
+    fprintf(stderr, "vrpn_Futaba::~vrpn_Futaba(): delete failed\n");
+    return;
+  }
 }
 
 void vrpn_Futaba::init_hid(void) {
@@ -99,12 +104,8 @@ void vrpn_Futaba_InterLink_Elite::mainloop(void)
 		_timestamp = current_time;
 		report_changes();
 
-		vrpn_Analog::server_mainloop();
-		vrpn_Button::server_mainloop();
-		if (vrpn_Dial::num_dials > 0)
-		{
-			vrpn_Dial::server_mainloop();
-		}
+                // Call the server_mainloop on our unique base class.
+                server_mainloop();
 	}
 }
 

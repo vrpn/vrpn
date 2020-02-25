@@ -12,7 +12,7 @@
 #ifndef _WIN32_WCE
 #include <signal.h> // for signal, SIGINT
 #endif
-#include <string.h>              // for strcmp, strncpy
+#include <string.h>              // for strcmp
 #include <vrpn_Analog.h>         // for vrpn_Analog_Remote, etc
 #include <vrpn_Button.h>         // for vrpn_Button_Remote, etc
 #include <vrpn_FileConnection.h> // For preload and accumulate settings
@@ -313,9 +313,9 @@ int main(int argc, char *argv[])
                 printf(" Tracker");
 
                 // Fill in the user-data callback information
-                strncpy(tc1->t_name, dev->name, sizeof(tc1->t_name));
-                strncpy(tc2->t_name, dev->name, sizeof(tc2->t_name));
-                strncpy(tc3->t_name, dev->name, sizeof(tc3->t_name));
+                vrpn_strcpy(tc1->t_name, dev->name);
+                vrpn_strcpy(tc2->t_name, dev->name);
+                vrpn_strcpy(tc3->t_name, dev->name);
 
                 // Set up the tracker callback handlers
                 tkr->register_change_handler(tc1, handle_tracker_pos_quat);

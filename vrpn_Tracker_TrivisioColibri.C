@@ -45,7 +45,13 @@ vrpn_Tracker_TrivisioColibri::vrpn_Tracker_TrivisioColibri(const char* name, vrp
     vrpn_Tracker(name, c)
 {
     // Query the number of connected devices
-    struct TrivisioSensor* sensorList = new TrivisioSensor[numSensors];
+    struct TrivisioSensor* sensorList;
+    try { sensorList = new TrivisioSensor[numSensors]; }
+    catch (...) {
+      printf("vrpn_Tracker_TrivisioColibri::vrpn_Tracker_TrivisioColibri: Out of memory\n");
+      status = vrpn_TRACKER_FAIL;
+      return;
+    }
     int sensorCount = colibriGetDeviceList(sensorList, numSensors);
 
     // If sensorCount == -1, there are more sensors connected than we specified, which is fine.
@@ -87,7 +93,12 @@ vrpn_Tracker_TrivisioColibri::vrpn_Tracker_TrivisioColibri(const char* name, vrp
 
 
     // Create the array of device handles
-    imu = new void*[num_sensors];
+    try { imu = new void*[num_sensors]; }
+    catch (...) {
+      printf("vrpn_Tracker_TrivisioColibri::vrpn_Tracker_TrivisioColibri: Out of memory\n");
+      status = vrpn_TRACKER_FAIL;
+      return;
+    }
     
     // Create device handles and configure them
     for (int i = 0; i < num_sensors; i++) {
@@ -148,7 +159,12 @@ vrpn_Tracker_TrivisioColibri::~vrpn_Tracker_TrivisioColibri()
         colibriClose(imu[i]);
     }
 
-    delete [] imu;
+    try {
+      delete[] imu;
+    } catch (...) {
+      fprintf(stderr, "vrpn_Tracker_TrivisioColibri::~vrpn_Tracker_TrivisioColibri(): delete failed\n");
+      return;
+    }
 }
 
 void vrpn_Tracker_TrivisioColibri::mainloop()

@@ -69,12 +69,7 @@ _reportChange(reportOnChangeOnly!=0),
 _numDevices(0)
 {
 #ifdef VRPN_USE_USDIGITAL
-    this->_devAddr = new long[vrpn_Analog_USDigital_A2::vrpn_Analog_USDigital_A2_CHANNEL_MAX] ;
-    if (this->_devAddr == NULL) {
-        fprintf(stderr,"vrpn_Analog_USDigital_A2: Out of memory!\n");
-	return;
-    }    
-
+    this->_devAddr = new long[vrpn_Analog_USDigital_A2::vrpn_Analog_USDigital_A2_CHANNEL_MAX];
     this->setNumChannels( numChannels );
 
     // Check if we got a connection.
@@ -162,7 +157,12 @@ vrpn_Analog_USDigital_A2::~vrpn_Analog_USDigital_A2()
     }
 
     //  deallocate the list of device addresses.
-    delete _devAddr ; 
+    try {
+      delete _devAddr;
+    } catch (...) {
+      fprintf(stderr, "vrpn_Analog_USDigital_A2::~vrpn_Analog_USDigital_A2(): delete failed\n");
+      return;
+    }
     _devAddr = 0 ;
 #endif
 }    //  destructor

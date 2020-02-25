@@ -94,7 +94,12 @@ public:
             if (m_flags & KINE_STAMPER) {
                 m_falconDevice->setFalconKinematic<libnifalcon::FalconKinematicStamper>();
             } else {
-                delete m_falconDevice;
+                try {
+                  delete m_falconDevice;
+                } catch (...) {
+                  fprintf(stderr, "vrpn_NovintFalcon_Device::vrpn_NovintFalcon_Device(): delete failed\n");
+                  return;
+                }
                 m_falconDevice=NULL;
                 return;
             }
@@ -102,7 +107,12 @@ public:
             if (m_flags & GRIP_FOURBUTTON) {
                 m_falconDevice->setFalconGrip<libnifalcon::FalconGripFourButton>();
             } else {
-                delete m_falconDevice;
+                try {
+                  delete m_falconDevice;
+                } catch (...) {
+                  fprintf(stderr, "vrpn_NovintFalcon_Device::vrpn_NovintFalcon_Device(): delete failed\n");
+                  return;
+                }
                 m_falconDevice=NULL;
                 return;
             }
@@ -123,7 +133,12 @@ public:
             }
             m_falconDevice->close();
         }
-        delete m_falconDevice;
+        try {
+          delete m_falconDevice;
+        } catch (...) {
+          fprintf(stderr, "vrpn_NovintFalcon_Device::~vrpn_NovintFalcon_Device(): delete failed\n");
+          return;
+        }
         m_flags=-1;
     };
 
@@ -552,11 +567,21 @@ void vrpn_Tracker_NovintFalcon::clear_values()
     for (i=0; i <vrpn_Button::num_buttons; i++)
         vrpn_Button::buttons[i] = vrpn_Button::lastbuttons[i] = 0;
 
-    if (m_obj) delete m_obj;
-    m_obj = new vrpn_NovintFalcon_ForceObjects;
+    if (m_obj) {
+      try {
+        delete m_obj;
+      } catch (...) {
+        fprintf(stderr, "vrpn_Tracker_NovintFalcon::clear_values(): delete failed\n");
+        return;
+      }
+    }
+    try { m_obj = new vrpn_NovintFalcon_ForceObjects; }
+    catch (...) { m_obj = NULL; return; }
 
     // add dummy effect object
-    ForceFieldEffect *ffe = new ForceFieldEffect;
+    ForceFieldEffect *ffe;
+    try { ffe = new ForceFieldEffect; }
+    catch (...) { return; }
     ffe->setDamping(m_damp);
     ffe->stop();
     m_obj->m_FFEffects.push_back(ffe);
@@ -564,10 +589,13 @@ void vrpn_Tracker_NovintFalcon::clear_values()
 
 vrpn_Tracker_NovintFalcon::~vrpn_Tracker_NovintFalcon()
 {
-    if (m_dev)
-        delete m_dev;
-    if (m_obj)
-        delete m_obj;
+  try {
+    if (m_dev) delete m_dev;
+    if (m_obj) delete m_obj;
+  } catch (...) {
+    fprintf(stderr, "vrpn_Tracker_NovintFalcon::~vrpn_Tracker_NovintFalcon(): delete failed\n");
+    return;
+  }
 }
 
 void vrpn_Tracker_NovintFalcon::reset()
@@ -582,15 +610,22 @@ void vrpn_Tracker_NovintFalcon::reset()
     fprintf(stderr, "Resetting the NovintFalcon #%d\n",
         vrpn_NovintFalcon_Device::MASK_DEVICEIDX & m_devflags);
 
-    if (m_dev)
+    if (m_dev) {
+      try {
         delete m_dev;
+      } catch (...) {
+        fprintf(stderr, "vrpn_Tracker_NovintFalcon::reset(): delete failed\n");
+        return;
+      }
+    }
 
-    m_dev = new vrpn_NovintFalcon_Device(m_devflags);
-    if (!m_dev) {
+    try { m_dev = new vrpn_NovintFalcon_Device(m_devflags); }
+    catch (...) {
 #ifdef VERBOSE
-                fprintf(stderr, "Device constructor failed!\n");
+        fprintf(stderr, "Device constructor failed!\n");
 #endif
-                status = vrpn_TRACKER_FAIL;
+        status = vrpn_TRACKER_FAIL;
+        m_dev = NULL;
         return;
     }
 

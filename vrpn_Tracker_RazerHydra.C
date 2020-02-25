@@ -85,15 +85,17 @@ static const unsigned long MAXIMUM_WAIT_USEC = 5000000L;
 #endif
 
 static vrpn_HidAcceptor * makeHydraInterfaceAcceptor(unsigned whichInterface) {
+  vrpn::OwningPtr<vrpn_HidAcceptor> ret;
+  try {
     vrpn::OwningPtr<vrpn_HidAcceptor> productAcceptor(
-        new vrpn_HidProductAcceptor(HYDRA_VENDOR, HYDRA_PRODUCT));
+      new vrpn_HidProductAcceptor(HYDRA_VENDOR, HYDRA_PRODUCT));
 #ifdef VRPN_HAVE_RELIABLE_INTERFACE_NUMBER
     vrpn::OwningPtr<vrpn_HidAcceptor> interfaceAcceptor(
-        new vrpn_HidInterfaceNumberAcceptor(whichInterface));
+      new vrpn_HidInterfaceNumberAcceptor(whichInterface));
 
     /// Boolean AND of VID/PID and Interface number
-    vrpn::OwningPtr<vrpn_HidAcceptor> ret(new vrpn_HidBooleanAndAcceptor(
-        interfaceAcceptor.release(), productAcceptor.release()));
+    ret.reset(new vrpn_HidBooleanAndAcceptor(
+      interfaceAcceptor.release(), productAcceptor.release()));
 #else
     // The InterfaceNumber is not supported on the mac and Linux versions -- it
     // is always returned as -1.  So we need to do this based on which
@@ -102,11 +104,11 @@ static vrpn_HidAcceptor * makeHydraInterfaceAcceptor(unsigned whichInterface) {
     // try this order.  If we get it wrong, then we swap things out later.
 
     /// InterfaceNumberth match of VID/PID
-    vrpn::OwningPtr<vrpn_HidAcceptor> ret(
-        new vrpn_HidNthMatchAcceptor(whichInterface,
-                                     productAcceptor.release()));
+    ret.reset(new vrpn_HidNthMatchAcceptor(whichInterface,
+        productAcceptor.release()));
 #endif
-    return ret.release();
+  } catch (...) { return NULL; }
+  return ret.release();
 }
 
 class vrpn_Tracker_RazerHydra::MyInterface : public vrpn_HidInterface
@@ -137,13 +139,19 @@ public:
                                  vrpn_Tracker_RazerHydra &hydra,
                                  hid_device *dev = NULL)
         {
-            return new MyInterface(which_interface, &hydra, dev);
+          MyInterface *ret;
+          try { ret = new MyInterface(which_interface, &hydra, dev); }
+          catch (...) { return NULL; }
+          return ret;
         }
         static MyInterface *make(unsigned which_interface,
                                  vrpn_Tracker_RazerHydra &hydra,
                                  const char *path)
         {
-            return new MyInterface(which_interface, &hydra, path);
+          MyInterface *ret;
+          try { ret = new MyInterface(which_interface, &hydra, path); }
+          catch (...) { return NULL; }
+          return ret;
         }
 
         void on_data_received(size_t bytes, vrpn_uint8 *buffer)

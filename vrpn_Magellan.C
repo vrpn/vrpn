@@ -62,8 +62,11 @@ vrpn_Magellan::vrpn_Magellan (const char * name, vrpn_Connection * c,
 	vrpn_Button::num_buttons = _numbuttons;
 	vrpn_Analog::num_channel = _numchannels;
 
+        vrpn_gettimeofday(&timestamp, NULL);	// Set watchdog now
+
 	// Set the status of the buttons and analogs to 0 to start
 	clear_values();
+  _bufcount = 0;
 
 	// Set the mode to reset
 	_status = STATUS_RESETTING;

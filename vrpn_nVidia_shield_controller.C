@@ -28,7 +28,12 @@ vrpn_nVidia_shield::vrpn_nVidia_shield(vrpn_HidAcceptor *filter,
 
 vrpn_nVidia_shield::~vrpn_nVidia_shield(void)
 {
-  delete d_filter;
+  try {
+    delete d_filter;
+  } catch (...) {
+    fprintf(stderr, "vrpn_nVidia_shield::~vrpn_nVidia_shield(): delete failed\n");
+    return;
+  }
 }
 
 void vrpn_nVidia_shield::init_hid(void) {
@@ -64,14 +69,8 @@ void vrpn_nVidia_shield_USB::mainloop(void)
 		d_timestamp = current_time;
 		report_changes();
 
-		if (vrpn_Analog::num_channel > 0)
-		{
-			vrpn_Analog::server_mainloop();
-		}
-		if (vrpn_Button::num_buttons > 0)
-		{
-			vrpn_Button::server_mainloop();
-		}
+                // Call the server_mainloop on our unique base class.
+                server_mainloop();
 	}
 }
 
@@ -325,14 +324,8 @@ void vrpn_nVidia_shield_stealth_USB::mainloop(void)
 		d_timestamp = current_time;
 		report_changes();
 
-		if (vrpn_Analog::num_channel > 0)
-		{
-			vrpn_Analog::server_mainloop();
-		}
-		if (vrpn_Button::num_buttons > 0)
-		{
-			vrpn_Button::server_mainloop();
-		}
+                // Call the server_mainloop on our unique base class.
+                server_mainloop();
 	}
 }
 

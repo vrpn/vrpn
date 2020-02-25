@@ -47,8 +47,11 @@ vrpn_Radamec_SPI::vrpn_Radamec_SPI (const char * name, vrpn_Connection * c,
 	// Set the parameters in the parent classes
 	vrpn_Analog::num_channel = _numchannels;
 
+        vrpn_gettimeofday(&timestamp, NULL);	// Set watchdog now
+
 	// Set the status of the buttons and analogs to 0 to start
 	clear_values();
+  _bufcount = 0;
 
 	// Set the mode to reset
 	_status = STATUS_RESETTING;
@@ -96,7 +99,9 @@ unsigned char vrpn_Radamec_SPI::compute_crc(const unsigned char *head, int len)
 int vrpn_Radamec_SPI::send_command(const unsigned char *cmd, int len)
 {
     int		ret;
-    unsigned	char	*outbuf = new unsigned char[len+1]; // Leave room for the CRC
+    unsigned	char	*outbuf;
+    try { outbuf = new unsigned char[len + 1]; } // Leave room for the CRC
+    catch (...) { return -1; }
 
     // Put the command into the output buffer
     memcpy(outbuf, cmd, len);

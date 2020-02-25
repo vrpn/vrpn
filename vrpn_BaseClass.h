@@ -377,7 +377,13 @@ public:
         current = d_change_list;
         while (current != NULL) {
             next = current->next;
-            delete current;
+            try {
+              delete current;
+            } catch (...) {
+              fprintf(stderr,
+                "vrpn_Callback_List::operator =: Deletion failure\n");
+              return;
+            }
             current = next;
         }
 
@@ -403,10 +409,12 @@ public:
         }
 
         // Allocate and initialize the new entry
-        if ((new_entry = new CHANGELIST_ENTRY) == NULL) {
-            fprintf(stderr,
-                    "vrpn_Callback_List::register_handler(): Out of memory\n");
-            return -1;
+        try {
+          new_entry = new CHANGELIST_ENTRY;
+        } catch (...) {
+          fprintf(stderr,
+            "vrpn_Callback_List::register_handler(): Out of memory\n");
+          return -1;
         }
         new_entry->handler = handler;
         new_entry->userdata = userdata;
@@ -445,7 +453,12 @@ public:
 
         // Remove the entry from the list
         *snitch = victim->next;
-        delete victim;
+        try {
+          delete victim;
+        } catch (...) {
+          fprintf(stderr, "vrpn_Callback_List::unregister_handler: delete failed\n");
+          return -1;
+        }
 
         return 0;
     };
@@ -469,7 +482,12 @@ public:
     {
         while (d_change_list != NULL) {
             CHANGELIST_ENTRY *next = d_change_list->next;
-            delete d_change_list;
+            try {
+              delete d_change_list;
+            } catch (...) {
+              fprintf(stderr, "vrpn_Callback_List::~vrpn_Callback_List: delete failed\n");
+              return;
+            }
             d_change_list = next;
         }
     };

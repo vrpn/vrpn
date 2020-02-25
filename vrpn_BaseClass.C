@@ -55,7 +55,12 @@ vrpn_TextPrinter::~vrpn_TextPrinter()
         if (obj->connectionPtr()) {
           obj->connectionPtr()->unregister_handler(obj->d_text_message_id, text_message_handler, victim, obj->d_sender_id);
         }
-	delete victim;
+        try {
+          delete victim;
+        } catch (...) {
+          fprintf(stderr, "vrpn_TextPrinter::~vrpn_TextPrinter: delete failed\n");
+          return;
+        }
 	victim = next;
     }
 #endif // XXX
@@ -99,7 +104,8 @@ int vrpn_TextPrinter::add_object(vrpn_BaseClass *o)
     }
 
     // Add the object to the beginning of the list.
-    if ((victim = new vrpn_TextPrinter_Watch_Entry) == NULL) {
+    try { victim = new vrpn_TextPrinter_Watch_Entry; }
+    catch (...) {
         fprintf(stderr, "vrpn_TextPrinter::add_object(): out of memory\n");
         return -1;
     }
@@ -115,7 +121,12 @@ int vrpn_TextPrinter::add_object(vrpn_BaseClass *o)
         fprintf(stderr,
                 "vrpn_TextPrinter::add_object(): Can't register callback\n");
         d_first_watched_object = victim->next;
-        delete victim;
+        try {
+          delete victim;
+        } catch (...) {
+          fprintf(stderr, "vrpn_TextPrinter::add_object: delete failed\n");
+          return -1;
+        }
         return -1;
     }
 
@@ -174,7 +185,12 @@ void vrpn_TextPrinter::remove_object(vrpn_BaseClass *o)
 
         // Remove the entry from the list
         *snitch = victim->next;
-        delete victim;
+        try {
+          delete victim;
+        } catch (...) {
+          fprintf(stderr, "vrpn_TextPrinter::remove_object: delete failed\n");
+          return;
+        }
 
         // We're done.
         return;
@@ -292,6 +308,7 @@ void vrpn_TextPrinter::set_ostream_to_use(FILE *o)
 */
 
 vrpn_BaseClass::vrpn_BaseClass(const char *name, vrpn_Connection *c)
+  : vrpn_BaseClassUnique()
 {
     // Has a constructor on this BaseClassUnique been called before?
     // Note that this might also be true if it was called once before but
@@ -312,8 +329,7 @@ vrpn_BaseClass::vrpn_BaseClass(const char *name, vrpn_Connection *c)
         if (c) { // using existing connection.
             d_connection = c;
             d_connection->addReference();
-        }
-        else {
+        } else {
             // This will implicitly add the reference to the connection.
             d_connection = vrpn_get_connection_by_name(name);
         }
@@ -464,7 +480,12 @@ vrpn_BaseClassUnique::~vrpn_BaseClassUnique()
     // Because this destructor may be called multiple times, set the pointer
     // to NULL after deleting it, so it won't get deleted again.
     if (d_servicename != NULL) {
-        delete[] d_servicename;
+        try {
+          delete[] d_servicename;
+        } catch (...) {
+          fprintf(stderr, "vrpn_BaseClassUnique::~vrpn_BaseClassUnique: delete failed\n");
+          return;
+        }
         d_servicename = NULL;
     }
 }

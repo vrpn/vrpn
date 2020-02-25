@@ -79,41 +79,45 @@ endif()
 ###
 # Basic packaging options and versioning
 
-include("${CMAKE_CURRENT_SOURCE_DIR}/ParseVersion.cmake")
+if (VRPN_INSTALL)
+	include("${CMAKE_CURRENT_SOURCE_DIR}/ParseVersion.cmake")
 
-message(STATUS
-	"Configuring the VRPN suite version ${CPACK_PACKAGE_VERSION} using the CMake-based build system\n")
+	message(STATUS
+		"Configuring the VRPN suite version ${CPACK_PACKAGE_VERSION} using the CMake-based build system\n")
 
-set(CPACK_PACKAGE_VENDOR
-	"VRPN Community led by Sensics, Inc.")
-set(CPACK_PACKAGE_FILE_NAME
-	"${PROJECT_NAME}-${CPACK_PACKAGE_VERSION}-${CMAKE_SYSTEM_NAME}-${CMAKE_SYSTEM_PROCESSOR}")
-set(CPACK_SOURCE_PACKAGE_FILE_NAME
-	"${PROJECT_NAME}-${CPACK_PACKAGE_VERSION}-src")
-set(CPACK_PACKAGE_CONTACT "Sensics VRPN Contact <vrpn@sensics.com>")
+	set(CPACK_PACKAGE_VENDOR
+		"VRPN Community led by Sensics, Inc.")
+	set(CPACK_PACKAGE_FILE_NAME
+		"${PROJECT_NAME}-${CPACK_PACKAGE_VERSION}-${CMAKE_SYSTEM_NAME}-${CMAKE_SYSTEM_PROCESSOR}")
+	set(CPACK_SOURCE_PACKAGE_FILE_NAME
+		"${PROJECT_NAME}-${CPACK_PACKAGE_VERSION}-src")
+	set(CPACK_PACKAGE_CONTACT "Sensics VRPN Contact <vrpn@sensics.com>")
+endif()
 
-#-----------------------------------------------------------------------------
-# Compiler flags we got from Hans for Windows and from Sheldon Andrews
-# for other architectures.
-if(MSVC)	# MS-Windows Visual Studio, both 32 and 64 bits
-	set(CMAKE_DEBUG_POSTFIX "d" CACHE STRING "add a postfix, usually d on windows")
-	if(MSVC_VERSION GREATER 1310) # This compiler flag needs newer than VS.NET 2003 (7.1)
-		# Choose fast, possibly less accurate floating point
-		# See http://msdn.microsoft.com/en-us/library/e7s85ffb(v=vs.80).aspx
-		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /fp:fast")
-		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /fp:fast")
+if (NOT SUBPROJECT)
+	#-----------------------------------------------------------------------------
+	# Compiler flags we got from Hans for Windows and from Sheldon Andrews
+	# for other architectures.
+	if(MSVC)	# MS-Windows Visual Studio, both 32 and 64 bits
+		set(CMAKE_DEBUG_POSTFIX "d" CACHE STRING "add a postfix, usually d on windows")
+		if(MSVC_VERSION GREATER 1310) # This compiler flag needs newer than VS.NET 2003 (7.1)
+			# Choose fast, possibly less accurate floating point
+			# See http://msdn.microsoft.com/en-us/library/e7s85ffb(v=vs.80).aspx
+			set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /fp:fast")
+			set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /fp:fast")
+		endif()
+
+		# Do not assume fixed base address (probably for DLL integration?)
+		# http://msdn.microsoft.com/en-us/library/w368ysh2(v=vs.80).aspx
+		set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /FIXED:NO")
+	else()
+		# GCC compilers on 64-bit machines require -fPIC for shared libraries or libs
+		# linked into shared libraries.
+
+		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${CMAKE_SHARED_LIBRARY_C_FLAGS}")
+		set(CMAKE_CXX_FLAGS
+			"${CMAKE_CXX_FLAGS} ${CMAKE_SHARED_LIBRARY_CXX_FLAGS}")
 	endif()
-
-	# Do not assume fixed base address (probably for DLL integration?)
-	# http://msdn.microsoft.com/en-us/library/w368ysh2(v=vs.80).aspx
-	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /FIXED:NO")
-else()
-	# GCC compilers on 64-bit machines require -fPIC for shared libraries or libs
-	# linked into shared libraries.
-
-	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${CMAKE_SHARED_LIBRARY_C_FLAGS}")
-	set(CMAKE_CXX_FLAGS
-		"${CMAKE_CXX_FLAGS} ${CMAKE_SHARED_LIBRARY_CXX_FLAGS}")
 endif()
 
 set(SERVER_EXTRA_LIBS)
@@ -450,9 +454,11 @@ if(VRPN_USE_HID)
 	endif()
 else()
 	# Clear this variable if they don't want HID after all.
-	message(STATUS
-		"NOTE: You have VRPN_USE_LOCAL_HIDAPI enabled, but "
-		"VRPN_USE_HID disabled: HIDAPI will only be built if you enable HID support for VRPN")
+	if (VRPN_USE_LOCAL_HIDAPI)
+		message(STATUS
+			"NOTE: You have VRPN_USE_LOCAL_HIDAPI enabled, but "
+			"VRPN_USE_HID disabled: HIDAPI will only be built if you enable HID support for VRPN")
+	endif()
 	set(HIDAPI_SOURCES)
 endif()
 
@@ -1155,6 +1161,7 @@ set(VRPN_SERVER_SOURCES
 	vrpn_XInputGamepad.C
 	vrpn_Xkeys.C
 	vrpn_Tracker_LibertyHS.C
+	vrpn_Vality.C
 	vrpn_YEI_3Space.C
 	vrpn_Zaber.C
 	server_src/vrpn_Generic_server_object.C
@@ -1268,6 +1275,7 @@ set(VRPN_SERVER_PUBLIC_HEADERS
 	vrpn_XInputGamepad.h
 	vrpn_Xkeys.h
 	vrpn_Tracker_LibertyHS.h
+	vrpn_Vality.h
 	vrpn_YEI_3Space.h
 	vrpn_Zaber.h
 	server_src/vrpn_Generic_server_object.h)

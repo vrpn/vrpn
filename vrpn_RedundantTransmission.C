@@ -175,24 +175,24 @@ int vrpn_RedundantTransmission::pack_message(
         return 0;
     }
 
-    qm = new queuedMessage;
-    if (!qm) {
+    try { qm = new queuedMessage; }
+    catch (...) {
         fprintf(stderr,
                 "vrpn_RedundantTransmission::pack_message:  "
                 "Out of memory;  can't queue message for retransmission.\n");
-        return ret;
+        return -1;
     }
 
     qm->p.payload_len = len;
     qm->p.msg_time = time;
     qm->p.type = type;
     qm->p.sender = sender;
-    qm->p.buffer = new char[len];
-    if (!qm->p.buffer) {
+    try { qm->p.buffer = new char[len]; }
+    catch (...) {
         fprintf(stderr,
                 "vrpn_RedundantTransmission::pack_message:  "
                 "Out of memory;  can't queue message for retransmission.\n");
-        return ret;
+        return -1;
     }
     memcpy(const_cast<char *>(qm->p.buffer), buffer, len);
 
@@ -223,8 +223,8 @@ char *vrpn_RedundantController_Protocol::encode_set(int *len, vrpn_uint32 num,
 
     buflen = sizeof(vrpn_uint32) + sizeof(timeval);
     *len = buflen;
-    buffer = new char[buflen];
-    if (!buffer) {
+    try { buffer = new char[buflen]; }
+    catch (...) {
         fprintf(stderr, "vrpn_RedundantController_Protocol::encode_set:  "
                         "Out of memory.\n");
         return NULL;
@@ -253,8 +253,8 @@ char *vrpn_RedundantController_Protocol::encode_enable(int *len, vrpn_bool on)
 
     buflen = sizeof(vrpn_bool);
     *len = buflen;
-    buffer = new char[buflen];
-    if (!buffer) {
+    try { buffer = new char[buflen]; }
+    catch (...) {
         fprintf(stderr, "vrpn_RedundantController_Protocol::encode_enable:  "
                         "Out of memory.\n");
         return NULL;
@@ -340,8 +340,9 @@ int vrpn_RedundantController::handle_enable(void *ud, vrpn_HANDLERPARAM p)
 vrpn_RedundantRemote::vrpn_RedundantRemote(vrpn_Connection *c)
     : vrpn_BaseClass("vrpn Redundant Transmission Controller", c)
 {
-
     vrpn_BaseClass::init();
+    d_protocol.d_enable_type = 0;
+    d_protocol.d_set_type = 0;
 }
 
 vrpn_RedundantRemote::~vrpn_RedundantRemote(void) {}
@@ -433,7 +434,12 @@ vrpn_RedundantReceiver::~vrpn_RedundantReceiver(void)
         while (pVMCB) {
             pVMCB_Del = pVMCB;
             pVMCB = pVMCB_Del->next;
-            delete pVMCB_Del;
+            try {
+              delete pVMCB_Del;
+            } catch (...) {
+              fprintf(stderr, "vrpn_RedundantReceiver::~vrpn_RedundantReceiver(): delete failed\n");
+              return;
+            }
         }
     }
 
@@ -442,7 +448,12 @@ vrpn_RedundantReceiver::~vrpn_RedundantReceiver(void)
     while (pVMCB) {
         pVMCB_Del = pVMCB;
         pVMCB = pVMCB_Del->next;
-        delete pVMCB_Del;
+        try {
+          delete pVMCB_Del;
+        } catch (...) {
+          fprintf(stderr, "vrpn_RedundantReceiver::~vrpn_RedundantReceiver(): delete failed\n");
+          return;
+        }
     }
 
     if (d_connection) {
@@ -455,7 +466,13 @@ int vrpn_RedundantReceiver::register_handler(vrpn_int32 type,
                                              vrpn_MESSAGEHANDLER handler,
                                              void *userdata, vrpn_int32 sender)
 {
-    vrpnMsgCallbackEntry *ce = new vrpnMsgCallbackEntry;
+    vrpnMsgCallbackEntry *ce = NULL;
+    try { ce = new vrpnMsgCallbackEntry; }
+    catch (...) {
+      fprintf(stderr, "vrpn_RedundantReceiver::register_handler:  "
+        "Out of memory.\n");
+      return -1;
+    }
     ce->handler = handler;
     ce->userdata = userdata;
     ce->sender = sender;
@@ -467,7 +484,12 @@ int vrpn_RedundantReceiver::register_handler(vrpn_int32 type,
     } else if (type < 0) {
         fprintf(stderr, "vrpn_RedundantReceiver::register_handler:  "
                         "Negative type passed in.\n");
-        delete ce;
+        try {
+          delete ce;
+        } catch (...) {
+          fprintf(stderr, "vrpn_RedundantReceiver::register_handler(): delete failed\n");
+          return -1;
+        }
         return -1;
     } else {
         ce->next = d_records[type].cb;
@@ -517,7 +539,12 @@ int vrpn_RedundantReceiver::unregister_handler(vrpn_int32 type,
 
     // Remove the entry from the list
     *snitch = victim->next;
-    delete victim;
+    try {
+      delete victim;
+    } catch (...) {
+      fprintf(stderr, "vrpn_RedundantReceiver::unregister_handler(): delete failed\n");
+      return -1;
+    }
 
     return 0;
 }
@@ -563,7 +590,12 @@ void vrpn_RedundantReceiver::clearMemory(void)
 
     for (mp = d_memory; d_memory; mp = d_memory) {
         d_memory = mp->next;
-        delete mp;
+        try {
+          delete mp;
+        } catch (...) {
+          fprintf(stderr, "vrpn_RedundantReceiver::clearMemory(): delete failed\n");
+          return;
+        }
     }
 
     d_lastMemory = NULL;
@@ -606,8 +638,8 @@ int vrpn_RedundantReceiver::handle_possiblyRedundantMessage(void *ud,
 
     if (me->d_record) {
         if (me->d_records[p.type].numSeen[ntr]) {
-            memory = new RRMemory;
-            if (!memory) {
+            try { memory = new RRMemory; }
+            catch (...) {
                 fprintf(stderr,
                         "vrpn_RedundantReceiver::"
                         "handle_possiblyRedundantMessage:  Out of memory.\n");

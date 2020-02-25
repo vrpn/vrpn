@@ -110,15 +110,13 @@ bool vrpn_Semaphore::init()
     if (numMax < 1) {
         numMax = 1;
     }
-    char *tempname = new char[100];
+    char tempname[100];
     sprintf(tempname, "/tmp/vrpn_sem.XXXXXXX");
     semaphore = sem_open(mktemp(tempname), O_CREAT, 0600, numMax);
     if (semaphore == SEM_FAILED) {
         perror("vrpn_Semaphore::vrpn_Semaphore: error opening semaphore");
-        delete[] tempname;
         return false;
     }
-    delete[] tempname;
     return true;
 }
 #else
@@ -131,7 +129,8 @@ bool vrpn_Semaphore::init()
     if (numMax < 1) {
         numMax = 1;
     }
-    semaphore = new sem_t;
+    try { semaphore = new sem_t; }
+    catch (...) { return false; }
     if (sem_init(semaphore, 0, numMax) != 0) {
         perror("vrpn_Semaphore::vrpn_Semaphore: error initializing semaphore");
         return false;
@@ -188,7 +187,12 @@ bool vrpn_Semaphore::destroy()
             "vrpn_Semaphore::destroy: error destroying semaphore.\n");
         return false;
     }
-    delete semaphore;
+    try {
+      delete semaphore;
+    } catch (...) {
+      fprintf(stderr, "vrpn_Semaphore::destroy(): delete failed\n");
+      return false;
+    }
 #endif
     semaphore = NULL;
     return true;

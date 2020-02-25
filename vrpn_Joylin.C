@@ -23,7 +23,7 @@
 
 #include <sys/ioctl.h>                  // for ioctl
 #include <unistd.h>                     // for read
-#include <string.h>                     // for strncpy
+#include <string.h>
 
 #include "vrpn_BaseClass.h"             // for ::vrpn_TEXT_ERROR
 #include "vrpn_Connection.h"            // for vrpn_Connection
@@ -51,10 +51,15 @@ vrpn_Joylin::vrpn_Joylin(const char * name,
 
 vrpn_Joylin::~vrpn_Joylin()
 {
-  if (devname != NULL) {
-	delete [] devname;
-	devname = NULL;
+  if (fd >= 0) {
+    close(fd);
+    fd = -1;
   }
+  free(device);
+  device = NULL;
+
+  free(devname);
+  devname = NULL;
 }
 
 /****************************************************************************/
@@ -86,7 +91,6 @@ void vrpn_Joylin::mainloop(void)
   struct timeval zerotime;
   fd_set fdset;
   struct js_event js;
-  int i;
 
   zerotime.tv_sec = 0;
   zerotime.tv_usec = 0;

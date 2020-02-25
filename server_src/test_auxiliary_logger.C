@@ -1,6 +1,6 @@
 #include <stdio.h>                      // for fprintf, NULL, stderr, etc
 #include <stdlib.h>                     // for exit
-#include <string.h>                     // for strcmp, strncpy
+#include <string.h>                     // for strcmp
 
 #include "vrpn_Auxiliary_Logger.h"
 #include "vrpn_Configure.h"             // for VRPN_CALLBACK
@@ -29,10 +29,10 @@ char g_remote_out[NAMELEN];
 
 void	VRPN_CALLBACK handle_log_report (void *, const vrpn_AUXLOGGERCB info)
 {
-  strncpy(g_local_in, info.local_in_logfile_name, NAMELEN);
-  strncpy(g_local_out, info.local_out_logfile_name, NAMELEN);
-  strncpy(g_remote_in, info.remote_in_logfile_name, NAMELEN);
-  strncpy(g_remote_out, info.remote_out_logfile_name, NAMELEN);
+  vrpn_strcpy(g_local_in, info.local_in_logfile_name);
+  vrpn_strcpy(g_local_out, info.local_out_logfile_name);
+  vrpn_strcpy(g_remote_in, info.remote_in_logfile_name);
+  vrpn_strcpy(g_remote_out, info.remote_out_logfile_name);
   printf( "log report:  \'%s\'  \'%s\'  \'%s\'  \'%s\'\n", 
 	  g_local_in, g_local_out, g_remote_in, g_remote_out );
   g_got_report = true;

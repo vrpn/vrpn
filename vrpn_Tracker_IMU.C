@@ -85,34 +85,36 @@ int	vrpn_IMU_Magnetometer::setup_vector(vrpn_IMU_Vector *vector)
   vrpn_gettimeofday(&now, NULL);
   vector->time = now;
 
-	// If the name is empty, we're done.
-	if (vector->params.name.size() == 0) { return 0; }
+  // If the name is empty, we're done.
+  if (vector->params.name.size() == 0) { return 0; }
 
-	// Open the analog device and point the remote at it.
-	// If the name starts with the '*' character, use the server
+  // Open the analog device and point the remote at it.
+  // If the name starts with the '*' character, use the server
   // connection rather than making a new one.
-	if (vector->params.name[0] == '*') {
-		vector->ana = new vrpn_Analog_Remote(vector->params.name.c_str()+1,
-                      d_connection);
+  try {
+    if (vector->params.name[0] == '*') {
+      vector->ana = new vrpn_Analog_Remote(vector->params.name.c_str()+1,
+        d_connection);
 #ifdef	VERBOSE
-		printf("vrpn_IMU_Magnetometer: Adding local analog %s\n",
-      vector->params.name.c_str()+1);
+      printf("vrpn_IMU_Magnetometer: Adding local analog %s\n",
+        vector->params.name.c_str()+1);
 #endif
-	} else {
-    vector->ana = new vrpn_Analog_Remote(vector->params.name.c_str());
+    } else {
+      vector->ana = new vrpn_Analog_Remote(vector->params.name.c_str());
 #ifdef	VERBOSE
-		printf("vrpn_IMU_Magnetometer: Adding remote analog %s\n",
+      printf("vrpn_IMU_Magnetometer: Adding remote analog %s\n",
       vector->params.name.c_str());
 #endif
-	}
-	if (vector->ana == NULL) {
-		fprintf(stderr,"vrpn_IMU_Magnetometer: "
-      "Can't open Analog %s\n", vector->params.name.c_str());
-		return -1;
-	}
+    }
+  } catch (...) { vector->ana = NULL; }
+  if (vector->ana == NULL) {
+	  fprintf(stderr,"vrpn_IMU_Magnetometer: "
+            "Can't open Analog %s\n", vector->params.name.c_str());
+	  return -1;
+  }
 
-	// Set up the callback handler for the channel
-	return vector->ana->register_change_handler(vector, handle_analog_update);
+  // Set up the callback handler for the channel
+  return vector->ana->register_change_handler(vector, handle_analog_update);
 }
 
 // This tears down the Analog Remote for our vector, undoing everything that
@@ -130,7 +132,12 @@ int	vrpn_IMU_Magnetometer::teardown_vector(vrpn_IMU_Vector *vector)
                           handle_analog_update);
 
 	// Delete the analog device.
-	delete vector->ana;
+        try {
+          delete vector->ana;
+        } catch (...) {
+          fprintf(stderr, "vrpn_IMU_Magnetometer::teardown_vector(): delete failed\n");
+          return -1;
+        }
 
 	return ret;
 }
@@ -309,21 +316,22 @@ int	vrpn_IMU_SimpleCombiner::setup_vector(vrpn_IMU_Vector *vector,
   // Open the analog device and point the remote at it.
   // If the name starts with the '*' character, use the server
   // connection rather than making a new one.
-  if (vector->params.name[0] == '*') {
-    vector->ana = new vrpn_Analog_Remote(vector->params.name.c_str() + 1,
-      d_connection);
+  try {
+    if (vector->params.name[0] == '*') {
+      vector->ana = new vrpn_Analog_Remote(vector->params.name.c_str() + 1,
+        d_connection);
 #ifdef	VERBOSE
-    printf("vrpn_Tracker_AnalogFly: Adding local analog %s\n",
-      vector->params.name.c_str() + 1);
+      printf("vrpn_Tracker_AnalogFly: Adding local analog %s\n",
+        vector->params.name.c_str() + 1);
 #endif
-  }
-  else {
-    vector->ana = new vrpn_Analog_Remote(vector->params.name.c_str());
+    } else {
+      vector->ana = new vrpn_Analog_Remote(vector->params.name.c_str());
 #ifdef	VERBOSE
-    printf("vrpn_Tracker_AnalogFly: Adding remote analog %s\n",
-      vector->params.name.c_str());
+      printf("vrpn_Tracker_AnalogFly: Adding remote analog %s\n",
+        vector->params.name.c_str());
 #endif
-  }
+    }
+  } catch (...) { vector->ana = NULL; }
   if (vector->ana == NULL) {
     fprintf(stderr, "vrpn_Tracker_AnalogFly: "
       "Can't open Analog %s\n", vector->params.name.c_str());
@@ -349,7 +357,12 @@ int	vrpn_IMU_SimpleCombiner::teardown_vector(vrpn_IMU_Vector *vector,
   ret = vector->ana->unregister_change_handler((void*)vector, f);
 
   // Delete the analog device.
-  delete vector->ana;
+  try {
+    delete vector->ana;
+  } catch (...) {
+    fprintf(stderr, "vrpn_IMU_SimpleCombiner::teardown_vector(): delete failed\n");
+    return -1;
+  }
 
   return ret;
 }

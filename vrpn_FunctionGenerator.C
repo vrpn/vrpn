@@ -56,7 +56,10 @@ decode_from( const char** , vrpn_int32& )
 vrpn_FunctionGenerator_function* vrpn_FunctionGenerator_function_NULL::
 clone( ) const
 {
-	return new vrpn_FunctionGenerator_function_NULL();
+  vrpn_FunctionGenerator_function *ret;
+  try { ret = new vrpn_FunctionGenerator_function_NULL(); }
+  catch (...) { return NULL; }
+  return ret;
 }
 
 
@@ -74,34 +77,45 @@ vrpn_FunctionGenerator_function_script::
 vrpn_FunctionGenerator_function_script( )
 : script( NULL )
 {
-	this->script = new char[1];
-	script[0] = '\0';
+  try {
+    this->script = new char[1];
+    script[0] = '\0';
+  } catch (...) {}
 }
 
 
 vrpn_FunctionGenerator_function_script::
 vrpn_FunctionGenerator_function_script( const char* script )
+  : script( NULL )
 {
-	this->script = new char[ strlen( script ) + 1 ];
-	strcpy( this->script, script );
+  try {
+    this->script = new char[strlen(script) + 1];
+    strcpy(this->script, script);
+  } catch (...) {}
 }
 
 
 vrpn_FunctionGenerator_function_script::
 vrpn_FunctionGenerator_function_script( const vrpn_FunctionGenerator_function_script& s )
+  : script(NULL)
 {
-	this->script = new char[ strlen( s.script ) + 1 ];
-	strcpy( this->script, s.script );
+  try {
+    this->script = new char[strlen(s.script) + 1];
+    strcpy(this->script, s.script);
+  } catch (...) {}
 }
 
 
-vrpn_FunctionGenerator_function_script::
-~vrpn_FunctionGenerator_function_script( )
+vrpn_FunctionGenerator_function_script::~vrpn_FunctionGenerator_function_script( )
 {
-	if( script != NULL )
-	{
-		delete [] script;
-		script = NULL;
+	if( script != NULL ) {
+          try {
+            delete[] script;
+          } catch (...) {
+            fprintf(stderr, "vrpn_FunctionGenerator_function_script::~vrpn_FunctionGenerator_function_script(): delete failed\n");
+            return;
+          }
+	  script = NULL;
 	}
 }
 
@@ -168,18 +182,36 @@ decode_from( const char** buf, vrpn_int32& len )
 		return -1;
 	}
 
-	char* newscript = new char[ newlen + 1 ];
+        char* newscript = NULL;
+        try { newscript = new char[newlen + 1]; }
+        catch (...) {
+          fprintf(stderr, "vrpn_FunctionGenerator_function_script:: "
+            "Out of memory.\n");
+          fflush(stderr);
+          return -1;
+        }
 	if( 0 > vrpn_unbuffer( buf, newscript, newlen ) )
 	{
 		fprintf( stderr, "vrpn_FunctionGenerator_function_script::decode_from:  "
 				"payload error (couldn't unbuffer).\n" );
-		delete [] newscript;
+                try {
+                  delete[] newscript;
+                } catch (...) {
+                  fprintf(stderr, "vrpn_FunctionGenerator_function_script::decode_from(): delete failed\n");
+                  return -1;
+                }
 		fflush( stderr );
 		return -1;
 	}
 	newscript[newlen] = '\0';
-	if( this->script != NULL )
-		delete [] this->script;
+        if (this->script != NULL) {
+                try {
+                  delete[] this->script;
+                } catch (...) {
+                  fprintf(stderr, "vrpn_FunctionGenerator_function_script::decode_from(): delete failed\n");
+                  return -1;
+                }
+        }
 	this->script = newscript;
 	len -= newlen;
 	return newlen + sizeof( vrpn_uint32 );
@@ -195,20 +227,32 @@ clone( ) const
 char* vrpn_FunctionGenerator_function_script::
 getScript( ) const
 {
-	char* retval = new char[ strlen( this->script ) + 1 ];
-	strcpy( retval, this->script );
-	return retval;
+  char* retval = NULL;
+  try {
+    retval = new char[strlen(this->script) + 1];
+  } catch (...) {
+    return NULL;
+  }
+  if (this->script) { strcpy(retval, this->script); }
+  return retval;
 }
 
 
-vrpn_bool vrpn_FunctionGenerator_function_script::
-setScript( char* script )
+vrpn_bool vrpn_FunctionGenerator_function_script::setScript( char* script )
 {
 	if( script == NULL ) return false;
-	if( this->script != NULL )
-		delete [] this->script;
-	this->script = new char[ strlen( script ) + 1 ];
-	strcpy( this->script, script );
+        if (this->script != NULL) {
+            try {
+              delete[] this->script;
+            } catch (...) {
+              fprintf(stderr, "vrpn_FunctionGenerator_function_script::setScript(): delete failed\n");
+              return false;
+            }
+        }
+        try {
+          this->script = new char[strlen(script) + 1];
+          strcpy(this->script, script);
+        } catch (...) { return false; }
 	return true;
 }
 
@@ -226,7 +270,8 @@ setScript( char* script )
 vrpn_FunctionGenerator_channel::
 vrpn_FunctionGenerator_channel( )
 {
-	function = new vrpn_FunctionGenerator_function_NULL( );
+  try { function = new vrpn_FunctionGenerator_function_NULL; }
+  catch (...) { function = NULL; }
 }
 
 
@@ -237,18 +282,26 @@ vrpn_FunctionGenerator_channel( vrpn_FunctionGenerator_function* function )
 }
 
 
-vrpn_FunctionGenerator_channel::
-~vrpn_FunctionGenerator_channel( )
+vrpn_FunctionGenerator_channel::~vrpn_FunctionGenerator_channel( )
 {
-	delete function;
+    try {
+      delete function;
+    } catch (...) {
+      fprintf(stderr, "vrpn_FunctionGenerator_channel::~vrpn_FunctionGenerator_channel(): delete failed\n");
+      return;
+    }
 }
 
 
-void vrpn_FunctionGenerator_channel::
-setFunction( vrpn_FunctionGenerator_function* function )
+void vrpn_FunctionGenerator_channel::setFunction( vrpn_FunctionGenerator_function* function )
 {
-	delete (this->function);
-	this->function = function->clone();
+    try {
+      delete (this->function);
+    } catch (...) {
+      fprintf(stderr, "vrpn_FunctionGenerator_channel::setFunction(): delete failed\n");
+      return;
+    }
+    this->function = function->clone();
 }
 
 
@@ -297,16 +350,17 @@ decode_from( const char** buf, vrpn_int32& len )
 	// one of the appropriate type and delete the old one
 	if( myCode != function->getFunctionCode() )
 	{
-		vrpn_FunctionGenerator_function* oldFunc = this->function;
-		vrpn_FunctionGenerator_function::FunctionCode newCode 
+	   vrpn_FunctionGenerator_function* oldFunc = this->function;
+	   vrpn_FunctionGenerator_function::FunctionCode newCode 
 			= vrpn_FunctionGenerator_function::FunctionCode( myCode );
+           try {
 		switch( newCode )
 		{
 		case vrpn_FunctionGenerator_function::FUNCTION_NULL:
-			this->function = new vrpn_FunctionGenerator_function_NULL();
+			this->function = new vrpn_FunctionGenerator_function_NULL;
 			break;
 		case vrpn_FunctionGenerator_function::FUNCTION_SCRIPT:
-			this->function = new vrpn_FunctionGenerator_function_script();
+			this->function = new vrpn_FunctionGenerator_function_script;
 			break;
 		default:
 			fprintf( stderr, "vrpn_FunctionGenerator_channel::decode_from:  "
@@ -314,7 +368,18 @@ decode_from( const char** buf, vrpn_int32& len )
 			fflush( stderr );
 			return -1;
 		}
-		delete oldFunc;
+            } catch (...) {
+              fprintf(stderr, "vrpn_FunctionGenerator_channel::decode_from:  "
+                "Out of memory.\n");
+              fflush(stderr);
+              return -1;
+            }
+            try {
+              delete oldFunc;
+            } catch (...) {
+              fprintf(stderr, "vrpn_FunctionGenerator_channel::decode_from(): delete failed\n");
+              return -1;
+            }
 	}
 	return this->function->decode_from( buf, len );
 }
@@ -341,18 +406,22 @@ vrpn_FunctionGenerator( const char* name, vrpn_Connection * c )
 	unsigned i;
 	for( i = 0; i <= vrpn_FUNCTION_CHANNELS_MAX - 1; i++ )
 	{
-		channels[i] = new vrpn_FunctionGenerator_channel( );
+          channels[i] = new vrpn_FunctionGenerator_channel;
 	}
 }
 
 
-vrpn_FunctionGenerator::
-~vrpn_FunctionGenerator( )
+vrpn_FunctionGenerator::~vrpn_FunctionGenerator( )
 {
 	unsigned i;
 	for( i = 0; i <= vrpn_FUNCTION_CHANNELS_MAX - 1; i++ )
 	{
-		 delete channels[i];
+          try {
+            delete channels[i];
+          } catch (...) {
+            fprintf(stderr, "vrpn_FunctionGenerator::~vrpn_FunctionGenerator(): delete failed\n");
+            return;
+          }
 	}
 }
 
@@ -518,7 +587,9 @@ handle_channel_message( void* userdata, vrpn_HANDLERPARAM p )
 	fflush( stdout );
 #endif
 	vrpn_FunctionGenerator_Server* me = (vrpn_FunctionGenerator_Server*) userdata;
-	vrpn_FunctionGenerator_channel* channel = new vrpn_FunctionGenerator_channel( );
+        vrpn_FunctionGenerator_channel* channel = NULL;
+        try { channel = new vrpn_FunctionGenerator_channel(); }
+        catch (...) { return -1; }
 	vrpn_uint32 channelNum = vrpn_FUNCTION_CHANNELS_MAX + 1; // an invalid number
 	if( 0 > me->decode_channel( p.buffer, p.payload_len, channelNum, *channel ) )
 	{
@@ -1947,7 +2018,13 @@ decode_interpreterDescription_reply( const char* buf, const vrpn_int32 len, char
 		fflush( stderr );
 		return -1;
 	}
-	*desc = new char[ dlength + 1 ];
+        try { *desc = new char[dlength + 1]; }
+        catch (...) {
+          fprintf(stderr, "vrpn_FunctionGenerator_Remote::decode_interpreterDescription_reply:  "
+            "Out of memory.\n");
+          fflush(stderr);
+          return -1;
+        }
 	int retval = vrpn_unbuffer( &buf, *desc, dlength );
 	(*desc)[dlength] = '\0';
 	return retval;

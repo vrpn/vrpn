@@ -16,7 +16,7 @@ vrpn_Tracker_JoyFly::vrpn_Tracker_JoyFly
 {
   int i;
 
-  joy_remote = new vrpn_Analog_Remote (source, sourceConnection);
+  joy_remote = new vrpn_Analog_Remote(source, sourceConnection);
   joy_remote->register_change_handler(this, handle_joystick);
   c->register_handler(c->register_message_type(vrpn_got_connection),
 		      handle_newConnection, this);
@@ -54,9 +54,9 @@ vrpn_Tracker_JoyFly::vrpn_Tracker_JoyFly
 	}
       }
     }
-  }  
+    fclose(fp);
+  }
 
-  fclose(fp);
   q_matrix_copy(currentMatrix, initMatrix);
 }
 

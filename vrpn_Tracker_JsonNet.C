@@ -72,7 +72,12 @@ vrpn_Tracker_JsonNet::vrpn_Tracker_JsonNet(const char* name,vrpn_Connection* c,i
 vrpn_Tracker_JsonNet::~vrpn_Tracker_JsonNet(void)
 {
 	if (_pJsonReader != 0) {
-		delete _pJsonReader;
+                try {
+                  delete _pJsonReader;
+                } catch (...) {
+                  fprintf(stderr, "vrpn_Tracker_JsonNet::~vrpn_Tracker_JsonNet(): delete failed\n");
+                  return;
+                }
 		_pJsonReader = 0;
 	}
 	_network_release();

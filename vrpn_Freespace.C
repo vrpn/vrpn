@@ -155,7 +155,9 @@ vrpn_Freespace* vrpn_Freespace::create(const char *name, vrpn_Connection *conn,
         return NULL;
     }
 
-    vrpn_Freespace* dev = new vrpn_Freespace(freespaceId, &deviceInfo, name, conn);
+    vrpn_Freespace* dev;
+    try { dev = new vrpn_Freespace(freespaceId, &deviceInfo, name, conn); }
+    catch (...) { return NULL; }
     dev->deviceSetConfiguration(send_body_frames, send_user_frames);
     printf("Added freespace device: %s : \n", name);
     return dev;

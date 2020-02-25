@@ -31,7 +31,7 @@ VRPN_SUPPRESS_EMPTY_OBJECT_WARNING()
 
 static const std::string EMPTY_STRING("");
 
-static const std::string &getDeviceNodes(const std::string &device_name)
+static std::string getDeviceNodes(const std::string &device_name)
 {
   std::map<std::string, std::string> s_devicesNodes;
 
@@ -44,7 +44,8 @@ static const std::string &getDeviceNodes(const std::string &device_name)
     int fd = open(oss.str().c_str(), O_RDONLY);
     if(fd >= 0){
       char name[512];
-      if(ioctl(fd, EVIOCGNAME(sizeof(name)), name) >= 0) {
+      if((ioctl(fd, EVIOCGNAME(sizeof(name)), name) >= 0)
+          && (s_devicesNodes.find(name) == s_devicesNodes.end())) {
         s_devicesNodes[name] = oss.str();
       }
 

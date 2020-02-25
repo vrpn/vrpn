@@ -373,14 +373,20 @@ vrpn_WiiMote::vrpn_WiiMote(const char *name, vrpn_Connection *c, unsigned which,
 	sharedData(0),
 	connectThread(0),
 #endif
-	wiimote(new vrpn_Wiimote_Device)
+	wiimote(NULL)
 {
 #ifndef vrpn_THREADS_AVAILABLE
 	last_reconnect_attempt.tv_sec = 0;
 	last_reconnect_attempt.tv_usec = 0;
 #endif
 
-	int i;
+        try { wiimote = new vrpn_Wiimote_Device; }
+        catch (...) {
+          FAIL("vrpn_WiiMote: out of memory");
+          return;
+        }
+
+        int i;
 
 	vrpn_Analog::num_channel = min(96, vrpn_CHANNEL_MAX);
 	for (i = 0; i < vrpn_Analog::num_channel; i++) {
@@ -445,13 +451,21 @@ vrpn_WiiMote::vrpn_WiiMote(const char *name, vrpn_Connection *c, unsigned which,
 	// Pack the sharedData into another ThreadData
 	// (this is an API flaw in vrpn_Thread)
 	vrpn_ThreadData connectThreadData;
-	sharedData = new vrpn_WiiMote_SharedData(this);
+        try { sharedData = new vrpn_WiiMote_SharedData(this); }
+        catch (...) {
+          FAIL("vrpn_WiiMote: out of memory");
+          return;
+        }
 	connectThreadData.pvUD = sharedData;
 	// take ownership of msgLock:
 	acquireMessageLock();
 	// initialize connectThread:
-	connectThread = new vrpn_Thread(&vrpn_WiiMote::connectThreadFunc, connectThreadData);
-	connectThread->go();
+        try { connectThread = new vrpn_Thread(&vrpn_WiiMote::connectThreadFunc, connectThreadData); }
+        catch (...) {
+          FAIL("vrpn_WiiMote: out of memory");
+          return;
+        }
+        connectThread->go();
 #else
 	connect_wiimote(3);
 #endif
@@ -474,15 +488,25 @@ vrpn_WiiMote::~vrpn_WiiMote() {
 		acquireMessageLock();
 	}
 
-	delete connectThread;
-	delete sharedData;
+        try {
+          delete connectThread;
+          delete sharedData;
+        } catch (...) {
+          fprintf(stderr, "vrpn_WiiMote::~vrpn_WiiMote(): delete failed\n");
+          return;
+        }
 #endif
 	// Close the device and delete
 
 	if (wiimote->connected) {
 		wiiuse_disconnect(wiimote->device);
 	}
-	delete wiimote;
+        try {
+          delete wiimote;
+        } catch (...) {
+          fprintf(stderr, "vrpn_WiiMote::~vrpn_WiiMote(): delete failed\n");
+          return;
+        }
 }
 
 // VRPN main loop

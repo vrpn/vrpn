@@ -98,13 +98,13 @@ public:
     ///< Release the distributed lock.  Does nothing if !isHeldLocally()
     ///< and there isn't a request pending.
 
-    void addRequestGrantedCallback(void *userdata, int (*)(void *));
+    vrpn_bool addRequestGrantedCallback(void *userdata, int (*)(void *));
     ///< These callbacks are triggered when OUR request is granted.
-    void addRequestDeniedCallback(void *userdata, int (*)(void *));
+    vrpn_bool addRequestDeniedCallback(void *userdata, int (*)(void *));
     ///< These callbacks are triggered when OUR request is denied.
-    void addTakeCallback(void *userdata, int (*)(void *));
+    vrpn_bool addTakeCallback(void *userdata, int (*)(void *));
     ///< These callbacks are triggered when ANY peer gets the mutex.
-    void addReleaseCallback(void *userdata, int (*)(void *));
+    vrpn_bool addReleaseCallback(void *userdata, int (*)(void *));
     ///< These callbacks are triggered when ANY peer releases the
     ///< mutex.
 
@@ -231,19 +231,19 @@ public:
     ///< Release the distributed lock.  Does nothing if !isHeldLocally()
     ///< and there isn't a request pending.
 
-    void addPeer(const char *stationName);
+    vrpn_bool addPeer(const char *stationName);
     ///< Takes a VRPN station name of the form "<host>:<port>".
 
-    void addRequestGrantedCallback(void *userdata, int (*)(void *));
+    vrpn_bool addRequestGrantedCallback(void *userdata, int (*)(void *));
     ///< These callbacks are triggered when OUR request is granted.
-    void addRequestDeniedCallback(void *userdata, int (*)(void *));
+    vrpn_bool addRequestDeniedCallback(void *userdata, int (*)(void *));
     ///< These callbacks are triggered when OUR request is denied.
-    void addTakeCallback(void *userdata, int (*)(void *));
+    vrpn_bool addTakeCallback(void *userdata, int (*)(void *));
     ///< These callbacks are triggered when ANY peer gets the mutex.
     ///< (If several peers are competing for the mutex, and the
     ///<  implementation issues multiple "grants", these callbacks will
     ///<  only be triggered once between triggerings of ReleaseCallbacks.)
-    void addReleaseCallback(void *userdata, int (*)(void *));
+    vrpn_bool addReleaseCallback(void *userdata, int (*)(void *));
     ///< These callbacks are triggered when ANY peer releases the
     ///< mutex.
 

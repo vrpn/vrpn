@@ -80,7 +80,12 @@ vrpn_Logitech_Controller_Raw::vrpn_Logitech_Controller_Raw(vrpn_HidAcceptor *fil
 
 vrpn_Logitech_Controller_Raw::~vrpn_Logitech_Controller_Raw(void)
 {
-	delete _filter;
+  try {
+    delete _filter;
+  } catch (...) {
+    fprintf(stderr, "vrpn_Logitech_Controller_Raw::~vrpn_Logitech_Controller_Raw(): delete failed\n");
+    return;
+  }
 }
 
 void vrpn_Logitech_Controller_Raw::init_hid()
@@ -134,12 +139,8 @@ void vrpn_Logitech_Extreme_3D_Pro::mainloop(void)
 		_timestamp = current_time;
 		report_changes();
 
-		vrpn_Analog::server_mainloop();
-		vrpn_Button::server_mainloop();
-		if (vrpn_Dial::num_dials > 0)
-		{
-			vrpn_Dial::server_mainloop();
-		}
+                // Call the server_mainloop on our unique base class.
+                server_mainloop();
 	}
 }
 

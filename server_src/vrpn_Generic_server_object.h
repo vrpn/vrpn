@@ -171,6 +171,7 @@ protected:
     int setup_Adafruit_10DOF(char *&pch, char *line, FILE *config_file);
     int setup_OzzMaker_BerryIMU(char *&pch, char *line, FILE *config_file);
     int setup_Laputa(char *&pch, char *line, FILE *config_file);
+    int setup_Vality_vGlass(char *&pch, char *line, FILE *config_file);
 
     template <typename T>
     int templated_setup_device_name_only(char *&pch, char *line, FILE *);

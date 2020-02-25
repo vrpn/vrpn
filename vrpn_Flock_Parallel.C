@@ -90,7 +90,12 @@ vrpn_Tracker_Flock_Parallel::~vrpn_Tracker_Flock_Parallel() {
   // have all slaves shut down (they just send a 'B' -- slaves 
   // can't run or sleep
   for (int i=0;i<cSensors;i++) {
-    delete rgSlaves[i];
+    try {
+      delete rgSlaves[i];
+    } catch (...) {
+      fprintf(stderr, "vrpn_Tracker_Flock_Parallel::~vrpn_Tracker_Flock_Parallel(): delete failed\n");
+      return;
+    }
   }
 
   // now regular flock destructor will be called (just as we need)

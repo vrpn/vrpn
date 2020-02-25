@@ -17,7 +17,7 @@
 #include <ctype.h>                      // for isprint
 #include <stdio.h>                      // for fprintf, perror, sprintf, etc
 #include <stdlib.h>                     // for atoi
-#include <string.h>                     // for strlen, strncpy, strtok
+#include <string.h>                     // for strlen, strtok
 
 #include "vrpn_BaseClass.h"             // for ::vrpn_TEXT_WARNING, etc
 #include "vrpn_Button.h"                // for vrpn_Button_Server
@@ -43,7 +43,7 @@ vrpn_Tracker_Isotrak::vrpn_Tracker_Isotrak(const char *name, vrpn_Connection *c,
         if (additional_reset_commands == NULL) {
 		add_reset_cmd[0] = '\0';
         } else {
-                strncpy(add_reset_cmd, additional_reset_commands, sizeof(add_reset_cmd)-1);
+                vrpn_strcpy(add_reset_cmd, additional_reset_commands);
         }
 
     // Initially, set to no buttons
@@ -279,8 +279,7 @@ void vrpn_Tracker_Isotrak::reset()
         printf("  Isotrack writing extended reset commands...\n");
 
         // Make a copy of the additional reset string, since it is consumed
-        strncpy(add_cmd_copy, add_reset_cmd, sizeof(add_cmd_copy));
-	add_cmd_copy[sizeof(add_cmd_copy)-1] = '\0';
+        vrpn_strcpy(add_cmd_copy, add_reset_cmd);
 
         // Pass through the string, testing each line to see if it is
         // a sleep command or a line to send to the tracker. Continue until
@@ -544,9 +543,8 @@ int vrpn_Tracker_Isotrak::add_stylus_button(const char *button_device_name, int 
     }
 
     // Add a new button device and set the pointer to point at it.
-    stylus_buttons[sensor] = new vrpn_Button_Server(button_device_name, d_connection, 1);
-    if (stylus_buttons[sensor] == NULL) 
-    {
+    try { stylus_buttons[sensor] = new vrpn_Button_Server(button_device_name, d_connection, 1); }
+    catch (...) {
 	    VRPN_MSG_ERROR("Cannot open button device");
 	    return -1;
     }

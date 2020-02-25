@@ -44,20 +44,12 @@ vrpn_YEI_3Space::vrpn_YEI_3Space (const char * p_name
   }
   if (d_reset_command_count > 0) {
     d_reset_commands = new char *[d_reset_command_count];
-    if (d_reset_commands == NULL) {
-      fprintf(stderr,"vrpn_YEI_3Space::vrpn_YEI_3Space(): Out of memory, ignoring reset commands\n");
-      d_reset_command_count = 0;
-    }
   }
 
   // Copy any reset commands.
   ptr = reset_commands;
   for (int i = 0; i < d_reset_command_count; i++) {
     d_reset_commands[i] = new char[strlen(reset_commands[i]) + 1];
-    if (d_reset_commands[i] == NULL) {
-      fprintf(stderr,"vrpn_YEI_3Space::vrpn_YEI_3Space(): Out of memory, giving up\n");
-      return;
-    }
     strcpy(d_reset_commands[i], reset_commands[i]);
   }
 
@@ -68,6 +60,8 @@ vrpn_YEI_3Space::vrpn_YEI_3Space (const char * p_name
   vrpn_Button::num_buttons = 8;
   memset(buttons, 0, sizeof(buttons));
   memset(lastbuttons, 0, sizeof(lastbuttons));
+
+  vrpn_gettimeofday(&timestamp, NULL);
 
   // We're constructed, but not yet initialized.
   d_status = STATUS_NOT_INITIALIZED;
@@ -83,12 +77,17 @@ vrpn_YEI_3Space::~vrpn_YEI_3Space()
 {
   // Free the space used to store the additional reset commands,
   // then free the array used to store the pointers.
-  for (int i = 0; i < d_reset_command_count; i++) {
-    delete [] d_reset_commands[i];
-  }
-  if (d_reset_commands != NULL) {
-    delete [] d_reset_commands;
-    d_reset_commands = NULL;
+  try {
+    for (int i = 0; i < d_reset_command_count; i++) {
+      delete[] d_reset_commands[i];
+    }
+    if (d_reset_commands != NULL) {
+      delete[] d_reset_commands;
+      d_reset_commands = NULL;
+    }
+  } catch (...) {
+    fprintf(stderr, "vrpn_YEI_3Space::~vrpn_YEI_3Space(): delete failed\n");
+    return;
   }
 }
 
@@ -561,8 +560,9 @@ bool vrpn_YEI_3Space_Sensor::send_ascii_command (const char *p_cmd)
 
   // Allocate space for the command plus padding and zero terminator
   int buflen = static_cast<int>(strlen(p_cmd) + 3);
-  unsigned char *buffer = new unsigned char[buflen];
-  if (buffer == NULL) {
+  unsigned char *buffer;
+  try { buffer = new unsigned char[buflen]; }
+  catch (...) {
     return false;
   }
 
@@ -576,7 +576,12 @@ bool vrpn_YEI_3Space_Sensor::send_ascii_command (const char *p_cmd)
   int l_ret = vrpn_write_characters (d_serial_fd, buffer, buflen);
 
   // Free the buffer.
-  delete [] buffer;
+  try {
+    delete[] buffer;
+  } catch (...) {
+    fprintf(stderr, "vrpn_YEI_3Space_Sensor::send_ascii_command(): delete failed\n");
+    return false;
+  }
 
   // Tell if sending worked.
   if (l_ret == buflen) {

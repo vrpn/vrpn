@@ -15,12 +15,9 @@ vrpn_Tracker_NDI_Polaris::vrpn_Tracker_NDI_Polaris(const char *name,
 												   int numOfRigidBodies,
 												   const char** rigidBodyNDIRomFileNames) : vrpn_Tracker(name,c)
 {
-	latestResponseStr=new unsigned char[MAX_NDI_RESPONSE_LENGTH];
-
 	/////////////////////////////////////////////////////////
 	//STEP 1: open com port at NDI's default speed
 	/////////////////////////////////////////////////////////
-	
 	
 	serialFd=vrpn_open_commport(port,9600);
 	if (serialFd==-1){
@@ -242,13 +239,24 @@ int vrpn_Tracker_NDI_Polaris::convertBinaryFileToAsciiEncodedHex(const char* fil
 	}
 	
 	// allocate memory to contain the whole file:
-	unsigned char* rawBytesFromRomFile = (unsigned char*) new unsigned char[fileSizeInBytes];
+        unsigned char* rawBytesFromRomFile;
+        try { rawBytesFromRomFile = new unsigned char[fileSizeInBytes]; }
+        catch (...) {
+          fprintf(stderr, "vrpn_Tracker_NDI_Polaris: Out of memory!\n");
+          fclose(fptr);
+          return(-1);
+        }
 	
 	// copy the file into the buffer:
 	size_t result = fread (rawBytesFromRomFile,1,fileSizeInBytes,fptr);
 	if (result != (unsigned int) fileSizeInBytes) {
 		fprintf(stderr,"vrpn_Tracker_NDI_Polaris: error while reading .rom file!\n");
-		delete rawBytesFromRomFile;
+                try {
+                  delete [] rawBytesFromRomFile;
+                } catch (...) {
+                  fprintf(stderr, "vrpn_Tracker_NDI_Polaris::convertBinaryFileToAsciiEncodedHex(): delete failed\n");
+                  return -1;
+                }
 		fclose(fptr);
 		return(-1);
 	}
@@ -279,7 +287,12 @@ int vrpn_Tracker_NDI_Polaris::convertBinaryFileToAsciiEncodedHex(const char* fil
 	asciiEncodedHexStr[byteIndex*2]='\0'; //end of string marker, which is used just for debugging
 	
 	//printf("DEBUG: >>%s<<\n",asciiEncodedHexStr);
-	delete rawBytesFromRomFile;
+        try {
+          delete [] rawBytesFromRomFile;
+        } catch (...) {
+          fprintf(stderr, "vrpn_Tracker_NDI_Polaris::convertBinaryFileToAsciiEncodedHex(): delete failed\n");
+          return -1;
+        }
 	
 	return paddedFileSizeInBytes;
 }
@@ -362,8 +375,7 @@ int vrpn_Tracker_NDI_Polaris::setupOneTool(const char* NDIToolRomFilename)
 	int numOfChunks=numOfFileBytes/NDI_ROMFILE_CHUNK_SIZE;
 	for (int chunkIndex=0; chunkIndex<numOfChunks; chunkIndex++) {
 		char chunk[129]; //64*2 +1 for the end of string
-		strncpy(chunk,&(asciiEncodedHex[chunkIndex*NDI_ROMFILE_CHUNK_SIZE*2]),NDI_ROMFILE_CHUNK_SIZE*2);
-		chunk[128]='\0';
+                vrpn_strcpy(chunk,&(asciiEncodedHex[chunkIndex*NDI_ROMFILE_CHUNK_SIZE*2]));
 		
 		int NDIAddress=chunkIndex*NDI_ROMFILE_CHUNK_SIZE; //the memory offset (in the NDI machine, not this PC)
 		// where this chunk will start

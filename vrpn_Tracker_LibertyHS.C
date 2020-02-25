@@ -7,7 +7,7 @@
 #include <ctype.h>                      // for isprint
 #include <stdio.h>                      // for fprintf, stderr, sprintf, etc
 #include <stdlib.h>                     // for atoi
-#include <string.h>                     // for strlen, strncpy, strtok
+#include <string.h>                     // for strlen, strtok
 
 #include "quat.h"                       // for Q_W, Q_X, Q_Y, Q_Z
 #include "vrpn_BaseClass.h"             // for ::vrpn_TEXT_WARNING, etc
@@ -41,7 +41,7 @@ vrpn_Tracker_LibertyHS::vrpn_Tracker_LibertyHS(const char *name, vrpn_Connection
 	if (additional_reset_commands == NULL) {
 		add_reset_cmd[0] = '\0';
 	} else {
-		strncpy(add_reset_cmd, additional_reset_commands, sizeof(add_reset_cmd)-1);
+		vrpn_strcpy(add_reset_cmd, additional_reset_commands);
 	}
 
 	if (VRPN_LIBERTYHS_DEBUG) fprintf(stderr,"[DEBUG] Constructed LibertyHS Object\n");
@@ -362,7 +362,7 @@ void vrpn_Tracker_LibertyHS::reset()
 	printf("  LibertyHS writing extended reset commands...\n");
 
 	// Make a copy of the additional reset string, since it is consumed
-	strncpy(add_cmd_copy, add_reset_cmd, sizeof(add_cmd_copy));
+        vrpn_strcpy(add_cmd_copy, add_reset_cmd);
 
 	// Pass through the string, testing each line to see if it is
 	// a sleep command or a line to send to the tracker. Continue until

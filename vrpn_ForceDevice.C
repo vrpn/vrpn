@@ -89,9 +89,19 @@ void vrpn_ForceDevice::setCustomEffect(vrpn_int32 effectId,
 {
     customEffectId = effectId;
     if (customEffectParams != NULL) {
-        delete[] customEffectParams;
+        try {
+          delete[] customEffectParams;
+        } catch (...) {
+          fprintf(stderr, "vrpn_ForceDevice::setCustomEffect(): delete failed\n");
+          return;
+        }
+        customEffectParams = NULL;
     }
-    customEffectParams = new vrpn_float32[nbParams];
+    try { customEffectParams = new vrpn_float32[nbParams]; }
+    catch (...) {
+      fprintf(stderr, "vrpn_ForceDevice::setCustomEffect(): Out of memory\n");
+      return;
+    }
     memcpy(customEffectParams, params, sizeof(vrpn_float32) * nbParams);
     nbCustomEffectParams = nbParams;
 }
@@ -183,7 +193,12 @@ int vrpn_ForceDevice::register_types(void)
 vrpn_ForceDevice::~vrpn_ForceDevice(void)
 {
     if (customEffectParams != NULL) {
-        delete[] customEffectParams;
+        try {
+          delete[] customEffectParams;
+        } catch (...) {
+          fprintf(stderr, "vrpn_ForceDevice::~vrpn_ForceDevice(): delete failed\n");
+          return;
+        }
     }
 }
 
@@ -208,14 +223,15 @@ char *vrpn_ForceDevice::encode_force(vrpn_int32 &length,
     // Byte order of each needs to be reversed to match network standard
 
     int i;
-    char *buf;
+    char *buf = NULL;
     char *mptr;
     vrpn_int32 mlen;
 
     length = 3 * sizeof(vrpn_float64);
     mlen = length;
 
-    buf = new char[length];
+    try { buf = new char[length]; }
+    catch (...) { return NULL; }
     mptr = buf;
 
     // Move the force there
@@ -253,14 +269,15 @@ char *vrpn_ForceDevice::encode_custom_effect(vrpn_int32 &len,
                                              const vrpn_float32 *params,
                                              vrpn_uint32 nbParams)
 {
-    char *buf;
+    char *buf = NULL;
     char *mptr;
     vrpn_int32 mlen;
 
     len = sizeof(vrpn_uint32) * 2 + nbParams * sizeof(vrpn_float32);
     mlen = len;
 
-    buf = new char[len];
+    try { buf = new char[len]; }
+    catch (...) { return NULL; }
     mptr = buf;
 
     vrpn_buffer(&mptr, &mlen, effectId);
@@ -305,8 +322,19 @@ vrpn_int32 vrpn_ForceDevice::decode_custom_effect(const char *buffer,
         return -2;
     }
 
-    if (*params != NULL) delete[] * params;
-    *params = new vrpn_float32[(*nbParams)];
+    if (*params != NULL) {
+        try {
+          delete[] * params;
+        } catch (...) {
+          fprintf(stderr, "vrpn_ForceDevice::decode_custom_effect(): delete failed\n");
+          return -3;
+        }
+    }
+    try { *params = new vrpn_float32[(*nbParams)]; }
+    catch (...) {
+      fprintf(stderr, "vrpn_ForceDevice::decode_custom_effect(): Out of memory\n");
+      return -4;
+    }
 
     for (vrpn_uint32 i = 0; i < (*nbParams); i++) {
         CHECK(vrpn_unbuffer(&mptr, &((*params)[i])));
@@ -328,7 +356,8 @@ char *vrpn_ForceDevice::encode_scp(vrpn_int32 &length, const vrpn_float64 *pos,
     length = 7 * sizeof(vrpn_float64);
     mlen = length;
 
-    buf = new char[length];
+    try { buf = new char[length]; }
+    catch (...) { return NULL; }
     mptr = buf;
 
     for (i = 0; i < 3; i++) {
@@ -381,7 +410,9 @@ char *vrpn_ForceDevice::encode_plane(
     len = 8 * sizeof(vrpn_float32) + 2 * sizeof(vrpn_int32);
     mlen = len;
 
-    buf = new char[len];
+    try { buf = new char[len]; }
+    catch (...) { return NULL; }
+
     mptr = buf;
 
     for (i = 0; i < 4; i++) {
@@ -442,7 +473,9 @@ char *vrpn_ForceDevice::encode_surface_effects(
     len = 6 * sizeof(vrpn_float32);
     mlen = len;
 
-    buf = new char[len];
+    try { buf = new char[len]; }
+    catch (...) { return NULL; }
+
     mptr = buf;
 
     vrpn_buffer(&mptr, &mlen, k_adhesion_normal);
@@ -496,7 +529,9 @@ char *vrpn_ForceDevice::encode_vertex(vrpn_int32 &len, const vrpn_int32 objNum,
     len = sizeof(objNum) + sizeof(vertNum) + 3 * sizeof(vrpn_float32);
     mlen = len;
 
-    buf = new char[len];
+    try { buf = new char[len]; }
+    catch (...) { return NULL; }
+
     mptr = buf;
 
     vrpn_buffer(&mptr, &mlen, objNum);
@@ -549,7 +584,9 @@ char *vrpn_ForceDevice::encode_normal(vrpn_int32 &len, const vrpn_int32 objNum,
     len = sizeof(vrpn_int32) + sizeof(vrpn_int32) + 3 * sizeof(vrpn_float32);
     mlen = len;
 
-    buf = new char[len];
+    try { buf = new char[len]; }
+    catch (...) { return NULL; }
+
     mptr = buf;
     vrpn_buffer(&mptr, &mlen, objNum);
     vrpn_buffer(&mptr, &mlen, normNum);
@@ -602,7 +639,8 @@ char *vrpn_ForceDevice::encode_triangle(
     len = sizeof(vrpn_int32) + 7 * sizeof(vrpn_int32);
     mlen = len;
 
-    buf = new char[len];
+    try { buf = new char[len]; }
+    catch (...) { return NULL; }
     mptr = buf;
 
     vrpn_buffer(&mptr, &mlen, objNum);
@@ -658,7 +696,8 @@ char *vrpn_ForceDevice::encode_removeTriangle(vrpn_int32 &len,
     len = sizeof(vrpn_int32) + sizeof(vrpn_int32);
     mlen = len;
 
-    buf = new char[len];
+    try { buf = new char[len]; }
+    catch (...) { return NULL; }
     mptr = buf;
 
     vrpn_buffer(&mptr, &mlen, objNum);
@@ -703,7 +742,8 @@ char *vrpn_ForceDevice::encode_updateTrimeshChanges(
     len = sizeof(vrpn_int32) + 4 * sizeof(vrpn_float32);
     mlen = len;
 
-    buf = new char[len];
+    try { buf = new char[len]; }
+    catch (...) { return NULL; }
     mptr = buf;
 
     vrpn_buffer(&mptr, &mlen, objNum);
@@ -754,7 +794,8 @@ char *vrpn_ForceDevice::encode_setTrimeshType(vrpn_int32 &len,
     len = sizeof(vrpn_int32) + sizeof(vrpn_int32);
     mlen = len;
 
-    buf = new char[len];
+    try { buf = new char[len]; }
+    catch (...) { return NULL; }
     mptr = buf;
 
     vrpn_buffer(&mptr, &mlen, objNum);
@@ -798,7 +839,8 @@ char *vrpn_ForceDevice::encode_trimeshTransform(
     len = sizeof(vrpn_int32) + 16 * sizeof(vrpn_float32);
     mlen = len;
 
-    buf = new char[len];
+    try { buf = new char[len]; }
+    catch (...) { return NULL; }
     mptr = buf;
 
     vrpn_buffer(&mptr, &mlen, objNum);
@@ -843,7 +885,8 @@ char *vrpn_ForceDevice::encode_addObject(vrpn_int32 &len,
     len = 2 * sizeof(vrpn_int32);
     mlen = len;
 
-    buf = new char[len];
+    try { buf = new char[len]; }
+    catch (...) { return NULL; }
     mptr = buf;
 
     vrpn_buffer(&mptr, &mlen, objNum);
@@ -882,7 +925,8 @@ char *vrpn_ForceDevice::encode_addObjectExScene(vrpn_int32 &len,
     len = sizeof(objNum);
     mlen = len;
 
-    buf = new char[len];
+    try { buf = new char[len]; }
+    catch (...) { return NULL; }
     mptr = buf;
 
     vrpn_buffer(&mptr, &mlen, objNum);
@@ -919,7 +963,8 @@ char *vrpn_ForceDevice::encode_objectPosition(vrpn_int32 &len,
     len = sizeof(vrpn_int32) + 3 * sizeof(vrpn_float32);
     mlen = len;
 
-    buf = new char[len];
+    try { buf = new char[len]; }
+    catch (...) { return NULL; }
     mptr = buf;
 
     vrpn_buffer(&mptr, &mlen, objNum);
@@ -965,7 +1010,8 @@ char *vrpn_ForceDevice::encode_objectOrientation(vrpn_int32 &len,
     len = sizeof(vrpn_int32) + 4 * sizeof(vrpn_float32);
     mlen = len;
 
-    buf = new char[len];
+    try { buf = new char[len]; }
+    catch (...) { return NULL; }
     mptr = buf;
 
     vrpn_buffer(&mptr, &mlen, objNum);
@@ -1014,7 +1060,8 @@ char *vrpn_ForceDevice::encode_objectScale(vrpn_int32 &len,
     len = sizeof(vrpn_int32) + 3 * sizeof(vrpn_float32);
     mlen = len;
 
-    buf = new char[len];
+    try { buf = new char[len]; }
+    catch (...) { return NULL; }
     mptr = buf;
 
     vrpn_buffer(&mptr, &mlen, objNum);
@@ -1058,7 +1105,8 @@ char *vrpn_ForceDevice::encode_removeObject(vrpn_int32 &len,
     len = sizeof(vrpn_int32);
     mlen = len;
 
-    buf = new char[len];
+    try { buf = new char[len]; }
+    catch (...) { return NULL; }
     mptr = buf;
 
     vrpn_buffer(&mptr, &mlen, objNum);
@@ -1094,7 +1142,8 @@ char *vrpn_ForceDevice::encode_clearTrimesh(vrpn_int32 &len,
     len = sizeof(vrpn_int32);
     mlen = len;
 
-    buf = new char[len];
+    try { buf = new char[len]; }
+    catch (...) { return NULL; }
     mptr = buf;
 
     vrpn_buffer(&mptr, &mlen, objNum);
@@ -1131,7 +1180,8 @@ char *vrpn_ForceDevice::encode_moveToParent(vrpn_int32 &len,
     len = sizeof(vrpn_int32) + sizeof(vrpn_int32);
     mlen = len;
 
-    buf = new char[len];
+    try { buf = new char[len]; }
+    catch (...) { return NULL; }
     mptr = buf;
 
     vrpn_buffer(&mptr, &mlen, objNum);
@@ -1175,7 +1225,8 @@ char *vrpn_ForceDevice::encode_setHapticOrigin(vrpn_int32 &len,
     len = 7 * sizeof(vrpn_float32);
     mlen = len;
 
-    buf = new char[len];
+    try { buf = new char[len]; }
+    catch (...) { return NULL; }
     mptr = buf;
 
     for (i = 0; i < 3; i++)
@@ -1226,7 +1277,8 @@ char *vrpn_ForceDevice::encode_setHapticScale(vrpn_int32 &len,
     len = sizeof(vrpn_float32);
     mlen = len;
 
-    buf = new char[len];
+    try { buf = new char[len]; }
+    catch (...) { return NULL; }
     mptr = buf;
 
     vrpn_buffer(&mptr, &mlen, scale);
@@ -1266,7 +1318,8 @@ char *vrpn_ForceDevice::encode_setSceneOrigin(vrpn_int32 &len,
     len = 7 * sizeof(vrpn_float32);
     mlen = len;
 
-    buf = new char[len];
+    try { buf = new char[len]; }
+    catch (...) { return NULL; }
     mptr = buf;
 
     for (i = 0; i < 3; i++)
@@ -1319,7 +1372,8 @@ char *vrpn_ForceDevice::encode_setObjectIsTouchable(vrpn_int32 &len,
     len = sizeof(vrpn_int32) + sizeof(vrpn_bool);
     mlen = len;
 
-    buf = new char[len];
+    try { buf = new char[len]; }
+    catch (...) { return NULL; }
     mptr = buf;
 
     vrpn_buffer(&mptr, &mlen, objNum);
@@ -1365,7 +1419,8 @@ char *vrpn_ForceDevice::encode_forcefield(vrpn_int32 &len,
     len = 16 * sizeof(vrpn_float32);
     mlen = len;
 
-    buf = new char[len];
+    try { buf = new char[len]; }
+    catch (...) { return NULL; }
     mptr = buf;
 
     for (i = 0; i < 3; i++)
@@ -1425,7 +1480,8 @@ char *vrpn_ForceDevice::encode_error(vrpn_int32 &len,
     len = sizeof(vrpn_int32);
     mlen = len;
 
-    buf = new char[len];
+    try { buf = new char[len]; }
+    catch (...) { return NULL; }
     mptr = buf;
 
     vrpn_buffer(&mptr, &mlen, error_code);
@@ -1494,7 +1550,12 @@ void vrpn_ForceDevice::sendError(int error_code)
                                        vrpn_CONNECTION_RELIABLE)) {
             fprintf(stderr, "Phantom: cannot write message: tossing\n");
         }
-        delete[] msgbuf;
+        try {
+          delete[] msgbuf;
+        } catch (...) {
+          fprintf(stderr, "vrpn_ForceDevice::sendError(): delete failed\n");
+          return;
+        }
     }
 }
 
@@ -1511,7 +1572,8 @@ char *vrpn_ForceDevice::encode_enableConstraint(vrpn_int32 &len,
     len = sizeof(vrpn_int32);
     mlen = len;
 
-    buf = new char[len];
+    try { buf = new char[len]; }
+    catch (...) { return NULL; }
     mptr = buf;
 
     vrpn_buffer(&mptr, &mlen, enable);
@@ -1551,7 +1613,8 @@ char *vrpn_ForceDevice::encode_setConstraintMode(vrpn_int32 &len,
     len = sizeof(vrpn_int32);
     mlen = len;
 
-    buf = new char[len];
+    try { buf = new char[len]; }
+    catch (...) { return NULL; }
     mptr = buf;
 
     switch (mode) {
@@ -1720,7 +1783,8 @@ char *vrpn_ForceDevice::encode_setConstraintKSpring(vrpn_int32 &len,
     len = sizeof(vrpn_float32);
     mlen = len;
 
-    buf = new char[len];
+    try { buf = new char[len]; }
+    catch (...) { return NULL; }
     mptr = buf;
 
     vrpn_buffer(&mptr, &mlen, k);
@@ -1763,7 +1827,8 @@ char *vrpn_ForceDevice::encodePoint(vrpn_int32 &len, vrpn_float32 x,
     len = 3 * sizeof(vrpn_float32);
     mlen = len;
 
-    buf = new char[len];
+    try { buf = new char[len]; }
+    catch (...) { return NULL; }
     mptr = buf;
 
     vrpn_buffer(&mptr, &mlen, x);
@@ -1858,7 +1923,12 @@ void vrpn_ForceDevice_Remote::sendSurface(void)
                                        vrpn_CONNECTION_LOW_LATENCY)) {
             fprintf(stderr, "Phantom: cannot write message: tossing\n");
         }
-        delete[] msgbuf;
+        try {
+          delete[] msgbuf;
+        } catch (...) {
+          fprintf(stderr, "vrpn_ForceDevice::sendSurface(): delete failed\n");
+          return;
+        }
 
         msgbuf = encode_surface_effects(
             len, SurfaceKadhesionNormal, SurfaceKadhesionLateral,
@@ -1869,7 +1939,12 @@ void vrpn_ForceDevice_Remote::sendSurface(void)
                                        vrpn_CONNECTION_LOW_LATENCY)) {
             fprintf(stderr, "Phantom: cannot write message: tossing\n");
         }
-        delete[] msgbuf;
+        try {
+          delete[] msgbuf;
+        } catch (...) {
+          fprintf(stderr, "vrpn_ForceDevice::sendSurface(): delete failed\n");
+          return;
+        }
     }
 }
 
@@ -1892,7 +1967,12 @@ void vrpn_ForceDevice_Remote::startSurface(void)
                                        vrpn_CONNECTION_RELIABLE)) {
             fprintf(stderr, "Phantom: cannot write message: tossing\n");
         }
-        delete[] msgbuf;
+        try {
+          delete[] msgbuf;
+        } catch (...) {
+          fprintf(stderr, "vrpn_ForceDevice::startSurface(): delete failed\n");
+          return;
+        }
     }
 }
 
@@ -1917,7 +1997,12 @@ void vrpn_ForceDevice_Remote::stopSurface(void)
                                        vrpn_CONNECTION_RELIABLE)) {
             fprintf(stderr, "Phantom: cannot write message: tossing\n");
         }
-        delete[] msgbuf;
+        try {
+          delete[] msgbuf;
+        } catch (...) {
+          fprintf(stderr, "vrpn_ForceDevice::stopSurface(): delete failed\n");
+          return;
+        }
     }
 }
 
@@ -1984,7 +2069,12 @@ void vrpn_ForceDevice_Remote::addObject(vrpn_int32 objNum,
                                        vrpn_CONNECTION_RELIABLE)) {
             fprintf(stderr, "Phantom: cannot write message: tossing\n");
         }
-        delete[] msgbuf;
+        try {
+          delete[] msgbuf;
+        } catch (...) {
+          fprintf(stderr, "vrpn_ForceDevice::addObject(): delete failed\n");
+          return;
+        }
     }
 }
 
@@ -2008,7 +2098,12 @@ void vrpn_ForceDevice_Remote::addObjectExScene(vrpn_int32 objNum)
                                        msgbuf, vrpn_CONNECTION_RELIABLE)) {
             fprintf(stderr, "Phantom: cannot write message: tossing\n");
         }
-        delete[] msgbuf;
+        try {
+          delete[] msgbuf;
+        } catch (...) {
+          fprintf(stderr, "vrpn_ForceDevice::addObectExScene(): delete failed\n");
+          return;
+        }
     }
 }
 
@@ -2033,7 +2128,12 @@ void vrpn_ForceDevice_Remote::setObjectVertex(vrpn_int32 objNum,
                                        vrpn_CONNECTION_RELIABLE)) {
             fprintf(stderr, "Phantom: cannot write message: tossing\n");
         }
-        delete[] msgbuf;
+        try {
+          delete[] msgbuf;
+        } catch (...) {
+          fprintf(stderr, "vrpn_ForceDevice::setObjVert(): delete failed\n");
+          return;
+        }
     }
 }
 
@@ -2059,7 +2159,12 @@ void vrpn_ForceDevice_Remote::setObjectNormal(vrpn_int32 objNum,
                                        vrpn_CONNECTION_RELIABLE)) {
             fprintf(stderr, "Phantom: cannot write message: tossing\n");
         }
-        delete[] msgbuf;
+        try {
+          delete[] msgbuf;
+        } catch (...) {
+          fprintf(stderr, "vrpn_ForceDevice::setObjectNormal(): delete failed\n");
+          return;
+        }
     }
 }
 
@@ -2084,7 +2189,12 @@ void vrpn_ForceDevice_Remote::setObjectTriangle(
                                        vrpn_CONNECTION_RELIABLE)) {
             fprintf(stderr, "Phantom: cannot write message: tossing\n");
         }
-        delete[] msgbuf;
+        try {
+          delete[] msgbuf;
+        } catch (...) {
+          fprintf(stderr, "vrpn_ForceDevice::setObjectTriangle(): delete failed\n");
+          return;
+        }
     }
 }
 
@@ -2106,7 +2216,12 @@ void vrpn_ForceDevice_Remote::removeObjectTriangle(vrpn_int32 objNum,
                                        msgbuf, vrpn_CONNECTION_RELIABLE)) {
             fprintf(stderr, "Phantom: cannot write message: tossing\n");
         }
-        delete[] msgbuf;
+        try {
+          delete[] msgbuf;
+        } catch (...) {
+          fprintf(stderr, "vrpn_ForceDevice::removeObjectTriangle(): delete failed\n");
+          return;
+        }
     }
 }
 
@@ -2131,7 +2246,12 @@ void vrpn_ForceDevice_Remote::updateObjectTrimeshChanges(vrpn_int32 objNum)
                 msgbuf, vrpn_CONNECTION_RELIABLE)) {
             fprintf(stderr, "Phantom: cannot write message: tossing\n");
         }
-        delete[] msgbuf;
+        try {
+          delete[] msgbuf;
+        } catch (...) {
+          fprintf(stderr, "vrpn_ForceDevice::updateObjectTrimeshChanges(): delete failed\n");
+          return;
+        }
     }
 }
 
@@ -2154,7 +2274,12 @@ void vrpn_ForceDevice_Remote::setObjectTrimeshTransform(
                                        msgbuf, vrpn_CONNECTION_RELIABLE)) {
             fprintf(stderr, "Phantom: cannot write message: tossing\n");
         }
-        delete[] msgbuf;
+        try {
+          delete[] msgbuf;
+        } catch (...) {
+          fprintf(stderr, "vrpn_ForceDevice::setObjectTrimeshTransform(): delete failed\n");
+          return;
+        }
     }
 }
 
@@ -2177,7 +2302,12 @@ void vrpn_ForceDevice_Remote::setObjectPosition(vrpn_int32 objNum,
                 msgbuf, vrpn_CONNECTION_RELIABLE)) {
             fprintf(stderr, "Phantom: cannot write message: tossing\n");
         }
-        delete[] msgbuf;
+        try {
+          delete[] msgbuf;
+        } catch (...) {
+          fprintf(stderr, "vrpn_ForceDevice::setObjectPosition(): delete failed\n");
+          return;
+        }
     }
 }
 
@@ -2201,7 +2331,12 @@ void vrpn_ForceDevice_Remote::setObjectOrientation(vrpn_int32 objNum,
                 msgbuf, vrpn_CONNECTION_RELIABLE)) {
             fprintf(stderr, "Phantom: cannot write message: tossing\n");
         }
-        delete[] msgbuf;
+        try {
+          delete[] msgbuf;
+        } catch (...) {
+          fprintf(stderr, "vrpn_ForceDevice::setObjectOrientation(): delete failed\n");
+          return;
+        }
     }
 }
 
@@ -2224,7 +2359,12 @@ void vrpn_ForceDevice_Remote::setObjectScale(vrpn_int32 objNum,
                                        msgbuf, vrpn_CONNECTION_RELIABLE)) {
             fprintf(stderr, "Phantom: cannot write message: tossing\n");
         }
-        delete[] msgbuf;
+        try {
+          delete[] msgbuf;
+        } catch (...) {
+          fprintf(stderr, "vrpn_ForceDevice::setObjectScale(): delete failed\n");
+          return;
+        }
     }
 }
 
@@ -2246,7 +2386,12 @@ void vrpn_ForceDevice_Remote::removeObject(vrpn_int32 objNum)
                                        vrpn_CONNECTION_RELIABLE)) {
             fprintf(stderr, "Phantom: cannot write message: tossing\n");
         }
-        delete[] msgbuf;
+        try {
+          delete[] msgbuf;
+        } catch (...) {
+          fprintf(stderr, "vrpn_ForceDevice::removeObject(): delete failed\n");
+          return;
+        }
     }
 }
 
@@ -2267,7 +2412,12 @@ void vrpn_ForceDevice_Remote::clearObjectTrimesh(vrpn_int32 objNum)
                                        vrpn_CONNECTION_RELIABLE)) {
             fprintf(stderr, "Phantom: cannot write message: tossing\n");
         }
-        delete[] msgbuf;
+        try {
+          delete[] msgbuf;
+        } catch (...) {
+          fprintf(stderr, "vrpn_ForceDevice::clearObjectTrimesh(): delete failed\n");
+          return;
+        }
     }
 }
 
@@ -2292,7 +2442,12 @@ void vrpn_ForceDevice_Remote::moveToParent(vrpn_int32 objNum,
                                        vrpn_CONNECTION_RELIABLE)) {
             fprintf(stderr, "Phantom: cannot write message: tossing\n");
         }
-        delete[] msgbuf;
+        try {
+          delete[] msgbuf;
+        } catch (...) {
+          fprintf(stderr, "vrpn_ForceDevice::moveToParent(): delete failed\n");
+          return;
+        }
     }
 }
 
@@ -2316,7 +2471,12 @@ void vrpn_ForceDevice_Remote::setHapticOrigin(vrpn_float32 Pos[3],
                                        msgbuf, vrpn_CONNECTION_RELIABLE)) {
             fprintf(stderr, "Phantom: cannot write message: tossing\n");
         }
-        delete[] msgbuf;
+        try {
+          delete[] msgbuf;
+        } catch (...) {
+          fprintf(stderr, "vrpn_ForceDevice::setHapticOrigin(): delete failed\n");
+          return;
+        }
     }
 }
 
@@ -2338,7 +2498,12 @@ void vrpn_ForceDevice_Remote::setHapticScale(vrpn_float32 Scale)
                                        msgbuf, vrpn_CONNECTION_RELIABLE)) {
             fprintf(stderr, "Phantom: cannot write message: tossing\n");
         }
-        delete[] msgbuf;
+        try {
+          delete[] msgbuf;
+        } catch (...) {
+          fprintf(stderr, "vrpn_ForceDevice::setHapticScale(): delete failed\n");
+          return;
+        }
     }
 }
 
@@ -2361,7 +2526,12 @@ void vrpn_ForceDevice_Remote::setSceneOrigin(vrpn_float32 Pos[3],
                                        msgbuf, vrpn_CONNECTION_RELIABLE)) {
             fprintf(stderr, "Phantom: cannot write message: tossing\n");
         }
-        delete[] msgbuf;
+        try {
+          delete[] msgbuf;
+        } catch (...) {
+          fprintf(stderr, "vrpn_ForceDevice::setSceneOrigin(): delete failed\n");
+          return;
+        }
     }
 }
 
@@ -2391,7 +2561,12 @@ void vrpn_ForceDevice_Remote::setObjectIsTouchable(
                 msgbuf, vrpn_CONNECTION_RELIABLE)) {
             fprintf(stderr, "Phantom: cannot write message: tossing\n");
         }
-        delete[] msgbuf;
+        try {
+          delete[] msgbuf;
+        } catch (...) {
+          fprintf(stderr, "vrpn_ForceDevice::setObjectIsTouchable(): delete failed\n");
+          return;
+        }
     }
 }
 
@@ -2413,7 +2588,12 @@ void vrpn_ForceDevice_Remote::useHcollide(void)
                                        msgbuf, vrpn_CONNECTION_RELIABLE)) {
             fprintf(stderr, "Phantom: cannot write message: tossing\n");
         }
-        delete[] msgbuf;
+        try {
+          delete[] msgbuf;
+        } catch (...) {
+          fprintf(stderr, "vrpn_ForceDevice::useHcollide(): delete failed\n");
+          return;
+        }
     }
 }
 
@@ -2434,7 +2614,12 @@ void vrpn_ForceDevice_Remote::useGhost(void)
                                        msgbuf, vrpn_CONNECTION_RELIABLE)) {
             fprintf(stderr, "Phantom: cannot write message: tossing\n");
         }
-        delete[] msgbuf;
+        try {
+          delete[] msgbuf;
+        } catch (...) {
+          fprintf(stderr, "vrpn_ForceDevice::useGhost(): delete failed\n");
+          return;
+        }
     }
 }
 
@@ -2457,7 +2642,12 @@ void vrpn_ForceDevice_Remote::startEffect(void)
                                        vrpn_CONNECTION_RELIABLE)) {
             fprintf(stderr, "Phantom: cannot write message: tossing\n");
         }
-        delete[] msgbuf;
+        try {
+          delete[] msgbuf;
+        } catch (...) {
+          fprintf(stderr, "vrpn_ForceDevice::startEffect(): delete failed\n");
+          return;
+        }
     }
 }
 
@@ -2481,7 +2671,12 @@ void vrpn_ForceDevice_Remote::stopEffect(void)
                                        vrpn_CONNECTION_RELIABLE)) {
             fprintf(stderr, "Phantom: cannot write message: tossing\n");
         }
-        delete[] msgbuf;
+        try {
+          delete[] msgbuf;
+        } catch (...) {
+          fprintf(stderr, "vrpn_ForceDevice::stopEffect(): delete failed\n");
+          return;
+        }
     }
 }
 // fin ajout ONDIM
@@ -2642,7 +2837,12 @@ void vrpn_ForceDevice_Remote::sendForceField(vrpn_float32 origin[3],
                                        vrpn_CONNECTION_LOW_LATENCY)) {
             fprintf(stderr, "Phantom: cannot write message: tossing\n");
         }
-        delete[] msgbuf;
+        try {
+          delete[] msgbuf;
+        } catch (...) {
+          fprintf(stderr, "vrpn_ForceDevice::sendForceField(): delete failed\n");
+          return;
+        }
     }
 }
 
@@ -2669,7 +2869,12 @@ void vrpn_ForceDevice_Remote::stopForceField(void)
                                        vrpn_CONNECTION_RELIABLE)) {
             fprintf(stderr, "Phantom: cannot write message: tossing\n");
         }
-        delete[] msgbuf;
+        try {
+          delete[] msgbuf;
+        } catch (...) {
+          fprintf(stderr, "vrpn_ForceDevice::stopForceField(): delete failed\n");
+          return;
+        }
     }
 }
 
@@ -2742,7 +2947,12 @@ void vrpn_ForceDevice_Remote::send(const char *msgbuf, vrpn_int32 len,
         }
     }
 
-    delete[]msgbuf;
+    try {
+      delete[] msgbuf;
+    } catch (...) {
+      fprintf(stderr, "vrpn_ForceDevice_Remote::send(): delete failed\n");
+      return;
+    }
 }
 
 #ifdef FD_SPRINGS_AS_FIELDS

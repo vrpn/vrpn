@@ -80,8 +80,9 @@ const int vrpn_ANY_TYPE = -1;
 
 /// @name Buffer lengths for TCP and UDP.
 ///
-/// TCP is an arbitrary number that can be changed by the user
-/// using vrpn_Connection::set_tcp_outbuf_size().
+/// TCP is an arbitrary number but it must match the receiver's buffer
+/// size so it needs to remain the same for a given major VRPN version
+/// number.
 /// UDP is set based on Ethernet maximum transmission size;  trying
 /// to send a message via UDP which is longer than the MTU of any
 /// intervening physical network may cause untraceable failures,
@@ -470,8 +471,6 @@ public:
     ///< Connects d_udpSocket to the specified address and port;
     ///< returns 0 on success, sets status to BROKEN and returns -1
     ///< on failure.
-
-    vrpn_int32 set_tcp_outbuf_size(vrpn_int32 bytecount);
 
     int setup_new_connection(void);
     ///< Sends the magic cookie and other information to its
@@ -881,7 +880,6 @@ protected:
     /// are found.
     vrpn_uint32 d_stop_processing_messages_after;
 
-protected:
     friend VRPN_API vrpn_Connection *vrpn_get_connection_by_name(
         const char *cname, const char *local_in_logfile_name,
         const char *local_out_logfile_name, const char *remote_in_logfile_name,

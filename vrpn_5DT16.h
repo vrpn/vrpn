@@ -31,7 +31,6 @@ public:
 	unsigned _expected_chars;	    //< How many characters to expect in the report
 	unsigned char _buffer[512]; //< Buffer of characters in report
 	unsigned _bufcount;		    //< How many characters we have so far
-	bool  _tenbytes;	    //< Whether there are 10-byte responses (unusual, but seen)
 
 	struct timeval timestamp;   //< Time of the last report from the device
 

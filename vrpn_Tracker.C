@@ -170,10 +170,20 @@ int vrpn_Tracker::register_types(void)
 vrpn_Tracker::~vrpn_Tracker(void)
 {
     if (unit2sensor != NULL) {
+      try {
         delete[] unit2sensor;
+      } catch (...) {
+        fprintf(stderr, "vrpn_Tracker::~vrpn_Tracker(): delete failed\n");
+        return;
+      }
     }
     if (unit2sensor_quat != NULL) {
+      try {
         delete[] unit2sensor_quat;
+      } catch (...) {
+        fprintf(stderr, "vrpn_Tracker::~vrpn_Tracker(): delete failed\n");
+        return;
+      }
     }
     num_unit2sensors = 0;
 }
@@ -192,14 +202,12 @@ bool vrpn_Tracker::ensure_enough_unit2sensors(unsigned num)
         }
 
         // Allocate new space for the two lists.
-        vrpn_Tracker_Pos *newlist = new vrpn_Tracker_Pos[num];
-        if (newlist == NULL) {
-            return false;
-        }
-        vrpn_Tracker_Quat *newqlist = new vrpn_Tracker_Quat[num];
-        if (newqlist == NULL) {
-            return false;
-        }
+        vrpn_Tracker_Pos *newlist;
+        try { newlist = new vrpn_Tracker_Pos[num]; }
+        catch (...) { return false; }
+        vrpn_Tracker_Quat *newqlist;
+        try { newqlist = new vrpn_Tracker_Quat[num]; }
+        catch (...) { return false; }
 
         // Copy all of the existing elements.
         for (i = 0; i < num_unit2sensors; i++) {
@@ -218,10 +226,20 @@ bool vrpn_Tracker::ensure_enough_unit2sensors(unsigned num)
 
         // Switch the new lists in for the old, and delete the old.
         if (unit2sensor != NULL) {
+          try {
             delete[] unit2sensor;
+          } catch (...) {
+            fprintf(stderr, "vrpn_Tracker::ensure_enough_unit2sensors(): delete failed\n");
+            return false;
+          }
         }
         if (unit2sensor_quat != NULL) {
+          try {
             delete[] unit2sensor_quat;
+          } catch (...) {
+            fprintf(stderr, "vrpn_Tracker::ensure_enough_unit2sensors(): delete failed\n");
+            return false;
+          }
         }
         unit2sensor = newlist;
         unit2sensor_quat = newqlist;
@@ -956,10 +974,8 @@ vrpn_Tracker_Serial::vrpn_Tracker_Serial(const char *name, vrpn_Connection *c,
         fprintf(stderr, "vrpn_Tracker_Serial: NULL port name\n");
         status = vrpn_TRACKER_FAIL;
         return;
-    }
-    else {
-        strncpy(portname, port, sizeof(portname));
-        portname[sizeof(portname) - 1] = '\0';
+    } else {
+        vrpn_strcpy(portname, port);
     }
     baudrate = baud;
 
@@ -1326,7 +1342,12 @@ vrpn_Tracker_Remote::vrpn_Tracker_Remote(const char *name, vrpn_Connection *cn)
 vrpn_Tracker_Remote::~vrpn_Tracker_Remote()
 {
     if (sensor_callbacks != NULL) {
+      try {
         delete[] sensor_callbacks;
+      } catch (...) {
+        fprintf(stderr, "vrpn_Tracker_Remote::~vrpn_Tracker_Remote(): delete failed\n");
+        return;
+      }
     }
     num_sensor_callbacks = 0;
 }
@@ -1345,9 +1366,9 @@ bool vrpn_Tracker_Remote::ensure_enough_sensor_callbacks(unsigned num)
         }
 
         // Allocate new space for the list.
-        vrpn_Tracker_Sensor_Callbacks *newlist =
-            new vrpn_Tracker_Sensor_Callbacks[num];
-        if (newlist == NULL) {
+        vrpn_Tracker_Sensor_Callbacks *newlist;
+        try { newlist = new vrpn_Tracker_Sensor_Callbacks[num]; }
+        catch (...) {
             return false;
         }
 
@@ -1360,7 +1381,12 @@ bool vrpn_Tracker_Remote::ensure_enough_sensor_callbacks(unsigned num)
 
         // Switch the new list in for the old, and delete the old.
         if (sensor_callbacks != NULL) {
+          try {
             delete[] sensor_callbacks;
+          } catch (...) {
+            fprintf(stderr, "vrpn_Tracker_Remote::ensure_enough_sensor_callbacks(): delete failed\n");
+            return false;
+          }
         }
         sensor_callbacks = newlist;
         num_sensor_callbacks = num;

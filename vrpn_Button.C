@@ -2,7 +2,7 @@
 #ifndef _WIN32_WCE
 #include <fcntl.h> // for open, O_RDWR
 #endif
-#include <string.h> // for strncpy
+#include <string.h>
 
 #if defined(linux) && !defined(VRPN_CLIENT_ONLY) && !defined(__ANDROID__)
 #define VRPN_USE_LINUX_PARALLEL_SUPPORT
@@ -759,8 +759,7 @@ vrpn_Button_Serial::vrpn_Button_Serial(const char *name, vrpn_Connection *c,
         return;
     }
     else {
-        strncpy(portname, port, sizeof(portname));
-        portname[sizeof(portname) - 1] = '\0';
+        vrpn_strcpy(portname, port);
     }
     baudrate = baud;
 

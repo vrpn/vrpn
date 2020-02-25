@@ -1,18 +1,22 @@
 #include "vrpn_LamportClock.h"
+#include <string.h>
+#include <stdio.h>
 
 vrpn_LamportTimestamp::vrpn_LamportTimestamp (int vectorLength,
                                               vrpn_uint32 * vector) :
     d_timestampSize (vectorLength),
-    d_timestamp (new vrpn_uint32 [vectorLength]) {
-
+    d_timestamp(NULL)
+{
+  d_timestamp = new vrpn_uint32[vectorLength];
   copy(vector);
 }
 
 vrpn_LamportTimestamp::vrpn_LamportTimestamp
                             (const vrpn_LamportTimestamp & r) :
     d_timestampSize (r.d_timestampSize),
-    d_timestamp (new vrpn_uint32 [r.d_timestampSize]) {
-
+    d_timestamp(NULL)
+{
+  d_timestamp = new vrpn_uint32[r.d_timestampSize];
   copy(r.d_timestamp);
 }
 
@@ -20,7 +24,12 @@ vrpn_LamportTimestamp::vrpn_LamportTimestamp
 
 vrpn_LamportTimestamp::~vrpn_LamportTimestamp (void) {
   if (d_timestamp) {
-    delete [] d_timestamp;
+    try {
+      delete[] d_timestamp;
+    } catch (...) {
+      fprintf(stderr, "vrpn_LamportTimestamp::~vrpn_LamportTimestamp(): delete failed\n");
+      return;
+    }
   }
 }
 
@@ -28,11 +37,21 @@ vrpn_LamportTimestamp & vrpn_LamportTimestamp::operator =
         (const vrpn_LamportTimestamp & r) {
 
   if (d_timestamp) {
-    delete [] d_timestamp;
+    try {
+      delete[] d_timestamp;
+    } catch (...) {
+      fprintf(stderr, "vrpn_LamportTimestamp::operator =(): delete failed\n");
+      return *this;
+    }
+    d_timestamp = NULL;
   }
 
   d_timestampSize = r.d_timestampSize;
-  d_timestamp = new vrpn_uint32 [r.d_timestampSize];
+  try { d_timestamp = new vrpn_uint32[r.d_timestampSize]; }
+  catch (...) {
+    d_timestamp = NULL;
+    return *this;
+  }
 
   copy(r.d_timestamp);
 
@@ -96,10 +115,11 @@ void vrpn_LamportTimestamp::copy (const vrpn_uint32 * vector) {
 vrpn_LamportClock::vrpn_LamportClock (int numHosts, int ourIndex) :
     d_numHosts (numHosts),
     d_ourIndex (ourIndex),
-    d_currentTimestamp (new vrpn_uint32 [numHosts]) {
+    d_currentTimestamp(NULL)
+{
+  d_currentTimestamp = new vrpn_uint32[numHosts];
 
   int i;
-
   if (d_currentTimestamp) {
     for (i = 0; i < numHosts; i++) {
       d_currentTimestamp[i] = 0;
@@ -110,7 +130,12 @@ vrpn_LamportClock::vrpn_LamportClock (int numHosts, int ourIndex) :
 
 vrpn_LamportClock::~vrpn_LamportClock (void) {
   if (d_currentTimestamp) {
-    delete [] d_currentTimestamp;
+    try {
+      delete[] d_currentTimestamp;
+    } catch (...) {
+      fprintf(stderr, "vrpn_LamportClock::~vrpn_LamportClock(): delete failed\n");
+      return;
+    }
   }
 }
 
@@ -130,11 +155,14 @@ void vrpn_LamportClock::receive (const vrpn_LamportTimestamp & r) {
 
 }
 
-vrpn_LamportTimestamp * vrpn_LamportClock::getTimestampAndAdvance (void) {
-
+vrpn_LamportTimestamp * vrpn_LamportClock::getTimestampAndAdvance (void)
+{
   d_currentTimestamp[d_ourIndex]++;
 
-  return new vrpn_LamportTimestamp (d_numHosts, d_currentTimestamp);
+  vrpn_LamportTimestamp *ret = NULL;
+  try { ret = new vrpn_LamportTimestamp(d_numHosts, d_currentTimestamp); }
+  catch (...) { return NULL; }
+  return ret;
 }
   
 

@@ -15,7 +15,7 @@
 #include <ctype.h>                      // for isprint, isalpha
 #include <stdio.h>                      // for fprintf, sprintf, stderr, etc
 #include <stdlib.h>                     // for atoi
-#include <string.h>                     // for strlen, strncpy, strtok
+#include <string.h>                     // for strlen, strtok
 
 #include "quat.h"                       // for Q_W, Q_X, Q_Y, Q_Z
 #include "vrpn_Analog.h"                // for vrpn_Clipping_Analog_Server
@@ -43,7 +43,7 @@ vrpn_Tracker_Fastrak::vrpn_Tracker_Fastrak(const char *name, vrpn_Connection *c,
 	if (additional_reset_commands == NULL) {
 		add_reset_cmd[0] = '\0';
 	} else {
-		strncpy(add_reset_cmd, additional_reset_commands, sizeof(add_reset_cmd)-1);
+		vrpn_strcpy(add_reset_cmd, additional_reset_commands);
 	}
 
 	// Initially, set to no buttons or analogs on the stations.  The
@@ -65,12 +65,17 @@ vrpn_Tracker_Fastrak::~vrpn_Tracker_Fastrak()
 
     // Delete any button and analog devices that were created
     for (i = 0; i < num_stations; i++) {
-	if (is900_buttons[i]) {
-	    delete is900_buttons[i];
-	}
-	if (is900_analogs[i]) {
-	    delete is900_analogs[i];
-	}
+      try {
+        if (is900_buttons[i]) {
+          delete is900_buttons[i];
+        }
+        if (is900_analogs[i]) {
+          delete is900_analogs[i];
+        }
+      } catch (...) {
+        fprintf(stderr, "vrpn_Tracker_Fastrak::~vrpn_Tracker_Fastrak(): delete failed\n");
+        return;
+      }
     }
 }
 
@@ -357,7 +362,7 @@ void vrpn_Tracker_Fastrak::reset()
 	printf("  Fastrak writing extended reset commands...\n");
 
 	// Make a copy of the additional reset string, since it is consumed
-	strncpy(add_cmd_copy, add_reset_cmd, sizeof(add_cmd_copy));
+        vrpn_strcpy(add_cmd_copy, add_reset_cmd);
 	add_cmd_copy[sizeof(add_cmd_copy)-1] = '\0';
 
 	// Pass through the string, testing each line to see if it is
@@ -705,8 +710,8 @@ int vrpn_Tracker_Fastrak::add_is900_button(const char *button_device_name, int s
     }
 
     // Add a new button device and set the pointer to point at it.
-    is900_buttons[sensor] = new vrpn_Button_Server(button_device_name, d_connection, numbuttons);
-    if (is900_buttons[sensor] == NULL) {
+    try { is900_buttons[sensor] = new vrpn_Button_Server(button_device_name, d_connection, numbuttons); }
+    catch (...) {
 	VRPN_MSG_ERROR("Cannot open button device");
 	return -1;
     }
@@ -726,8 +731,8 @@ int vrpn_Tracker_Fastrak::add_fastrak_stylus_button(const char *button_device_na
     }
 
     // Add a new button device and set the pointer to point at it.
-    is900_buttons[sensor] = new vrpn_Button_Server(button_device_name, d_connection, numbuttons);
-    if (is900_buttons[sensor] == NULL) {
+    try { is900_buttons[sensor] = new vrpn_Button_Server(button_device_name, d_connection, numbuttons); }
+    catch (...) {
 	VRPN_MSG_ERROR("Cannot open button device");
 	return -1;
     }
@@ -765,8 +770,8 @@ int vrpn_Tracker_Fastrak::add_is900_analog(const char *analog_device_name, int s
     }
 
     // Add a new analog device and set the pointer to point at it.
-    is900_analogs[sensor] = new vrpn_Clipping_Analog_Server(analog_device_name, d_connection);
-    if (is900_analogs[sensor] == NULL) {
+    try { is900_analogs[sensor] = new vrpn_Clipping_Analog_Server(analog_device_name, d_connection); }
+    catch (...) {
 	VRPN_MSG_ERROR("Cannot open analog device");
 	return -1;
     }

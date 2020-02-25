@@ -76,7 +76,12 @@ vrpn_int32 vrpn_Sound::encodeSound_local(const char *filename,
     char *mptr;
     int i;
 
-    *buf = new char[len];
+    *buf = NULL;
+    try { *buf = new char[len]; }
+    catch (...) {
+      fprintf(stderr, "vrpn_Sound::encodeSound_local(): Out of memory.\n");
+      return 0;
+    }
 
     mptr = *buf;
     vrpn_buffer(&mptr, &len, id);
@@ -118,8 +123,13 @@ vrpn_int32 vrpn_Sound::decodeSound_local(const char *buf, char **filename,
     const char *mptr = buf;
     int i;
 
-    *filename =
-        new char[payload - sizeof(vrpn_SoundID) - sizeof(vrpn_SoundDef)];
+    *filename = NULL;
+    try { *filename =
+        new char[payload - sizeof(vrpn_SoundID) - sizeof(vrpn_SoundDef)]; }
+    catch (...) {
+      fprintf(stderr, "vrpn_Sound::decodeSound_local(): Out of memory.\n");
+      return -1;
+    }
 
     vrpn_unbuffer(&mptr, id);
 
@@ -591,7 +601,12 @@ vrpn_int32 vrpn_Sound::encodeLoadModel_local(const char *filename, char **buf)
     vrpn_int32 ret = len;
     char *mptr;
 
-    *buf = new char[strlen(filename) + sizeof(vrpn_SoundID) + 1];
+    *buf = NULL;
+    try { *buf = new char[strlen(filename) + sizeof(vrpn_SoundID) + 1]; }
+    catch (...) {
+      fprintf(stderr, "vrpn_Sound::encodeLoadModel_local(): Out of memory.\n");
+      return 0;
+    }
 
     mptr = *buf;
     vrpn_buffer(&mptr, &len, filename,
@@ -605,7 +620,12 @@ vrpn_int32 vrpn_Sound::decodeLoadModel_local(const char *buf, char **filename,
 {
     const char *mptr = buf;
 
-    *filename = new char[payload - sizeof(vrpn_SoundID)];
+    *filename = NULL;
+    try { *filename = new char[payload - sizeof(vrpn_SoundID)]; }
+    catch (...) {
+      fprintf(stderr, "vrpn_Sound::decodeLoadModel_local(): Out of memory.\n");
+      return -1;
+    }
 
     vrpn_unbuffer(&mptr, *filename, payload - sizeof(vrpn_SoundID));
 
@@ -913,12 +933,18 @@ vrpn_SoundID vrpn_Sound_Client::loadSound(const char *sound,
     vrpn_gettimeofday(&timestamp, NULL);
 
     if (vrpn_Sound::d_connection->pack_message(len, timestamp, load_sound_local,
-                                               d_sender_id, buf,
-                                               vrpn_CONNECTION_RELIABLE))
-        fprintf(stderr,
-                "vrpn_Sound_Client: cannot write message load: tossing\n");
+        d_sender_id, buf,
+        vrpn_CONNECTION_RELIABLE)) {
+      fprintf(stderr,
+        "vrpn_Sound_Client: cannot write message load: tossing\n");
+    }
 
-    delete[] buf;
+    try {
+      delete[] buf;
+    } catch (...) {
+      fprintf(stderr, "vrpn_Sound_Client::loadSound(): delete failed\n");
+      return -1;
+    }
     return id;
 }
 
@@ -1428,7 +1454,12 @@ int vrpn_Sound_Server::handle_loadSoundLocal(void *userdata,
     me->decodeSound_local(p.buffer, &filename, &id, &soundDef,
                           p.payload_len);
     me->loadSoundLocal(filename, id, soundDef);
-    delete[] filename;
+    try {
+      delete[] filename;
+    } catch (...) {
+      fprintf(stderr, "vrpn_Sound_Server::handle_loadSoundLocal(): delete failed\n");
+      return -1;
+    }
     return 0;
 }
 
@@ -1610,7 +1641,12 @@ int vrpn_Sound_Server::handle_loadModelLocal(void *userdata,
 
     me->decodeLoadModel_local(p.buffer, &filename, p.payload_len);
     me->loadModelLocal(filename);
-    delete[] filename;
+    try {
+      delete[] filename;
+    } catch (...) {
+      fprintf(stderr, "vrpn_Sound_Server::handle_loadModelLocal(): delete failed\n");
+      return -1;
+    }
     return 0;
 }
 

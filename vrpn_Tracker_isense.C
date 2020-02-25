@@ -114,7 +114,7 @@ m_reset_at_start(reset_at_start)
 	if (additional_reset_commands == NULL) {
 		sprintf(add_reset_cmd, "");
 	} else {
-		strncpy(add_reset_cmd, additional_reset_commands, sizeof(add_reset_cmd)-1);
+		vrpn_strcpy(add_reset_cmd, additional_reset_commands);
 	}
 
 	// Initially, set to no buttons or analogs on the stations.  The
@@ -173,12 +173,22 @@ vrpn_Tracker_InterSense::~vrpn_Tracker_InterSense()
     // Delete any button and analog devices that were created
     for (i = 0; i < ISD_MAX_STATIONS; i++) {
 		if (is900_buttons[i]) {
-		    delete is900_buttons[i];
+                    try {
+                      delete is900_buttons[i];
+                    } catch (...) {
+                      fprintf(stderr, "vrpn_Tracker_InterSense::~vrpn_Tracker_InterSense(): delete failed\n");
+                      return;
+                    }
                     is900_buttons[i] = NULL;
 		}
 		if (is900_analogs[i]) {
-			delete is900_analogs[i];
-                        is900_analogs[i] = NULL;
+                    try {
+                      delete is900_analogs[i];
+                    } catch (...) {
+                      fprintf(stderr, "vrpn_Tracker_InterSense::~vrpn_Tracker_InterSense(): delete failed\n");
+                      return;
+                    }
+                    is900_analogs[i] = NULL;
 		}
     }
 #endif
@@ -525,8 +535,8 @@ int vrpn_Tracker_InterSense::add_is900_button(const char *button_device_name, in
     }
 
     // Add a new button device and set the pointer to point at it.
-    is900_buttons[sensor] = new vrpn_Button_Server(button_device_name, d_connection, numbuttons);
-    if (is900_buttons[sensor] == NULL) {
+    try { is900_buttons[sensor] = new vrpn_Button_Server(button_device_name, d_connection, numbuttons); }
+    catch (...) {
     	VRPN_MSG_ERROR("Cannot open button device");
     	return -1;
     }
@@ -560,8 +570,8 @@ int vrpn_Tracker_InterSense::add_is900_analog(const char *analog_device_name, in
     }
 
     // Add a new analog device and set the pointer to point at it.
-    is900_analogs[sensor] = new vrpn_Clipping_Analog_Server(analog_device_name, d_connection);
-    if (is900_analogs[sensor] == NULL) {
+    try { is900_analogs[sensor] = new vrpn_Clipping_Analog_Server(analog_device_name, d_connection); }
+    catch (...) {
 	      VRPN_MSG_ERROR("Cannot open analog device");
 	      return -1;
     }

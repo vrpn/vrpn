@@ -44,8 +44,8 @@ vrpn_Forwarder_Brain::encode_start_remote_forwarding(vrpn_int32 *length,
     vrpn_int32 nPort;
 
     *length = sizeof(vrpn_int32);
-    outbuf = new char[*length];
-    if (!outbuf) {
+    try { outbuf = new char[*length]; }
+    catch (...) {
         *length = 0;
         return NULL;
     }
@@ -79,10 +79,11 @@ char *vrpn_Forwarder_Brain::encode_forward_message_type(
     vrpn_int32 nSLen;
     vrpn_int32 nTLen;
 
+    if (!service_name || !message_type) { *length = 0; return NULL; }
     *length = static_cast<int>(3 * sizeof(vrpn_int32) + strlen(service_name) +
                                strlen(message_type));
-    outbuf = new char[*length];
-    if (!outbuf) {
+    try { outbuf = new char[*length]; }
+    catch (...) {
         *length = 0;
         return NULL;
     }
@@ -127,11 +128,17 @@ void vrpn_Forwarder_Brain::decode_forward_message_type(const char *buffer,
     *remote_port = ntohl(port);
     memcpy(&Slength, buffer + sizeof(vrpn_int32), sizeof(vrpn_int32));
     Slength = ntohl(Slength);
-    Soutbuf = new char[1 + Slength];
+    try { Soutbuf = new char[1 + Slength]; }
+    catch (...) {
+      *remote_port = -1;
+      *service_name = NULL;
+      *message_type = NULL;
+      return;
+    }
     memcpy(&Tlength, buffer + 2 * sizeof(vrpn_int32), sizeof(vrpn_int32));
     Tlength = ntohl(Tlength);
-    Toutbuf = new char[1 + Tlength];
-    if (!Soutbuf || !Toutbuf) {
+    try { Toutbuf = new char[1 + Tlength]; }
+    catch (...) {
         *remote_port = -1;
         *service_name = NULL;
         *message_type = NULL;
@@ -169,8 +176,22 @@ vrpn_Forwarder_Server::~vrpn_Forwarder_Server(void)
     // Destroy my list of forwarders
     vrpn_Forwarder_List *fp;
     for (fp = d_myForwarders; fp; fp = fp->next) {
-        if (fp->connection) delete fp->connection;
-        if (fp->forwarder) delete fp->forwarder;
+      if (fp->connection) {
+        try {
+          delete fp->connection;
+        } catch (...) {
+          fprintf(stderr, "vrpn_Forwarder_Server::~vrpn_Forwarder_Server(): delete failed\n");
+          return;
+        }
+      }
+      if (fp->forwarder) {
+        try {
+          delete fp->forwarder;
+        } catch (...) {
+          fprintf(stderr, "vrpn_Forwarder_Server::~vrpn_Forwarder_Server(): delete failed\n");
+          return;
+        }
+      }
     }
 }
 
@@ -183,9 +204,8 @@ void vrpn_Forwarder_Server::mainloop(void)
         if (fp->connection) fp->connection->mainloop();
 }
 
-void vrpn_Forwarder_Server::start_remote_forwarding(vrpn_int32 remote_port)
+vrpn_bool vrpn_Forwarder_Server::start_remote_forwarding(vrpn_int32 remote_port)
 {
-
     vrpn_Forwarder_List *fp;
 
     // Make sure it isn't already there
@@ -195,22 +215,33 @@ void vrpn_Forwarder_Server::start_remote_forwarding(vrpn_int32 remote_port)
             fprintf(stderr, "vrpn_Forwarder_Server::start_remote_forwarding:  "
                             "Already open on port %d.\n",
                     remote_port);
-            return;
+            return false;
         }
 
     // Create it and add it to the list
 
-    fp = new vrpn_Forwarder_List;
+    try { fp = new vrpn_Forwarder_List; }
+    catch (...) {
+      fprintf(stderr, "vrpn_Forwarder_Server::start_remote_forwarding:  "
+        "Out of memory.\n");
+      return false;
+    }
 
     fp->port = remote_port;
     fp->connection = vrpn_create_server_connection(remote_port);
-    fp->forwarder = new vrpn_ConnectionForwarder(d_connection, fp->connection);
+    try { fp->forwarder = new vrpn_ConnectionForwarder(d_connection, fp->connection); }
+    catch (...) {
+      fprintf(stderr, "vrpn_Forwarder_Server::start_remote_forwarding:  "
+        "Out of memory.\n");
+      return false;
+    }
 
     fp->next = d_myForwarders;
     d_myForwarders = fp;
 
     // fprintf(stderr, "vrpn_Forwarder_Server::start_remote_forwarding:  "
     //"On port %d.\n", remote_port);
+    return true;
 }
 
 void vrpn_Forwarder_Server::forward_message_type(vrpn_int32 remote_port,
@@ -269,8 +300,13 @@ int vrpn_Forwarder_Server::handle_forward(void *userdata, vrpn_HANDLERPARAM p)
     if (!servicebuffer || !typebuffer) return -1; // memory allocation failure
     me->forward_message_type(port, servicebuffer, typebuffer);
 
-    delete[] servicebuffer;
-    delete[] typebuffer;
+    try {
+      delete[] servicebuffer;
+      delete[] typebuffer;
+    } catch (...) {
+      fprintf(stderr, "vrpn_Forwarder_Server::handle_forward(): delete failed\n");
+      return -1;
+    }
     return 0;
 }
 
@@ -281,7 +317,7 @@ vrpn_Forwarder_Controller::vrpn_Forwarder_Controller(vrpn_Connection *c)
 
 vrpn_Forwarder_Controller::~vrpn_Forwarder_Controller(void) {}
 
-void vrpn_Forwarder_Controller::start_remote_forwarding(vrpn_int32 remote_port)
+vrpn_bool vrpn_Forwarder_Controller::start_remote_forwarding(vrpn_int32 remote_port)
 {
 
     struct timeval now;
@@ -291,11 +327,17 @@ void vrpn_Forwarder_Controller::start_remote_forwarding(vrpn_int32 remote_port)
     vrpn_gettimeofday(&now, NULL);
     buffer = encode_start_remote_forwarding(&length, remote_port);
 
-    if (!buffer) return; // memory allocation failure
+    if (!buffer) return false; // memory allocation failure
 
-    d_connection->pack_message(length, now, d_start_forwarding_type, d_myId,
+    int ret = d_connection->pack_message(length, now, d_start_forwarding_type, d_myId,
                                buffer, vrpn_CONNECTION_RELIABLE);
-    delete[] buffer;
+    try {
+      delete[] buffer;
+    } catch (...) {
+      fprintf(stderr, "vrpn_Forwarder_Server::start_remote_forwarding(): delete failed\n");
+      return false;
+    }
+    return ret == 0;
 }
 
 void vrpn_Forwarder_Controller::forward_message_type(vrpn_int32 remote_port,
@@ -314,5 +356,10 @@ void vrpn_Forwarder_Controller::forward_message_type(vrpn_int32 remote_port,
 
     d_connection->pack_message(length, now, d_forward_type, d_myId, buffer,
                                vrpn_CONNECTION_RELIABLE);
-    delete[] buffer;
+    try {
+      delete[] buffer;
+    } catch (...) {
+      fprintf(stderr, "vrpn_Forwarder_Server::forward_message_type(): delete failed\n");
+      return;
+    }
 }

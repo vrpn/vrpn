@@ -111,6 +111,7 @@
 #include "vrpn_XInputGamepad.h"
 #include "vrpn_Xkeys.h"      // for vrpn_Xkeys_Desktop, etc
 #include "vrpn_YEI_3Space.h" // for vrpn_YEI_3Space_Sensor, etc
+#include "vrpn_Vality.h"
 #include "vrpn_Zaber.h"      // for vrpn_Zaber
 
 class VRPN_API vrpn_Connection;
@@ -5136,6 +5137,32 @@ int vrpn_Generic_Server_Object::setup_Laputa(char *&pch, char *line, FILE *)
   return 0; // successful completion
 }
 
+int vrpn_Generic_Server_Object::setup_Vality_vGlass(char *&pch, char *line, FILE *)
+{
+    char s2[LINESIZE];
+
+    VRPN_CONFIG_NEXT();
+    int ret = sscanf(pch, "%511s", s2);
+    if (ret != 1) {
+        fprintf(stderr, "Bad Vality_vGlass line: %s\n", line);
+        return -1;
+    }
+
+    // Open the Oculus DK2
+    if (verbose) {
+        printf("Opening Vality_vGlass\n");
+    }
+
+#ifdef VRPN_USE_HID
+    // Open the tracker
+    _devices->add(new vrpn_Vality_vGlass(s2, connection));
+#else
+    fprintf(stderr,
+            "Vality_vGlass driver works only with VRPN_USE_HID defined!\n");
+#endif
+    return 0; // successful completion
+}
+
 #undef VRPN_CONFIG_NEXT
 
 vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(
@@ -5199,9 +5226,9 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(
                         line);
                 if (d_bail_on_open_error) {
                     d_doing_okay = false;
+                    fclose(config_file);
                     return;
-                }
-                else {
+                } else {
                     continue; // Skip this line
                 }
             }
@@ -5226,7 +5253,7 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(
             }
 
             // copy for strtok work
-            strncpy(scrap, line, LINESIZE - 1);
+            vrpn_strcpy(scrap, line);
             scrap[sizeof(scrap) - 1] = '\0';
 // Figure out the device from the name and handle appropriately
 
@@ -5235,12 +5262,26 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(
 
 #define VRPN_ISIT(s) !strcmp(pch = strtok(scrap, " \t"), s)
 #define VRPN_CHECK(s)                                                          \
-    retval = (s)(pch, line, config_file);                                      \
-    if (retval && d_bail_on_open_error) {                                      \
+    try {                                                                      \
+      retval = (s)(pch, line, config_file);                                    \
+    } catch (const std::exception& e) {                                        \
         d_doing_okay = false;                                                  \
+        fprintf(stderr, "vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(): " \
+          "Unexpected exception (%s)\n", e.what());                            \
+        fclose(config_file);                                                   \
+        return;                                                                \
+    } catch (...) {                                                            \
+        d_doing_okay = false;                                                  \
+        fprintf(stderr, "vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(): " \
+          "Unexpected exception (out of memory?)\n");                          \
+        fclose(config_file);                                                   \
         return;                                                                \
     }                                                                          \
-    else {                                                                     \
+    if (retval && d_bail_on_open_error) {                                      \
+        d_doing_okay = false;                                                  \
+        fclose(config_file);                                                   \
+        return;                                                                \
+    } else {                                                                   \
         continue;                                                              \
     }
 
@@ -5374,7 +5415,7 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(
                 VRPN_CHECK(setup_DevInput);
             }
             else if (VRPN_ISIT("vrpn_Streaming_Arduino")) {
-              VRPN_CHECK(setup_StreamingArduino);
+                VRPN_CHECK(setup_StreamingArduino);
             }
             else if (VRPN_ISIT("vrpn_Tng3")) {
                 VRPN_CHECK(setup_Tng3);
@@ -5460,11 +5501,11 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(
                     VRPN_CHECK(templated_setup_HID_device_name_only<
                         vrpn_Contour_ShuttleXpress>);
                 }
-				else if (VRPN_ISIT("vrpn_Contour_ShuttlePROv2")) {
-					VRPN_CHECK(templated_setup_HID_device_name_only<
-						vrpn_Contour_ShuttlePROv2>);
-				}
-				else if (VRPN_ISIT("vrpn_Retrolink_GameCube")) {
+		else if (VRPN_ISIT("vrpn_Contour_ShuttlePROv2")) {
+			VRPN_CHECK(templated_setup_HID_device_name_only<
+				vrpn_Contour_ShuttlePROv2>);
+		}
+		else if (VRPN_ISIT("vrpn_Retrolink_GameCube")) {
                     VRPN_CHECK(templated_setup_HID_device_name_only<
                         vrpn_Retrolink_GameCube>);
                 }
@@ -5722,11 +5763,15 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(
                 else if (VRPN_ISIT("vrpn_Laputa")){
                     VRPN_CHECK(setup_Laputa);
                 }
+                else if (VRPN_ISIT("vrpn_Vality_vGlass")) {
+                  VRPN_CHECK(setup_Vality_vGlass);
+                }
                 else {                         // Never heard of it
                     sscanf(line, "%511s", s1); // Find out the class name
                     fprintf(stderr, "vrpn_server: Unknown Device: %s\n", s1);
                     if (d_bail_on_open_error) {
                         d_doing_okay = false;
+                        fclose(config_file);                                                   \
                         return;
                     }
                     else {

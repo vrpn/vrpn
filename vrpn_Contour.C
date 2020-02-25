@@ -45,7 +45,12 @@ vrpn_Contour::vrpn_Contour(vrpn_HidAcceptor *filter, const char *name, vrpn_Conn
 
 vrpn_Contour::~vrpn_Contour(void)
 {
-  delete _filter;
+  try {
+    delete _filter;
+  } catch (...) {
+    fprintf(stderr, "vrpn_Contour::~vrpn_Contour(): delete failed\n");
+    return;
+  }
 }
 
 void vrpn_Contour::init_hid(void) {
@@ -97,18 +102,8 @@ void vrpn_Contour_ShuttleXpress::mainloop(void)
 		_timestamp = current_time;
 		report_changes();
 
-		if (vrpn_Analog::num_channel > 0)
-		{
-			vrpn_Analog::server_mainloop();
-		}
-		if (vrpn_Button::num_buttons > 0)
-		{
-			vrpn_Button::server_mainloop();
-		}
-		if (vrpn_Dial::num_dials > 0)
-		{
-			vrpn_Dial::server_mainloop();
-		}
+                // Call the server_mainloop on our unique base class.
+                server_mainloop();
 	}
 }
 
@@ -233,18 +228,8 @@ void vrpn_Contour_ShuttlePROv2::mainloop(void)
 		_timestamp = current_time;
 		report_changes();
 
-		if (vrpn_Analog::num_channel > 0)
-		{
-			vrpn_Analog::server_mainloop();
-		}
-		if (vrpn_Button::num_buttons > 0)
-		{
-			vrpn_Button::server_mainloop();
-		}
-		if (vrpn_Dial::num_dials > 0)
-		{
-			vrpn_Dial::server_mainloop();
-		}
+                // Call the server_mainloop on our unique base class.
+                server_mainloop();
 	}
 }
 

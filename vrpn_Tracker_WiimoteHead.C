@@ -146,11 +146,16 @@ vrpn_Tracker_WiimoteHead::~vrpn_Tracker_WiimoteHead(void) {
 	}
 
 	// Turn off the callback handler
-	int	ret;
-	ret = d_ana->unregister_change_handler(this, handle_analog_update);
+	int	ret = d_ana->unregister_change_handler(this, handle_analog_update);
+	(void)ret;
 
 	// Delete the analog device.
-	delete d_ana;
+        try {
+          delete d_ana;
+        } catch (...) {
+          fprintf(stderr, "vrpn_Tracker_WiimoteHead::~vrpn_Tracker_WiimoteHead(): delete failed\n");
+          return;
+        }
 	d_ana = NULL;
 }
 
@@ -168,18 +173,25 @@ void vrpn_Tracker_WiimoteHead::setup_wiimote() {
 		// Turn off the callback handler and delete old analog
 		// if we already have an analog source
 		d_ana->unregister_change_handler(this, handle_analog_update);
-		delete d_ana;
+                try {
+                  delete d_ana;
+                } catch (...) {
+                  fprintf(stderr, "vrpn_Tracker_WiimoteHead::setup_wiimote(): delete failed\n");
+                  return;
+                }
 		d_ana = NULL;
 	}
 
 	// Open the analog device and point the remote at it.
 	// If the name starts with the '*' character, use the server
 	// connection rather than making a new one.
-	if (d_name[0] == '*') {
-		d_ana = new vrpn_Analog_Remote(&(d_name[1]), d_connection);
-	} else {
-		d_ana = new vrpn_Analog_Remote(d_name);
-	}
+        try {
+	  if (d_name[0] == '*') {
+		  d_ana = new vrpn_Analog_Remote(&(d_name[1]), d_connection);
+	  } else {
+		  d_ana = new vrpn_Analog_Remote(d_name);
+	  }
+        } catch (...) { d_ana = NULL; }
 
 	if (d_ana == NULL) {
 		fprintf(stderr, "vrpn_Tracker_WiimoteHead: "
@@ -192,7 +204,12 @@ void vrpn_Tracker_WiimoteHead::setup_wiimote() {
 	if (ret == -1) {
 		fprintf(stderr, "vrpn_Tracker_WiimoteHead: "
 		        "Can't setup change handler on Analog %s\n", d_name);
-		delete d_ana;
+                try {
+                  delete d_ana;
+                } catch (...) {
+                  fprintf(stderr, "vrpn_Tracker_WiimoteHead::setup_wiimote(): delete failed\n");
+                  return;
+                }
 		d_ana = NULL;
 		return;
 	}
