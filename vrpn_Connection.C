@@ -2438,13 +2438,10 @@ static int vrpn_poll_for_accept(SOCKET listen_sock, SOCKET *accept_sock,
 static int vrpn_start_server(const char *machine, char *server_name, char *args,
                              const char *IPaddress = NULL)
 {
+// If we're developing for iOS rather than the mac, there is no system() call.
 #if __APPLE__
     #include <TargetConditionals.h>
-    #if TARGET_IPHONE_SIMULATOR
-      // iOS Simulator
-      #define NO_SYSTEM
-    #elif TARGET_OS_IPHONE
-      // iOS device
+    #ifndef TARGET_OS_MAC
       #define NO_SYSTEM
     #endif
 #endif
