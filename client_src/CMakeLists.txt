@@ -28,6 +28,7 @@ if(VRPN_BUILD_CLIENTS)
 	set(CLIENTS_SOURCES
 	vrpn_average_analogs.C
 		vrpn_print_devices.C
+		vrpn_log_devices.C
 		vrpn_print_performance.C
 		vrpn_print_messages.C
 	)
