@@ -478,17 +478,11 @@ ALL_CXXFLAGS = $(STANDARD_CFLAGS) $(INCLUDE_FLAGS) $(DEBUG_FLAGS) $(CXXFLAGS) $(
 # unless we're building for one of the weird ABIs, which are only supported
 # by the native compiler.
 
+all:	client server atmellib gpsnmealib
 ifeq ($(HW_OS),sgi_irix)
   ifeq ($(SGI_ABI),32)
-all:	client server client_g++ server_g++ atmellib gpsnmealib
-  else
-all:	client server atmellib gpsnmealib
-  endif
-else
-  ifeq ($(HW_OS),pc_cygwin)
-all:	client server atmellib gpsnmealib
-  else
-all:	client server atmellib gpsnmealib
+# Also build the G++ versions
+all:	client_g++ server_g++
   endif
 endif
 
@@ -506,28 +500,25 @@ server_g++:
 client: $(OBJECT_DIR) $(OBJECT_DIR)/libvrpn.a
 
 .PHONY:	server
-server: $(SOBJECT_DIR)
-	$(MAKE) $(OBJECT_DIR)/libvrpnserver.a
+server: $(SOBJECT_DIR) $(OBJECT_DIR)/libvrpnserver.a
 
 .PHONY: atmellib
-atmellib: $(AOBJECT_DIR)
-	$(MAKE) $(OBJECT_DIR)/libvrpnatmel.a
+atmellib: $(AOBJECT_DIR) $(OBJECT_DIR)/libvrpnatmel.a
 
 .PHONY: gpsnmealib
-gpsnmealib: $(GOBJECT_DIR)
-	$(MAKE) $(OBJECT_DIR)/libvrpngpsnmea.a
+gpsnmealib: $(GOBJECT_DIR) $(OBJECT_DIR)/libvrpngpsnmea.a
 
 $(OBJECT_DIR):
-	-mkdir -p $(OBJECT_DIR)
+	-mkdir -p $@
 
 $(SOBJECT_DIR):
-	-mkdir -p $(SOBJECT_DIR)
+	-mkdir -p $@
 
 $(AOBJECT_DIR):
-	-mkdir -p $(AOBJECT_DIR)
+	-mkdir -p $@
 
 $(GOBJECT_DIR):
-	-mkdir -p $(GOBJECT_DIR)
+	-mkdir -p $@
 
 #############################################################################
 #
