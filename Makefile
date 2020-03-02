@@ -136,18 +136,18 @@ ifeq ($(FORCE_GPP),1)
 else
 
   ifeq ($(HW_OS),sparc_solaris)
-	CC := /opt/SUNWspro/bin/CC
-	AR := /opt/SUNWspro/bin/CC -xar -o
+    CC := /opt/SUNWspro/bin/CC
+    AR := /opt/SUNWspro/bin/CC -xar -o
   endif
 
   ifeq ($(HW_OS),sparc_solaris_64)
-	CC := /opt/SUNWspro/bin/CC -xarch=v9a
-	AR := /opt/SUNWspro/bin/CC -xarch=v9a -xar -o
+    CC := /opt/SUNWspro/bin/CC -xarch=v9a
+    AR := /opt/SUNWspro/bin/CC -xarch=v9a -xar -o
   endif
 
   ifeq ($(HW_OS),powerpc_aix)
-	CC := /usr/ibmcxx/bin/xlC_r -g -qarch=pwr3 -w
-	RANLIB := ranlib
+    CC := /usr/ibmcxx/bin/xlC_r -g -qarch=pwr3 -w
+    RANLIB := ranlib
   endif
 
   ifeq ($(HW_OS), pc_linux64)
@@ -171,34 +171,36 @@ else
     endif
 
     # Select which compiler and MAC OS X SDK to use
-    MAC_GCC := g++
+    MAC_CC := gcc
+    MAC_CXX := g++
     ifeq ($(MAC_OS_MIN_VERSION), 10.8)
       MAC_OS_SDK := MacOSX10.8.sdk
     else
-    ifeq ($(MAC_OS_MIN_VERSION), 10.7)
-      MAC_OS_SDK := MacOSX10.7.sdk
-    else
-   ifeq ($(MAC_OS_MIN_VERSION), 10.6)
-      MAC_OS_SDK := MacOSX10.6.sdk
-    else
-      ifeq ($(MAC_OS_MIN_VERSION), 10.5)
-        MAC_OS_SDK := MacOSX10.5.sdk
+      ifeq ($(MAC_OS_MIN_VERSION), 10.7)
+        MAC_OS_SDK := MacOSX10.7.sdk
       else
-        MAC_OS_SDK := MacOSX10.4u.sdk
-        MAC_GCC := g++-4.0
+        ifeq ($(MAC_OS_MIN_VERSION), 10.6)
+          MAC_OS_SDK := MacOSX10.6.sdk
+        else
+          ifeq ($(MAC_OS_MIN_VERSION), 10.5)
+            MAC_OS_SDK := MacOSX10.5.sdk
+          else
+            MAC_OS_SDK := MacOSX10.4u.sdk
+            MAC_CC := gcc-4.0
+            MAC_CXX := g++-4.0
+          endif
+        endif
+       endif
       endif
     endif
-  endif
- endif
-endif
  
- ifneq (,$(findstring macosx,$(HW_OS)))
+ifneq (,$(findstring macosx,$(HW_OS)))
   ifeq ($(wildcard /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/$(MAC_OS_SDK)),/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/$(MAC_OS_SDK))
-		PATH_TO_DEV := /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/$(MAC_OS_SDK)
-$(info ---> Xcode 4.3+: Platform SDK found.  Setting dev path to $(PATH_TO_DEV)) 
- else
-		PATH_TO_DEV := /Developer/SDKs/$(MAC_OS_SDK)
-$(info Xcode 4.3+: Platform SDK not found in /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/$(MAC_OS_SDK)!  Attempting to locate SDK in $(PATH_TO_DEV))
+    PATH_TO_DEV := /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/$(MAC_OS_SDK)
+    $(info ---> Xcode 4.3+: Platform SDK found.  Setting dev path to $(PATH_TO_DEV)) 
+  else
+    PATH_TO_DEV := /Developer/SDKs/$(MAC_OS_SDK)
+    $(info Xcode 4.3+: Platform SDK not found in /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/$(MAC_OS_SDK)!  Attempting to locate SDK in $(PATH_TO_DEV))
   endif
 endif
 
@@ -326,44 +328,44 @@ SERVER_SKA = $(patsubst %,server_src/%,$(SAFE_KNOWN_ARCHITECTURES))
 SYS_INCLUDE :=
 
 ifeq ($(HW_OS),powerpc_macosx)
-#  SYS_INCLUDE := -I/usr/include
-   SYS_INCLUDE :=-DMACOSX -I../isense
+#   SYS_INCLUDE := -I/usr/include
+    SYS_INCLUDE :=-DMACOSX -I../isense
 endif
 
 ifeq ($(HW_OS),universal_macosx)
-#  SYS_INCLUDE := -I/usr/include
-   SYS_INCLUDE :=-DMACOSX -I../isense
+#   SYS_INCLUDE := -I/usr/include
+    SYS_INCLUDE :=-DMACOSX -I../isense
 endif
 
 ifeq ($(HW_OS),macosx_32_64)
-#  SYS_INCLUDE := -I/usr/include
-   SYS_INCLUDE :=-DMACOSX -I../isense
+#   SYS_INCLUDE := -I/usr/include
+    SYS_INCLUDE :=-DMACOSX -I../isense
 endif
 
 ifeq ($(HW_OS),macosx_64)
-#  SYS_INCLUDE := -I/usr/include
-   SYS_INCLUDE :=-DMACOSX -I../isense
+#   SYS_INCLUDE := -I/usr/include
+    SYS_INCLUDE :=-DMACOSX -I../isense
 endif
 
 ifeq ($(HW_OS),pc_linux)
-	# The following is for the InterSense and Freespace libraries.
-	SYS_INCLUDE := -DUNIX -DLINUX -I../libfreespace/include -I./submodules/hidapi/hidapi -I/usr/include/libusb-1.0
+    # The following is for the InterSense and Freespace libraries.
+    SYS_INCLUDE := -DUNIX -DLINUX -I../libfreespace/include -I./submodules/hidapi/hidapi -I/usr/include/libusb-1.0
 endif
 
 ifeq ($(HW_OS),pc_linux64)
-	# The following is for the InterSense and Freespace libraries.
-	SYS_INCLUDE := -DUNIX -DLINUX -I../libfreespace/include -I./submodules/hidapi/hidapi -I/usr/include/libusb-1.0
+    # The following is for the InterSense and Freespace libraries.
+    SYS_INCLUDE := -DUNIX -DLINUX -I../libfreespace/include -I./submodules/hidapi/hidapi -I/usr/include/libusb-1.0
 endif
 
 ifeq ($(HW_OS),pc_linux_arm)
-  SYS_INCLUDE := -I/opt/Embedix/arm-linux/include
+    SYS_INCLUDE := -I/opt/Embedix/arm-linux/include
 #   -I/usr/local/contrib/include \
 #	  	 -I/usr/local/contrib/mod/include -I/usr/include/bsd \
 #		 -I/usr/include/g++
 endif
 
 ifeq ($(HW_OS),pc_cygwin_arm)
-  SYS_INCLUDE := -I/opt/Embedix/arm-linux/include
+   SYS_INCLUDE := -I/opt/Embedix/arm-linux/include
 #   -I/usr/local/contrib/include \
 #	  	 -I/usr/local/contrib/mod/include -I/usr/include/bsd \
 #		 -I/usr/include/g++
@@ -392,10 +394,10 @@ endif
 # On the PC, place quatlib in the directory ./quat.  No actual system
 # includes should be needed.
 ifeq ($(HW_OS),pc_cygwin)
-  SYS_INCLUDE := -I./submodules/hidapi/hidapi -I/usr/include/libusb-1.0
-  INCLUDE_FLAGS := -I. -I./quat -I./atmellib -I./gpsnmealib ${SYS_INCLUDE}
+    SYS_INCLUDE := -I./submodules/hidapi/hidapi -I/usr/include/libusb-1.0
+    INCLUDE_FLAGS := -I. -I./quat -I./atmellib -I./gpsnmealib ${SYS_INCLUDE}
 else
-  INCLUDE_FLAGS := -I. $(SYS_INCLUDE) -I./quat -I../quat -I./atmellib -I./gpsnmealib
+    INCLUDE_FLAGS := -I. $(SYS_INCLUDE) -I./quat -I../quat -I./atmellib -I./gpsnmealib
 endif
 
 
@@ -416,22 +418,22 @@ endif
 #LOAD_FLAGS := -L./$(HW_OS)$(OBJECT_DIR_SUFFIX) -L/usr/local/lib \
 #		-L/usr/local/contrib/unmod/lib -L/usr/local/contrib/mod/lib -g
 LOAD_FLAGS := -L./$(HW_OS)$(OBJECT_DIR_SUFFIX) -L/usr/local/lib \
-		-L/usr/local/contrib/unmod/lib -L/usr/local/contrib/mod/lib $(DEBUG_FLAGS) $(LDFLAGS)
+              -L/usr/local/contrib/unmod/lib -L/usr/local/contrib/mod/lib $(DEBUG_FLAGS) $(LDFLAGS)
 
 ifeq ($(HW_OS),sgi_irix)
-	LOAD_FLAGS := $(LOAD_FLAGS) -old_ld -LANG:std
+    LOAD_FLAGS := $(LOAD_FLAGS) -old_ld -LANG:std
 endif
 
 ifeq ($(HW_OS),pc_linux)
-	LOAD_FLAGS := $(LOAD_FLAGS) -L/usr/X11R6/lib
+    LOAD_FLAGS := $(LOAD_FLAGS) -L/usr/X11R6/lib
 endif
 
 ifeq ($(HW_OS),pc_linux_ia64)
-	LOAD_FLAGS := $(LOAD_FLAGS) -L/usr/X11R6/lib
+    LOAD_FLAGS := $(LOAD_FLAGS) -L/usr/X11R6/lib
 endif
 
 ifeq ($(HW_OS),pc_linux64)
-	LOAD_FLAGS := $(LOAD_FLAGS) -L/usr/X11R6/lib
+    LOAD_FLAGS := $(LOAD_FLAGS) -L/usr/X11R6/lib
 endif
 
 ifeq ($(HW_OS),powerpc_macosx)
@@ -444,16 +446,16 @@ endif
 #
 
 ifeq ($(HW_OS),pc_linux64)
-          ARCH_LIBS := -lbsd -ldl
+      ARCH_LIBS := -lbsd -ldl
 else
   ifeq ($(HW_OS),pc_linux)
-          ARCH_LIBS := -lbsd -ldl
+      ARCH_LIBS := -lbsd -ldl
   else
     ifeq ($(HW_OS),pc_linux_ia64)
-          ARCH_LIBS := -lbsd -ldl
+      ARCH_LIBS := -lbsd -ldl
     else
       ifeq ($(HW_OS),sparc_solaris)
-          ARCH_LIBS := -lsocket -lnsl
+        ARCH_LIBS := -lsocket -lnsl
       else
         ifeq ($(HW_OS),sparc_solaris_64)
           ARCH_LIBS := -lsocket -lnsl
