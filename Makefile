@@ -412,16 +412,6 @@ else
 endif
 
 
-ifeq ($(HW_OS),universal_macosx)
-	LOAD_FLAGS := $(LOAD_FLAGS)
-endif
-ifeq ($(HW_OS),macosx_32_64)
-	LOAD_FLAGS := $(LOAD_FLAGS)
-endif
-ifeq ($(HW_OS),macosx_64)
-	LOAD_FLAGS := $(LOAD_FLAGS)
-endif
-
 ##########################
 # Load flags
 #
@@ -445,10 +435,6 @@ endif
 
 ifeq ($(HW_OS),pc_linux64)
     LOAD_FLAGS := $(LOAD_FLAGS) -L/usr/X11R6/lib
-endif
-
-ifeq ($(HW_OS),powerpc_macosx)
-	LOAD_FLAGS := $(LOAD_FLAGS)
 endif
 
 
@@ -645,7 +631,7 @@ LIB_INCLUDES = \
 	vrpn_WindowsH.h \
 
 
-$(LIB_OBJECTS):
+# $(LIB_OBJECTS):
 $(OBJECT_DIR)/libvrpn.a: $(MAKEFILE) $(LIB_OBJECTS)
 	$(AR) $(OBJECT_DIR)/libvrpn.a $(LIB_OBJECTS)
 	-$(RANLIB) $(OBJECT_DIR)/libvrpn.a
@@ -851,7 +837,7 @@ ifeq ($(HW_OS), pc_linux)
 	SLIB_INCLUDES += vrpn_DevInput.h
 endif
 
-$(SLIB_OBJECTS):
+# $(SLIB_OBJECTS):
 $(OBJECT_DIR)/libvrpnserver.a: $(MAKEFILE) $(SLIB_OBJECTS)
 	$(AR) $(OBJECT_DIR)/libvrpnserver.a $(SLIB_OBJECTS)
 	-$(RANLIB) $(OBJECT_DIR)/libvrpnserver.a
