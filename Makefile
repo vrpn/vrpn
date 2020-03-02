@@ -240,15 +240,17 @@ endif
   endif
        
   ifeq ($(HW_OS),pc_linux_arm)
-        CC := arm-linux-g++
-        RANLIB := arm-linux-ranlib
-	AR := arm-linux-ar ruv
+    CC := arm-linux-gcc
+    CXX := arm-linux-g++
+    RANLIB := arm-linux-ranlib
+    AR := arm-linux-ar ruv
   endif
 
   ifeq ($(HW_OS),pc_cygwin_arm)
-        CC := arm-unknown-linux-gnu-g++
-        RANLIB := arm-unknown-linux-gnu-ranlib
-	AR := arm-unknown-linux-gnu-ar ruv
+    CC := arm-unknown-linux-gnu-gcc
+    CXX := arm-unknown-linux-gnu-g++
+    RANLIB := arm-unknown-linux-gnu-ranlib
+    AR := arm-unknown-linux-gnu-ar ruv
   endif
 
   ifeq ($(HW_OS),sgi_irix)
