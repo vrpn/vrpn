@@ -124,12 +124,20 @@ endif
 # IF YOU CHANGE THESE, document either here or in the header comment
 # why.  Multiple contradictory changes have been made recently.
 
+# These should be defaulting to useful values on the platform.
+# If they aren't, use gcc.
 
-CC := g++
+# C compiler
+CC ?= gcc
+
+# C++ compiler
+CXX ?= g++
+
+# These probably aren't defaulting to anything useful.
 AR := ar ruv
 # need default 'ranlib' to be touch for platforms that don't use it,
 # otherwise make fails.
-RANLIB := touch
+RANLIB ?= touch
 
 ifeq ($(FORCE_GPP),1)
   CC := g++
@@ -150,19 +158,18 @@ else
     RANLIB := ranlib
   endif
 
-  ifeq ($(HW_OS), pc_linux64)
-        CC := cc -m64 -fPIC
-        RANLIB := ranlib
+  ifeq ($(HW_OS),pc_linux64)
+    STANDARD_CFLAGS := -m64 -fPIC
+    RANLIB := ranlib
   endif
 
-  ifeq ($(HW_OS), pc_linux)
-        CC := gcc
-        RANLIB := ranlib
+  ifeq ($(HW_OS),pc_linux)
+    STANDARD_CFLAGS := -fPIC
+    RANLIB := ranlib
   endif
 
   ifeq ($(HW_OS), pc_linux_ia64)
-        CC := gcc
-        RANLIB := ranlib
+    RANLIB := ranlib
   endif
 
   ifneq (,$(findstring macosx,$(HW_OS)))
@@ -350,11 +357,15 @@ endif
 ifeq ($(HW_OS),pc_linux)
     # The following is for the InterSense and Freespace libraries.
     SYS_INCLUDE := -DUNIX -DLINUX -I../libfreespace/include -I./submodules/hidapi/hidapi -I/usr/include/libusb-1.0
+	# On linux, build this as c, not c++.
+    $(HW_OS)/server/vrpn_Local_HIDAPI.o: EXTRA_FLAGS += -x c
 endif
 
 ifeq ($(HW_OS),pc_linux64)
     # The following is for the InterSense and Freespace libraries.
     SYS_INCLUDE := -DUNIX -DLINUX -I../libfreespace/include -I./submodules/hidapi/hidapi -I/usr/include/libusb-1.0
+	# On linux, build this as c, not c++.
+    $(HW_OS)/server/vrpn_Local_HIDAPI.o: EXTRA_FLAGS += -x c
 endif
 
 ifeq ($(HW_OS),pc_linux_arm)
@@ -474,8 +485,8 @@ LIBS := -lquat -lsdi $(TCL_LIBS) -lXext -lX11 $(ARCH_LIBS) -lm
 #
 
 #CFLAGS		 := $(INCLUDE_FLAGS) -g
-override CFLAGS		 := $(INCLUDE_FLAGS) $(DEBUG_FLAGS) $(CFLAGS)
-override CXXFLAGS     := $(INCLUDE_FLAGS) $(DEBUG_FLAGS) $(CXXFLAGS)
+ALL_CFLAGS   = $(STANDARD_CFLAGS) $(INCLUDE_FLAGS) $(DEBUG_FLAGS) $(CFLAGS) $(EXTRA_FLAGS)
+ALL_CXXFLAGS = $(STANDARD_CFLAGS) $(INCLUDE_FLAGS) $(DEBUG_FLAGS) $(CXXFLAGS) $(EXTRA_FLAGS)
 
 # If we're building for sgi_irix, we need both g++ and non-g++ versions,
 # unless we're building for one of the weird ABIs, which are only supported
@@ -539,29 +550,25 @@ $(GOBJECT_DIR):
 .SUFFIXES:	.c .C .o .a
 
 .c.o:
-	$(CC) -c $(CFLAGS) $<
+	$(CC) $(ALL_CFLAGS) -c $< -o $@
 .C.o:
-	$(CC) -c $(CXXFLAGS) $<
+	$(CXX) $(ALL_CXXFLAGS) -c $< -o $@
 
-# Build objects from .c files
-$(OBJECT_DIR)/%.o: %.c $(LIB_INCLUDES) $(MAKEFILE)
-	@[ -d $(OBJECT_DIR) ] || mkdir -p $(OBJECT_DIR)
-	$(CC) $(CFLAGS) -DVRPN_CLIENT_ONLY -o $@ -c $<
+# Build client-only objects from .c files
+$(OBJECT_DIR)/%.o: %.c $(LIB_INCLUDES) $(MAKEFILE) $(OBJECT_DIR)
+	$(CC) $(ALL_CFLAGS) -DVRPN_CLIENT_ONLY -o $@ -c $<
 
-# Build objects from .C files
-$(OBJECT_DIR)/%.o: %.C $(LIB_INCLUDES) $(MAKEFILE)
-	@[ -d $(OBJECT_DIR) ] || mkdir -p $(OBJECT_DIR)
-	$(CC) $(CFLAGS) -DVRPN_CLIENT_ONLY -o $@ -c $<
+# Build client-only objects from .C files
+$(OBJECT_DIR)/%.o: %.C $(LIB_INCLUDES) $(MAKEFILE) $(OBJECT_DIR)
+	$(CC) $(ALL_CXXFLAGS) -DVRPN_CLIENT_ONLY -o $@ -c $<
 
-# Build objects from .C files
-$(SOBJECT_DIR)/%.o: %.C $(SLIB_INCLUDES) $(MAKEFILE)
-	@[ -d $(SOBJECT_DIR) ] || mkdir -p $(SOBJECT_DIR)
-	$(CC) $(CFLAGS) -o $@ -c $<
+# # Build objects from .C files
+$(SOBJECT_DIR)/%.o: %.C $(SLIB_INCLUDES) $(MAKEFILE) $(SOBJECT_DIR)
+	$(CXX) $(ALL_CFLAGS) -o $@ -c $<
 
-# Build objects from .C files
-$(AOBJECT_DIR)/%.o: %.C $(ALIB_INCLUDES) $(MAKEFILE)
-	@[ -d $(AOBJECT_DIR) ] || mkdir -p $(AOBJECT_DIR)
-	$(CC) $(CFLAGS) -o $@ -c $<
+# # Build objects from .C files
+$(AOBJECT_DIR)/%.o: %.C $(ALIB_INCLUDES) $(MAKEFILE) $(AOBJECT_DIR)
+	$(CXX) $(ALL_CXXFLAGS) -o $@ -c $<
 
 #
 #
@@ -1005,7 +1012,7 @@ ifeq ($(HW_OS),hp700_hpux10)
 	@echo -- if this causes an error, then delete .depend and type
 	@echo -- \"touch .depend\" to create an empty file
 	@echo ----------------------------------------------------------------
-	$(SHELL) -ec 'g++ -MM $(CXXFLAGS) $(LIB_FILES) \
+	$(SHELL) -ec 'g++ -MM $(ALL_CXXFLAGS) $(LIB_FILES) \
 	    | sed '\''s/\(.*\.o[ ]*:[ ]*\)/$(OBJECT_DIR)\/\1/g'\'' > $(OBJECT_DIR)/.depend'
 else
   ifeq ($(HW_OS),hp_flow_aCC)
@@ -1013,7 +1020,7 @@ else
 	@echo -- if this causes an error, then delete .depend and type
 	@echo -- \"touch .depend\" to create an empty file
 	@echo ----------------------------------------------------------------
-	$(SHELL) -ec 'g++ -MM $(CXXFLAGS) $(LIB_FILES) \
+	$(SHELL) -ec 'g++ -MM $(ALL_CXXFLAGS) $(LIB_FILES) \
 	    | sed '\''s/\(.*\.o[ ]*:[ ]*\)/$(OBJECT_DIR)\/\1/g'\'' > $(OBJECT_DIR)/.depend'
   else
     ifeq ($(HW_OS),powerpc_aix)
@@ -1022,7 +1029,7 @@ else
 	cat *.u > .depend
 	@$(RMF) *.u
     else
-	$(SHELL) -ec '$(CC) -M $(CFLAGS) $(LIB_FILES) \
+	$(SHELL) -ec '$(CXX) -M $(ALL_CXXFLAGS) $(LIB_FILES) \
 	    | sed '\''s/\(.*\.o[ ]*:[ ]*\)/$(OBJECT_DIR)\/\1/g'\'' > $(OBJECT_DIR)/.depend'
     endif
   endif
