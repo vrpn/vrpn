@@ -113,8 +113,10 @@ ifdef PBASE_ROOT
   endif
 endif
 
-ifndef HW_OS
-	exit
+ifeq (,$(strip $(HW_OS)))
+$(error You must define HW_OS when calling make. See the makefile for example values)
+all:
+	@echo "ERROR: You must define HW_OS when calling make. See the makefile for example values." 1>&2
 endif
 
 # Which C++ compiler to use.  Default is g++, but some don't use this.
