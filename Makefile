@@ -211,41 +211,41 @@ ifneq (,$(findstring macosx,$(HW_OS)))
   endif
 endif
 
-  ifeq ($(HW_OS), powerpc_macosx)
+  ifeq ($(HW_OS),powerpc_macosx)
         CC := $(MAC_GCC) -arch ppc -isysroot /Developer/SDKs/$(MAC_OS_SDK) -mmacosx-version-min=$(MAC_OS_MIN_VERSION)
         RANLIB := ranlib
         AR := libtool -static -o
 	SYSLIBS := -framework CoreFoundation -framework IOKit -framework System
   endif
 
-  ifeq ($(HW_OS), universal_macosx)
+  ifeq ($(HW_OS),universal_macosx)
         CC := $(MAC_GCC) -arch ppc -arch i386 -arch x86_64 -isysroot /Developer/SDKs/$(MAC_OS_SDK) -mmacosx-version-min=$(MAC_OS_MIN_VERSION)
         RANLIB := :
         AR := libtool -static -o
 	SYSLIBS := -framework CoreFoundation -framework IOKit -framework System
   endif
   
-   ifeq ($(HW_OS), macosx_32_64)
+  ifeq ($(HW_OS),macosx_32_64)
         CC := $(MAC_GCC) -arch i386 -arch x86_64 -isysroot $(PATH_TO_DEV) -mmacosx-version-min=$(MAC_OS_MIN_VERSION)
         RANLIB := :
         AR := libtool -static -o
 	SYSLIBS := -framework CoreFoundation -framework IOKit -framework System
   endif
   
-    ifeq ($(HW_OS), macosx_64)
+  ifeq ($(HW_OS),macosx_64)
      	CC := $(MAC_GCC) -arch x86_64 -isysroot $(PATH_TO_DEV) -mmacosx-version-min=$(MAC_OS_MIN_VERSION)
         RANLIB := :
         AR := libtool -static -o
 		SYSLIBS := -framework CoreFoundation -framework IOKit -framework System
-    endif
+  endif
        
-  ifeq ($(HW_OS), pc_linux_arm)
+  ifeq ($(HW_OS),pc_linux_arm)
         CC := arm-linux-g++
         RANLIB := arm-linux-ranlib
 	AR := arm-linux-ar ruv
   endif
 
-  ifeq ($(HW_OS), pc_cygwin_arm)
+  ifeq ($(HW_OS),pc_cygwin_arm)
         CC := arm-unknown-linux-gnu-g++
         RANLIB := arm-unknown-linux-gnu-ranlib
 	AR := arm-unknown-linux-gnu-ar ruv
