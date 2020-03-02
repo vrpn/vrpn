@@ -209,34 +209,34 @@ ifneq (,$(findstring macosx,$(HW_OS)))
     PATH_TO_DEV := /Developer/SDKs/$(MAC_OS_SDK)
     $(info Xcode 4.3+: Platform SDK not found in /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/$(MAC_OS_SDK)!  Attempting to locate SDK in $(PATH_TO_DEV))
   endif
+  CC := $(MAC_CC)
+  CXX := $(MAC_CXX)
+  STANDARD_CFLAGS := -isysroot /Developer/SDKs/$(MAC_OS_SDK) -mmacosx-version-min=$(MAC_OS_MIN_VERSION)
+  SYSLIBS := -framework CoreFoundation -framework IOKit -framework System
 endif
 
   ifeq ($(HW_OS),powerpc_macosx)
-        CC := $(MAC_GCC) -arch ppc -isysroot /Developer/SDKs/$(MAC_OS_SDK) -mmacosx-version-min=$(MAC_OS_MIN_VERSION)
-        RANLIB := ranlib
-        AR := libtool -static -o
-	SYSLIBS := -framework CoreFoundation -framework IOKit -framework System
+    STANDARD_CFLAGS := -arch ppc $(STANDARD_CFLAGS)
+    RANLIB := ranlib
+    AR := libtool -static -o
   endif
 
   ifeq ($(HW_OS),universal_macosx)
-        CC := $(MAC_GCC) -arch ppc -arch i386 -arch x86_64 -isysroot /Developer/SDKs/$(MAC_OS_SDK) -mmacosx-version-min=$(MAC_OS_MIN_VERSION)
-        RANLIB := :
-        AR := libtool -static -o
-	SYSLIBS := -framework CoreFoundation -framework IOKit -framework System
+    STANDARD_CFLAGS := -arch ppc -arch i386 -arch x86_64 $(STANDARD_CFLAGS)
+    RANLIB := :
+    AR := libtool -static -o
   endif
   
   ifeq ($(HW_OS),macosx_32_64)
-        CC := $(MAC_GCC) -arch i386 -arch x86_64 -isysroot $(PATH_TO_DEV) -mmacosx-version-min=$(MAC_OS_MIN_VERSION)
-        RANLIB := :
-        AR := libtool -static -o
-	SYSLIBS := -framework CoreFoundation -framework IOKit -framework System
+    STANDARD_CFLAGS := -arch i386 -arch x86_64 $(STANDARD_CFLAGS)
+    RANLIB := :
+    AR := libtool -static -o
   endif
   
   ifeq ($(HW_OS),macosx_64)
-     	CC := $(MAC_GCC) -arch x86_64 -isysroot $(PATH_TO_DEV) -mmacosx-version-min=$(MAC_OS_MIN_VERSION)
-        RANLIB := :
-        AR := libtool -static -o
-		SYSLIBS := -framework CoreFoundation -framework IOKit -framework System
+    STANDARD_CFLAGS := -arch x86_64 $(STANDARD_CFLAGS)
+    RANLIB := :
+    AR := libtool -static -o
   endif
        
   ifeq ($(HW_OS),pc_linux_arm)
