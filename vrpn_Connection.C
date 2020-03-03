@@ -2520,7 +2520,17 @@ static int vrpn_poll_for_accept(SOCKET listen_sock, SOCKET *accept_sock,
 static int vrpn_start_server(const char *machine, char *server_name, char *args,
                              const char *IPaddress = NULL)
 {
-#if defined(VRPN_USE_WINSOCK_SOCKETS) || defined(__CYGWIN__)
+#if __APPLE__
+    #include <TargetConditionals.h>
+    #if TARGET_IPHONE_SIMULATOR
+      // iOS Simulator
+      #define NO_SYSTEM
+    #elif TARGET_OS_IPHONE
+      // iOS device
+      #define NO_SYSTEM
+    #endif
+#endif
+#if defined(VRPN_USE_WINSOCK_SOCKETS) || defined(__CYGWIN__) || defined(NO_SYSTEM)
     fprintf(stderr, "VRPN: vrpn_start_server not ported"
                     " for windows winsock or cygwin!\n");
     IPaddress = IPaddress;
