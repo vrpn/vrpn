@@ -5594,6 +5594,10 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(
                     VRPN_CHECK(templated_setup_device_name_only<
                         vrpn_3DConnexion_SpaceMousePro>);
                 }
+                else if (VRPN_ISIT("vrpn_3DConnexion_SpaceMouseCompact")) {
+                    VRPN_CHECK(templated_setup_device_name_only<
+                        vrpn_3DConnexion_SpaceMouseCompact>);
+                }
                 else if (VRPN_ISIT("vrpn_3DConnexion_SpaceMouseWireless")) {
                     VRPN_CHECK(templated_setup_device_name_only<
                         vrpn_3DConnexion_SpaceMouseWireless>);
