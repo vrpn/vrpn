@@ -232,98 +232,189 @@ void vrpn_3DConnexion::decodePacket(size_t bytes, vrpn_uint8 *buffer)
   // regardless of how many bytes were in the report.  This is going to get us into trouble for
   // multi-report packets.  Instead, we should go until we've parsed all characters and add the
   // number of characters parsed each time rather than a constant 7 reports.
+  if(bytes<13) bytes=13;
   if(bytes<7) bytes=7;
-  if (bytes > 7) {
+  if (bytes > 13) {
 	  fprintf(stderr, "vrpn_3DConnexion::decodePacket(): Long packet (%d bytes), may mis-parse\n",
 		  static_cast<int>(bytes));
   }
-  // Decode all full reports.
-  // Full reports for all of the pro devices are 7 bytes long (the first
-  // byte is the report type, because this device has multiple ones the
-  // HIDAPI library leaves it in the report).
-  for (size_t i = 0; i < bytes / 7; i++) {
-    vrpn_uint8 *report = buffer + (i * 7);
+	
+  if(bytes==7) {
+      // Decode all full reports.
+      // Full reports for all of the pro devices are 7 bytes long (the first
+      // byte is the report type, because this device has multiple ones the
+      // HIDAPI library leaves it in the report).
+      for (size_t i = 0; i < bytes / 7; i++) {
+        vrpn_uint8 *report = buffer + (i * 7);
 
-    // There are three types of reports.  Parse whichever type
-    // this is.
-    char  report_type = report[0];
-    vrpn_uint8 *bufptr = &report[1];
-    const float scale = 1.0f/400.0f;
-    switch (report_type)  {
-      // Report types 1 and 2 come one after the other.  Each seems
-      // to change when the puck is moved.  It looks like each pair
-      // of values records a signed value for one channel; report
-      // type 1 is translation and report type 2 is rotation.
-      // The minimum and maximum values seem to vary somewhat.
-      // They all seem to be able to get over 400, so we scale
-      // by 400 and then clamp to (-1..1).
-      // The first byte is the low-order byte and the second is the
-      // high-order byte.
-      case 1:
-        channel[0] = vrpn_unbuffer_from_little_endian<vrpn_int16>(bufptr) * scale;
-        if (channel[0] < -1.0) { channel[0] = -1.0; }
-        if (channel[0] > 1.0) { channel[0] = 1.0; }
-        channel[1] = vrpn_unbuffer_from_little_endian<vrpn_int16>(bufptr) * scale;
-        if (channel[1] < -1.0) { channel[1] = -1.0; }
-        if (channel[1] > 1.0) { channel[1] = 1.0; }
-        channel[2] = vrpn_unbuffer_from_little_endian<vrpn_int16>(bufptr) * scale;
-        if (channel[2] < -1.0) { channel[2] = -1.0; }
-        if (channel[2] > 1.0) { channel[2] = 1.0; }
-        break;
+        // There are three types of reports.  Parse whichever type
+        // this is.
+        char  report_type = report[0];
+        vrpn_uint8 *bufptr = &report[1];
+        const float scale = 1.0f/400.0f;
+        switch (report_type)  {
+          // Report types 1 and 2 come one after the other.  Each seems
+          // to change when the puck is moved.  It looks like each pair
+          // of values records a signed value for one channel; report
+          // type 1 is translation and report type 2 is rotation.
+          // The minimum and maximum values seem to vary somewhat.
+          // They all seem to be able to get over 400, so we scale
+          // by 400 and then clamp to (-1..1).
+          // The first byte is the low-order byte and the second is the
+          // high-order byte.
+          case 1:
+            channel[0] = vrpn_unbuffer_from_little_endian<vrpn_int16>(bufptr) * scale;
+            if (channel[0] < -1.0) { channel[0] = -1.0; }
+            if (channel[0] > 1.0) { channel[0] = 1.0; }
+            channel[1] = vrpn_unbuffer_from_little_endian<vrpn_int16>(bufptr) * scale;
+            if (channel[1] < -1.0) { channel[1] = -1.0; }
+            if (channel[1] > 1.0) { channel[1] = 1.0; }
+            channel[2] = vrpn_unbuffer_from_little_endian<vrpn_int16>(bufptr) * scale;
+            if (channel[2] < -1.0) { channel[2] = -1.0; }
+            if (channel[2] > 1.0) { channel[2] = 1.0; }
+            break;
 
-      case 2:
-        channel[3] = vrpn_unbuffer_from_little_endian<vrpn_int16>(bufptr) * scale;
-        if (channel[3] < -1.0) { channel[3] = -1.0; }
-        if (channel[3] > 1.0) { channel[3] = 1.0; }
-        channel[4] = vrpn_unbuffer_from_little_endian<vrpn_int16>(bufptr) * scale;
-        if (channel[4] < -1.0) { channel[4] = -1.0; }
-        if (channel[4] > 1.0) { channel[4] = 1.0; }
-        channel[5] = vrpn_unbuffer_from_little_endian<vrpn_int16>(bufptr) * scale;
-        if (channel[5] < -1.0) { channel[5] = -1.0; }
-        if (channel[5] > 1.0) { channel[5] = 1.0; }
-        break;
+          case 2:
+            channel[3] = vrpn_unbuffer_from_little_endian<vrpn_int16>(bufptr) * scale;
+            if (channel[3] < -1.0) { channel[3] = -1.0; }
+            if (channel[3] > 1.0) { channel[3] = 1.0; }
+            channel[4] = vrpn_unbuffer_from_little_endian<vrpn_int16>(bufptr) * scale;
+            if (channel[4] < -1.0) { channel[4] = -1.0; }
+            if (channel[4] > 1.0) { channel[4] = 1.0; }
+            channel[5] = vrpn_unbuffer_from_little_endian<vrpn_int16>(bufptr) * scale;
+            if (channel[5] < -1.0) { channel[5] = -1.0; }
+            if (channel[5] > 1.0) { channel[5] = 1.0; }
+            break;
 
-      case 3: { // Button report
-        int btn;
+          case 3: { // Button report
+            int btn;
 
-        // Button reports are encoded as bits in the first 2 bytes
-        // after the type.  There can be more than one byte if there
-        // are more than 8 buttons such as on SpaceExplorer or SpaceBall5000.
-        // If 8 or less, we don't look at 2nd byte.
-        // SpaceExplorer buttons are (for example):
-        // Name           Number
-        // 1              0
-        // 2              1
-        // T              2
-        // L              3
-        // R              4
-        // F              5
-        // ESC            6
-        // ALT            7
-        // SHIFT          8
-        // CTRL           9
-        // FIT            10
-        // PANEL          11
-        // +              12
-        // -              13
-        // 2D             14
+            // Button reports are encoded as bits in the first 2 bytes
+            // after the type.  There can be more than one byte if there
+            // are more than 8 buttons such as on SpaceExplorer or SpaceBall5000.
+            // If 8 or less, we don't look at 2nd byte.
+            // SpaceExplorer buttons are (for example):
+            // Name           Number
+            // 1              0
+            // 2              1
+            // T              2
+            // L              3
+            // R              4
+            // F              5
+            // ESC            6
+            // ALT            7
+            // SHIFT          8
+            // CTRL           9
+            // FIT            10
+            // PANEL          11
+            // +              12
+            // -              13
+            // 2D             14
 
-        for (btn = 0; btn < vrpn_Button::num_buttons; btn++) {
-            vrpn_uint8 *location, mask;
-            location = report + 1 + (btn / 8);
-            mask = 1 << (btn % 8);
-            buttons[btn] = ( (*location) & mask) != 0;
+            for (btn = 0; btn < vrpn_Button::num_buttons; btn++) {
+                vrpn_uint8 *location, mask;
+                location = report + 1 + (btn / 8);
+                mask = 1 << (btn % 8);
+                buttons[btn] = ( (*location) & mask) != 0;
+            }
+            break;
+          }
+
+          default:
+            vrpn_gettimeofday(&_timestamp, NULL);
+            send_text_message("Unknown report type", _timestamp, vrpn_TEXT_WARNING);
         }
-        break;
+        // Report this event before parsing the next.
+        report_changes();
       }
+  } //end if(bytes==7)
+	
+  if(bytes==13) {
+      // Decode all full reports.
+      // Full reports for all of the pro devices are 7 bytes long (the first
+      // byte is the report type, because this device has multiple ones the
+      // HIDAPI library leaves it in the report).
+      for (size_t i = 0; i < bytes / 13; i++) {
+        vrpn_uint8 *report = buffer + (i * 13);
 
-      default:
-        vrpn_gettimeofday(&_timestamp, NULL);
-        send_text_message("Unknown report type", _timestamp, vrpn_TEXT_WARNING);
-    }
-    // Report this event before parsing the next.
-    report_changes();
-  }
+        // There are three types of reports.  Parse whichever type
+        // this is.
+        char  report_type = report[0];
+        vrpn_uint8 *bufptr = &report[1];
+        const float scale = 1.0f/400.0f;
+        switch (report_type)  {
+          // Report types 1 and 2 come one after the other.  Each seems
+          // to change when the puck is moved.  It looks like each pair
+          // of values records a signed value for one channel; report
+          // type 1 is translation and report type 2 is rotation.
+          // The minimum and maximum values seem to vary somewhat.
+          // They all seem to be able to get over 400, so we scale
+          // by 400 and then clamp to (-1..1).
+          // The first byte is the low-order byte and the second is the
+          // high-order byte.
+          case 1:
+            channel[0] = vrpn_unbuffer_from_little_endian<vrpn_int16>(bufptr) * scale;
+            if (channel[0] < -1.0) { channel[0] = -1.0; }
+            if (channel[0] > 1.0) { channel[0] = 1.0; }
+            channel[1] = vrpn_unbuffer_from_little_endian<vrpn_int16>(bufptr) * scale;
+            if (channel[1] < -1.0) { channel[1] = -1.0; }
+            if (channel[1] > 1.0) { channel[1] = 1.0; }
+            channel[2] = vrpn_unbuffer_from_little_endian<vrpn_int16>(bufptr) * scale;
+            if (channel[2] < -1.0) { channel[2] = -1.0; }
+            if (channel[2] > 1.0) { channel[2] = 1.0; }
+            channel[3] = vrpn_unbuffer_from_little_endian<vrpn_int16>(bufptr) * scale;
+            if (channel[3] < -1.0) { channel[3] = -1.0; }
+            if (channel[3] > 1.0) { channel[3] = 1.0; }
+            channel[4] = vrpn_unbuffer_from_little_endian<vrpn_int16>(bufptr) * scale;
+            if (channel[4] < -1.0) { channel[4] = -1.0; }
+            if (channel[4] > 1.0) { channel[4] = 1.0; }
+            channel[5] = vrpn_unbuffer_from_little_endian<vrpn_int16>(bufptr) * scale;
+            if (channel[5] < -1.0) { channel[5] = -1.0; }
+            if (channel[5] > 1.0) { channel[5] = 1.0; }
+            break;
+
+          case 3: { // Button report
+            int btn;
+
+            // Button reports are encoded as bits in the first 2 bytes
+            // after the type.  There can be more than one byte if there
+            // are more than 8 buttons such as on SpaceExplorer or SpaceBall5000.
+            // If 8 or less, we don't look at 2nd byte.
+            // SpaceExplorer buttons are (for example):
+            // Name           Number
+            // 1              0
+            // 2              1
+            // T              2
+            // L              3
+            // R              4
+            // F              5
+            // ESC            6
+            // ALT            7
+            // SHIFT          8
+            // CTRL           9
+            // FIT            10
+            // PANEL          11
+            // +              12
+            // -              13
+            // 2D             14
+
+            for (btn = 0; btn < vrpn_Button::num_buttons; btn++) {
+                vrpn_uint8 *location, mask;
+                location = report + 1 + (btn / 8);
+                mask = 1 << (btn % 8);
+                buttons[btn] = ( (*location) & mask) != 0;
+            }
+            break;
+          }
+
+          default:
+            vrpn_gettimeofday(&_timestamp, NULL);
+            send_text_message("Unknown report type", _timestamp, vrpn_TEXT_WARNING);
+        }
+        // Report this event before parsing the next.
+        report_changes();
+      }
+  } //end if(bytes==13)
 }
 #endif
 
@@ -355,6 +446,16 @@ vrpn_3DConnexion_SpaceMousePro::vrpn_3DConnexion_SpaceMousePro(const char *name,
 vrpn_3DConnexion_SpaceMouseCompact::vrpn_3DConnexion_SpaceMouseCompact(const char *name, vrpn_Connection *c)
     : vrpn_3DConnexion(new vrpn_HidProductAcceptor(vrpn_SPACEMOUSEWIRELESS_VENDOR, vrpn_3DCONNEXION_SPACEMOUSECOMPACT), 2, name, c, vrpn_SPACEMOUSEWIRELESS_VENDOR, vrpn_3DCONNEXION_SPACEMOUSECOMPACT)
 {
+}
+
+vrpn_3DConnexion_SpaceMouseProWirelessCable::vrpn_3DConnexion_SpaceMouseProWirelessCable(const char *name, vrpn_Connection *c)
+    : vrpn_3DConnexion(new vrpn_HidProductAcceptor(vrpn_SPACEMOUSEWIRELESS_VENDOR, vrpn_3DCONNEXION_SPACEMOUSEPROWIRELESSCABLE), 27, name, c, vrpn_SPACEMOUSEWIRELESS_VENDOR, vrpn_3DCONNEXION_SPACEMOUSEPROWIRELESSCABLE)
+{ // 15 physical buttons are numbered: 0-2, 4-5, 8, 12-15, 22-26
+}
+
+vrpn_3DConnexion_SpaceMouseProWirelessReceiver::vrpn_3DConnexion_SpaceMouseProWirelessReceiver(const char *name, vrpn_Connection *c)
+    : vrpn_3DConnexion(new vrpn_HidProductAcceptor(vrpn_SPACEMOUSEWIRELESS_VENDOR, vrpn_3DCONNEXION_SPACEMOUSEPROWIRELESSRECEIVER), 27, name, c, vrpn_SPACEMOUSEWIRELESS_VENDOR, vrpn_3DCONNEXION_SPACEMOUSEPROWIRELESSRECEIVER)
+{ // 15 physical buttons are numbered: 0-2, 4-5, 8, 12-15, 22-26
 }
 
 vrpn_3DConnexion_SpaceMouseWireless::vrpn_3DConnexion_SpaceMouseWireless(const char *name, vrpn_Connection *c)
