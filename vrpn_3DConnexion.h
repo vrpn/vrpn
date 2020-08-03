@@ -12,7 +12,8 @@
 #include "vrpn_Types.h"                 // for vrpn_uint32, vrpn_uint8
 
 // Device drivers for the 3DConnexion SpaceNavigator and SpaceTraveler
-// SpaceExplorer, SpaceMouse, SpaceMousePro, SpaceMouseCompact, Spaceball5000,
+// SpaceExplorer, SpaceMouse, SpaceMousePro, SpaceMouseCompact,
+// SpaceMouseProWireless (Cable and Receiver), Spaceball5000,
 // SpacePilot devices, connecting to them as HID devices (USB).
 
 // Exposes two VRPN device classes: Button and Analog.
@@ -142,6 +143,22 @@ class VRPN_API vrpn_3DConnexion_SpaceMouseCompact : public vrpn_3DConnexion {
 public:
 	vrpn_3DConnexion_SpaceMouseCompact(const char *name, vrpn_Connection *c = 0);
 	virtual ~vrpn_3DConnexion_SpaceMouseCompact() {};
+
+protected:
+};
+
+ class VRPN_API vrpn_3DConnexion_SpaceMouseProWirelessCable: public vrpn_3DConnexion {
+public:
+        vrpn_3DConnexion_SpaceMouseProWirelessCable(const char *name, vrpn_Connection *c = 0);
+	virtual ~vrpn_3DConnexion_SpaceMouseProWirelessCable() {};
+
+protected:
+};
+
+class VRPN_API vrpn_3DConnexion_SpaceMouseProWirelessReceiver: public vrpn_3DConnexion {
+public:
+        vrpn_3DConnexion_SpaceMouseProWirelessReceiver(const char *name, vrpn_Connection *c = 0);
+	virtual ~vrpn_3DConnexion_SpaceMouseProWirelessReceiver() {};
 
 protected:
 };
