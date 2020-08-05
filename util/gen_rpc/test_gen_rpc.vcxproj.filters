@@ -1,0 +1,29 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{6d1b25e8-2bff-429d-8ef8-f8d91c607a71}</UniqueIdentifier>
+      <Extensions>cpp;c;cxx;rc;def;r;odl;idl;hpj;bat</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{a7fc3ca7-53f5-4483-a0c4-8f3fc2e10ef5}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="main_test.C">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="rpc_Test.C">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="rpc_Test_Remote.C">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="rpc_Test.vrpndef" />
+    <CustomBuild Include="rpc_Test_Remote.Cdef" />
+    <CustomBuild Include="rpc_Test_Remote.hdef" />
+  </ItemGroup>
+</Project>

@@ -43,3 +43,4 @@ _UpgradeReport_Files/
 
 # Profiling files
 *.profraw
+/.vs/vrpn/v15
