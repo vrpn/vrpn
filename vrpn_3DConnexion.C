@@ -383,8 +383,9 @@ vrpn_3DConnexion_SpaceMouseProWireless::vrpn_3DConnexion_SpaceMouseProWireless(c
 
 void vrpn_3DConnexion_SpaceMouseProWireless::decodePacket(size_t bytes, vrpn_uint8 *buffer)
 {
-	if (bytes % 13) {
-		return;		// under windows anyway, bytes are always 13
+  // under windows anyway, reports are always 13 bytes long
+	if ((bytes % 13) != 0) {
+		return;
 	}
 
 	for (size_t i = 0; i < bytes / 13; i++) {
@@ -395,6 +396,7 @@ void vrpn_3DConnexion_SpaceMouseProWireless::decodePacket(size_t bytes, vrpn_uin
 		const float scale = 1.0f / 350.f;		// max value observed is 0x15e or 350 (signed)
 
 		switch (report_type) {
+    // Report type 1 includes both position and rotation on this device.
 		case 0x1:
 		{
 			for (int c = 0; c < 6; c++) {
