@@ -32,6 +32,7 @@ static const vrpn_uint16 vrpn_3DCONNEXION_SPACEMOUSE = 50691;
 static const vrpn_uint16 vrpn_3DCONNEXION_SPACEMOUSEPRO = 50731;
 static const vrpn_uint16 vrpn_3DCONNEXION_SPACEMOUSECOMPACT = 50741;
 static const vrpn_uint16 vrpn_3DCONNEXION_SPACEMOUSEWIRELESS = 50735;
+static const vrpn_uint16 vrpn_3DCONNEXION_SPACEMOUSEPROWIRELESS = 0xC631;
 static const vrpn_uint16 vrpn_3DCONNEXION_SPACEBALL5000 = 0xc621;   // 50721;
 static const vrpn_uint16 vrpn_3DCONNEXION_SPACEPILOT =  0xc625;
 
@@ -374,3 +375,61 @@ vrpn_3DConnexion_SpacePilot::vrpn_3DConnexion_SpacePilot(const char *name, vrpn_
     : vrpn_3DConnexion(new vrpn_HidProductAcceptor(vrpn_3DCONNEXION_VENDOR, vrpn_3DCONNEXION_SPACEPILOT), 21, name, c, vrpn_3DCONNEXION_VENDOR, vrpn_3DCONNEXION_SPACEPILOT)
 {
 }
+
+vrpn_3DConnexion_SpaceMouseProWireless::vrpn_3DConnexion_SpaceMouseProWireless(const char *name, vrpn_Connection *c)
+	: vrpn_3DConnexion(new vrpn_HidProductAcceptor(vrpn_SPACEMOUSEWIRELESS_VENDOR, vrpn_3DCONNEXION_SPACEMOUSEPROWIRELESS), 32, name, c, vrpn_SPACEMOUSEWIRELESS_VENDOR, vrpn_3DCONNEXION_SPACEMOUSEPROWIRELESS)
+{
+}
+
+void vrpn_3DConnexion_SpaceMouseProWireless::decodePacket(size_t bytes, vrpn_uint8 *buffer)
+{
+  // under windows anyway, reports are always 13 bytes long
+	if ((bytes % 13) != 0) {
+		return;
+	}
+
+	for (size_t i = 0; i < bytes / 13; i++) {
+
+		vrpn_uint8 *report = buffer + (i * 13);
+		char report_type = report[0];
+		vrpn_uint8 *bufptr = &report[1];
+		const float scale = 1.0f / 350.f;		// max value observed is 0x15e or 350 (signed)
+
+		switch (report_type) {
+    // Report type 1 includes both position and rotation on this device.
+		case 0x1:
+		{
+			for (int c = 0; c < 6; c++) {
+
+				channel[c] = vrpn_unbuffer_from_little_endian<vrpn_int16>(bufptr) * scale;
+
+				//clamp to sane range
+				if (channel[c] < -1.0) { channel[c] = -1.0; }
+				if (channel[c] > 1.0) { channel[c] = 1.0; }
+			}
+			break;
+		}
+
+		case 0x3: // Button report - hw only seems to have 15 buttons, but they aren't tightly packed
+		{
+			for (int btn = 0; btn < vrpn_Button::num_buttons; btn++) {
+				vrpn_uint8 *location = report + 1 + (btn / 8);
+				vrpn_uint8 mask = 1 << (btn % 8);
+				buttons[btn] = ((*location) & mask) != 0;
+			}
+			break;
+		}
+
+		case 0x17:	// don't know what this is, seems to get sent at the end of some data after maybe a timeout?
+			break;
+
+		default:
+			vrpn_gettimeofday(&_timestamp, NULL);
+			send_text_message("Unknown report type", _timestamp,
+				vrpn_TEXT_WARNING);
+		}
+		// Report this event before parsing the next.
+		report_changes();
+	}
+}
+

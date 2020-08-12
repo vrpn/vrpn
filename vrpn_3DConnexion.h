@@ -178,5 +178,14 @@ public:
 protected:
 };
 
+class VRPN_API vrpn_3DConnexion_SpaceMouseProWireless : public vrpn_3DConnexion {
+public:
+	vrpn_3DConnexion_SpaceMouseProWireless(const char *name, vrpn_Connection *c = 0);
+	virtual ~vrpn_3DConnexion_SpaceMouseProWireless() {};
+
+protected:
+	void decodePacket(size_t bytes, vrpn_uint8 *buffer);
+};
+
 // end of VRPN_3DCONNEXION_H
 #endif
