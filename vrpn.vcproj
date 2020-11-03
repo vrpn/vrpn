@@ -2573,6 +2573,26 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="vrpn_Vality.C"
+				>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath="vrpn_VPJoystick.C"
 				>
 				<FileConfiguration
@@ -3239,6 +3259,10 @@
 			</File>
 			<File
 				RelativePath="vrpn_UNC_Joystick.h"
+				>
+			</File>
+			<File
+				RelativePath="vrpn_Vality.h"
 				>
 			</File>
 			<File
