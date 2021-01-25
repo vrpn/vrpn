@@ -191,7 +191,8 @@ include_directories("${PROJECT_BINARY_DIR}")
 # Include directory needed by all of the files
 include_directories(${VRPN_SOURCE_DIR}
 	${VRPN_SOURCE_DIR}/atmellib
-	${VRPN_SOURCE_DIR}/quat)
+	${VRPN_SOURCE_DIR}/quat
+	${VRPN_SOURCE_DIR}/antilatency_include)
 
 
 #-----------------------------------------------------------------------------
@@ -1125,6 +1126,7 @@ set(VRPN_SERVER_SOURCES
 	vrpn_Spaceball.C
 	vrpn_Streaming_Arduino.C
 	vrpn_Tng3.C
+	vrpn_Tracker_Alt.C
 	vrpn_Tracker_3DMouse.C
 	vrpn_Tracker_AnalogFly.C
 	vrpn_Tracker_ButtonFly.C
@@ -1239,6 +1241,7 @@ set(VRPN_SERVER_PUBLIC_HEADERS
 	vrpn_Spaceball.h
 	vrpn_Streaming_Arduino.h
 	vrpn_Tng3.h
+	vrpn_Tracker_Alt.h
 	vrpn_Tracker_3DMouse.h
 	vrpn_Tracker_AnalogFly.h
 	vrpn_Tracker_ButtonFly.h
@@ -1294,7 +1297,7 @@ if(VRPN_BUILD_SERVER_LIBRARY)
 		vrpnserver
 		PROPERTY
 		PUBLIC_HEADER
-		${VRPN_SERVER_PUBLIC_HEADERS})
+		${VRPN_SERVER_PUBLIC_HEADERS} ${ANTILATENCY_HEADERS})
 	set_property(TARGET
 		vrpnserver
 		PROPERTY

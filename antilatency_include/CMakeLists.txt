@@ -1,0 +1,22 @@
+set(ANTILATENCY_HEADERS
+	${CMAKE_CURRENT_SOURCE_DIR}/AndroidJniWrapper.h
+	${CMAKE_CURRENT_SOURCE_DIR}/Antilatency.Alt.Environment.h
+	${CMAKE_CURRENT_SOURCE_DIR}/Antilatency.Alt.Environment.Pillars.h
+	${CMAKE_CURRENT_SOURCE_DIR}/Antilatency.Alt.Tracking.h
+	${CMAKE_CURRENT_SOURCE_DIR}/Antilatency.Api.h
+	${CMAKE_CURRENT_SOURCE_DIR}/Antilatency.Bracer.h
+	${CMAKE_CURRENT_SOURCE_DIR}/Antilatency.DeviceNetwork.h
+	${CMAKE_CURRENT_SOURCE_DIR}/Antilatency.DeviceNetwork.Interop.h
+	${CMAKE_CURRENT_SOURCE_DIR}/Antilatency.HardwareExtensionInterface.h
+	${CMAKE_CURRENT_SOURCE_DIR}/Antilatency.HardwareExtensionInterface.Interop.h
+	${CMAKE_CURRENT_SOURCE_DIR}/Antilatency.InterfaceContract.h
+	${CMAKE_CURRENT_SOURCE_DIR}/Antilatency.InterfaceContract.LibraryLoader.h
+	${CMAKE_CURRENT_SOURCE_DIR}/Antilatency.InterfaceContract.LibraryLoader.Qt.h
+	${CMAKE_CURRENT_SOURCE_DIR}/Antilatency.InterfaceContract.LibraryLoader.Unix.h
+	${CMAKE_CURRENT_SOURCE_DIR}/Antilatency.InterfaceContract.LibraryLoader.Uwp.h
+	${CMAKE_CURRENT_SOURCE_DIR}/Antilatency.InterfaceContract.LibraryLoader.Win32.h
+	${CMAKE_CURRENT_SOURCE_DIR}/Antilatency.Math.h
+	${CMAKE_CURRENT_SOURCE_DIR}/Antilatency.RadioMetrics.h
+	${CMAKE_CURRENT_SOURCE_DIR}/Antilatency.RadioMetrics.Interop.h
+	${CMAKE_CURRENT_SOURCE_DIR}/Antilatency.StorageClient.h
+	${CMAKE_CURRENT_SOURCE_DIR}/Antilatency.TrackingAlignment.h)

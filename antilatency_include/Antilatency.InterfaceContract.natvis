@@ -1,0 +1,18 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+
+  <Type Name="Antilatency::InterfaceContract::InterfaceID" Inheritable="true">
+    <DisplayString >{Data1,xb}-{Data2,xb}-{Data3,xb}-{(uint16_t)((Data4[0]&lt;&lt;8) + Data4[1]),xb}-{(uint16_t)((Data4[2]&lt;&lt;8) + Data4[3]),xb}{(uint16_t)((Data4[4]&lt;&lt;8) + Data4[5]),xb}{(uint16_t)((Data4[6]&lt;&lt;8) + Data4[7]),xb} </DisplayString>
+  </Type>
+
+  <Type Name="Antilatency::InterfaceContract::IUnsafe" Inheritable="true">
+    <DisplayString Condition="(void*)_object == 0">null</DisplayString>
+    <DisplayString>{(void*)_object}</DisplayString>
+  </Type>
+
+
+  <Type Name="Antilatency::InterfaceContract::ObjectPtr&lt;*&gt;" Inheritable="true">
+    <DisplayString Condition="_object == 0">null</DisplayString>
+    <DisplayString>{(void*)_object} #{(_object->_refCount)}</DisplayString>
+  </Type>
+</AutoVisualizer>

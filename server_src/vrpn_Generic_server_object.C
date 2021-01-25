@@ -3,6 +3,8 @@
 #include "vrpn_MainloopContainer.h" // for vrpn_MainloopContainer
 #include <locale>                   // To enable setting parsing for .cfg file
 #include <string>
+#include <sstream>
+#include <iomanip>
 
 #include "timecode_generator_server/vrpn_timecode_generator.h"
 #include "vrpn_3DConnexion.h" // for vrpn_3DConnexion_Navigator, etc
@@ -104,6 +106,7 @@
 #include "vrpn_Tracker_WiimoteHead.h"     // for vrpn_Tracker_WiimoteHead
 #include "vrpn_Tracker_Wintracker.h"      // for vrpn_Tracker_Wintracker
 #include "vrpn_Tracker_zSight.h"          // added by David Borland
+#include "vrpn_Tracker_Alt.h"			  // Alt
 #include "vrpn_UNC_Joystick.h"            // for vrpn_Joystick
 #include "vrpn_VPJoystick.h"              // for vrpn_VPJoystick
 #include "vrpn_Wanda.h"                   // for vrpn_Wanda
@@ -194,6 +197,79 @@ inline int vrpn_Generic_Server_Object::templated_setup_HID_device_name_only(
             line);
     return -1;
 #endif
+}
+
+
+int vrpn_Generic_Server_Object::setup_Tracker_Alt(char *&pch, char *line, FILE * /*config_file*/){
+	std::string envCode;
+	std::stringstream ss;
+	ss << line;
+	std::string str;
+	std::vector<std::pair<std::string, std::string>> devicesNamePlacement;
+	std::string libsPath;
+	bool zv = false;
+	bool zav = false;
+	float extrapolationTime = 0;
+	ss >> str; // get rid of vrpn_Tracker_Alt
+
+	while(ss >> str){
+		if(str[0] == '-'){
+			if(str == "-env"){ // environment
+				if(!(ss >> str)){
+					std::cout << "error in arguments line" << "\r\n";
+					return -1;
+				}
+				envCode = str;
+			} else if(str == "-et"){ // extrapolation time
+				if(!(ss >> extrapolationTime)){
+					std::cout << "error in arguments line" << "\r\n";
+					return -1;
+				}
+			} else if(str == "-p"){ // placement
+				std::string placement;
+				if(!(ss >> placement)){
+					std::cout << "error in arguments line" << "\r\n";
+					return -1;
+				}
+				if(devicesNamePlacement.size() != 0){
+					devicesNamePlacement[devicesNamePlacement.size() - 1].second = placement;
+				}
+			} else if(str == "-zv"){ // zero velocity
+				zv = true;
+			} else if(str == "-zav"){ // zero angular velocity
+				zav = true;
+			} else if(str == "-lp"){ // path to libraries
+				if(!(ss >> std::quoted(libsPath, '"', '/'))){
+					std::cout << "error in arguments line" << "\r\n";
+					return -1;
+				}
+				const char pathSeparator =
+					#ifdef _WIN32
+                        '\\';
+					#else
+                        '/';
+					#endif
+				auto lastSym = libsPath[libsPath.length()-1]; 
+				if(lastSym != pathSeparator) {
+					libsPath = libsPath + pathSeparator;
+				}
+			}
+		} else {
+			devicesNamePlacement.emplace_back(std::make_pair(str, ""));
+		}
+	}
+
+	for(size_t i = 0; i < devicesNamePlacement.size(); ++i){
+		try{
+			auto namePlacement = devicesNamePlacement[i];
+			auto newDevice = new vrpn_Tracker_Alt(namePlacement.first.c_str(), connection, namePlacement.second, envCode, libsPath, zv, zav);
+			newDevice->setExtrapolationTime(extrapolationTime);
+			_devices->add(newDevice);
+		} catch(std::runtime_error e){
+			std::cout << "error while adding device " << devicesNamePlacement[i].first << ": " << e.what() << std::endl;
+		}
+	}
+	return 0;
 }
 
 // setup_raw_SGIBox
@@ -5293,8 +5369,10 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(
             // clause
             // in the batch has not been called do we continue looking.
             bool found_it_yet = true;
-
-            if (VRPN_ISIT("vrpn_raw_SGIBox")) {
+			if(VRPN_ISIT("vrpn_Tracker_Alt")){
+				VRPN_CHECK(setup_Tracker_Alt);
+			} 
+            else if (VRPN_ISIT("vrpn_raw_SGIBox")) {
                 VRPN_CHECK(setup_raw_SGIBox);
             }
             else if (VRPN_ISIT("vrpn_SGIBOX")) {
