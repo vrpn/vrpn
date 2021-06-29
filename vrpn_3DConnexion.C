@@ -35,6 +35,7 @@ static const vrpn_uint16 vrpn_3DCONNEXION_SPACEMOUSEWIRELESS = 50735;
 static const vrpn_uint16 vrpn_3DCONNEXION_SPACEMOUSEPROWIRELESS = 0xC631;
 static const vrpn_uint16 vrpn_3DCONNEXION_SPACEBALL5000 = 0xc621;   // 50721;
 static const vrpn_uint16 vrpn_3DCONNEXION_SPACEPILOT =  0xc625;
+static const vrpn_uint16 vrpn_3DCONNEXION_SPACEPILOTPRO = 0xc629;
 
 vrpn_3DConnexion::vrpn_3DConnexion(vrpn_HidAcceptor *filter, unsigned num_buttons,
                                    const char *name, vrpn_Connection *c,
@@ -373,6 +374,15 @@ vrpn_3DConnexion_SpaceBall5000::vrpn_3DConnexion_SpaceBall5000(const char *name,
 
 vrpn_3DConnexion_SpacePilot::vrpn_3DConnexion_SpacePilot(const char *name, vrpn_Connection *c)
     : vrpn_3DConnexion(new vrpn_HidProductAcceptor(vrpn_3DCONNEXION_VENDOR, vrpn_3DCONNEXION_SPACEPILOT), 21, name, c, vrpn_3DCONNEXION_VENDOR, vrpn_3DCONNEXION_SPACEPILOT)
+{
+}
+
+vrpn_3DConnexion_SpacePilotPro::vrpn_3DConnexion_SpacePilotPro(const char *name,
+                                                         vrpn_Connection *c)
+    : vrpn_3DConnexion(new vrpn_HidProductAcceptor(vrpn_3DCONNEXION_VENDOR,
+                                                   vrpn_3DCONNEXION_SPACEPILOTPRO),
+                       31, name, c, vrpn_3DCONNEXION_VENDOR,
+                       vrpn_3DCONNEXION_SPACEPILOTPRO)
 {
 }
 
