@@ -178,6 +178,14 @@ public:
 protected:
 };
 
+class VRPN_API vrpn_3DConnexion_SpacePilotPro : public vrpn_3DConnexion {
+public:
+    vrpn_3DConnexion_SpacePilotPro(const char *name, vrpn_Connection *c = 0);
+    virtual ~vrpn_3DConnexion_SpacePilotPro(){};
+
+protected:
+};
+
 class VRPN_API vrpn_3DConnexion_SpaceMouseProWireless : public vrpn_3DConnexion {
 public:
 	vrpn_3DConnexion_SpaceMouseProWireless(const char *name, vrpn_Connection *c = 0);
