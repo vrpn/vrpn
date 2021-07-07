@@ -12,7 +12,7 @@ tar xzvf python_vrpn.tar.gz
 cd python_vrpn
 edit Makefile.python and set the environment according to your setup
 make vrpn-python
-(as root) make install-vrpn-python
+(as root) make install vrpn-python
 
 ISSUES : 
 - if vrpn_Tracker fails to load on symbol handle_update_tracker, comment out line 1124 of vrpn_Tracker.h (   //static int VRPN_CALLBACK handle_update_rate_request (void *, vrpn_HANDLERPARAM); ). I didn't find other fix so far.
