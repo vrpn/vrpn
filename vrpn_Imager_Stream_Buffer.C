@@ -88,7 +88,11 @@ vrpn_Imager_Stream_Buffer::vrpn_Imager_Stream_Buffer(
 
 vrpn_Imager_Stream_Buffer::~vrpn_Imager_Stream_Buffer()
 {
-  if (d_logging_thread) { stop_logging_thread(); }
+    if (d_logging_thread) {
+      stop_logging_thread();
+      delete d_logging_thread;
+      d_logging_thread = NULL;
+    }
     if (d_imager_server_name) {
         try {
           delete[] d_imager_server_name;
@@ -218,6 +222,7 @@ void vrpn_Imager_Stream_Buffer::handle_got_first_connection(void)
           delete d_logging_thread;
         } catch (...) {
           fprintf(stderr, "vrpn_Imager_Stream_Buffer::handle_got_first_connection(): delete failed\n");
+          d_logging_thread = NULL;
           return;
         }
         d_logging_thread = NULL;
