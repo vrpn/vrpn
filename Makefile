@@ -715,6 +715,7 @@ SLIB_FILES =  $(LIB_FILES) \
 	vrpn_Tracker_Wintracker.C \
 	vrpn_Tracker_isense.C \
 	vrpn_UNC_Joystick.C \
+  vrpn_Vality.C \
 	vrpn_VPJoystick.C \
 	vrpn_Wanda.C \
 	vrpn_WiiMote.C \
@@ -810,6 +811,7 @@ SLIB_INCLUDES = $(LIB_INCLUDES) \
 	vrpn_Tracker_Wintracker.h \
 	vrpn_Tracker_isense.h \
 	vrpn_UNC_Joystick.h \
+	vrpn_Vality.h \
 	vrpn_VPJoystick.h \
 	vrpn_Wanda.h \
 	vrpn_WiiMote.h \
