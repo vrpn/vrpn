@@ -1440,7 +1440,7 @@ endif()
 
 #-----------------------------------------------------------------------------
 # Testing applications that live in the main directory.
-if(BUILD_TESTING)
+if(BUILD_TESTING AND NOT VRPN_CLIENT_ONLY)
 	foreach(SOURCE time_test.cpp)
 		get_filename_component(APP ${SOURCE} NAME_WE)
 		add_executable(${APP} ${SOURCE})
