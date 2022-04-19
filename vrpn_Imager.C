@@ -444,8 +444,8 @@ bool vrpn_Imager_Server::send_region_using_base_pointer(
         }
     }
     else {
-        if (buflen < (int)((dMax - dMin + 1) * (rMax - rMin + 1) *
-                           (cMax - cMin + 1) * sizeof(data[0]))) {
+        if (buflen < (int)(sizeof(data[0]) * (dMax - dMin + 1) * (rMax - rMin + 1) *
+                           (cMax - cMin + 1))) {
             return false;
         }
         long rowStep = rowStride;
@@ -473,7 +473,7 @@ bool vrpn_Imager_Server::send_region_using_base_pointer(
                 copyFrom = rowStart;
             }
         }
-        buflen -= (rMax - rMin + 1) * (cMax - cMin + 1) * sizeof(data[0]);
+        buflen -= sizeof(data[0]) * (rMax - rMin + 1) * (cMax - cMin + 1);
     }
 
     // No need to swap endian-ness on single-byte elements.
@@ -640,8 +640,8 @@ bool vrpn_Imager_Server::send_region_using_base_pointer(
         }
     }
     else {
-        if (buflen < (int)((dMax - dMin + 1) * (rMax - rMin + 1) *
-                           (cMax - cMin + 1) * sizeof(data[0]))) {
+        if (buflen < (int)(sizeof(data[0]) * (dMax - dMin + 1) * (rMax - rMin + 1) *
+                           (cMax - cMin + 1) )) {
             return false;
         }
         long rowStep = rowStride;
@@ -669,7 +669,7 @@ bool vrpn_Imager_Server::send_region_using_base_pointer(
                 copyFrom = rowStart;
             }
         }
-        buflen -= (rMax - rMin + 1) * (cMax - cMin + 1) * sizeof(data[0]);
+        buflen -= sizeof(data[0]) * (rMax - rMin + 1) * (cMax - cMin + 1);
     }
 
     // Swap endian-ness of the buffer if we are on a big-endian machine.
@@ -840,8 +840,8 @@ bool vrpn_Imager_Server::send_region_using_base_pointer(
         }
     }
     else {
-        if (buflen < (int)((dMax - dMin + 1) * (rMax - rMin + 1) *
-                           (cMax - cMin + 1) * sizeof(data[0]))) {
+        if (buflen < (int)(sizeof(data[0]) * (dMax - dMin + 1) * (rMax - rMin + 1) *
+                           (cMax - cMin + 1))) {
             return false;
         }
         long rowStep = rowStride;
@@ -869,7 +869,7 @@ bool vrpn_Imager_Server::send_region_using_base_pointer(
                 copyFrom = rowStart;
             }
         }
-        buflen -= (rMax - rMin + 1) * (cMax - cMin + 1) * sizeof(data[0]);
+        buflen -= sizeof(data[0]) * (rMax - rMin + 1) * (cMax - cMin + 1);
     }
 
     // Swap endian-ness of the buffer if we are on a big-endian machine.
