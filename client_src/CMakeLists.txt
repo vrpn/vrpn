@@ -94,7 +94,7 @@ if(VRPN_BUILD_CLIENTS)
 			add_executable(testimager_client testimager_client.C)
 			target_link_libraries(testimager_client
 				${VRPN_CLIENT_LIBRARY}
-				${GLUT_glut_LIBRARY}
+				${GLUT_LIBRARIES}
 				${OPENGL_LIBRARIES})
 			set_target_properties(testimager_client PROPERTIES FOLDER Tests)
 
@@ -120,7 +120,7 @@ if(VRPN_BUILD_CLIENTS)
 			add_executable(vrpn_orientation vrpn_orientation.C)
 			target_link_libraries(vrpn_orientation
 				${VRPN_CLIENT_LIBRARY}
-				${GLUT_glut_LIBRARY}
+				${GLUT_LIBRARIES}
 				${OPENGL_LIBRARIES})
 			set_target_properties(vrpn_orientation PROPERTIES FOLDER Clients)
 
