@@ -1352,13 +1352,13 @@ if(VRPN_BUILD_CLIENT_LIBRARY)
 		SOVERSION
 		0)
 
-	if(VRPN_CLIENT_ONLY)
-		set_property(TARGET
-			vrpn
-			PROPERTY
-			COMPILE_DEFINITIONS
-			"VRPN_CLIENT_ONLY")
-	endif()
+  # Always compile code the client library with VRPN_CLIENT_ONLY defined.
+  set_property(TARGET
+    vrpn
+    PROPERTY
+    COMPILE_DEFINITIONS
+    "VRPN_CLIENT_ONLY")
+
 	set_property(TARGET
 		vrpn
 		PROPERTY
