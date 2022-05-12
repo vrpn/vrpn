@@ -3319,6 +3319,18 @@ int vrpn_Endpoint_IP::send_pending_reports(void)
     int connection;
     timeval timeout;
 
+    // If we're broken, clear our buffers and return an error.
+    if (status == BROKEN) {
+      clearBuffers();
+      return -1;
+    }
+
+    // If we don't have a connection, clear our buffers because there is nowhere to send it.
+    if (status == TRYING_TO_CONNECT) {
+      clearBuffers();
+      return 0;
+    }
+
     // Make sure we've got a valid TCP connection; else we can't send them.
     if (d_tcpSocket == -1) {
         fprintf(stderr,
@@ -5706,9 +5718,12 @@ int vrpn_Connection_IP::send_pending_reports(void)
     for (vrpn::EndpointIterator it = d_endpoints.begin(), e = d_endpoints.end();
          it != e; ++it) {
         if (it->send_pending_reports() != 0) {
-            fprintf(stderr, "vrpn_Connection_IP::send_pending_reports:  "
-                            "Closing failed endpoint.\n");
             drop_connection(it);
+            // If we're not a disconnected client connection waiting to connect, report an error.
+            if (it == NULL) {
+              fprintf(stderr, "vrpn_Connection_IP::send_pending_reports:  "
+                              "Closing failed endpoint.\n");
+            }
         }
     }
 
