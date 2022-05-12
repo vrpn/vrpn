@@ -140,7 +140,7 @@ class vrpn_OneEuroFilter {
 			_beta = beta;
 			_dcutoff = dcutoff;
 		}
-		const value_filter_return_type filter(scalar_type dt, const value_type x) {
+		value_filter_return_type filter(scalar_type dt, const value_type x) {
 			derivative_value_type dx;
 
 			if (_firstTime) {

@@ -3,7 +3,7 @@
 #include <stdlib.h>                     // for rand
 
 #include "vrpn_Configure.h"             // for VRPN_CALLBACK
-#include  "vrpn_Connection.h"
+#include "vrpn_Connection.h"
 #include "vrpn_Imager.h"                // for vrpn_IMAGERREGIONCB, etc
 #include "vrpn_Types.h"                 // for vrpn_uint16
 
@@ -172,6 +172,8 @@ int main(int, char *[])
 
   if (clt) { delete clt; }
   if (svr) { delete svr; }
+
+  svrcon->removeReference();
 
   return 0;
 }

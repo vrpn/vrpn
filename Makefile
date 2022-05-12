@@ -113,8 +113,10 @@ ifdef PBASE_ROOT
   endif
 endif
 
-ifndef HW_OS
-	exit
+ifeq (,$(strip $(HW_OS)))
+$(error You must define HW_OS when calling make. See the makefile for example values)
+all:
+	@echo "ERROR: You must define HW_OS when calling make. See the makefile for example values." 1>&2
 endif
 
 # Which C++ compiler to use.  Default is g++, but some don't use this.
@@ -122,45 +124,52 @@ endif
 # IF YOU CHANGE THESE, document either here or in the header comment
 # why.  Multiple contradictory changes have been made recently.
 
+# These should be defaulting to useful values on the platform.
+# If they aren't, use gcc.
 
-CC := g++
+# C compiler
+CC ?= gcc
+
+# C++ compiler
+CXX ?= g++
+
+# These probably aren't defaulting to anything useful.
 AR := ar ruv
 # need default 'ranlib' to be touch for platforms that don't use it,
 # otherwise make fails.
-RANLIB := touch
+RANLIB ?= touch
 
 ifeq ($(FORCE_GPP),1)
   CC := g++
 else
 
   ifeq ($(HW_OS),sparc_solaris)
-	CC := /opt/SUNWspro/bin/CC
-	AR := /opt/SUNWspro/bin/CC -xar -o
+    CC := /opt/SUNWspro/bin/CC
+    AR := /opt/SUNWspro/bin/CC -xar -o
   endif
 
   ifeq ($(HW_OS),sparc_solaris_64)
-	CC := /opt/SUNWspro/bin/CC -xarch=v9a
-	AR := /opt/SUNWspro/bin/CC -xarch=v9a -xar -o
+    CC := /opt/SUNWspro/bin/CC -xarch=v9a
+    AR := /opt/SUNWspro/bin/CC -xarch=v9a -xar -o
   endif
 
   ifeq ($(HW_OS),powerpc_aix)
-	CC := /usr/ibmcxx/bin/xlC_r -g -qarch=pwr3 -w
-	RANLIB := ranlib
+    CC := /usr/ibmcxx/bin/xlC_r -g -qarch=pwr3 -w
+    RANLIB := ranlib
   endif
 
-  ifeq ($(HW_OS), pc_linux64)
-        CC := cc -m64 -fPIC
-        RANLIB := ranlib
+  ifeq ($(HW_OS),pc_linux64)
+    STANDARD_CFLAGS := -m64 -fPIC
+    RANLIB := ranlib
   endif
 
-  ifeq ($(HW_OS), pc_linux)
-        CC := gcc
-        RANLIB := ranlib
+  ifeq ($(HW_OS),pc_linux)
+    STANDARD_CFLAGS := -fPIC
+    RANLIB := ranlib
   endif
 
   ifeq ($(HW_OS), pc_linux_ia64)
-        CC := gcc
-        RANLIB := ranlib
+    RANLIB := ranlib
   endif
 
   ifneq (,$(findstring macosx,$(HW_OS)))
@@ -169,75 +178,79 @@ else
     endif
 
     # Select which compiler and MAC OS X SDK to use
-    MAC_GCC := g++
+    MAC_CC := gcc
+    MAC_CXX := g++
     ifeq ($(MAC_OS_MIN_VERSION), 10.8)
       MAC_OS_SDK := MacOSX10.8.sdk
     else
-    ifeq ($(MAC_OS_MIN_VERSION), 10.7)
-      MAC_OS_SDK := MacOSX10.7.sdk
-    else
-   ifeq ($(MAC_OS_MIN_VERSION), 10.6)
-      MAC_OS_SDK := MacOSX10.6.sdk
-    else
-      ifeq ($(MAC_OS_MIN_VERSION), 10.5)
-        MAC_OS_SDK := MacOSX10.5.sdk
+      ifeq ($(MAC_OS_MIN_VERSION), 10.7)
+        MAC_OS_SDK := MacOSX10.7.sdk
       else
-        MAC_OS_SDK := MacOSX10.4u.sdk
-        MAC_GCC := g++-4.0
+        ifeq ($(MAC_OS_MIN_VERSION), 10.6)
+          MAC_OS_SDK := MacOSX10.6.sdk
+        else
+          ifeq ($(MAC_OS_MIN_VERSION), 10.5)
+            MAC_OS_SDK := MacOSX10.5.sdk
+          else
+            MAC_OS_SDK := MacOSX10.4u.sdk
+            MAC_CC := gcc-4.0
+            MAC_CXX := g++-4.0
+          endif
+        endif
+       endif
       endif
     endif
-  endif
- endif
-endif
  
- ifneq (,$(findstring macosx,$(HW_OS)))
+ifneq (,$(findstring macosx,$(HW_OS)))
   ifeq ($(wildcard /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/$(MAC_OS_SDK)),/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/$(MAC_OS_SDK))
-		PATH_TO_DEV := /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/$(MAC_OS_SDK)
-$(info ---> Xcode 4.3+: Platform SDK found.  Setting dev path to $(PATH_TO_DEV)) 
- else
-		PATH_TO_DEV := /Developer/SDKs/$(MAC_OS_SDK)
-$(info Xcode 4.3+: Platform SDK not found in /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/$(MAC_OS_SDK)!  Attempting to locate SDK in $(PATH_TO_DEV))
+    PATH_TO_DEV := /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/$(MAC_OS_SDK)
+    $(info ---> Xcode 4.3+: Platform SDK found.  Setting dev path to $(PATH_TO_DEV)) 
+  else
+    PATH_TO_DEV := /Developer/SDKs/$(MAC_OS_SDK)
+    $(info Xcode 4.3+: Platform SDK not found in /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/$(MAC_OS_SDK)!  Attempting to locate SDK in $(PATH_TO_DEV))
   endif
+  CC := $(MAC_CC)
+  CXX := $(MAC_CXX)
+  STANDARD_CFLAGS := -isysroot /Developer/SDKs/$(MAC_OS_SDK) -mmacosx-version-min=$(MAC_OS_MIN_VERSION)
+  SYSLIBS := -framework CoreFoundation -framework IOKit -framework System
 endif
 
-  ifeq ($(HW_OS), powerpc_macosx)
-        CC := $(MAC_GCC) -arch ppc -isysroot /Developer/SDKs/$(MAC_OS_SDK) -mmacosx-version-min=$(MAC_OS_MIN_VERSION)
-        RANLIB := ranlib
-        AR := libtool -static -o
-	SYSLIBS := -framework CoreFoundation -framework IOKit -framework System
+  ifeq ($(HW_OS),powerpc_macosx)
+    STANDARD_CFLAGS := -arch ppc $(STANDARD_CFLAGS)
+    RANLIB := ranlib
+    AR := libtool -static -o
   endif
 
-  ifeq ($(HW_OS), universal_macosx)
-        CC := $(MAC_GCC) -arch ppc -arch i386 -arch x86_64 -isysroot /Developer/SDKs/$(MAC_OS_SDK) -mmacosx-version-min=$(MAC_OS_MIN_VERSION)
-        RANLIB := :
-        AR := libtool -static -o
-	SYSLIBS := -framework CoreFoundation -framework IOKit -framework System
+  ifeq ($(HW_OS),universal_macosx)
+    STANDARD_CFLAGS := -arch ppc -arch i386 -arch x86_64 $(STANDARD_CFLAGS)
+    RANLIB := :
+    AR := libtool -static -o
   endif
   
-   ifeq ($(HW_OS), macosx_32_64)
-        CC := $(MAC_GCC) -arch i386 -arch x86_64 -isysroot $(PATH_TO_DEV) -mmacosx-version-min=$(MAC_OS_MIN_VERSION)
-        RANLIB := :
-        AR := libtool -static -o
-	SYSLIBS := -framework CoreFoundation -framework IOKit -framework System
+  ifeq ($(HW_OS),macosx_32_64)
+    STANDARD_CFLAGS := -arch i386 -arch x86_64 $(STANDARD_CFLAGS)
+    RANLIB := :
+    AR := libtool -static -o
   endif
   
-    ifeq ($(HW_OS), macosx_64)
-     	CC := $(MAC_GCC) -arch x86_64 -isysroot $(PATH_TO_DEV) -mmacosx-version-min=$(MAC_OS_MIN_VERSION)
-        RANLIB := :
-        AR := libtool -static -o
-		SYSLIBS := -framework CoreFoundation -framework IOKit -framework System
-    endif
+  ifeq ($(HW_OS),macosx_64)
+    STANDARD_CFLAGS := -arch x86_64 $(STANDARD_CFLAGS)
+    RANLIB := :
+    AR := libtool -static -o
+  endif
        
-  ifeq ($(HW_OS), pc_linux_arm)
-        CC := arm-linux-g++
-        RANLIB := arm-linux-ranlib
-	AR := arm-linux-ar ruv
+  ifeq ($(HW_OS),pc_linux_arm)
+    CC := arm-linux-gcc
+    CXX := arm-linux-g++
+    RANLIB := arm-linux-ranlib
+    AR := arm-linux-ar ruv
   endif
 
-  ifeq ($(HW_OS), pc_cygwin_arm)
-        CC := arm-unknown-linux-gnu-g++
-        RANLIB := arm-unknown-linux-gnu-ranlib
-	AR := arm-unknown-linux-gnu-ar ruv
+  ifeq ($(HW_OS),pc_cygwin_arm)
+    CC := arm-unknown-linux-gnu-gcc
+    CXX := arm-unknown-linux-gnu-g++
+    RANLIB := arm-unknown-linux-gnu-ranlib
+    AR := arm-unknown-linux-gnu-ar ruv
   endif
 
   ifeq ($(HW_OS),sgi_irix)
@@ -324,44 +337,48 @@ SERVER_SKA = $(patsubst %,server_src/%,$(SAFE_KNOWN_ARCHITECTURES))
 SYS_INCLUDE :=
 
 ifeq ($(HW_OS),powerpc_macosx)
-#  SYS_INCLUDE := -I/usr/include
-   SYS_INCLUDE :=-DMACOSX -I../isense
+#   SYS_INCLUDE := -I/usr/include
+    SYS_INCLUDE :=-DMACOSX -I../isense
 endif
 
 ifeq ($(HW_OS),universal_macosx)
-#  SYS_INCLUDE := -I/usr/include
-   SYS_INCLUDE :=-DMACOSX -I../isense
+#   SYS_INCLUDE := -I/usr/include
+    SYS_INCLUDE :=-DMACOSX -I../isense
 endif
 
 ifeq ($(HW_OS),macosx_32_64)
-#  SYS_INCLUDE := -I/usr/include
-   SYS_INCLUDE :=-DMACOSX -I../isense
+#   SYS_INCLUDE := -I/usr/include
+    SYS_INCLUDE :=-DMACOSX -I../isense
 endif
 
 ifeq ($(HW_OS),macosx_64)
-#  SYS_INCLUDE := -I/usr/include
-   SYS_INCLUDE :=-DMACOSX -I../isense
+#   SYS_INCLUDE := -I/usr/include
+    SYS_INCLUDE :=-DMACOSX -I../isense
 endif
 
 ifeq ($(HW_OS),pc_linux)
-	# The following is for the InterSense and Freespace libraries.
-	SYS_INCLUDE := -DUNIX -DLINUX -I../libfreespace/include -I./submodules/hidapi/hidapi -I/usr/include/libusb-1.0
+    # The following is for the InterSense and Freespace libraries.
+    SYS_INCLUDE := -DUNIX -DLINUX -I../libfreespace/include -I./submodules/hidapi/hidapi -I/usr/include/libusb-1.0
+	# On linux, build this as c, not c++.
+    $(HW_OS)/server/vrpn_Local_HIDAPI.o: EXTRA_FLAGS += -x c
 endif
 
 ifeq ($(HW_OS),pc_linux64)
-	# The following is for the InterSense and Freespace libraries.
-	SYS_INCLUDE := -DUNIX -DLINUX -I../libfreespace/include -I./submodules/hidapi/hidapi -I/usr/include/libusb-1.0
+    # The following is for the InterSense and Freespace libraries.
+    SYS_INCLUDE := -DUNIX -DLINUX -I../libfreespace/include -I./submodules/hidapi/hidapi -I/usr/include/libusb-1.0
+	# On linux, build this as c, not c++.
+    $(HW_OS)/server/vrpn_Local_HIDAPI.o: EXTRA_FLAGS += -x c
 endif
 
 ifeq ($(HW_OS),pc_linux_arm)
-  SYS_INCLUDE := -I/opt/Embedix/arm-linux/include
+    SYS_INCLUDE := -I/opt/Embedix/arm-linux/include
 #   -I/usr/local/contrib/include \
 #	  	 -I/usr/local/contrib/mod/include -I/usr/include/bsd \
 #		 -I/usr/include/g++
 endif
 
 ifeq ($(HW_OS),pc_cygwin_arm)
-  SYS_INCLUDE := -I/opt/Embedix/arm-linux/include
+   SYS_INCLUDE := -I/opt/Embedix/arm-linux/include
 #   -I/usr/local/contrib/include \
 #	  	 -I/usr/local/contrib/mod/include -I/usr/include/bsd \
 #		 -I/usr/include/g++
@@ -390,22 +407,12 @@ endif
 # On the PC, place quatlib in the directory ./quat.  No actual system
 # includes should be needed.
 ifeq ($(HW_OS),pc_cygwin)
-  SYS_INCLUDE := -I./submodules/hidapi/hidapi -I/usr/include/libusb-1.0
-  INCLUDE_FLAGS := -I. -I./quat -I./atmellib -I./gpsnmealib ${SYS_INCLUDE}
+    SYS_INCLUDE := -I./submodules/hidapi/hidapi -I/usr/include/libusb-1.0
+    INCLUDE_FLAGS := -I. -I./quat -I./atmellib -I./gpsnmealib ${SYS_INCLUDE}
 else
-  INCLUDE_FLAGS := -I. $(SYS_INCLUDE) -I./quat -I../quat -I./atmellib -I./gpsnmealib
+    INCLUDE_FLAGS := -I. $(SYS_INCLUDE) -I./quat -I../quat -I./atmellib -I./gpsnmealib
 endif
 
-
-ifeq ($(HW_OS),universal_macosx)
-	LOAD_FLAGS := $(LOAD_FLAGS)
-endif
-ifeq ($(HW_OS),macosx_32_64)
-	LOAD_FLAGS := $(LOAD_FLAGS)
-endif
-ifeq ($(HW_OS),macosx_64)
-	LOAD_FLAGS := $(LOAD_FLAGS)
-endif
 
 ##########################
 # Load flags
@@ -414,26 +421,22 @@ endif
 #LOAD_FLAGS := -L./$(HW_OS)$(OBJECT_DIR_SUFFIX) -L/usr/local/lib \
 #		-L/usr/local/contrib/unmod/lib -L/usr/local/contrib/mod/lib -g
 LOAD_FLAGS := -L./$(HW_OS)$(OBJECT_DIR_SUFFIX) -L/usr/local/lib \
-		-L/usr/local/contrib/unmod/lib -L/usr/local/contrib/mod/lib $(DEBUG_FLAGS) $(LDFLAGS)
+              -L/usr/local/contrib/unmod/lib -L/usr/local/contrib/mod/lib $(DEBUG_FLAGS) $(LDFLAGS)
 
 ifeq ($(HW_OS),sgi_irix)
-	LOAD_FLAGS := $(LOAD_FLAGS) -old_ld -LANG:std
+    LOAD_FLAGS := $(LOAD_FLAGS) -old_ld -LANG:std
 endif
 
 ifeq ($(HW_OS),pc_linux)
-	LOAD_FLAGS := $(LOAD_FLAGS) -L/usr/X11R6/lib
+    LOAD_FLAGS := $(LOAD_FLAGS) -L/usr/X11R6/lib
 endif
 
 ifeq ($(HW_OS),pc_linux_ia64)
-	LOAD_FLAGS := $(LOAD_FLAGS) -L/usr/X11R6/lib
+    LOAD_FLAGS := $(LOAD_FLAGS) -L/usr/X11R6/lib
 endif
 
 ifeq ($(HW_OS),pc_linux64)
-	LOAD_FLAGS := $(LOAD_FLAGS) -L/usr/X11R6/lib
-endif
-
-ifeq ($(HW_OS),powerpc_macosx)
-	LOAD_FLAGS := $(LOAD_FLAGS)
+    LOAD_FLAGS := $(LOAD_FLAGS) -L/usr/X11R6/lib
 endif
 
 
@@ -442,16 +445,16 @@ endif
 #
 
 ifeq ($(HW_OS),pc_linux64)
-          ARCH_LIBS := -lbsd -ldl
+      ARCH_LIBS := -lbsd -ldl
 else
   ifeq ($(HW_OS),pc_linux)
-          ARCH_LIBS := -lbsd -ldl
+      ARCH_LIBS := -lbsd -ldl
   else
     ifeq ($(HW_OS),pc_linux_ia64)
-          ARCH_LIBS := -lbsd -ldl
+      ARCH_LIBS := -lbsd -ldl
     else
       ifeq ($(HW_OS),sparc_solaris)
-          ARCH_LIBS := -lsocket -lnsl
+        ARCH_LIBS := -lsocket -lnsl
       else
         ifeq ($(HW_OS),sparc_solaris_64)
           ARCH_LIBS := -lsocket -lnsl
@@ -470,24 +473,18 @@ LIBS := -lquat -lsdi $(TCL_LIBS) -lXext -lX11 $(ARCH_LIBS) -lm
 #
 
 #CFLAGS		 := $(INCLUDE_FLAGS) -g
-override CFLAGS		 := $(INCLUDE_FLAGS) $(DEBUG_FLAGS) $(CFLAGS)
-override CXXFLAGS     := $(INCLUDE_FLAGS) $(DEBUG_FLAGS) $(CXXFLAGS)
+ALL_CFLAGS   = $(STANDARD_CFLAGS) $(INCLUDE_FLAGS) $(DEBUG_FLAGS) $(CFLAGS) $(EXTRA_FLAGS)
+ALL_CXXFLAGS = $(STANDARD_CFLAGS) $(INCLUDE_FLAGS) $(DEBUG_FLAGS) $(CXXFLAGS) $(EXTRA_FLAGS)
 
 # If we're building for sgi_irix, we need both g++ and non-g++ versions,
 # unless we're building for one of the weird ABIs, which are only supported
 # by the native compiler.
 
+all:	client server atmellib gpsnmealib
 ifeq ($(HW_OS),sgi_irix)
   ifeq ($(SGI_ABI),32)
-all:	client server client_g++ server_g++ atmellib gpsnmealib
-  else
-all:	client server atmellib gpsnmealib
-  endif
-else
-  ifeq ($(HW_OS),pc_cygwin)
-all:	client server atmellib gpsnmealib
-  else
-all:	client server atmellib gpsnmealib
+# Also build the G++ versions
+all:	client_g++ server_g++
   endif
 endif
 
@@ -505,28 +502,25 @@ server_g++:
 client: $(OBJECT_DIR) $(OBJECT_DIR)/libvrpn.a
 
 .PHONY:	server
-server: $(SOBJECT_DIR)
-	$(MAKE) $(OBJECT_DIR)/libvrpnserver.a
+server: $(SOBJECT_DIR) $(OBJECT_DIR)/libvrpnserver.a
 
 .PHONY: atmellib
-atmellib: $(AOBJECT_DIR)
-	$(MAKE) $(OBJECT_DIR)/libvrpnatmel.a
+atmellib: $(AOBJECT_DIR) $(OBJECT_DIR)/libvrpnatmel.a
 
 .PHONY: gpsnmealib
-gpsnmealib: $(GOBJECT_DIR)
-	$(MAKE) $(OBJECT_DIR)/libvrpngpsnmea.a
+gpsnmealib: $(GOBJECT_DIR) $(OBJECT_DIR)/libvrpngpsnmea.a
 
 $(OBJECT_DIR):
-	-mkdir -p $(OBJECT_DIR)
+	-mkdir -p $@
 
 $(SOBJECT_DIR):
-	-mkdir -p $(SOBJECT_DIR)
+	-mkdir -p $@
 
 $(AOBJECT_DIR):
-	-mkdir -p $(AOBJECT_DIR)
+	-mkdir -p $@
 
 $(GOBJECT_DIR):
-	-mkdir -p $(GOBJECT_DIR)
+	-mkdir -p $@
 
 #############################################################################
 #
@@ -535,29 +529,25 @@ $(GOBJECT_DIR):
 .SUFFIXES:	.c .C .o .a
 
 .c.o:
-	$(CC) -c $(CFLAGS) $<
+	$(CC) $(ALL_CFLAGS) -c $< -o $@
 .C.o:
-	$(CC) -c $(CXXFLAGS) $<
+	$(CXX) $(ALL_CXXFLAGS) -c $< -o $@
 
-# Build objects from .c files
-$(OBJECT_DIR)/%.o: %.c $(LIB_INCLUDES) $(MAKEFILE)
-	@[ -d $(OBJECT_DIR) ] || mkdir -p $(OBJECT_DIR)
-	$(CC) $(CFLAGS) -DVRPN_CLIENT_ONLY -o $@ -c $<
+# Build client-only objects from .c files
+$(OBJECT_DIR)/%.o: %.c $(LIB_INCLUDES) $(MAKEFILE) $(OBJECT_DIR)
+	$(CC) $(ALL_CFLAGS) -DVRPN_CLIENT_ONLY -o $@ -c $<
 
-# Build objects from .C files
-$(OBJECT_DIR)/%.o: %.C $(LIB_INCLUDES) $(MAKEFILE)
-	@[ -d $(OBJECT_DIR) ] || mkdir -p $(OBJECT_DIR)
-	$(CC) $(CFLAGS) -DVRPN_CLIENT_ONLY -o $@ -c $<
+# Build client-only objects from .C files
+$(OBJECT_DIR)/%.o: %.C $(LIB_INCLUDES) $(MAKEFILE) $(OBJECT_DIR)
+	$(CC) $(ALL_CXXFLAGS) -DVRPN_CLIENT_ONLY -o $@ -c $<
 
-# Build objects from .C files
-$(SOBJECT_DIR)/%.o: %.C $(SLIB_INCLUDES) $(MAKEFILE)
-	@[ -d $(SOBJECT_DIR) ] || mkdir -p $(SOBJECT_DIR)
-	$(CC) $(CFLAGS) -o $@ -c $<
+# # Build objects from .C files
+$(SOBJECT_DIR)/%.o: %.C $(SLIB_INCLUDES) $(MAKEFILE) $(SOBJECT_DIR)
+	$(CXX) $(ALL_CFLAGS) -o $@ -c $<
 
-# Build objects from .C files
-$(AOBJECT_DIR)/%.o: %.C $(ALIB_INCLUDES) $(MAKEFILE)
-	@[ -d $(AOBJECT_DIR) ] || mkdir -p $(AOBJECT_DIR)
-	$(CC) $(CFLAGS) -o $@ -c $<
+# # Build objects from .C files
+$(AOBJECT_DIR)/%.o: %.C $(ALIB_INCLUDES) $(MAKEFILE) $(AOBJECT_DIR)
+	$(CXX) $(ALL_CXXFLAGS) -o $@ -c $<
 
 #
 #
@@ -634,7 +624,7 @@ LIB_INCLUDES = \
 	vrpn_WindowsH.h \
 
 
-$(LIB_OBJECTS):
+# $(LIB_OBJECTS):
 $(OBJECT_DIR)/libvrpn.a: $(MAKEFILE) $(LIB_OBJECTS)
 	$(AR) $(OBJECT_DIR)/libvrpn.a $(LIB_OBJECTS)
 	-$(RANLIB) $(OBJECT_DIR)/libvrpn.a
@@ -725,6 +715,7 @@ SLIB_FILES =  $(LIB_FILES) \
 	vrpn_Tracker_Wintracker.C \
 	vrpn_Tracker_isense.C \
 	vrpn_UNC_Joystick.C \
+  vrpn_Vality.C \
 	vrpn_VPJoystick.C \
 	vrpn_Wanda.C \
 	vrpn_WiiMote.C \
@@ -820,6 +811,7 @@ SLIB_INCLUDES = $(LIB_INCLUDES) \
 	vrpn_Tracker_Wintracker.h \
 	vrpn_Tracker_isense.h \
 	vrpn_UNC_Joystick.h \
+	vrpn_Vality.h \
 	vrpn_VPJoystick.h \
 	vrpn_Wanda.h \
 	vrpn_WiiMote.h \
@@ -840,7 +832,7 @@ ifeq ($(HW_OS), pc_linux)
 	SLIB_INCLUDES += vrpn_DevInput.h
 endif
 
-$(SLIB_OBJECTS):
+# $(SLIB_OBJECTS):
 $(OBJECT_DIR)/libvrpnserver.a: $(MAKEFILE) $(SLIB_OBJECTS)
 	$(AR) $(OBJECT_DIR)/libvrpnserver.a $(SLIB_OBJECTS)
 	-$(RANLIB) $(OBJECT_DIR)/libvrpnserver.a
@@ -1001,7 +993,7 @@ ifeq ($(HW_OS),hp700_hpux10)
 	@echo -- if this causes an error, then delete .depend and type
 	@echo -- \"touch .depend\" to create an empty file
 	@echo ----------------------------------------------------------------
-	$(SHELL) -ec 'g++ -MM $(CXXFLAGS) $(LIB_FILES) \
+	$(SHELL) -ec 'g++ -MM $(ALL_CXXFLAGS) $(LIB_FILES) \
 	    | sed '\''s/\(.*\.o[ ]*:[ ]*\)/$(OBJECT_DIR)\/\1/g'\'' > $(OBJECT_DIR)/.depend'
 else
   ifeq ($(HW_OS),hp_flow_aCC)
@@ -1009,7 +1001,7 @@ else
 	@echo -- if this causes an error, then delete .depend and type
 	@echo -- \"touch .depend\" to create an empty file
 	@echo ----------------------------------------------------------------
-	$(SHELL) -ec 'g++ -MM $(CXXFLAGS) $(LIB_FILES) \
+	$(SHELL) -ec 'g++ -MM $(ALL_CXXFLAGS) $(LIB_FILES) \
 	    | sed '\''s/\(.*\.o[ ]*:[ ]*\)/$(OBJECT_DIR)\/\1/g'\'' > $(OBJECT_DIR)/.depend'
   else
     ifeq ($(HW_OS),powerpc_aix)
@@ -1018,7 +1010,7 @@ else
 	cat *.u > .depend
 	@$(RMF) *.u
     else
-	$(SHELL) -ec '$(CC) -M $(CFLAGS) $(LIB_FILES) \
+	$(SHELL) -ec '$(CXX) -M $(ALL_CXXFLAGS) $(LIB_FILES) \
 	    | sed '\''s/\(.*\.o[ ]*:[ ]*\)/$(OBJECT_DIR)\/\1/g'\'' > $(OBJECT_DIR)/.depend'
     endif
   endif

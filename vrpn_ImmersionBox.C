@@ -123,6 +123,7 @@ vrpn_ImmersionBox::vrpn_ImmersionBox (const char * name,
 
     // Set the status of the buttons, analogs and encoders to 0 to start
     clear_values();
+    dataRecordLength = 0;
 
     // Set the mode to reset
     _status = STATUS_RESETTING;

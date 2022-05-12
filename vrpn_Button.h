@@ -1,4 +1,5 @@
 #ifndef VRPN_BUTTON_H
+#define VRPN_BUTTON_H
 #include <stddef.h> // for NULL
 
 #include "vrpn_BaseClass.h" // for vrpn_Callback_List, etc
@@ -292,5 +293,4 @@ protected:
     handle_states_message(void *userdata, vrpn_HANDLERPARAM p);
 };
 
-#define VRPN_BUTTON_H
 #endif

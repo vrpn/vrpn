@@ -4,7 +4,7 @@
 
 # XXX TODO Install these bindings, don't just build them!
 
-if(JAVA_FOUND AND JNI_FOUND AND JAVAH_EXECUTABLE AND VRPN_BUILD_JAVA)
+if(JAVA_FOUND AND JNI_FOUND AND JAVAH_EXECUTABLE AND VRPN_BUILD_JAVA AND NOT ${Java_VERSION_MAJOR} LESS 8)
 
 	# Set up file lists
 	set(JAVA_CLASSES
@@ -28,18 +28,20 @@ if(JAVA_FOUND AND JNI_FOUND AND JAVAH_EXECUTABLE AND VRPN_BUILD_JAVA)
 	set(JAVAC_INPUT)
 	set(JAVA_JNI_HEADERS)
 	foreach(class ${JAVA_CLASSES})
+		set(SRC "${CMAKE_CURRENT_SOURCE_DIR}/vrpn/${class}.java")
+		set(HEADER "${CMAKE_CURRENT_BINARY_DIR}/vrpn_${class}.h")
+		set(CLASS "${CMAKE_CURRENT_BINARY_DIR}/vrpn/${class}.class")
 		list(APPEND
-			JAVAC_OUTPUT
-			"${CMAKE_CURRENT_BINARY_DIR}/vrpn/${class}.class")
+			JAVAC_OUTPUT "${CLASS}"
+			)
 		list(APPEND
-			JAVAC_INPUT
-			"${CMAKE_CURRENT_SOURCE_DIR}/vrpn/${class}.java")
+			JAVAC_INPUT "${SRC}")
 		list(APPEND
 			JAVA_JNI_HEADERS
-			"${CMAKE_CURRENT_BINARY_DIR}/vrpn_${class}.h")
+			"${HEADER}/")
 	endforeach()
 
-	# *.java -> *.class
+	# *.java -> *.class and *.h in one step (since javah doesn't work so great anymore?)
 	add_custom_command(OUTPUT
 		${JAVAC_OUTPUT}
 		DEPENDS
@@ -49,6 +51,9 @@ if(JAVA_FOUND AND JNI_FOUND AND JAVAH_EXECUTABLE AND VRPN_BUILD_JAVA)
 		-d
 		"${CMAKE_CURRENT_BINARY_DIR}"
 		${JAVAC_INPUT}
+		# This part puts the native header where we want
+		-h
+		"${CMAKE_CURRENT_BINARY_DIR}"
 		COMMENT
 		"Compiling Java sources to class files...")
 

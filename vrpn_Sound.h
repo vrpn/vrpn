@@ -3,6 +3,7 @@
 // April 12 2000 - ZK
 
 #ifndef VRPN_SOUND_H
+#define VRPN_SOUND_H
 
 #include "vrpn_BaseClass.h" // for vrpn_BaseClass
 #include "vrpn_Configure.h" // for VRPN_CALLBACK, VRPN_API
@@ -439,5 +440,4 @@ private:
 };
 #endif //#ifndef VRPN_CLIENT_ONLY
 
-#define VRPN_SOUND_H
 #endif

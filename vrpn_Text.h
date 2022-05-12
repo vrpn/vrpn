@@ -6,6 +6,7 @@
 */
 
 #ifndef VRPN_TEXT_H
+#define VRPN_TEXT_H
 #include <stddef.h> // for NULL
 
 #include "vrpn_BaseClass.h"  // for vrpn_BaseClass, etc
@@ -98,5 +99,4 @@ protected:
     virtual int register_types(void) { return 0; };
 };
 
-#define VRPN_TEXT_H
 #endif

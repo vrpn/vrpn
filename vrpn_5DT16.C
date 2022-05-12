@@ -105,13 +105,13 @@ int vrpn_5dt16::reset (void)
   char text[50];
   sprintf(text,"Hardware Version %i.0%i",l_inbuf[0],l_inbuf[1]); // hardware version
   VRPN_MSG_WARNING(text);
-  if (l_inbuf[2] | 1) //right or left glove
+  if (l_inbuf[2] & 1) //right or left glove
   {
   	  VRPN_MSG_WARNING ("A right glove is ready");
   } else {
 	  VRPN_MSG_WARNING ("A left glove is ready");
   }
-  if (l_inbuf[3] | 1) //wireless glove or wired
+  if (l_inbuf[3] & 1) //wireless glove or wired
   {
 	  VRPN_MSG_WARNING ("no wireless glove");
   } else {

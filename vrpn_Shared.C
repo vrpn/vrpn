@@ -1,6 +1,7 @@
 #include <math.h>   // for floor, fmod
 #include <stddef.h> // for size_t
 #include <stdio.h>  // for fprintf() and such
+#include <ctime>
 
 #ifdef _MSC_VER
 // Don't tell us about strcpy being dangerous.
@@ -399,7 +400,6 @@ VRPN_API int vrpn_unbuffer(const char **buffer, char *string, vrpn_int32 length)
 
 #ifdef VRPN_USE_STD_CHRONO
 #include <chrono>
-#include <ctime>
 
 ///////////////////////////////////////////////////////////////
 // With Visual Studio 2013 64-bit, the hires clock produces a clock that has a

@@ -51,6 +51,7 @@ vrpn_5dt::vrpn_5dt (const char * p_name, vrpn_Connection * p_c, const char * p_p
 
   // Set the status of the buttons and analogs to 0 to start
   clear_values();
+  vrpn_gettimeofday(&timestamp, NULL);
 
   // Set the mode to reset
   _status = STATUS_RESETTING;
@@ -190,12 +191,12 @@ vrpn_5dt::reset (void)
     sprintf (l_errmsg, "vrpn_5dt: glove \"%s\"version %d.%d\n", &l_inbuf [16], l_inbuf [2], l_inbuf [3]);
     VRPN_MSG_INFO (l_errmsg);
 
-    if (l_inbuf[4] | 1) {
+    if (l_inbuf[4] & 1) {
       VRPN_MSG_INFO ("A right glove is ready");
     } else {
       VRPN_MSG_INFO ("A left glove is ready");
     }
-    if (l_inbuf[5] | 16) {
+    if (l_inbuf[5] & 16) {
       VRPN_MSG_INFO ("Pitch and Roll are available");
     } else {
       VRPN_MSG_INFO ("Pitch and Roll are not available");

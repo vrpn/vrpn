@@ -2616,7 +2616,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="vrpn_VPJoystick.C"
+				RelativePath="vrpn_Vality.C"
 				>
 				<FileConfiguration
 					Name="Release|Win32"
@@ -3282,6 +3282,10 @@
 			</File>
 			<File
 				RelativePath="vrpn_UNC_Joystick.h"
+				>
+			</File>
+			<File
+				RelativePath="vrpn_Vality.h"
 				>
 			</File>
 			<File

@@ -1,4 +1,5 @@
 #ifndef VRPN_TNG3B_H
+#define VRPN_TNG3B_H
 #include "vrpn_Analog.h"                // for vrpn_Serial_Analog
 #include "vrpn_Button.h"                // for vrpn_Button_Filter
 #include "vrpn_Configure.h"             // for VRPN_API
@@ -61,5 +62,4 @@ class VRPN_API vrpn_Tng3: public vrpn_Serial_Analog,
     unsigned char bDataPacketStart;
 };
 
-#define VRPN_TNG3B_H
 #endif

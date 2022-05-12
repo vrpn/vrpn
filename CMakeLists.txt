@@ -963,7 +963,7 @@ if(VRPN_BUILD_EXTRA_COMPILER_WARNINGS)
 	endif()
 endif()
 
-set(VRPN_CLIENT_ONLY)
+set(VRPN_CLIENT_ONLY OFF)
 if(VRPN_BUILD_CLIENT_LIBRARY AND NOT VRPN_BUILD_SERVER_LIBRARY)
 	# We can define VRPN_CLIENT_ONLY in the header in this case!
 	set(VRPN_CLIENT_ONLY ON)
@@ -1161,6 +1161,7 @@ set(VRPN_SERVER_SOURCES
 	vrpn_XInputGamepad.C
 	vrpn_Xkeys.C
 	vrpn_Tracker_LibertyHS.C
+	vrpn_Vality.C
 	vrpn_YEI_3Space.C
 	vrpn_Zaber.C
 	server_src/vrpn_Generic_server_object.C
@@ -1274,6 +1275,7 @@ set(VRPN_SERVER_PUBLIC_HEADERS
 	vrpn_XInputGamepad.h
 	vrpn_Xkeys.h
 	vrpn_Tracker_LibertyHS.h
+	vrpn_Vality.h
 	vrpn_YEI_3Space.h
 	vrpn_Zaber.h
 	server_src/vrpn_Generic_server_object.h)
@@ -1350,13 +1352,13 @@ if(VRPN_BUILD_CLIENT_LIBRARY)
 		SOVERSION
 		0)
 
-	if(NOT VRPN_CLIENT_ONLY)
-		set_property(TARGET
-			vrpn
-			PROPERTY
-			COMPILE_DEFINITIONS
-			"VRPN_CLIENT_ONLY")
-	endif()
+  # Always compile code the client library with VRPN_CLIENT_ONLY defined.
+  set_property(TARGET
+    vrpn
+    PROPERTY
+    COMPILE_DEFINITIONS
+    "VRPN_CLIENT_ONLY")
+
 	set_property(TARGET
 		vrpn
 		PROPERTY
@@ -1438,7 +1440,7 @@ endif()
 
 #-----------------------------------------------------------------------------
 # Testing applications that live in the main directory.
-if(BUILD_TESTING)
+if(BUILD_TESTING AND NOT VRPN_CLIENT_ONLY)
 	foreach(SOURCE time_test.cpp)
 		get_filename_component(APP ${SOURCE} NAME_WE)
 		add_executable(${APP} ${SOURCE})
