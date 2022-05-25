@@ -1,6 +1,6 @@
 [submodule "submodules/hidapi"]
 	path = submodules/hidapi
-	url = https://github.com/libusb/hidapi.git
+	url = https://github.com/vrpn/libusb-hidapi.git
 	branch = vrpn-utilized-head
 [submodule "submodules/jsoncpp"]
 	path = submodules/jsoncpp
