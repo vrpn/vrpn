@@ -39,7 +39,7 @@ const unsigned char ZERO = 0;
 const unsigned char ZEROES[] = "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0";
 const unsigned char PLOTTER_ON[] = { ESC, DEVICE, 'E', ZERO };
 const unsigned char RESET[] = { ESC, DEVICE, 'N', ZERO };
-const unsigned char GIN[] = { ESC, DEVICE, 'M' };
+const unsigned char GIN[] = { ESC, DEVICE, 'M', ZERO };
 const unsigned char MOVE_TEMPLATE[] = { GS, 0x20, 0x60, 0x60, 0x20, 0x40 };
 const int	    DATA_RECORD_LENGTH = 7;
 
