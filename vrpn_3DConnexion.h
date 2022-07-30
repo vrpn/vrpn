@@ -154,6 +154,14 @@ public:
 protected:
 };
 
+class VRPN_API vrpn_3DConnexion_SpaceMouseWireless2 : public vrpn_3DConnexion {
+public:
+    vrpn_3DConnexion_SpaceMouseWireless2(const char* name, vrpn_Connection* c = 0);
+    virtual ~vrpn_3DConnexion_SpaceMouseWireless2() {};
+
+protected:
+};
+
 class VRPN_API vrpn_3DConnexion_SpaceExplorer : public vrpn_3DConnexion {
 public:
   vrpn_3DConnexion_SpaceExplorer(const char *name, vrpn_Connection *c = 0);

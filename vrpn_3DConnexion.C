@@ -32,6 +32,7 @@ static const vrpn_uint16 vrpn_3DCONNEXION_SPACEMOUSE = 50691;
 static const vrpn_uint16 vrpn_3DCONNEXION_SPACEMOUSEPRO = 50731;
 static const vrpn_uint16 vrpn_3DCONNEXION_SPACEMOUSECOMPACT = 50741;
 static const vrpn_uint16 vrpn_3DCONNEXION_SPACEMOUSEWIRELESS = 50735;
+static const vrpn_uint16 vrpn_3DCONNEXION_SPACEMOUSEWIRELESS2 = 50734;
 static const vrpn_uint16 vrpn_3DCONNEXION_SPACEMOUSEPROWIRELESS = 0xC631;
 static const vrpn_uint16 vrpn_3DCONNEXION_SPACEBALL5000 = 0xc621;   // 50721;
 static const vrpn_uint16 vrpn_3DCONNEXION_SPACEPILOT =  0xc625;
@@ -359,6 +360,11 @@ vrpn_3DConnexion_SpaceMouseCompact::vrpn_3DConnexion_SpaceMouseCompact(const cha
 
 vrpn_3DConnexion_SpaceMouseWireless::vrpn_3DConnexion_SpaceMouseWireless(const char *name, vrpn_Connection *c)
     : vrpn_3DConnexion(new vrpn_HidProductAcceptor(vrpn_SPACEMOUSEWIRELESS_VENDOR, vrpn_3DCONNEXION_SPACEMOUSEWIRELESS), 2, name, c, vrpn_SPACEMOUSEWIRELESS_VENDOR, vrpn_3DCONNEXION_SPACEMOUSEWIRELESS)
+{
+}
+
+vrpn_3DConnexion_SpaceMouseWireless2::vrpn_3DConnexion_SpaceMouseWireless2(const char* name, vrpn_Connection* c)
+    : vrpn_3DConnexion(new vrpn_HidProductAcceptor(vrpn_SPACEMOUSEWIRELESS_VENDOR, vrpn_3DCONNEXION_SPACEMOUSEWIRELESS2), 2, name, c, vrpn_SPACEMOUSEWIRELESS_VENDOR, vrpn_3DCONNEXION_SPACEMOUSEWIRELESS2)
 {
 }
 
