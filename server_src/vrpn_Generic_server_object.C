@@ -5148,7 +5148,7 @@ int vrpn_Generic_Server_Object::setup_Vality_vGlass(char *&pch, char *line, FILE
         return -1;
     }
 
-    // Open the Oculus DK2
+    // Open the vGlass
     if (verbose) {
         printf("Opening Vality_vGlass\n");
     }
@@ -5159,6 +5159,40 @@ int vrpn_Generic_Server_Object::setup_Vality_vGlass(char *&pch, char *line, FILE
 #else
     fprintf(stderr,
             "Vality_vGlass driver works only with VRPN_USE_HID defined!\n");
+#endif
+    return 0; // successful completion
+}
+
+int vrpn_Generic_Server_Object::setup_Microsoft_Xbox_360(char*& pch, char* line, FILE*)
+{
+    char s2[LINESIZE];
+    unsigned int vid, pid;
+
+    VRPN_CONFIG_NEXT();
+    int ret = sscanf(pch, "%511s %x %x", s2, &vid, &pid);
+    switch (ret) {
+    case 1:
+        _devices->add(new vrpn_Microsoft_Controller_Raw_Xbox_360(s2, connection));
+        return 0;
+    case 3:
+        // Fall through to opening with the custom values below.
+        break;
+    default:
+        fprintf(stderr, "Bad Microsoft_Controller_Raw_Xbox_360 line: %s\n", line);
+        return -1;
+    }
+
+    // Open the device
+    if (verbose) {
+        printf("Opening Vality_vGlass\n");
+    }
+
+#ifdef VRPN_USE_HID
+    _devices->add(new vrpn_Microsoft_Controller_Raw_Xbox_360_base(s2, connection,
+        vid, pid));
+#else
+    fprintf(stderr,
+        "Microsoft_Controller_Raw_Xbox_360 driver works only with VRPN_USE_HID defined!\n");
 #endif
     return 0; // successful completion
 }
@@ -5631,8 +5665,7 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(
                         vrpn_Microsoft_Controller_Raw_Xbox_S>);
                 }
                 else if (VRPN_ISIT("vrpn_Microsoft_Controller_Raw_Xbox_360")) {
-                    VRPN_CHECK(templated_setup_HID_device_name_only<
-                        vrpn_Microsoft_Controller_Raw_Xbox_360>);
+                    VRPN_CHECK(setup_Microsoft_Xbox_360);
                 }
                 else if (VRPN_ISIT("vrpn_Microsoft_Controller_Raw_Xbox_360_Wireless")) {
                     VRPN_CHECK(templated_setup_HID_device_name_only<

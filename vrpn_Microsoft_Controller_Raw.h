@@ -104,14 +104,14 @@ protected:
 class vrpn_Microsoft_Controller_Raw_Xbox_360_base: protected vrpn_Microsoft_Controller_Raw, public vrpn_Analog, public vrpn_Button_Filter, public vrpn_Dial
 {
 public:
+    vrpn_Microsoft_Controller_Raw_Xbox_360_base(const char* name, vrpn_Connection* c = 0,
+        vrpn_uint16 vendor = 0, vrpn_uint16 product = 0);
+
     virtual ~vrpn_Microsoft_Controller_Raw_Xbox_360_base(void) {};
 
 	virtual void mainloop(void);
-protected:
-    // Only subclasses can construct.
-    vrpn_Microsoft_Controller_Raw_Xbox_360_base(const char *name, vrpn_Connection *c = 0,
-        vrpn_uint16 vendor = 0, vrpn_uint16 product = 0);
 
+protected:
     // Send report iff changed
 	void report_changes (vrpn_uint32 class_of_service = vrpn_CONNECTION_LOW_LATENCY);
 	// Send report whether or not changed
