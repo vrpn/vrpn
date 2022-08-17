@@ -5169,6 +5169,7 @@ int vrpn_Generic_Server_Object::setup_Microsoft_Xbox_360(char*& pch, char* line,
     unsigned int vid, pid;
 
     VRPN_CONFIG_NEXT();
+#ifdef VRPN_USE_HID
     int ret = sscanf(pch, "%511s %x %x", s2, &vid, &pid);
     switch (ret) {
     case 1:
@@ -5187,7 +5188,6 @@ int vrpn_Generic_Server_Object::setup_Microsoft_Xbox_360(char*& pch, char* line,
         printf("Opening Vality_vGlass\n");
     }
 
-#ifdef VRPN_USE_HID
     _devices->add(new vrpn_Microsoft_Controller_Raw_Xbox_360_base(s2, connection,
         vid, pid));
 #else
