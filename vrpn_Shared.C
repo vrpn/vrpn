@@ -1238,13 +1238,17 @@ bool vrpn_test_vrpn_vector(void)
     }
   }
   
-  // Test front(), assign(), and clear()
+  // Test front(), back(), assign(), and clear()
   {
     vrpn_vector<vrpn_uint32> v1;
     v1.push_back(1);
     v1.push_back(2);
     if (v1.front() != 1) {
       fprintf(stderr,"vrpn_test_vrpn_vector(): front failed\n");
+      return false;
+    }
+    if (v1.back() != 2) {
+      fprintf(stderr,"vrpn_test_vrpn_vector(): back failed\n");
       return false;
     }
     vrpn_vector<vrpn_uint32> v2;
@@ -1262,6 +1266,19 @@ bool vrpn_test_vrpn_vector(void)
     v1.clear();
     if (v1.size() != 0) {
       fprintf(stderr,"vrpn_test_vrpn_vector(): clear failed\n");
+      return false;
+    }
+  }
+  
+  // Test begin() and end()
+  {
+    vrpn_vector<vrpn_uint32> v0, v1(10);
+    if ((v0.begin() != 0) || (v0.end() != 0)) {
+      fprintf(stderr,"vrpn_test_vrpn_vector(): empty begin/end failed\n");
+      return false;
+    }
+    if ((v1.begin() != v1.data()) || (v1.end() != &v1.data()[10])) {
+      fprintf(stderr,"vrpn_test_vrpn_vector(): begin/end failed\n");
       return false;
     }
   }

@@ -533,8 +533,11 @@ template <size_t charCount> void vrpn_strcpy(char (&to)[charCount], const char* 
 
 template <class T> class vrpn_vector {
 public:
+  typedef vrpn_uint32 size_type;
+  typedef T* iterator;
+  typedef const T* const_iterator;
   vrpn_vector() : m_size(0), m_data(0), m_allocated(0) {};
-  vrpn_vector(vrpn_uint32 s) : m_size(0), m_data(0), m_allocated(0) {
+  vrpn_vector(size_type s) : m_size(0), m_data(0), m_allocated(0) {
     m_data = new T[s];
     m_size = m_allocated = s;
   }
@@ -556,9 +559,9 @@ public:
     m_size = m_allocated = 0;
   }
   T* data() { return m_data; }
-  vrpn_uint32 size() const { return m_size; }
+  size_type size() const { return m_size; }
   bool empty() const { return m_size == 0; }
-  void resize(vrpn_uint32 s) {
+  void resize(size_type s) {
     // If we already have enough allocated space, set the size
     // and leave the allocated size alone.
     if (s <= m_allocated) {
@@ -582,15 +585,18 @@ public:
   T& front() {
     return m_data[0];
   }
-  T& operator[]( vrpn_uint32 pos ) {
+  T& back() {
+    return m_data[m_size-1];
+  }
+  T& operator[]( size_type pos ) {
     return m_data[pos];
   }
-  const T& operator[]( vrpn_uint32 pos ) const {
+  const T& operator[]( size_type pos ) const {
     return m_data[pos];
   }
-  void assign( vrpn_uint32 count, const T& value ) {
+  void assign( size_type count, const T& value ) {
     resize(count);
-    for (vrpn_uint32 i = 0; i < size(); i++) {
+    for (size_type i = 0; i < size(); i++) {
       m_data[i] = value;
     }
   }
@@ -602,8 +608,24 @@ public:
       push_back(*it);
     }
   }
+  iterator begin() { return m_data; }
+  const_iterator begin() const { return m_data; }
+  iterator end() {
+    if (m_size != 0) {
+      return &m_data[m_size];
+    } else {
+      return 0;
+    }
+  }
+  const_iterator end() const {
+    if (m_size != 0) {
+      return &m_data[m_size];
+    } else {
+      return 0;
+    }
+  }
 private:
-  vrpn_uint32 m_size, m_allocated;
+  size_type m_size, m_allocated;
   T* m_data;
 };
 
