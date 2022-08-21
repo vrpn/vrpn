@@ -20,6 +20,7 @@
 // Internal Includes
 #include "vrpn_Types.h"
 #include "vrpn_Configure.h"
+#include "vrpn_Shared.h"
 
 #include "vrpn_Assert.h"
 
@@ -27,7 +28,6 @@
 // - none
 
 // Standard includes
-#include <vector>
 #include <stddef.h> // for NULL
 
 class VRPN_API vrpn_Endpoint;
@@ -60,7 +60,7 @@ namespace vrpn {
         typedef vrpn_Endpoint *base_pointer;
 
     private:
-        typedef std::vector<pointer> container_type;
+        typedef vrpn_vector<pointer> container_type;
 
     public:
         typedef container_type::size_type size_type;
