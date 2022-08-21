@@ -20,7 +20,6 @@ class VRPN_API vrpn_Connection;
 #ifndef sgi
 
 #include <stdio.h>                      // for NULL
-#include <vector>                       // for vector
 
 #include "vrpn_Analog.h"                // for vrpn_Analog
 #include "vrpn_Button.h"                // for vrpn_Button_Filter
@@ -126,16 +125,16 @@ class VRPN_API vrpn_Tracker_DTrack : public vrpn_Tracker, public vrpn_Button_Fil
 	int fix_nbody;                 // fixed number of standard bodies
 	int fix_nflystick;             // fixed number of Flysticks
 
-	std::vector<int> fix_idbody;      // fixed vrpn standard body IDs
-	std::vector<int> fix_idflystick;  // fixed vrpn Flystick IDs
+	vrpn_vector<int> fix_idbody;      // fixed vrpn standard body IDs
+	vrpn_vector<int> fix_idflystick;  // fixed vrpn Flystick IDs
 
 	bool warning_nbodycal;         // already warned cause of missing '6dcal' data
 
 	// preparing data for VRPN:
 	// these functions convert DTrack data to vrpn data
 
-	std::vector<bool> joy_simulate;  // simulate time varying floating values
-	std::vector<float> joy_last;     // current value of 'joystick' channel (hor, ver)
+	vrpn_vector<bool> joy_simulate;  // simulate time varying floating values
+	vrpn_vector<float> joy_last;     // current value of 'joystick' channel (hor, ver)
 	float joy_incPerSec;             // increase of 'joystick' channel (in 1/sec)
 
 	int dtrack2vrpn_marker(int id, const char* str_dtrack, int id_dtrack,
@@ -161,15 +160,15 @@ class VRPN_API vrpn_Tracker_DTrack : public vrpn_Tracker, public vrpn_Button_Fil
 	
 	bool output_3dof_marker;                         // 3dof marker output if available
 	int act_num_marker;                              // number of 3dof marker (due to '3d' line)
-	std::vector<vrpn_dtrack_marker_type> act_marker; // array containing 3dof marker data
+	vrpn_vector<vrpn_dtrack_marker_type> act_marker; // array containing 3dof marker data
 
 	int act_num_body;                                // number of calibrated standard bodies (due to '6d' line)
-	std::vector<vrpn_dtrack_body_type> act_body;     // array containing standard body data
+	vrpn_vector<vrpn_dtrack_body_type> act_body;     // array containing standard body data
 	bool act_has_bodycal_format;                     // DTrack sent '6dcal' format
 	int act_num_bodycal;                             // number of calibrated standard bodies (due to '6dcal' line)
 
 	int act_num_flystick;                            // number of calibrated Flysticks
-	std::vector<vrpn_dtrack_flystick_type> act_flystick;  // array containing Flystick data
+	vrpn_vector<vrpn_dtrack_flystick_type> act_flystick;  // array containing Flystick data
 	bool act_has_old_flystick_format;                // DTrack uses old Flystick format
 
 	int d_lasterror;                // last receive error

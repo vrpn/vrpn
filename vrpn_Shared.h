@@ -518,3 +518,94 @@ template <size_t charCount> void vrpn_strcpy(char (&to)[charCount], const char* 
   // Ensure null-termination.
   to[charCount - 1] = 0;
 }
+
+// This is a replacement for std::vector that implements the subset of
+// features needed for the VRPN objects that use it.
+// We can't use std::vector because:
+//  (1) We need to continue to support compilers from before it
+//      was defined.
+//  (2) Phantom force-feedback drivers include <vector.h>, and the same
+//      code that uses it cannot include <vector>; they are link-time
+//      incompatible.
+// We call this structure vrpn_vector rather than vrpn::vector to avoid
+// having an application end up using it by mistake when they mean
+// std::vector.
+
+template <class T> class vrpn_vector {
+public:
+  vrpn_vector() : m_size(0), m_data(0), m_allocated(0) {};
+  vrpn_vector(vrpn_uint32 s) : m_size(0), m_data(0), m_allocated(0) {
+    m_data = new T[s];
+    m_size = m_allocated = s;
+  }
+  vrpn_vector( const vrpn_vector &from )
+  : m_size(from.size()), m_data(0), m_allocated(from.size()) {
+    m_data = new T[m_size];
+    for (size_t i = 0; i < m_size; i++) {
+      m_data[i] = from.m_data[i];
+    }
+  }
+  template< class InputIt >
+  vrpn_vector( InputIt first, InputIt last ) : m_size(0), m_data(0), m_allocated(0) {
+    for (InputIt it = first; it != last; ++it) {
+      push_back(*it);
+    }
+  }
+  ~vrpn_vector() {
+    delete [] m_data;
+    m_size = m_allocated = 0;
+  }
+  T* data() { return m_data; }
+  vrpn_uint32 size() const { return m_size; }
+  bool empty() const { return m_size == 0; }
+  void resize(vrpn_uint32 s) {
+    // If we already have enough allocated space, set the size
+    // and leave the allocated size alone.
+    if (s <= m_allocated) {
+      m_size = s;
+    } else {
+      // We do not have enough space, so we need to allocate a new buffer
+      // and then copy the old buffer and then delete the original buffer.
+      T* newData = new T[s];
+      for (size_t i = 0; i < m_size; i++) {
+        newData[i] = m_data[i];
+      }
+      delete [] m_data;
+      m_data = newData;
+      m_size = m_allocated = s;
+    }
+  }
+  void push_back (const T& val) {
+    resize(m_size + 1);
+    m_data[m_size-1] = val;
+  }
+  T& front() {
+    return m_data[0];
+  }
+  T& operator[]( vrpn_uint32 pos ) {
+    return m_data[pos];
+  }
+  const T& operator[]( vrpn_uint32 pos ) const {
+    return m_data[pos];
+  }
+  void assign( vrpn_uint32 count, const T& value ) {
+    resize(count);
+    for (vrpn_uint32 i = 0; i < size(); i++) {
+      m_data[i] = value;
+    }
+  }
+  void clear() { m_size = 0; }
+  template< class InputIt >
+  void assign( InputIt first, InputIt last ) {
+    clear();
+    for (InputIt it = first; it != last; it++) {
+      push_back(*it);
+    }
+  }
+private:
+  vrpn_uint32 m_size, m_allocated;
+  T* m_data;
+};
+
+// Returns true if tests work and false if they do not.
+extern bool vrpn_test_vrpn_vector(void);

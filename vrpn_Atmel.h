@@ -57,7 +57,6 @@
 
 /***************************************************************************************************/
 /* system includes */
-#include <vector>                       // for vector
 #include <stddef.h>                     // for NULL
 
 /***************************************************************************************************/
@@ -119,7 +118,7 @@ private:
 
   // indicator for io-mode of the channels
   // one of the predefined values: VRPN_ATMEL_MODE_* 
-  std::vector<int> _channel_mode;
+  vrpn_vector<int> _channel_mode;
 
   // helper for Serial_Alive: do the stuff not in every mainloop -> _time_alive
   struct timeval _time_alive;

@@ -78,7 +78,6 @@ enum mncapi_stream_t {
 #endif // !defined(MNCAPI_PREVIEW_SIZE)
 
 #include <string>
-#include <vector>
 
 #if defined(_WIN32)
 #  include <windows.h>
@@ -110,7 +109,7 @@ typedef void (MNCAPI_CALL_API *MNCAPI_CLOSE_FN)(int);
 */
 class Sampler {
 public:
-  typedef std::vector<float> data_type;
+  typedef vrpn_vector<float> data_type;
 
   Sampler(const std::string &address, unsigned port);
   ~Sampler();

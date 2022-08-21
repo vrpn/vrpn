@@ -39,7 +39,6 @@
 #include <sstream>
 #include <algorithm>
 #include <map>
-#include <vector>
 
 #define MM_TO_METERS (0.001)
 #define MSGBUFSIZE 1024
@@ -69,7 +68,7 @@ struct SensorInfo {
 
 
 //
-typedef std::vector<SensorInfo> Sensors;
+typedef vrpn_vector<SensorInfo> Sensors;
 
 
 //
@@ -204,7 +203,7 @@ bool vrpn_Tracker_PhaseSpace::create_trackers()
   // create trackers
   int nr = 0;
   int nm = 0;
-  std::vector<uint32_t> ti;
+  vrpn_vector<uint32_t> ti;
 
   // create rigid trackers
   for(Sensors::iterator s = smgr->begin(); s != smgr->end(); s++)
@@ -540,8 +539,8 @@ public:
     keyvals.clear();
     _error.str("");
 
-    std::vector<char> current_key;
-    std::vector<char> current_val;
+    vrpn_vector<char> current_key;
+    vrpn_vector<char> current_val;
 
     int i = 0;
     while(str[i])
@@ -843,7 +842,7 @@ void vrpn_Tracker_PhaseSpace::report_button_analog(vrpn_int32 sensor, int value)
 
 //
 template<class A>
-const A* find(int id, size_t& hint, std::vector<A> &data)
+const A* find(int id, size_t& hint, vrpn_vector<A> &data)
 {
   if(hint >= data.size() || id != data[hint].id)
     {
@@ -934,8 +933,8 @@ int vrpn_Tracker_PhaseSpace::get_report(void)
     }
 
   int slave = context.property<int>("slave");
-  std::vector<const OWL::Marker*> reported_markers;
-  std::vector<const OWL::Rigid*> reported_rigids;
+  vrpn_vector<const OWL::Marker*> reported_markers;
+  vrpn_vector<const OWL::Rigid*> reported_rigids;
   int sensor = 0;
 
   for(Sensors::iterator s = smgr->begin(); s != smgr->end(); s++)

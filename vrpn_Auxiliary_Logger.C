@@ -61,7 +61,7 @@ bool vrpn_Auxiliary_Logger::pack_log_message_of_type(
     struct timeval now;
     vrpn_int32 bufsize =
         static_cast<vrpn_int32>(4 * sizeof(lil) + lil + lol + ril + rol);
-    std::vector<char> buf;
+    vrpn_vector<char> buf;
     try {
       buf.resize(bufsize);
     } catch (...) {

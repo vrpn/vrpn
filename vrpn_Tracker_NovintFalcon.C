@@ -15,7 +15,6 @@
 #include "vrpn_Tracker_NovintFalcon.h"
 
 #ifdef VRPN_USE_LIBNIFALCON
-#include <vector>
 #include <array>
 #include <memory>
 #include "falcon/core/FalconDevice.h"
@@ -472,7 +471,7 @@ static int VRPN_CALLBACK handle_forcefield_change_message(void *userdata, vrpn_H
 /// class to collect all force generating objects.
 class vrpn_NovintFalcon_ForceObjects {
 public:
-    std::vector<ForceFieldEffect*> m_FFEffects;
+    vrpn_vector<ForceFieldEffect*> m_FFEffects;
 
 protected:
     d_vector m_curforce; //< collected force value

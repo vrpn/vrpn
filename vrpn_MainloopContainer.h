@@ -15,11 +15,6 @@
 // Distributed under the Boost Software License, Version 1.0.
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
-//
-// *** WARNING: This file must only be included in a .cpp or .C file, not
-// in a .h file, because it includes <vector>, and we can't have any standard
-// library files in the VRPN headers because that will make VRPN incompatible
-// with libraries that use the other flavor of <vector.h>.
 
 #pragma once
 
@@ -28,9 +23,6 @@
 
 // Library/third-party includes
 // - none
-
-// Standard includes
-#include <vector>
 
 /// A container that holds and owns one or more VRPN objects,
 class vrpn_MainloopContainer {
@@ -65,7 +57,7 @@ public:
     void mainloop();
 
 private:
-    std::vector<vrpn_MainloopObject *> _vrpn;
+    vrpn_vector<vrpn_MainloopObject *> _vrpn;
 };
 
 /* -- inline implementations -- */
