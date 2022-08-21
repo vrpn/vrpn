@@ -115,7 +115,8 @@ vrpn_Event_Mouse::process_mouse_data() {
     int index;
 
     // process data stored by the base class
-    for( event_iter_t iter = event_data.begin(); iter != event_data.end(); ++iter) {
+    for( vrpn_uint32 i = 0; i < event_data.size(); ++i) {
+      struct vrpn_Event::input_event *iter = &(event_data.data()[i]);
 
       switch ((*iter).type) {
         case EV_REL:

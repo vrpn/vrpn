@@ -848,7 +848,7 @@ int vrpn_Log::setCompoundName(const char *name, int index)
     // The result of printing an integer will always be less than 100 characters.
     // Fill it with zeroes so that whatever string is there will always be NULL-
     // terminated.
-    std::vector<char> newName;
+    vrpn_vector<char> newName;
     newName.assign(strlen(name) + 100 + 1, 0);
     const char *dot;
     size_t len;

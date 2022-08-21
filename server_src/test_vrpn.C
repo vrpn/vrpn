@@ -355,6 +355,13 @@ int main (int argc, char * argv [])
 		fprintf(stderr, "Usage: %s\n", argv[0]);
 		return -1;
 	}
+  
+  //---------------------------------------------------------------------
+  // Test the vrpn_vector class.
+  if (!vrpn_test_vrpn_vector()) {
+      fprintf(stderr, "vrpn_test_vrpn_vector() failed!\n");
+      return -1;
+  }
 
     //---------------------------------------------------------------------
     // test the packing and unpacking routines

@@ -16,7 +16,6 @@
 #define _VRPN_EVENT_ANALOG_H_
 
 // includes, system
-#include <vector>                       // for vector
 
 // includes, project
 #include "vrpn_Analog.h"                // for vrpn_Analog
@@ -46,8 +45,7 @@ protected:
 protected:
 
   // typedefs for convenience
-  typedef std::vector<struct vrpn_Event::input_event> event_vector_t;
-  typedef event_vector_t::iterator event_iter_t;
+  typedef vrpn_vector<struct vrpn_Event::input_event> event_vector_t;
 
   // handle to the event interface
   int fd;

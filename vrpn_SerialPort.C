@@ -26,12 +26,12 @@
 
 // Standard includes
 #include <stdio.h>
-#include <vector>
 #include <exception>
 #include <algorithm>
 #include <limits>
+#include <vrpn_Shared.h>
 
-typedef std::vector<unsigned char> DynamicBufferType;
+typedef vrpn_vector<unsigned char> DynamicBufferType;
 
 vrpn_SerialPort::vrpn_SerialPort(const char *portname, long baud, int charsize,
                                  vrpn_SER_PARITY parity)

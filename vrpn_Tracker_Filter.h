@@ -17,7 +17,6 @@
 #include "vrpn_Tracker.h"               // for vrpn_Tracker
 #include "vrpn_OneEuroFilter.h"
 #include <string>
-#include <vector>
 
 /** @brief Tracker filter based on the one-Euro filter by Jan Ciger
 	<jan.ciger@reviatech.com>
@@ -106,7 +105,7 @@ class VRPN_API vrpn_Tracker_DeadReckoning_Rotation : public vrpn_Tracker_Server
         vrpn_float64 d_lastOrientation[4];      //< What was our last orientation?
         struct timeval d_lastReportTime;        //< When did we receive it?
     } RotationState;
-    std::vector<RotationState>  d_rotationStates;   //< State of rotation of each sensor.
+    vrpn_vector<RotationState>  d_rotationStates;   //< State of rotation of each sensor.
     
     /// Static callback handler for tracker reports and tracker velocity reports
     static void VRPN_CALLBACK handle_tracker_report(void *userdata,
