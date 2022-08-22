@@ -2,7 +2,6 @@
 #include <stdio.h>                      // for fprintf, stderr, NULL, etc
 #include <stdlib.h>                     // for atof, exit, atoi
 #include <string.h>                     // for strcmp, strncmp
-#include <vector>
 #include <vrpn_Configure.h>             // for VRPN_CALLBACK
 #include <vrpn_Button.h>                // for vrpn_BUTTONCB
 #include <vrpn_Shared.h>                // for vrpn_SleepMsecs
@@ -110,7 +109,7 @@ void init (const char * station_name,
            const char * remote_in_logfile, const char * remote_out_logfile,
            const char * NIC)
 {
-	std::vector<char> devicename(strlen(station_name)+12);
+	vrpn_vector<char> devicename(strlen(station_name)+12);
 	//char * hn;
 
         vrpn_int32 gotConn_type;

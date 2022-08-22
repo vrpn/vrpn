@@ -1135,7 +1135,7 @@ bool vrpn_test_vrpn_vector(void)
   // Test the default constructor and ensure that the destructor doesn't crash.
   {
     vrpn_vector<int> v0;
-    if ((v0.size() != 0) || (v0.data() != nullptr)) {
+    if ((v0.size() != 0) || (v0.data() != 0)) {
       fprintf(stderr,"vrpn_test_vrpn_vector(): Default constructor failed\n");
       return false;
     }
