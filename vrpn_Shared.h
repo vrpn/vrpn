@@ -533,7 +533,7 @@ template <size_t charCount> void vrpn_strcpy(char (&to)[charCount], const char* 
 
 template <class T> class vrpn_vector {
 public:
-  typedef vrpn_uint32 size_type;
+  typedef size_t size_type;
   typedef T* iterator;
   typedef const T* const_iterator;
   vrpn_vector() : m_size(0), m_data(0), m_allocated(0) {};
