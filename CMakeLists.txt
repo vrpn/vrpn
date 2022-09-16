@@ -585,7 +585,9 @@ if(WIN32)
 		DIRECTX_DINPUT_INCLUDE_DIR
 		DIRECTX_SDK_SUPPORTS_COMPILER)
 	if(VRPN_USE_DIRECTINPUT)
-		include_directories(${DIRECTX_INCLUDE_DIRS})
+		# This include breaks Visual Studio 2022.  It appears not to
+		# be needed for Visual Studio 2015 and later, so we'll remove it.
+		#include_directories(${DIRECTX_INCLUDE_DIRS})
 		list(APPEND
 			SERVER_EXTRA_LIBS
 			${DIRECTX_DXGUID_LIBRARY}
