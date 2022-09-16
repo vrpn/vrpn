@@ -90,7 +90,7 @@ void vrpn_Tracker_zSight::get_report()
 	    float x = FromTwos((unsigned short) js.lRy) / 32768.0f;
 	    float y = FromTwos((unsigned short) js.lX)  / 32768.0f;
 	    float z = FromTwos((unsigned short) js.lY)  / 32768.0f;
-	    float mag = sqrt(w*w + x*x + y*y + z*z);
+	    double mag = sqrt(w*w + x*x + y*y + z*z);
 
 	    // Set for internal quat, as per the Sensics zSight documentation
 	    d_quat[3] = w / mag;
