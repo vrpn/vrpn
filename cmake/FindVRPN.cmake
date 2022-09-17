@@ -112,7 +112,7 @@ list(APPEND _deps_check QUATLIB_FOUND)
 if(NOT WIN32)
 	find_package(Threads ${_vrpn_quiet})
 	list(APPEND _deps_libs ${CMAKE_THREAD_LIBS_INIT})
-    list(APPEND _deps_check Threads_FOUND)
+	list(APPEND _deps_check Threads_FOUND)
 endif()
 
 if(WIN32)
