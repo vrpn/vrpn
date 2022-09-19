@@ -53,8 +53,6 @@
 # (See accompanying file LICENSE_1_0.txt or copy at
 # http://www.boost.org/LICENSE_1_0.txt)
 
-cmake_minimum_required(VERSION 2.6.3)
-
 set(OPENHAPTICS_ROOT_DIR
 	"${OPENHAPTICS_ROOT_DIR}"
 	CACHE

@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 2.8.12)
 project(VRPN)
 
 #-----------------------------------------------------------------------------
@@ -515,7 +515,7 @@ endif()
 ###
 # libi2c-dev
 ###
-find_package(libi2c-dev ${QUIET_IF_SUBPROJECT})
+find_package(I2CDEV ${QUIET_IF_SUBPROJECT})
 option_requires(VRPN_USE_I2CDEV
 	"Build devices requiring libi2c-dev"
 	${DEFAULT_OFF_IF_SUBPROJECT}
