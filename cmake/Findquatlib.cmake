@@ -65,19 +65,35 @@ else()
 		/usr/local)
 
 	# Look for the library.
-	find_library(QUATLIB_LIBRARY
+	find_library(QUATLIB_LIBRARY_RELEASE
 		NAMES
 		quat.lib
 		libquat.a
-		HINTS
-		"${QUATLIB_ROOT_DIR}"
 		PATH_SUFFIXES
+		ReleaseAcademicEdition
+		Release
 		${_libsuffixes}
 		PATHS
+		"${QUATLIB_ROOT_DIR}"
 		"${_progfiles}/VRPN"
 		"${_progfiles}/quatlib"
 		C:/usr/local
 		/usr/local)
+	find_library(QUATLIB_LIBRARY_DEBUG
+		NAMES
+		quat.lib
+		libquat.a
+		PATH_SUFFIXES
+		DebugAcademicEdition
+		Debug
+		${_libsuffixes}
+		PATHS
+		"${QUATLIB_ROOT_DIR}"
+		"${_progfiles}/VRPN"
+		"${_progfiles}/quatlib"
+		C:/usr/local
+		/usr/local)
+	select_library_configurations(QUATLIB)
 endif()
 
 # handle the QUIETLY and REQUIRED arguments and set QUATLIB_FOUND to TRUE if
@@ -101,4 +117,7 @@ else()
 	set(QUATLIB_INCLUDE_DIRS)
 endif()
 
-mark_as_advanced(QUATLIB_LIBRARY QUATLIB_INCLUDE_DIR)
+mark_as_advanced(QUATLIB_LIBRARY_RELEASE
+				 QUATLIB_LIBRARY_DEBUG
+				 QUATLIB_LIBRARY
+				 QUATLIB_INCLUDE_DIR)
