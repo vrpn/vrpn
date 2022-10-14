@@ -69,6 +69,7 @@ else()
 		NAMES
 		quat.lib
 		libquat.a
+		libquat.so
 		HINTS
 		"${QUATLIB_ROOT_DIR}"
 		PATH_SUFFIXES
