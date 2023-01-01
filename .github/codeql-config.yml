@@ -1,0 +1,4 @@
+query-filters:
+    - exclude:
+        id: 
+          - cpp/command-line-injection
