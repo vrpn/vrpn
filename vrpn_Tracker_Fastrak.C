@@ -112,7 +112,7 @@ int vrpn_Tracker_Fastrak::set_sensor_output_format(int sensor)
       buttonstring = is900_buttons[sensor] ? ",22" : "";
     }
     analogstring = is900_analogs[sensor] ? ",23" : "";
-    sprintf(outstring, "O%d,2,11%s%s%s,0\015", sensor+1, timestring,
+    sprintf(outstring, "O%d,2,11%3s%3s%3s,0\015", sensor+1, timestring,
 	buttonstring, analogstring);
     if (vrpn_write_characters(serial_fd, (const unsigned char *)outstring,
 	    strlen(outstring)) == (int)strlen(outstring)) {
@@ -378,7 +378,7 @@ void vrpn_Tracker_Fastrak::reset()
 			fprintf(stderr,"   ...sleeping %d seconds\n",seconds_to_wait);
 			vrpn_SleepMsecs(1000.0*seconds_to_wait);
 		} else {	// This is a command line, send it
-			sprintf(string_to_send, "%s\015", next_line);
+			sprintf(string_to_send, "%2040s\015", next_line);
 			fprintf(stderr, "   ...sending command: %s\n", string_to_send);
 			vrpn_write_characters(serial_fd,
 				(const unsigned char *)string_to_send,strlen(string_to_send));

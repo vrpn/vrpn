@@ -278,7 +278,7 @@ void vrpn_WiiMote::connect_wiimote(int timeout) {
 			} else if (!current.empty()) {
 				acquireMessageLock();
 				vrpn_gettimeofday(&now, NULL);
-				sprintf(msg, "Wiimote found, but it's not the one we want: '%s' isn't '%s'\n", available_wiimotes[i]->bdaddr_str, wiimote->bdaddr.c_str());
+				sprintf(msg, "Wiimote found, but it's not the one we want: '%300s' isn't '%300s'\n", available_wiimotes[i]->bdaddr_str, wiimote->bdaddr.c_str());
 				send_text_message(msg, now);
 				releaseMessageLock();
 			}

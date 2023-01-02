@@ -127,7 +127,7 @@ int main (int argc, char * argv [])
 	
 	vrpn_TAF_axis	taf_axis1;  // Axis that returns values from the analog
 	char	name[500];
-	sprintf(name, "*%s", ANALOG_NAME);
+	sprintf(name, "*%498s", ANALOG_NAME);
 	taf_axis1.name = name;
 	taf_axis1.channel = 0;
 	taf_axis1.offset = 0.0;

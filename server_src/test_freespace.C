@@ -128,7 +128,7 @@ void create_and_link_dial_remote(const char * trackerName)
 int main (int argc, char * argv [])
 {
   unsigned controller = 0, sendBody = 0, sendUser = 1;
-  sprintf(trackerName, "%s", TRACKER_NAME);
+  sprintf(trackerName, "%511s", TRACKER_NAME);
 
   // The only command line argument is a string for the configuration
   if (argc > 1) {

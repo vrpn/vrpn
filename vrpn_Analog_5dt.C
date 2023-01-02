@@ -129,7 +129,7 @@ vrpn_5dt::reset (void)
   struct timeval l_timeout;
   unsigned char	l_inbuf [45];
   int            l_ret;
-  char           l_errmsg[256];
+  char           l_errmsg[512];
 
   if (_wireless) {
     // Wireless gloves can't be reset, but we do need to wait for a header byte.
@@ -188,7 +188,7 @@ vrpn_5dt::reset (void)
       return -1;
     }
 
-    sprintf (l_errmsg, "vrpn_5dt: glove \"%s\"version %d.%d\n", &l_inbuf [16], l_inbuf [2], l_inbuf [3]);
+    sprintf (l_errmsg, "vrpn_5dt: glove \"%256s\"version %d.%d\n", &l_inbuf [16], l_inbuf [2], l_inbuf [3]);
     VRPN_MSG_INFO (l_errmsg);
 
     if (l_inbuf[4] & 1) {
