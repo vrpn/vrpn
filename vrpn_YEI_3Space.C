@@ -1018,7 +1018,7 @@ bool vrpn_YEI_3Space_Sensor_Wireless::send_ascii_command (const char *p_cmd)
   char buffer[256];
 
   // Fill in the command
-  sprintf(buffer, ">%d,%s\n", d_logical_id, p_cmd);
+  sprintf(buffer, ">%d,%200s\n", d_logical_id, p_cmd);
 
   // Send the command and see if it worked.
   int buflen = static_cast<int>(strlen(buffer) + 1);

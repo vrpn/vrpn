@@ -379,7 +379,7 @@ int vrpn_Tracker_NDI_Polaris::setupOneTool(const char* NDIToolRomFilename)
 		
 		int NDIAddress=chunkIndex*NDI_ROMFILE_CHUNK_SIZE; //the memory offset (in the NDI machine, not this PC)
 		// where this chunk will start
-		sprintf(commandStr,"PVWR %02u%04x%s",portHandleNum, NDIAddress,chunk);
+		sprintf(commandStr,"PVWR %02u%04x%129s",portHandleNum, NDIAddress,chunk);
 		//printf("DEBUG: >>%s<<\n",commandStr);
 		sendCommand(commandStr);
 		readResponse();

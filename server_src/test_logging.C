@@ -104,8 +104,8 @@ int open_client_connection_and_loop(const char *local_in, const char *local_out,
   //---------------------------------------------------------------------
   // Open a client connection to the server, asking for the logging files
   // requested in the parameters.
-  char name[512];
-  sprintf(name, "%s@localhost:%d", CLIENT_TEXT_NAME, CONNECTION_PORT);
+  char name[1024];
+  sprintf(name, "%511s@localhost:%d", CLIENT_TEXT_NAME, CONNECTION_PORT);
   client_connection = vrpn_get_connection_by_name(name, local_in, local_out,
     remote_in, remote_out);
   if (client_connection == NULL) {
@@ -144,8 +144,8 @@ int check_for_messages_in(const char *device_name, const char *file_name)
 {
   //---------------------------------------------------------------------
   // Open a text receiver to connect to the specified input file.
-  char name[512];
-  sprintf(name, "%s@file://%s", device_name, file_name);
+  char name[1024];
+  sprintf(name, "%500s@file://%500s", device_name, file_name);
   printf("Checking for logs in %s\n", name);
   vrpn_Text_Receiver *r = new vrpn_Text_Receiver(name);
   r->register_message_handler(NULL, handle_text);
