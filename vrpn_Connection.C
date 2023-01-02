@@ -866,7 +866,7 @@ int vrpn_Log::setCompoundName(const char *name, int index)
     len = strlen(newName.data());
     sprintf(newName.data() + len, "-%d", index);
     if (dot) {
-        strcat(newName.data(), dot);
+        strncat(newName.data(), dot, newName.size() - (strlen(newName.data())+1) );
     }
 
     return setName(newName.data());
