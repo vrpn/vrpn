@@ -66,7 +66,7 @@ vrpn_Tracker_Flock_Parallel::vrpn_Tracker_Flock_Parallel(char *name,
   }
 
   for (int i=0;i<cSensors;i++) {
-    char rgch[15];
+    char rgch[25];
     fprintf(stderr, "\nvrpn_Tracker_Flock_Parallel: initing slave %d ...", i);
     if (!slavePortArray[i]) {
       fprintf(stderr, "\nvrpn_Tracker_Flock_Parallel:slave %d: null port array"
