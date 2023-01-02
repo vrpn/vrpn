@@ -49,7 +49,7 @@ namespace vrpn_python {
 	if (Py_Connection != NULL) {
 	  connection = Py_Connection->getConnection();
 	}
-	self->d_device = new vrpn_type(self->getDeviceName().c_str(), connection);
+	self->d_device = new(std::nothrow) vrpn_type(self->getDeviceName().c_str(), connection);
 	if (self->d_device) {
 	  return 0;
 	}
