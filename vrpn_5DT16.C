@@ -197,20 +197,12 @@ void vrpn_5dt16::get_report (void)
 #endif
 
    //--------------------------------------------------------------------
-   // Decode the report and store the values in it into the analog values
-   // if appropriate.
+   // Decode the report and store the values in it into the analog values.
    //--------------------------------------------------------------------
 
    for(int i=0;i<16;i++) {
 	   channel[i]=_buffer[i*2+2]*256+_buffer[i*2+3];
    }
-   char text[512];
-
-   sprintf(text,"original %f|%f|%f|%f|%f|%f|%f|%f|%f|%f|%f|%f|%f|%f|%f|%f\n",channel[0],channel[1],channel[2],channel[3],channel[4],
-	   channel[5],channel[6],channel[7],channel[8],channel[9],
-	   channel[10],channel[11],channel[12],channel[13],channel[14],
-	   channel[15]);
-   VRPN_MSG_ERROR(text);
 
    //--------------------------------------------------------------------
    // Done with the decoding, send the reports and go back to syncing
