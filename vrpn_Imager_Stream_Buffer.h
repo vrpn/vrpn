@@ -209,16 +209,16 @@ public:
         if (d_new_log_request) {
             // Allocate space to return the names in the handles passed in.
             // Copy the values from our local storage to the return values.
-            if ((*lil = new char[strlen(d_request_lil) + 1]) != NULL) {
+            if ((*lil = new(std::nothrow) char[strlen(d_request_lil) + 1]) != NULL) {
                 strcpy(*lil, d_request_lil);
             }
-            if ((*lol = new char[strlen(d_request_lol) + 1]) != NULL) {
+            if ((*lol = new(std::nothrow) char[strlen(d_request_lol) + 1]) != NULL) {
                 strcpy(*lol, d_request_lol);
             }
-            if ((*ril = new char[strlen(d_request_ril) + 1]) != NULL) {
+            if ((*ril = new(std::nothrow) char[strlen(d_request_ril) + 1]) != NULL) {
                 strcpy(*ril, d_request_ril);
             }
-            if ((*rol = new char[strlen(d_request_rol) + 1]) != NULL) {
+            if ((*rol = new(std::nothrow) char[strlen(d_request_rol) + 1]) != NULL) {
                 strcpy(*rol, d_request_rol);
             }
 
@@ -287,22 +287,22 @@ public:
 
         // Allocate space for each string and then copy into it.
         if (lil != NULL) {
-            if ((d_request_lil = new char[strlen(lil) + 1]) != NULL) {
+            if ((d_request_lil = new(std::nothrow) char[strlen(lil) + 1]) != NULL) {
                 strcpy(d_request_lil, lil);
             }
         }
         if (lol != NULL) {
-            if ((d_request_lol = new char[strlen(lol) + 1]) != NULL) {
+            if ((d_request_lol = new(std::nothrow) char[strlen(lol) + 1]) != NULL) {
                 strcpy(d_request_lol, lol);
             }
         }
         if (ril != NULL) {
-            if ((d_request_ril = new char[strlen(ril) + 1]) != NULL) {
+            if ((d_request_ril = new(std::nothrow) char[strlen(ril) + 1]) != NULL) {
                 strcpy(d_request_ril, ril);
             }
         }
         if (rol != NULL) {
-            if ((d_request_rol = new char[strlen(rol) + 1]) != NULL) {
+            if ((d_request_rol = new(std::nothrow) char[strlen(rol) + 1]) != NULL) {
                 strcpy(d_request_rol, rol);
             }
         }
@@ -330,28 +330,28 @@ public:
             if (d_result_lil == NULL)
                 *lil = NULL;
             else {
-                if ((*lil = new char[strlen(d_result_lil) + 1]) != NULL) {
+                if ((*lil = new(std::nothrow) char[strlen(d_result_lil) + 1]) != NULL) {
                     strcpy(*lil, d_result_lil);
                 }
             }
             if (d_result_lol == NULL)
                 *lol = NULL;
             else {
-                if ((*lol = new char[strlen(d_result_lol) + 1]) != NULL) {
+                if ((*lol = new(std::nothrow) char[strlen(d_result_lol) + 1]) != NULL) {
                     strcpy(*lol, d_result_lol);
                 }
             }
             if (d_result_ril == NULL)
                 *ril = NULL;
             else {
-                if ((*ril = new char[strlen(d_result_ril) + 1]) != NULL) {
+                if ((*ril = new(std::nothrow) char[strlen(d_result_ril) + 1]) != NULL) {
                     strcpy(*ril, d_result_ril);
                 }
             }
             if (d_result_rol == NULL)
                 *rol = NULL;
             else {
-                if ((*rol = new char[strlen(d_result_rol) + 1]) != NULL) {
+                if ((*rol = new(std::nothrow) char[strlen(d_result_rol) + 1]) != NULL) {
                     strcpy(*rol, d_result_rol);
                 }
             }
@@ -407,22 +407,22 @@ public:
 
         // Allocate space for each string and then copy into it.
         if (lil != NULL) {
-            if ((d_result_lil = new char[strlen(lil) + 1]) != NULL) {
+            if ((d_result_lil = new(std::nothrow) char[strlen(lil) + 1]) != NULL) {
                 strcpy(d_result_lil, lil);
             }
         }
         if (lol != NULL) {
-            if ((d_result_lol = new char[strlen(lol) + 1]) != NULL) {
+            if ((d_result_lol = new(std::nothrow) char[strlen(lol) + 1]) != NULL) {
                 strcpy(d_result_lol, lol);
             }
         }
         if (ril != NULL) {
-            if ((d_result_ril = new char[strlen(ril) + 1]) != NULL) {
+            if ((d_result_ril = new(std::nothrow) char[strlen(ril) + 1]) != NULL) {
                 strcpy(d_result_ril, ril);
             }
         }
         if (rol != NULL) {
-            if ((d_result_rol = new char[strlen(rol) + 1]) != NULL) {
+            if ((d_result_rol = new(std::nothrow) char[strlen(rol) + 1]) != NULL) {
                 strcpy(d_result_rol, rol);
             }
         }

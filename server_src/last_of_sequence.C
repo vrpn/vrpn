@@ -71,7 +71,7 @@ int VRPN_CALLBACK handle_potential_foo (void * userdata, vrpn_HANDLERPARAM p) {
   g_fooStore = p;
 
   // HACK - this probably needs to be aligned
-  g_fooStore.buffer = new char [p.payload_len];
+  g_fooStore.buffer = new(std::nothrow) char [p.payload_len];
   if (!g_fooStore.buffer) {
     fprintf(stderr, "handle_potential_foo:  out of memory!\n");
     return -1;

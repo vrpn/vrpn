@@ -281,11 +281,11 @@ int main(int argc, char *argv[])
             // Name the device and open it as everything
             dev = &device_list[num_devices];
             dev->name = argv[i];
-            dev->tkr = new vrpn_Tracker_Remote(dev->name);
-            dev->ana = new vrpn_Analog_Remote(dev->name);
-            dev->btn = new vrpn_Button_Remote(dev->name);
-            dev->dial = new vrpn_Dial_Remote(dev->name);
-            dev->text = new vrpn_Text_Receiver(dev->name);
+            dev->tkr = new(std::nothrow) vrpn_Tracker_Remote(dev->name);
+            dev->ana = new(std::nothrow) vrpn_Analog_Remote(dev->name);
+            dev->btn = new(std::nothrow) vrpn_Button_Remote(dev->name);
+            dev->dial = new(std::nothrow) vrpn_Dial_Remote(dev->name);
+            dev->text = new(std::nothrow) vrpn_Text_Receiver(dev->name);
             if ((dev->ana == NULL) || (dev->btn == NULL) ||
                 (dev->dial == NULL) || (dev->tkr == NULL) ||
                 (dev->text == NULL)) {
@@ -301,9 +301,9 @@ int main(int argc, char *argv[])
             // the correct data for this device.
             if (print_for_tracker) {
                 vrpn_Tracker_Remote *tkr = dev->tkr;
-                t_user_callback *tc1 = new t_user_callback;
-                t_user_callback *tc2 = new t_user_callback;
-                t_user_callback *tc3 = new t_user_callback;
+                t_user_callback *tc1 = new(std::nothrow) t_user_callback;
+                t_user_callback *tc2 = new(std::nothrow) t_user_callback;
+                t_user_callback *tc3 = new(std::nothrow) t_user_callback;
 
                 if ((tc1 == NULL) || (tc2 == NULL) || (tc3 == NULL)) {
                     fprintf(stderr, "Out of memory\n");

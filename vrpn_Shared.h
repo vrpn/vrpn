@@ -19,6 +19,7 @@
 #include "vrpn_Thread.h"
 #include <string.h>         // for memcpy(), strncpy()
 #include <stdio.h>          // for fprintf()
+#include <new>              // for new(std::nothrow)
 
 #if defined(__ANDROID__)
 #include <bitset>

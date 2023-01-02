@@ -901,7 +901,7 @@ vrpn_Shared_float64 &vrpn_Shared_float64::set(vrpn_float64 newValue,
 void vrpn_Shared_float64::register_handler(vrpnSharedFloatCallback cb,
                                            void *userdata)
 {
-    callbackEntry *e = new callbackEntry;
+    callbackEntry *e = new(std::nothrow) callbackEntry;
     if (!e) {
         fprintf(stderr, "vrpn_Shared_float64::register_handler:  "
                         "Out of memory.\n");
@@ -942,7 +942,7 @@ void vrpn_Shared_float64::unregister_handler(vrpnSharedFloatCallback cb,
 void vrpn_Shared_float64::register_handler(vrpnTimedSharedFloatCallback cb,
                                            void *userdata)
 {
-    timedCallbackEntry *e = new timedCallbackEntry;
+    timedCallbackEntry *e = new(std::nothrow) timedCallbackEntry;
     if (!e) {
         fprintf(stderr, "vrpn_Shared_float64::register_handler:  "
                         "Out of memory.\n");
@@ -1202,7 +1202,7 @@ vrpn_Shared_String::vrpn_Shared_String(const char *name,
                                        const char *defaultValue,
                                        vrpn_int32 mode)
     : vrpn_SharedObject(name, "String", mode)
-    , d_value(defaultValue ? new char[1 + strlen(defaultValue)] : NULL)
+    , d_value(defaultValue ? new(std::nothrow) char[1 + strlen(defaultValue)] : NULL)
     , d_callbacks(NULL)
     , d_timedCallbacks(NULL)
     , d_policy(vrpn_ACCEPT)

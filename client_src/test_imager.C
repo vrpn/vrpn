@@ -23,7 +23,7 @@ bool  init_test_image(void)
 {
   vrpn_uint16 x,y;
 
-  if ( (image = new vrpn_uint16[image_x_size * image_y_size]) == NULL) {
+  if ( (image = new(std::nothrow) vrpn_uint16[image_x_size * image_y_size]) == NULL) {
     fprintf(stderr, "Could not allocate image\n");
     return false;
   }
@@ -49,7 +49,7 @@ bool  init_server_code(void)
     fprintf(stderr, "Could not open server connection\n");
     return false;
   }
-  if ( (svr = new vrpn_Imager_Server("TestImage", svrcon,
+  if ( (svr = new(std::nothrow) vrpn_Imager_Server("TestImage", svrcon,
     image_x_size, image_y_size)) == NULL) {
     fprintf(stderr, "Could not open Imager Server\n");
     return false;
@@ -133,7 +133,7 @@ void  VRPN_CALLBACK handle_region_data(void *, const vrpn_IMAGERREGIONCB info)
 bool  init_client_code(void)
 {
   // Open the client object and set the callback handler for new region data
-  if ( (clt = new vrpn_Imager_Remote("TestImage@localhost")) == NULL) {
+  if ( (clt = new(std::nothrow) vrpn_Imager_Remote("TestImage@localhost")) == NULL) {
     fprintf(stderr, "Error: Cannot create remote image object\n");
     return false;
   }

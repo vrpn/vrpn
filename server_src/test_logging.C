@@ -180,7 +180,7 @@ int check_for_messages_in(const char *device_name, const char *file_name)
 // files are foo-1 foo-2 fo-3...
 char *make_server_incoming_name(const char *base, int which)
 {
-  char *name = new char[strlen(base) + 30];
+  char *name = new(std::nothrow) char[strlen(base) + 30];
   if (name == NULL) {
     return NULL;
   }
@@ -211,8 +211,8 @@ int main (int argc, char * argv [])
 
   //---------------------------------------------------------------------
   // Open the server-side text sender and receivers.
-  server_text_sender = new vrpn_Text_Sender(CLIENT_TEXT_NAME, server_connection);
-  server_text_receiver = new vrpn_Text_Receiver(SERVER_TEXT_NAME, server_connection);
+  server_text_sender = new(std::nothrow) vrpn_Text_Sender(CLIENT_TEXT_NAME, server_connection);
+  server_text_receiver = new(std::nothrow) vrpn_Text_Receiver(SERVER_TEXT_NAME, server_connection);
   if ( (server_text_sender == NULL) || (server_text_receiver == NULL) ) {
     fprintf(stderr,"Cannot create text server or client\n");
     return -3;
@@ -290,8 +290,8 @@ int main (int argc, char * argv [])
 
   //---------------------------------------------------------------------
   // Open the server-side text sender and receivers.
-  server_text_sender = new vrpn_Text_Sender(CLIENT_TEXT_NAME, server_connection);
-  server_text_receiver = new vrpn_Text_Receiver(SERVER_TEXT_NAME, server_connection);
+  server_text_sender = new(std::nothrow) vrpn_Text_Sender(CLIENT_TEXT_NAME, server_connection);
+  server_text_receiver = new(std::nothrow) vrpn_Text_Receiver(SERVER_TEXT_NAME, server_connection);
   if ( (server_text_sender == NULL) || (server_text_receiver == NULL) ) {
     fprintf(stderr,"Cannot create text server or client\n");
     return -3;

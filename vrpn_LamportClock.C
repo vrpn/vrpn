@@ -1,6 +1,7 @@
 #include "vrpn_LamportClock.h"
 #include <string.h>
 #include <stdio.h>
+#include <new>
 
 vrpn_LamportTimestamp::vrpn_LamportTimestamp (int vectorLength,
                                               vrpn_uint32 * vector) :
@@ -117,7 +118,7 @@ vrpn_LamportClock::vrpn_LamportClock (int numHosts, int ourIndex) :
     d_ourIndex (ourIndex),
     d_currentTimestamp(NULL)
 {
-  d_currentTimestamp = new vrpn_uint32[numHosts];
+  d_currentTimestamp = new(std::nothrow) vrpn_uint32[numHosts];
 
   int i;
   if (d_currentTimestamp) {

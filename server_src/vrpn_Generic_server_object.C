@@ -153,7 +153,7 @@ vrpn_Generic_Server_Object::templated_setup_device_name_only(char *&pch,
         fprintf(stderr, "Bad line: %s\n", line);
         return -1;
     }
-    T *device = new T(s2, connection);
+    T *device = new(std::nothrow) T(s2, connection);
     if (device == NULL) {
         fprintf(stderr, "Can't create new device from line %s\n", line);
         return -1;
@@ -178,7 +178,7 @@ inline int vrpn_Generic_Server_Object::templated_setup_HID_device_name_only(
         return -1;
     }
 #ifdef VRPN_USE_HID
-    T *device = new T(s2, connection);
+    T *device = new(std::nothrow) T(s2, connection);
     if (device == NULL) {
         fprintf(stderr, "Can't create new device from line %s\n", line);
         return -1;
@@ -408,8 +408,7 @@ int vrpn_Generic_Server_Object::setup_JoyFly(char *&pch, char *line,
 int vrpn_Generic_Server_Object::get_AFline(char *line, vrpn_TAF_axis *axis)
 {
     char axis_name[LINESIZE];
-    char *name =
-        new char[LINESIZE]; // We need this to stay around for the param
+    char *name = new char[LINESIZE]; // We need this to stay around for the param
     int channel;
     float offset, thresh, power, scale;
 
@@ -4535,7 +4534,7 @@ int vrpn_Generic_Server_Object::setup_YEI_3Space_Sensor(char *&pch, char *line,
         if (num_reset_commands < MAX_RESET_COMMANDS) {
           char command[LINESIZE];
           sscanf(line, "%s", command);
-          char *command_copy = new char[strlen(command)+1];
+          char *command_copy = new(std::nothrow) char[strlen(command)+1];
           if (command_copy == NULL) {
             fprintf(stderr, "Out of memory in YEI description\n");
             return -1;
@@ -4634,7 +4633,7 @@ int vrpn_Generic_Server_Object::setup_YEI_3Space_Sensor_Wireless(char *&pch, cha
         if (num_reset_commands < MAX_RESET_COMMANDS) {
           char command[LINESIZE];
           sscanf(line, "%s", command);
-          char *command_copy = new char[strlen(command)+1];
+          char *command_copy = new(std::nothrow) char[strlen(command)+1];
           if (command_copy == NULL) {
             fprintf(stderr, "Out of memory in YEI description\n");
             return -1;
@@ -4718,7 +4717,7 @@ int vrpn_Generic_Server_Object::setup_YEI_3Space_Sensor_Wireless(char *&pch, cha
           if (num_reset_commands < MAX_RESET_COMMANDS) {
             char command[LINESIZE];
             sscanf(line, "%s", command);
-            char *command_copy = new char[strlen(command)+1];
+            char *command_copy = new(std::nothrow) char[strlen(command)+1];
             if (command_copy == NULL) {
               fprintf(stderr, "Out of memory in YEI description\n");
               return -1;

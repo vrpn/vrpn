@@ -83,10 +83,10 @@ vrpn_Tracker_FilterOneEuro::vrpn_Tracker_FilterOneEuro(const char * name, vrpn_C
   // If the name starts with the '*' character, use the server
   // connection rather than making a new one.
   if (listen_tracker_name[0] == '*') {
-    d_listen_tracker = new vrpn_Tracker_Remote(&(listen_tracker_name[1]),
+    d_listen_tracker = new(std::nothrow) vrpn_Tracker_Remote(&(listen_tracker_name[1]),
       d_connection);
   } else {
-    d_listen_tracker = new vrpn_Tracker_Remote(listen_tracker_name);
+    d_listen_tracker = new(std::nothrow) vrpn_Tracker_Remote(listen_tracker_name);
   }
   if (d_listen_tracker) d_listen_tracker->register_change_handler(this, handle_tracker_update);
 }
