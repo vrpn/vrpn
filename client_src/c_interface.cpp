@@ -10,6 +10,7 @@
 #include <stddef.h>                     // for NULL
 #include <vrpn_Button.h>                // for vrpn_Button_Remote, etc
 #include <vrpn_Tracker.h>               // for vrpn_TRACKERCB, etc
+#include <new>
 
 #include "c_interface.h"
 #include "vrpn_Configure.h"             // for VRPN_CALLBACK
@@ -27,14 +28,7 @@ void	VRPN_CALLBACK handle_tracker_pos_quat (void *userdata, const vrpn_TRACKERCB
  * pointer needs to be passed to the poll and close functions. */
 extern "C" void *vrpn_c_open_tracker(const char *device_name, vrpn_c_tracker_callback_function callback)
 {
-  vrpn_Tracker_Remote *tkr = NULL;
-  try {
-    tkr = new vrpn_Tracker_Remote(device_name);
-    /* Tell the callback handler what function to call. */
-    tkr->register_change_handler((void*)callback, handle_tracker_pos_quat);
-  }
-  catch (...) { }
-  return tkr;
+  return new(std::nothrow) vrpn_Tracker_Remote(device_name);
 };
 
 /* Poll the tracker whose device pointer is passed in.  This will cause the
@@ -79,13 +73,7 @@ void	VRPN_CALLBACK handle_button_event (void *userdata, const vrpn_BUTTONCB b)
  * device pointer needs to be passed to the read and close functions. */
 extern "C" void *vrpn_c_open_button(const char *device_name, vrpn_c_button_callback_function callback)
 {
-  vrpn_Button_Remote *btn = NULL;
-  try {
-    vrpn_Button_Remote *btn = new vrpn_Button_Remote(device_name);
-    /* Tell the callback handler what function to call. */
-    btn->register_change_handler((void*)callback, handle_button_event);
-  } catch (...) {}
-  return btn;
+ return new(std::nothrow) vrpn_Button_Remote(device_name);
 };
 
 /* Poll the button whose device pointer is passed in.  This will cause the

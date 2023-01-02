@@ -738,7 +738,7 @@ bool vrpn_Imager_Stream_Buffer::setup_handlers_for_logging_connection(
     // that they will do what needs doing; the callbacks point to the
     // Imager_Stream_Buffer object, not to the imager_remote object; access it
     // through the member variable pointer.
-    d_imager_remote = new vrpn_Imager_Remote(d_imager_server_name, c);
+    d_imager_remote = new(std::nothrow) vrpn_Imager_Remote(d_imager_server_name, c);
     if (d_imager_remote == NULL) {
         fprintf(stderr, "vrpn_Imager_Stream_Buffer::setup_handlers_for_logging_"
                         "connection(): Cannot create vrpn_Imager_Remote\n");

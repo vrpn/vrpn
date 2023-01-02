@@ -268,7 +268,7 @@ int main(int argc, char *argv[])
         vrpn_create_server_connection(con_name.str().c_str(), g_inLogName, g_outLogName);
 
     // Create the generic server object and make sure it is doing okay.
-    generic_server = new vrpn_Generic_Server_Object(
+    generic_server = new(std::nothrow) vrpn_Generic_Server_Object(
         connection, config_file_name, verbose, bail_on_error);
     if ((generic_server == NULL) || !generic_server->doing_okay()) {
         fprintf(stderr, "Could not start generic server, exiting\n");

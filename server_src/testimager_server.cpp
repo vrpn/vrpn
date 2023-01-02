@@ -46,7 +46,7 @@ int main (int, char *[])
   }
 
   // Open the imager server and set up channel zero to send our data.
-  if ( (g_is = new vrpn_Imager_Server("TestImage", g_connection, g_size, g_size)) == NULL) {
+  if ( (g_is = new(std::nothrow) vrpn_Imager_Server("TestImage", g_connection, g_size, g_size)) == NULL) {
     fprintf(stderr, "Could not open imager server\n");
     return -1;
   }
