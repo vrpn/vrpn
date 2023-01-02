@@ -263,7 +263,7 @@ int vrpn_Generic_Server_Object::setup_SGIBox(char *&pch, char *line,
     int tbutton;
     // setting listed buttons to toggles instead of default momentary
     pch += strlen(s2) + 1;
-    while (sscanf(pch, "%s", s2) == 1) {
+    while (sscanf(pch, "%511s", s2) == 1) {
         pch += strlen(s2) + 1;
         tbutton = atoi(s2);
         vrpn_special_sgibox->set_toggle(tbutton, vrpn_BUTTON_TOGGLE_OFF);
@@ -2175,8 +2175,8 @@ int vrpn_Generic_Server_Object::setup_DevInput(char *&pch, char *line,
     VRPN_CONFIG_NEXT();
 
     // Get the arguments (class, dev_input_name)
-    if (sscanf(pch, "%511s \"%[^\"]\" %s %d", s2, s3, s4, &int_param) != 4) {
-        if (sscanf(pch, "%511s \"%[^\"]\" %s", s2, s3, s4) != 3) {
+    if (sscanf(pch, "%511s \"%[^\"]\" %511s %d", s2, s3, s4, &int_param) != 4) {
+        if (sscanf(pch, "%511s \"%[^\"]\" %511s", s2, s3, s4) != 3) {
             fprintf(stderr, "Bad vrpn_DevInput line: %s\n", line);
             return -1;
         }
@@ -2413,7 +2413,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_InterSense(char *&pch, char *line,
     VRPN_CONFIG_NEXT();
 
     // Get the arguments (class, tracker_name, port, [optional IS900time])
-    sscanf(line, "vrpn_Tracker_InterSense %s %s", trackerName, commStr);
+    sscanf(line, "vrpn_Tracker_InterSense %511s %511s", trackerName, commStr);
     if ((numparms = sscanf(pch, "%511s%511s%511s%511s%511s", trackerName,
                            commStr, s4, s5, s6)) < 2) {
         fprintf(stderr, "Bad vrpn_Tracker_InterSense line: %s\n%s %s\n", line,
@@ -2729,7 +2729,7 @@ int vrpn_Generic_Server_Object::setup_GlobalHapticsOrb(char *&pch, char *line,
 
     VRPN_CONFIG_NEXT();
     // Get the arguments (orb_name, port name, baud rate)
-    if (sscanf(pch, "%511s%s%d", s2, s3, &i1) != 3) {
+    if (sscanf(pch, "%511s%511s%d", s2, s3, &i1) != 3) {
         fprintf(stderr, "Bad vrpn_GlobalHapticsOrb line: %s\n", line);
         return -1;
     }
@@ -3461,7 +3461,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_PhaseSpace(char *&pch, char *line,
 
   vrpn_Tracker_PhaseSpace* pstracker = NULL;
 
-  if (sscanf(line, "vrpn_Tracker_PhaseSpace %s", trackerName) == 1) {
+  if (sscanf(line, "vrpn_Tracker_PhaseSpace %511s", trackerName) == 1) {
     pstracker = new vrpn_Tracker_PhaseSpace (trackerName, connection);
   } else {
     fprintf (stderr, "Bad vrpn_Tracker_PhaseSpace line: %s\nProper format is:  vrpn_Tracker_Phasespace trackerName\n", line);
@@ -3563,7 +3563,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_NDI_Polaris(char *&,
     char *rigidBodyFileNames[VRPN_GSO_MAX_NDI_POLARIS_RIGIDBODIES];
 
     // get tracker name and device
-    if (sscanf(line, "vrpn_Tracker_NDI_Polaris %s %s %d", trackerName, device,
+    if (sscanf(line, "vrpn_Tracker_NDI_Polaris %511s %511s %d", trackerName, device,
                &numRigidBodies) < 3) {
         fprintf(stderr, "Bad vrpn_Tracker_NDI_Polaris line: %s\n", line);
         return -1;
@@ -3581,7 +3581,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_NDI_Polaris(char *&,
         }
         rigidBodyFileNames[rbNum] =
             new char[LINESIZE]; // allocate string for filename
-        if (sscanf(line, "%s", rigidBodyFileNames[rbNum]) != 1) {
+        if (sscanf(line, "%511s", rigidBodyFileNames[rbNum]) != 1) {
             fprintf(stderr, "Tracker_NDI_Polaris: error reading .rom filename "
                             "#%d from config file in line: %s\n",
                     rbNum, line);
@@ -3853,10 +3853,10 @@ int vrpn_Generic_Server_Object::setup_Tracker_GameTrak(char *pch, char *line,
     if (line[0] != '\n') {
         // get the first token
         char tok[LINESIZE];
-        sscanf(line, "%s", tok);
+        sscanf(line, "%511s", tok);
 
         if (strcmp(tok, "axis_mapping") == 0) {
-            sscanf(line, "%s %d %d %d %d %d %d", tok, &mapping[0], &mapping[1],
+            sscanf(line, "%511s %d %d %d %d %d %d", tok, &mapping[0], &mapping[1],
                    &mapping[2], &mapping[3], &mapping[4], &mapping[5]);
         }
         else {
@@ -4533,7 +4533,7 @@ int vrpn_Generic_Server_Object::setup_YEI_3Space_Sensor(char *&pch, char *line,
         // if we haven't run out of room for them.
         if (num_reset_commands < MAX_RESET_COMMANDS) {
           char command[LINESIZE];
-          sscanf(line, "%s", command);
+          sscanf(line, "%511s", command);
           char *command_copy = new(std::nothrow) char[strlen(command)+1];
           if (command_copy == NULL) {
             fprintf(stderr, "Out of memory in YEI description\n");
@@ -4632,7 +4632,7 @@ int vrpn_Generic_Server_Object::setup_YEI_3Space_Sensor_Wireless(char *&pch, cha
         // if we haven't run out of room for them.
         if (num_reset_commands < MAX_RESET_COMMANDS) {
           char command[LINESIZE];
-          sscanf(line, "%s", command);
+          sscanf(line, "%511s", command);
           char *command_copy = new(std::nothrow) char[strlen(command)+1];
           if (command_copy == NULL) {
             fprintf(stderr, "Out of memory in YEI description\n");
@@ -4716,7 +4716,7 @@ int vrpn_Generic_Server_Object::setup_YEI_3Space_Sensor_Wireless(char *&pch, cha
           // if we haven't run out of room for them.
           if (num_reset_commands < MAX_RESET_COMMANDS) {
             char command[LINESIZE];
-            sscanf(line, "%s", command);
+            sscanf(line, "%511s", command);
             char *command_copy = new(std::nothrow) char[strlen(command)+1];
             if (command_copy == NULL) {
               fprintf(stderr, "Out of memory in YEI description\n");
