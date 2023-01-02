@@ -1999,6 +1999,11 @@ int vrpn_Generic_Server_Object::setup_Tracker_Flock_Parallel(
     strtok(NULL, " \t");
     // pch points to invertQuaternion, next strtok will give first port name
 
+    if (i1 > VRPN_FLOCK_MAX_SENSORS) {
+      fprintf(stderr, "Too many vrpn_Tracker_Flock_Parallel sensors: %d (max %d)\n",
+        i1, VRPN_FLOCK_MAX_SENSORS);
+      return -1;
+    }
     char *rgs[VRPN_FLOCK_MAX_SENSORS];
     // get sensor ports
     for (int iSlaves = 0; iSlaves < i1; iSlaves++) {
@@ -2006,8 +2011,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_Flock_Parallel(
         if (!(pch2 = strtok(NULL, " \t"))) {
             fprintf(stderr, "Bad vrpn_Tracker_Flock_Parallel line: %s\n", line);
             return -1;
-        }
-        else {
+        } else {
             sscanf(pch2, "%511s", rgs[iSlaves]);
         }
     }
@@ -2020,6 +2024,11 @@ int vrpn_Generic_Server_Object::setup_Tracker_Flock_Parallel(
                s2, i1, s3, i2);
     _devices->add(new vrpn_Tracker_Flock_Parallel(s2, connection, i1, s3, i2,
                                                   rgs, invertQuaternion));
+
+    // Free our resources
+    for (int iSlaves = 0; iSlaves < i1; iSlaves++) {
+        delete[] rgs[iSlaves];
+    }
 
     return 0;
 }
