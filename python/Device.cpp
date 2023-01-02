@@ -87,9 +87,9 @@ namespace vrpn_python {
 
   PyObject *Device::getDateTimeFromTimeval(const struct timeval &time) {
     const time_t seconds = time.tv_sec;
-    struct tm* t = gmtime ( &seconds );
-    if (t) {
-      return PyDateTime_FromDateAndTime(t->tm_year+1900, t->tm_mon+1, t->tm_mday, t->tm_hour, t->tm_min, t->tm_sec, time.tv_usec);
+    struct tm t;
+    if (gmtime_r(&seconds, &t)) {
+      return PyDateTime_FromDateAndTime(t.tm_year+1900, t.tm_mon+1, t.tm_mday, t.tm_hour, t.tm_min, t.tm_sec, time.tv_usec);
     }
     return NULL;
   }
