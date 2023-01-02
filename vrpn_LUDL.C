@@ -331,7 +331,7 @@ bool vrpn_LUDL_USBMAC6000::interpret_usbmac_ascii_response(const vrpn_uint8 *buf
 
   char acolon[32], can[32];
   int device = 0, command = 0, index = 0, value = 0;
-  if (sscanf(charbuf, "%s  %s %i %i %i %i", acolon, can, &device, &command, &index, &value) <= 0) {
+  if (sscanf(charbuf, "%31s  %31s %i %i %i %i", acolon, can, &device, &command, &index, &value) <= 0) {
     REPORT_ERROR("vrpn_LUDL_USBMAC6000::interpret_usbmac_ascii_response(): Could not parse response");
     return false;
   }

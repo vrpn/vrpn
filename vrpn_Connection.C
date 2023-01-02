@@ -3693,7 +3693,7 @@ int vrpn_Endpoint_IP::connect_tcp_to(const char *msg)
     int port;
 
     // Find the machine name and port number
-    if (sscanf(msg, "%s %d", machine, &port) != 2) {
+    if (sscanf(msg, "%999s %d", machine, &port) != 2) {
         return -1;
     }
 
@@ -5861,7 +5861,7 @@ void vrpn_Connection_IP::server_check_for_incoming_connections(
           return;
         }
         int checkPort;
-        if (sscanf(msg, "%s %d", checkHost, &checkPort) != 2) {
+        if (sscanf(msg, "%199s %d", checkHost, &checkPort) != 2) {
             fprintf(
                 stderr,
                 "server_check_for_incoming_connections(): Malformed request\n");
