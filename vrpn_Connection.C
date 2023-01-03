@@ -2381,7 +2381,7 @@ int vrpn_udp_request_lob_packet(
         vrpn_closeSocket(udp_sock);
         return (-1);
     }
-    sprintf(msg, "%100s %d", myIPchar, local_port);
+    sprintf(msg, "%.100s %d", myIPchar, local_port);
     msglen = static_cast<vrpn_int32>(strlen(msg) +
                                      1); /* Include the terminating 0 char */
 
@@ -2593,7 +2593,7 @@ static int vrpn_start_server(const char *machine, char *server_name, char *args,
         if ((rsh_to_use = (char *)getenv("VRPN_RSH")) == NULL) {
             rsh_to_use = RSH;
         }
-        sprintf(command, "%100s %100s %100s %100s -client %100s %d", rsh_to_use, machine,
+        sprintf(command, "%.100s %.100s %.100s %.100s -client %.100s %d", rsh_to_use, machine,
                 server_name, args, myIPchar, PortNum);
         ret = system(command);
         if ((ret == 127) || (ret == -1)) {
@@ -2675,7 +2675,7 @@ int write_vrpn_cookie(char *buffer, size_t length, long remote_log_mode)
 {
     if (length < vrpn_cookie_size() + 1) return -1;
 
-    sprintf(buffer, "%16s  %c", vrpn_MAGIC,
+    sprintf(buffer, "%.16s  %c", vrpn_MAGIC,
             static_cast<char>(remote_log_mode + '0'));
     return 0;
 }
@@ -5649,7 +5649,7 @@ int vrpn_Connection_IP::connect_to_client(const char *machine, int port)
     d_updateEndpoint = vrpn_TRUE;
 
     char msg[100];
-    sprintf(msg, "%90s %d", machine, port);
+    sprintf(msg, "%.90s %d", machine, port);
     printf("vrpn_Connection_IP::connect_to_client: "
            "Connection request received: %s\n",
            msg);

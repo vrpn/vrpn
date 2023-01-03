@@ -63,7 +63,7 @@ int main (int argc, const char *argv[])
 	// We put "*" in the name to indicate that it should use the same
 	// connection.
 	char  analogName[1024];
-	sprintf(analogName, "*%1022s", (char*)handTrackerName);
+	sprintf(analogName, "*%.1022s", (char*)handTrackerName);
 	vrpn_Tracker_AnalogFlyParam afp;
 	afp.x.name = (char*)analogName;
 	afp.x.channel = 0;

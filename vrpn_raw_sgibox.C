@@ -56,7 +56,7 @@ vrpn_raw_SGIBox::vrpn_raw_SGIBox(char * name, vrpn_Connection * c,
     // the dial and button box.  Then reset the boxes.
     serialfd = vrpn_open_commport(serialPortName, 9600);
     if (serialfd < 0) {
-      sprintf(message,"vrpn_raw_SGIBox: error opening serial port: %900s\n",serialPortName);
+      sprintf(message,"vrpn_raw_SGIBox: error opening serial port: %.900s\n",serialPortName);
       perror(message);
       return;
     }
