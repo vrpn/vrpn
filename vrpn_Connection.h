@@ -1032,7 +1032,7 @@ vrpn_create_server_connection(int port = vrpn_DEFAULT_LISTEN_PORT_NO,
         sprintf(name, ":%d", port);
     }
     else {
-        sprintf(name, "%200s:%d", NIC_NAME, port);
+        sprintf(name, "%.200s:%d", NIC_NAME, port);
     }
     return vrpn_create_server_connection(name, local_in_logfile_name,
                                          local_out_logfile_name);

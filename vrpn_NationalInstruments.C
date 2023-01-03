@@ -79,7 +79,7 @@ vrpn_National_Instruments_Server::vrpn_National_Instruments_Server (const char* 
   // task to handle reading of these channels as a group.  We then
   // start this task.
   if (numInChannels > 0) {
-	  sprintf(portName, "%700s/ai0:%d", boardName, numInChannels-1);
+	  sprintf(portName, "%.700s/ai0:%d", boardName, numInChannels-1);
 	  error = DAQmxCreateTask("", &d_analog_task_handle);
 	  if (error == 0) {
 		  error = DAQmxCreateAIVoltageChan(
@@ -107,7 +107,7 @@ vrpn_National_Instruments_Server::vrpn_National_Instruments_Server (const char* 
   // task to handle writing of these channels as a group.  Start the
   // task.  Also, set the outputs to their minimum value at startup.
   if (numOutChannels > 0) {
-	  sprintf(portName, "%700s/ao0:%d", boardName, numOutChannels-1);
+	  sprintf(portName, "%.700s/ao0:%d", boardName, numOutChannels-1);
 	  error = DAQmxCreateTask("", &d_analog_out_task_handle);
 	  if (error == 0) {
 		  error = DAQmxCreateAOVoltageChan(
