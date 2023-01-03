@@ -5648,8 +5648,8 @@ int vrpn_Connection_IP::connect_to_client(const char *machine, int port)
     endpoint->setConnection(this);
     d_updateEndpoint = vrpn_TRUE;
 
-    char msg[100];
-    sprintf(msg, "%.90s %d", machine, port);
+    char msg[256];
+    sprintf(msg, "%.200s %d", machine, port);
     printf("vrpn_Connection_IP::connect_to_client: "
            "Connection request received: %s\n",
            msg);
