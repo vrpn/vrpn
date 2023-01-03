@@ -108,7 +108,7 @@ vrpn_bool vrpn_SharedObject::isSerializer(void) const { return VRPN_TRUE; }
 // virtual
 void vrpn_SharedObject::bindConnection(vrpn_Connection *c)
 {
-    char buffer[101];
+    char buffer[256];
     if (c == NULL) {
         // unbind the connection
         if (d_connection) {
@@ -127,9 +127,9 @@ void vrpn_SharedObject::bindConnection(vrpn_Connection *c)
 
     d_connection = c;
     c->addReference();
-    sprintf(buffer, "vrpn Shared server %.48s %.48s", d_typename, d_name);
+    sprintf(buffer, "vrpn Shared server %.100s %.100s", d_typename, d_name);
     d_serverId = c->register_sender(buffer);
-    sprintf(buffer, "vrpn Shared peer %.48s %.48s", d_typename, d_name);
+    sprintf(buffer, "vrpn Shared peer %.100s %.100s", d_typename, d_name);
     d_remoteId = c->register_sender(buffer);
     // d_updateFromServer_type = c->register_message_type
     //("vrpn_Shared update_from_server");
