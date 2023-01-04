@@ -75,9 +75,9 @@ int main(int, char**)
 	Lvelocity[0] = 0; Lvelocity[1] = 0; Lvelocity[2] = 0; Lvelocity[3] = 0;
 
 	printf("Please enter the server you wish to connect to.\n");
-	scanf("%s", server);
+	scanf("%80s", server);
 	printf("Please enter the sound device name you wish to connect to.\n");
-	scanf("%s", device);
+	scanf("%80s", device);
 	
 	vrpn_Connection *connection = vrpn_get_connection_by_name(server);
 	soundClient = new vrpn_Sound_Client(device, connection);

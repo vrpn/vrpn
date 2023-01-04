@@ -26,7 +26,7 @@ int main (int argc, char* argv[])
                 }
                 while (sc->connected()) {
 		  printf("Please enter the message:\n");
-		  if (scanf("%s", msg) != 1) {
+		  if (scanf("%1024s", msg) != 1) {
 			fprintf(stderr, "No message entered\n");
 			return(-1);
 		  }
