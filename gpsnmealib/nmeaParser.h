@@ -256,7 +256,7 @@ protected:
   NMEAData* m_data;
 
   // the sentence that marks the beginning of the set of packets
-  char startSentence[16];
+  char startSentence[MAX_SENTENCE_SIZE];
 
   // Needed for parsing the GSV sentence.
   int m_lastSentenceNumber;// Which sentence number was the last one?

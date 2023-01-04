@@ -182,7 +182,7 @@ void    VRPN_CALLBACK handle_tracker_change(void *, const vrpn_TRACKERCB t)
 	if (magy > magmax) { magmax = magy; }
 	if (magz > magmax) { magmax = magz; }
 
-	int index;
+	int index = 0;
 
 	if (magx == magmax) {
 	  if (dx < 0) {
