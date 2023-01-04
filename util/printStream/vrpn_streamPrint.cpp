@@ -143,7 +143,7 @@ int	main(int argc, char *argv[])
 	if (connection) 
 		delete connection; // needed to make stream file write out
 	if( device_name )
-		delete device_name;
+		delete[] device_name;
 	
 	return 0;
 }
