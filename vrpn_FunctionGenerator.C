@@ -90,7 +90,7 @@ vrpn_FunctionGenerator_function_script( const char* script )
 {
   try {
     this->script = new char[strlen(script) + 1];
-    strcpy(this->script, script);
+    vrpn_strncpynull(this->script, script, strlen(script) + 1);
   } catch (...) {}
 }
 
@@ -101,7 +101,7 @@ vrpn_FunctionGenerator_function_script( const vrpn_FunctionGenerator_function_sc
 {
   try {
     this->script = new char[strlen(s.script) + 1];
-    strcpy(this->script, s.script);
+    vrpn_strncpynull(this->script, s.script, strlen(s.script) + 1);
   } catch (...) {}
 }
 
@@ -233,7 +233,7 @@ getScript( ) const
   } catch (...) {
     return NULL;
   }
-  if (this->script) { strcpy(retval, this->script); }
+  if (this->script) { vrpn_strncpynull(retval, this->script, strlen(this->script) + 1); }
   return retval;
 }
 
@@ -251,7 +251,7 @@ vrpn_bool vrpn_FunctionGenerator_function_script::setScript( char* script )
         }
         try {
           this->script = new char[strlen(script) + 1];
-          strcpy(this->script, script);
+          vrpn_strncpynull(this->script, script, strlen(script) + 1);
         } catch (...) { return false; }
 	return true;
 }

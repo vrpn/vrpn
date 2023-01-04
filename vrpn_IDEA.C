@@ -121,7 +121,7 @@ bool vrpn_IDEA::send_command(const char *cmd)
   char buf[128];
   size_t len = strlen(cmd);
   if (len > sizeof(buf)-2) { return false; }
-  strcpy(buf, cmd);
+  vrpn_strcpy(buf, cmd);
   buf[len] = '\r';
   buf[len+1] = '\0';
   return (static_cast<size_t>(vrpn_write_characters(serial_fd, 

@@ -76,7 +76,7 @@ int main (int argc, char * argv [])
 
 #ifdef hpux
   char default_station_name [100];
-  strcpy(default_station_name, "Analog0@localhost");
+  vrpn_strcpy(default_station_name, "Analog0@localhost");
 #else
   char default_station_name [] = { "Analog0@localhost" };
 #endif

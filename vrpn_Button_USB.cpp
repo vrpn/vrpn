@@ -15,7 +15,7 @@ vrpn_Button_USB::vrpn_Button_USB(const char *name, const char *deviceName,vrpn_C
 
 	//--- define the device code
 	char PortName[20];
-	strcpy( PortName, "\\\\.\\" );
+        vrpn_strcpy( PortName, "\\\\.\\");
 	strcat( PortName, deviceName );
 
 	//--- open the serial port

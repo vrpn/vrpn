@@ -293,7 +293,7 @@ VRPN_API int vrpn_buffer(char **insertPt, vrpn_int32 *buflen,
                     "vrpn_buffer:  buffer not long enough for string.\n");
             return -1;
         }
-        strcpy(*insertPt, string);
+        vrpn_strncpynull(*insertPt, string, len);
         *insertPt += len;
         *buflen -= static_cast<vrpn_int32>(len);
     }

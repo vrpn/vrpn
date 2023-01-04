@@ -29,7 +29,7 @@ class VRPN_API vrpn_TBF_axis {
   public:
 
     vrpn_TBF_axis(void)
-      { strcpy(name,""); channel = 0;
+      { vrpn_strcpy(name,""); channel = 0;
 	vec[0] = vec[1] = vec[2] = 0.0;
 	rot[0] = rot[1] = rot[2] = 0.0;
 	absolute = false;
@@ -55,8 +55,8 @@ class VRPN_API vrpn_Tracker_ButtonFlyParam {
   public:
 
     vrpn_Tracker_ButtonFlyParam (void) {
-      strcpy(vel_scale_name, "");
-      strcpy(rot_scale_name, "");
+      vrpn_strcpy(vel_scale_name, "");
+      vrpn_strcpy(rot_scale_name, "");
       num_axes = 0;
     }
 

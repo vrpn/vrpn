@@ -19,7 +19,7 @@ vrpn_Imager_Stream_Buffer::vrpn_Imager_Stream_Buffer(
         d_connection = NULL;
         return;
     }
-    strcpy(d_imager_server_name, imager_server_name);
+    vrpn_strncpynull(d_imager_server_name, imager_server_name, strlen(imager_server_name) + 1);
 
     // Create the logging thread but do not run it yet.
     vrpn_ThreadData td;

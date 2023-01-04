@@ -100,9 +100,9 @@ char *vrpn_Forwarder_Brain::encode_forward_message_type(
     memcpy(outbuf, &nPort, sizeof(vrpn_int32));
     memcpy(outbuf + sizeof(vrpn_int32), &nSLen, sizeof(vrpn_int32));
     memcpy(outbuf + 2 * sizeof(vrpn_int32), &nTLen, sizeof(vrpn_int32));
-    strcpy(outbuf + 3 * sizeof(vrpn_int32), service_name);
-    strcpy(outbuf + 3 * sizeof(vrpn_int32) + strlen(service_name),
-           message_type);
+    memcpy(outbuf + 3 * sizeof(vrpn_int32), service_name, strlen(service_name));
+    memcpy(outbuf + 3 * sizeof(vrpn_int32) + strlen(service_name),
+           message_type, strlen(message_type));
 
     return outbuf;
 }
