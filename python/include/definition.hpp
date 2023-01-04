@@ -81,7 +81,7 @@ namespace vrpn_python {
       } catch (DeviceException &exception) {
 	PyErr_SetString(device_type::s_error, exception.getReason().c_str());
 	Py_RETURN_FALSE;
-      } catch (CallbackException) {
+      } catch (CallbackException &) {
 	return NULL;
       }
     }
