@@ -72,7 +72,10 @@ int main(int , char *argv[])
     // Declare a new text receiver (all objects are text senders)
     // and find out what connection it is using.
     r = new vrpn_Text_Receiver(argv[1]);
-    c = r->connectionPtr();
+    if (0 == (c = r->connectionPtr())) {
+        fprintf(stderr, "Could not get connection pointer\n");
+        return 1;
+    }
 
     // Declare the same sender and message types that the BaseClass
     // will use for doing the ping/pong, so we can use the same

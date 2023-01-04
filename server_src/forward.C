@@ -79,7 +79,10 @@ int main (int argc, char ** argv) {
 
   // Connect to the server.
 
-  server_connection = vrpn_get_connection_by_name (source_location);
+  if (0 == (server_connection = vrpn_get_connection_by_name(source_location))) {
+      fprintf(stderr, "vrpn_get_connection_by_name() failed.\n");
+      return 1;
+  }
 
   // Open a port for our client to connect to us.
 

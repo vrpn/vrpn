@@ -127,12 +127,14 @@ void init (const char * station_name,
             fprintf(stderr, "Warning:  Reading from file, so not logging.\n");
           }
 	} else {
-        fprintf(stderr, "Connecting to host %s.\n", station_name);
-	  c = vrpn_get_connection_by_name
-                    (station_name,
-		    local_in_logfile, local_out_logfile,
-		    remote_in_logfile, remote_out_logfile,
-                    NIC);
+          fprintf(stderr, "Connecting to host %s.\n", station_name);
+          if (0 == (c = vrpn_get_connection_by_name(station_name,
+                  local_in_logfile, local_out_logfile,
+                  remote_in_logfile, remote_out_logfile,
+                  NIC))) {
+              fprintf(stderr, "vrpn_get_connection_by_name() failed.\n");
+              return;
+          }
           if (delayTime > 0.0) {
             //((vrpn_DelayedConnection *) c)->setDelay
                               //(vrpn_MsecsTimeval(delayTime * 1000.0));
