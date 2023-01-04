@@ -237,12 +237,10 @@ int main(int argc, char *argv[])
     device_info device_list[MAX_DEVICES];
     unsigned num_devices = 0;
 
-    int i;
-
     // Parse arguments, creating objects as we go.  Arguments that
     // change the way a device is treated affect all devices that
     // follow on the command line.
-    for (i = 1; i < argc; i++) {
+    for (int i = 1; i < argc; i++) {
         if (!strcmp(argv[i], "-notracker")) {
             print_for_tracker = 0;
         }
@@ -368,10 +366,9 @@ int main(int argc, char *argv[])
      */
     printf("Press ^C to exit.\n");
     while (!done) {
-        unsigned i;
 
         // Let all the devices do their things
-        for (i = 0; i < num_devices; i++) {
+        for (unsigned i = 0; i < num_devices; i++) {
             device_list[i].tkr->mainloop();
             device_list[i].btn->mainloop();
             device_list[i].ana->mainloop();
