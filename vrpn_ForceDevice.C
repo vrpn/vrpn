@@ -552,10 +552,10 @@ vrpn_int32 vrpn_ForceDevice::decode_vertex(const char *buffer,
 {
     const char *mptr = buffer;
 
-    if (len != (sizeof(objNum) + sizeof(vertNum) + 3 * sizeof(vrpn_float32))) {
+    if (len != (sizeof(*objNum) + sizeof(*vertNum) + 3 * sizeof(vrpn_float32))) {
         fprintf(stderr, "vrpn_ForceDevice: vertex message payload error\n");
         fprintf(stderr, "             (got %d, expected %lud)\n", len,
-                static_cast<unsigned long>(sizeof(objNum) + sizeof(vertNum) +
+                static_cast<unsigned long>(sizeof(*objNum) + sizeof(*vertNum) +
                                            3 * sizeof(vrpn_float32)));
         return -1;
     }
