@@ -397,7 +397,7 @@ void vrpn_Tracker_Flock::reset()
    //
    // Set the active hemisphere based on what's in the config file.
 
-   unsigned char hem, sign;
+   unsigned char hem = 0, sign = 0;
    switch (activeHemisphere)
    {
        case HEMI_PLUSX :   hem = 0x00; sign = 0x00;  break;
