@@ -32,7 +32,10 @@ int main (int argc, char ** argv) {
 
   source_location = argv[1];
 
-  connection = vrpn_get_connection_by_name (source_location);
+  if (0 == (connection = vrpn_get_connection_by_name(source_location))) {
+      fprintf(stderr, "vrpn_get_connection_by_name() failed.\n");
+      return 1;
+  }
 
   controller = new vrpn_Forwarder_Controller (connection);
 
