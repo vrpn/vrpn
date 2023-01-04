@@ -103,7 +103,7 @@ int main (int argc, char * argv [])
 
 #ifdef hpux
   char default_station_name [100];
-  strcpy(default_station_name, "CerealBox@ioglab");
+  vrpn_strcpy(default_station_name, "CerealBox@ioglab");
 #else
   char default_station_name [] = { "CerealBox@ioglab" };
 #endif

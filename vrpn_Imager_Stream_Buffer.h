@@ -210,16 +210,16 @@ public:
             // Allocate space to return the names in the handles passed in.
             // Copy the values from our local storage to the return values.
             if ((*lil = new(std::nothrow) char[strlen(d_request_lil) + 1]) != NULL) {
-                strcpy(*lil, d_request_lil);
+                vrpn_strncpynull(*lil, d_request_lil, strlen(d_request_lil) + 1);
             }
             if ((*lol = new(std::nothrow) char[strlen(d_request_lol) + 1]) != NULL) {
-                strcpy(*lol, d_request_lol);
+                vrpn_strncpynull(*lol, d_request_lol, strlen(d_request_lol) + 1);
             }
             if ((*ril = new(std::nothrow) char[strlen(d_request_ril) + 1]) != NULL) {
-                strcpy(*ril, d_request_ril);
+                vrpn_strncpynull(*ril, d_request_ril, strlen(d_request_ril) + 1);
             }
             if ((*rol = new(std::nothrow) char[strlen(d_request_rol) + 1]) != NULL) {
-                strcpy(*rol, d_request_rol);
+                vrpn_strncpynull(*rol, d_request_rol, strlen(d_request_rol) + 1);
             }
 
             // Delete and NULL the local storage pointers.
@@ -288,22 +288,22 @@ public:
         // Allocate space for each string and then copy into it.
         if (lil != NULL) {
             if ((d_request_lil = new(std::nothrow) char[strlen(lil) + 1]) != NULL) {
-                strcpy(d_request_lil, lil);
+                vrpn_strncpynull(d_request_lil, lil, strlen(lil) + 1);
             }
         }
         if (lol != NULL) {
             if ((d_request_lol = new(std::nothrow) char[strlen(lol) + 1]) != NULL) {
-                strcpy(d_request_lol, lol);
+                vrpn_strncpynull(d_request_lol, lol, strlen(lol) + 1);
             }
         }
         if (ril != NULL) {
             if ((d_request_ril = new(std::nothrow) char[strlen(ril) + 1]) != NULL) {
-                strcpy(d_request_ril, ril);
+                vrpn_strncpynull(d_request_ril, ril, strlen(ril) + 1);
             }
         }
         if (rol != NULL) {
             if ((d_request_rol = new(std::nothrow) char[strlen(rol) + 1]) != NULL) {
-                strcpy(d_request_rol, rol);
+                vrpn_strncpynull(d_request_rol, rol, strlen(rol) + 1);
             }
         }
 
@@ -331,28 +331,28 @@ public:
                 *lil = NULL;
             else {
                 if ((*lil = new(std::nothrow) char[strlen(d_result_lil) + 1]) != NULL) {
-                    strcpy(*lil, d_result_lil);
+                    vrpn_strncpynull(*lil, d_result_lil, strlen(d_result_lil) + 1);
                 }
             }
             if (d_result_lol == NULL)
                 *lol = NULL;
             else {
                 if ((*lol = new(std::nothrow) char[strlen(d_result_lol) + 1]) != NULL) {
-                    strcpy(*lol, d_result_lol);
+                    vrpn_strncpynull(*lol, d_result_lol, strlen(d_result_lol) + 1);
                 }
             }
             if (d_result_ril == NULL)
                 *ril = NULL;
             else {
                 if ((*ril = new(std::nothrow) char[strlen(d_result_ril) + 1]) != NULL) {
-                    strcpy(*ril, d_result_ril);
+                    vrpn_strncpynull(*ril, d_result_ril, strlen(d_result_ril) + 1);
                 }
             }
             if (d_result_rol == NULL)
                 *rol = NULL;
             else {
                 if ((*rol = new(std::nothrow) char[strlen(d_result_rol) + 1]) != NULL) {
-                    strcpy(*rol, d_result_rol);
+                    vrpn_strncpynull(*rol, d_result_rol, strlen(d_result_rol) + 1);
                 }
             }
 
@@ -408,22 +408,22 @@ public:
         // Allocate space for each string and then copy into it.
         if (lil != NULL) {
             if ((d_result_lil = new(std::nothrow) char[strlen(lil) + 1]) != NULL) {
-                strcpy(d_result_lil, lil);
+                vrpn_strncpynull(d_result_lil, lil, strlen(lil) + 1);
             }
         }
         if (lol != NULL) {
             if ((d_result_lol = new(std::nothrow) char[strlen(lol) + 1]) != NULL) {
-                strcpy(d_result_lol, lol);
+                vrpn_strncpynull(d_result_lol, lol, strlen(lol) + 1);
             }
         }
         if (ril != NULL) {
             if ((d_result_ril = new(std::nothrow) char[strlen(ril) + 1]) != NULL) {
-                strcpy(d_result_ril, ril);
+                vrpn_strncpynull(d_result_ril, ril, strlen(ril) + 1);
             }
         }
         if (rol != NULL) {
             if ((d_result_rol = new(std::nothrow) char[strlen(rol) + 1]) != NULL) {
-                strcpy(d_result_rol, rol);
+                vrpn_strncpynull(d_result_rol, rol, strlen(rol) + 1);
             }
         }
 
@@ -444,25 +444,25 @@ public:
             *local_in = NULL;
         else {
             *local_in = new char[strlen(d_result_lil) + 1];
-            strcpy(*local_in, d_result_lil);
+            vrpn_strncpynull(*local_in, d_result_lil, strlen(d_result_lil) + 1);
         }
         if (d_result_lol == NULL)
             *local_out = NULL;
         else {
             *local_out = new char[strlen(d_result_lol) + 1];
-            strcpy(*local_out, d_result_lol);
+            vrpn_strncpynull(*local_out, d_result_lol, strlen(d_result_lol) + 1);
         }
         if (d_result_ril == NULL)
             *remote_in = NULL;
         else {
             *remote_in = new char[strlen(d_result_ril) + 1];
-            strcpy(*remote_in, d_result_ril);
+            vrpn_strncpynull(*remote_in, d_result_ril, strlen(d_result_ril) + 1);
         }
         if (d_result_rol == NULL)
             *remote_out = NULL;
         else {
             *remote_out = new char[strlen(d_result_rol) + 1];
-            strcpy(*remote_out, d_result_rol);
+            vrpn_strncpynull(*remote_out, d_result_rol, strlen(d_result_rol) + 1);
         }
     }
 

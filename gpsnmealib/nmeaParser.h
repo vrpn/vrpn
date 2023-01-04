@@ -5,6 +5,7 @@
 
 #ifndef __NMEAPARSER_HPP
 #define __NMEAPARSER_HPP
+#include "vrpn_Shared.h"
 
 #if 1
 
@@ -198,7 +199,7 @@ class NMEAParser
 
   void setStartSentence(const char *sentence)
   {
-	  strcpy(startSentence, sentence);
+    vrpn_strcpy(startSentence, sentence);
   }
 
   void getData (NMEAData& data) const

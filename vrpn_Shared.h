@@ -502,6 +502,22 @@ inline int vrpn_unbuffer(ByteT **input, T *lvalue)
 // Returns true if tests work and false if they do not.
 extern bool vrpn_test_pack_unpack(void);
 
+/// Version of strncpy that ensures the resulting string is alyways NULL
+/// terminated.  It also only writes up to the terminating character and does
+/// not fill the rest of the string with 0.
+/// Use vrpn_strcpy() instead if this when writing to a fixed-length buffer.
+inline char *vrpn_strncpynull(char* dst, const char* src, size_t size)
+{
+    if (size > 0) {
+        size_t i;
+        for (i = 0; i < size - 1 && src[i]; i++) {
+            dst[i] = src[i];
+        }
+        dst[i] = '\0';
+    }
+    return dst;
+}
+
 /// Null-terminated-string copy function that both guarantees not to overrun
 /// the buffer and guarantees that the last character copied is a NULL terminator
 /// character.  Infers the size of the output buffer by template magic.

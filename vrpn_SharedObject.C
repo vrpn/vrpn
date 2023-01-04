@@ -52,11 +52,11 @@ vrpn_SharedObject::vrpn_SharedObject(const char *name, const char *tname,
 {
     if (name) {
         d_name = new char[1 + strlen(name)];
-        strcpy(d_name, name);
+        vrpn_strncpynull(d_name, name, 1 + strlen(name));
     }
     if (tname) {
         d_typename = new char[1 + strlen(tname)];
-        strcpy(d_typename, tname);
+        vrpn_strncpynull(d_typename, tname, 1 + strlen(tname));
     }
     vrpn_gettimeofday(&d_lastUpdate, NULL);
 }
@@ -865,10 +865,6 @@ vrpn_Shared_float64::vrpn_Shared_float64(const char *name,
     , d_policyCallback(NULL)
     , d_policyUserdata(NULL)
 {
-
-    if (name) {
-        strcpy(d_name, name);
-    }
     vrpn_gettimeofday(&d_lastUpdate, NULL);
 }
 
@@ -1211,10 +1207,7 @@ vrpn_Shared_String::vrpn_Shared_String(const char *name,
 {
 
     if (defaultValue) {
-        strcpy(d_value, defaultValue);
-    }
-    if (name) {
-        strcpy(d_name, name);
+        vrpn_strncpynull(d_value, defaultValue, 1 + strlen(defaultValue));
     }
     vrpn_gettimeofday(&d_lastUpdate, NULL);
 }
@@ -1369,7 +1362,7 @@ vrpn_Shared_String &vrpn_Shared_String::set(const char *newValue, timeval when,
                 fprintf(stderr, "vrpn_Shared_String::set:  Out of memory.\n");
                 return *this;
             }
-            strcpy(d_value, newValue);
+            vrpn_strncpynull(d_value, newValue, 1 + strlen(newValue));
         }
 
         // fprintf(stderr, "vrpn_Shared_String::set:  %s to \"%s\".\n", name(),

@@ -441,7 +441,7 @@ int vrpn_ImmersionBox::sendIboxCommand (char cmd, char * returnString, double de
 	return 0;
 
     // copy the remainder of the response into the response
-    strcpy (returnString, &responseString[1]);
+    vrpn_strncpynull(returnString, &responseString[1], 32);
 
     return 1;
 }

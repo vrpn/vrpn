@@ -153,7 +153,8 @@ extern VRPN_API const char *vrpn_dropped_last_connection;
 extern VRPN_API const char *vrpn_CONTROL;
 
 /// @brief Length of names within VRPN
-typedef char cName[100];
+const unsigned vrpn_CNAME_LENGTH = 100;
+typedef char cName[vrpn_CNAME_LENGTH];
 
 /// Placed here so vrpn_FileConnection can use it too.
 struct VRPN_API vrpn_LOGLIST {

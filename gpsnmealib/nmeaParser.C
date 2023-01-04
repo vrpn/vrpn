@@ -98,7 +98,7 @@ NMEAParser::NMEAParser () //sj: log4cpp::Category& l) : logger(l)
 {
   m_data = new NMEAData();
   // by default, we'll look for "RMC" message to signify a new sequence of messages
-  strcpy(startSentence, "RMC");
+  vrpn_strcpy(startSentence, "RMC");
 
   // Defaults for the GSV sentence parser.
   m_lastSentenceNumber = 1;

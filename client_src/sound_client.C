@@ -123,7 +123,7 @@ int main(int, char**)
 				scanf("%s", dummy);
 				vrpn_SoundDef SoundDef;
 				ids[curID] = soundClient->loadSound(dummy, curID, SoundDef);
-				strcpy(files[curID++], dummy);
+                                vrpn_strcpy(files[curID++], dummy);
 				soundClient->mainloop();
 			}
 			break;

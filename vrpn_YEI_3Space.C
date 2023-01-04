@@ -50,7 +50,7 @@ vrpn_YEI_3Space::vrpn_YEI_3Space (const char * p_name
   ptr = reset_commands;
   for (int i = 0; i < d_reset_command_count; i++) {
     d_reset_commands[i] = new char[strlen(reset_commands[i]) + 1];
-    strcpy(d_reset_commands[i], reset_commands[i]);
+    vrpn_strncpynull(d_reset_commands[i], reset_commands[i], strlen(reset_commands[i]) + 1);
   }
 
   // Set the parameters in the parent classes

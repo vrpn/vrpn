@@ -1013,7 +1013,7 @@ bool vrpn_Tracker_DTrack::dtrack_receive(void)
 					return false;
 				}
 
-				strcpy(sfmt, "");
+                                vrpn_strcpy(sfmt, "");
 				j = 0;
 				while(j < act_flystick[i].num_button){
 					strcat(sfmt, "i");

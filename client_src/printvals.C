@@ -274,7 +274,7 @@ int main (int argc, char * argv [])
 
 #ifdef hpux
   char default_station_name [20];
-  strcpy(default_station_name, "ioph100");
+  vrpn_strcpy(default_station_name, "ioph100");
 #else
   char default_station_name [] = { "ioph100" };
 #endif

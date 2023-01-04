@@ -526,7 +526,7 @@ char *vrpn_Log::getName()
         char *s = NULL;
         try {
           s = new char[strlen(this->d_logFileName) + 1];
-          strcpy(s, this->d_logFileName);
+          vrpn_strncpynull(s, this->d_logFileName, strlen(this->d_logFileName) + 1);
         } catch (...) {}
         return s;
     }
@@ -1664,7 +1664,7 @@ static int vrpn_getmyIP(char *myIPchar, unsigned maxlen,
             return -1;
         }
 
-        strcpy(myIPchar, myIPstring);
+        vrpn_strncpynull(myIPchar, myIPstring, maxlen);
 
 #ifdef VERBOSE
         fprintf(stderr, "Decided on IP address of %s.\n", myIPchar);
@@ -1707,7 +1707,7 @@ static int vrpn_getmyIP(char *myIPchar, unsigned maxlen,
         return -1;
     }
 
-    strcpy(myIPchar, myIPstring);
+    vrpn_strncpynull(myIPchar, myIPstring, maxlen);
 #ifdef VERBOSE
     fprintf(stderr, "Decided on IP address of %s.\n", myIPchar);
 #endif
@@ -2336,7 +2336,7 @@ static int get_local_socket_name(char *local_host, size_t max_length,
         return -1;
     }
 
-    strcpy(local_host, myIPstring);
+    vrpn_strncpynull(local_host, myIPstring, max_length);
     return ret;
 }
 
@@ -3930,7 +3930,7 @@ void vrpn_Endpoint_IP::setNICaddress(const char *address)
         status = BROKEN;
         return;
     }
-    strcpy(d_NICaddress, address);
+    vrpn_strncpynull(d_NICaddress, address, 1 + strlen(address));
 }
 
 int vrpn_Endpoint_IP::setup_new_connection(void)
@@ -5000,7 +5000,7 @@ vrpn_Connection::vrpn_Connection(const char *local_in_logfile_name,
     if (local_in_logfile_name) {
       try {
         d_serverLogName = new char[1 + strlen(local_in_logfile_name)];
-        strcpy(d_serverLogName, local_in_logfile_name);
+        vrpn_strncpynull(d_serverLogName, local_in_logfile_name, 1 + strlen(local_in_logfile_name));
       } catch (...) {
         connectionStatus = BROKEN;
         return;
@@ -5052,7 +5052,7 @@ vrpn_Connection::vrpn_Connection(const char *local_in_logfile_name,
       try {
         endpoint->d_remoteInLogName =
           new char[strlen(remote_in_logfile_name) + 1];
-        strcpy(endpoint->d_remoteInLogName, remote_in_logfile_name);
+        vrpn_strncpynull(endpoint->d_remoteInLogName, remote_in_logfile_name, strlen(remote_in_logfile_name) + 1);
       } catch (...) {
         connectionStatus = BROKEN;
         return;
@@ -5065,7 +5065,7 @@ vrpn_Connection::vrpn_Connection(const char *local_in_logfile_name,
       try {
         endpoint->d_remoteOutLogName =
             new char[strlen(remote_out_logfile_name) + 1];
-        strcpy(endpoint->d_remoteOutLogName, remote_out_logfile_name);
+        vrpn_strncpynull(endpoint->d_remoteOutLogName, remote_out_logfile_name, strlen(remote_out_logfile_name) + 1);
       } catch (...) {
         connectionStatus = BROKEN;
         return;
@@ -5276,7 +5276,8 @@ void vrpn_Connection::get_log_names(char **local_in_logname,
           try {
             *remote_in_logname =
               new char[strlen(endpoint->d_remoteInLogName) + 1];
-            strcpy(*remote_in_logname, endpoint->d_remoteInLogName);
+            vrpn_strncpynull(*remote_in_logname, endpoint->d_remoteInLogName,
+              strlen(endpoint->d_remoteInLogName) + 1);
           } catch (...) {
             fprintf(stderr, "vrpn_Connection::get_log_names(): Out of memory\n");
             connectionStatus = BROKEN;
@@ -5292,7 +5293,8 @@ void vrpn_Connection::get_log_names(char **local_in_logname,
           try {
             *remote_out_logname =
               new char[strlen(endpoint->d_remoteOutLogName) + 1];
-            strcpy(*remote_out_logname, endpoint->d_remoteOutLogName);
+            vrpn_strncpynull(*remote_out_logname, endpoint->d_remoteOutLogName,
+                    strlen(endpoint->d_remoteOutLogName) + 1);
           }
           catch (...) {
             fprintf(stderr, "vrpn_Connection::get_log_names(): Out of memory\n");
@@ -6145,7 +6147,7 @@ vrpn_Connection_IP::vrpn_Connection_IP(
     // to keep it from changing.
     if (NIC_IPaddress != NULL) try {
         char *IP = new char[strlen(NIC_IPaddress) + 1];
-        strcpy(IP, NIC_IPaddress);
+        vrpn_strncpynull(IP, NIC_IPaddress, strlen(NIC_IPaddress) + 1);
         d_NIC_IP = IP;
     } catch (...) {
       fprintf(stderr, "vrpn_Connection_IP::vrpn_Connection_IP(): Out of memory.\n");
@@ -6206,7 +6208,7 @@ vrpn_Connection_IP::vrpn_Connection_IP(
     // to keep it from changing.
     if (NIC_IPaddress != NULL) try {
         char *IP = new char[strlen(NIC_IPaddress) + 1];
-        strcpy(IP, NIC_IPaddress);
+        vrpn_strncpynull(IP, NIC_IPaddress, strlen(NIC_IPaddress) + 1);
         d_NIC_IP = IP;
     } catch (...) {
       fprintf(stderr, "vrpn_Connection_IP::vrpn_Connection_IP(): Out of memory.\n");
@@ -6767,7 +6769,7 @@ char *vrpn_set_service_name(const char *specifier, const char *newServiceName)
         // no @ symbol present; just a location.
         try {
           location = new char[inputLength + 1];
-          strcpy(location, specifier); // take the whole thing to be the location
+          vrpn_strncpynull(location, specifier, inputLength + 1); // take the whole thing to be the location
         } catch (...) {
           fprintf(stderr, "vrpn_set_service_name: Out of memory!\n");
           return NULL;
@@ -6782,7 +6784,7 @@ char *vrpn_set_service_name(const char *specifier, const char *newServiceName)
     char *newSpecifier = NULL;
     try {
       newSpecifier = new char[len + 2]; // extra space for '@' and terminal '/0'
-      strcpy(newSpecifier, newServiceName);
+      vrpn_strncpynull(newSpecifier, newServiceName, len + 2);
       strcat(newSpecifier, "@");
       strcat(newSpecifier, location);
     } catch (...) {

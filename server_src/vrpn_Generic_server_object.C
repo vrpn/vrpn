@@ -1332,15 +1332,15 @@ int vrpn_Generic_Server_Object::setup_Tracker_NovintFalcon(
 
     // set damping to 0.9.
     if (numparms < 5) {
-        strcpy(s5, "0.9");
+        vrpn_strcpy(s5, "0.9");
     }
     // set kinematics model to "stamper", if not set
     if (numparms < 4) {
-        strcpy(s4, "stamper");
+        vrpn_strcpy(s4, "stamper");
     }
     // set grip to "4-button" (the default one), if not set.
     if (numparms < 3) {
-        strcpy(s3, "4-button");
+        vrpn_strcpy(s3, "4-button");
     }
 
 #if defined(VRPN_USE_LIBNIFALCON)
@@ -1902,9 +1902,9 @@ int vrpn_Generic_Server_Object::setup_Tracker_Flock(char *&pch, char *line,
     char s2[LINESIZE], s3[LINESIZE];
     int i1, i2, i3;
     char useERT[LINESIZE];
-    strcpy(useERT, "y");
+    vrpn_strcpy(useERT, "y");
     char hemi[LINESIZE];
-    strcpy(hemi, "+z");
+    vrpn_strcpy(hemi, "+z");
     bool invertQuaternion;
 
     VRPN_CONFIG_NEXT();
@@ -4539,7 +4539,7 @@ int vrpn_Generic_Server_Object::setup_YEI_3Space_Sensor(char *&pch, char *line,
             fprintf(stderr, "Out of memory in YEI description\n");
             return -1;
           }
-          strcpy(command_copy, command);
+          vrpn_strncpynull(command_copy, command, strlen(command) + 1);
           reset_commands[num_reset_commands++] = command_copy;
         }
     }
@@ -4638,7 +4638,7 @@ int vrpn_Generic_Server_Object::setup_YEI_3Space_Sensor_Wireless(char *&pch, cha
             fprintf(stderr, "Out of memory in YEI description\n");
             return -1;
           }
-          strcpy(command_copy, command);
+          vrpn_strncpynull(command_copy, command, strlen(command) + 1);
           reset_commands[num_reset_commands++] = command_copy;
         }
     }
@@ -4722,7 +4722,7 @@ int vrpn_Generic_Server_Object::setup_YEI_3Space_Sensor_Wireless(char *&pch, cha
               fprintf(stderr, "Out of memory in YEI description\n");
               return -1;
             }
-            strcpy(command_copy, command);
+            vrpn_strncpynull(command_copy, command, strlen(command) + 1);
             reset_commands[num_reset_commands++] = command_copy;
           }
       }
