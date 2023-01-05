@@ -7,6 +7,8 @@
  * a C interface.
  */
 
+#pragma once
+
 #ifdef __cplusplus
 extern "C" {
 #endif
