@@ -8,6 +8,8 @@
 // to guard against its future inclusion.  Here, we pick one of the
 // things that are defined in that file and check for it.
 
+#pragma once
+
 #ifndef I2C_M_TEN
 #include <linux/i2c.h>
 #endif
