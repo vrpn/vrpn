@@ -75,9 +75,9 @@ int main(int, char**)
 	Lvelocity[0] = 0; Lvelocity[1] = 0; Lvelocity[2] = 0; Lvelocity[3] = 0;
 
 	printf("Please enter the server you wish to connect to.\n");
-	scanf("%80s", server);
+	scanf("%79s", server);
 	printf("Please enter the sound device name you wish to connect to.\n");
-	scanf("%80s", device);
+	scanf("%79s", device);
 	
 	vrpn_Connection *connection = vrpn_get_connection_by_name(server);
 	soundClient = new vrpn_Sound_Client(device, connection);
@@ -97,7 +97,7 @@ int main(int, char**)
 				printf("\n");
 			else
 				printf("\t");
-			printf("%d %s", ids[i], files[i]);
+			printf("%d %79s", ids[i], files[i]);
 		}
 		printf("\nOptions\n");
 		printf("1) Load Sound\n");
@@ -120,7 +120,7 @@ int main(int, char**)
 		{
 		case 1: {
 				printf("Enter path and file to load\n");
-				scanf("%s", dummy);
+				scanf("%79s", dummy);
 				vrpn_SoundDef SoundDef;
 				ids[curID] = soundClient->loadSound(dummy, curID, SoundDef);
                                 vrpn_strcpy(files[curID++], dummy);
