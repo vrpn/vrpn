@@ -27,7 +27,6 @@ int beQuiet = 0;
 int beRedundant = 0;
 int redNum = 0;
 double redTime = 0.0;
-double delayTime = 0.0;
 
 int done = 0;	    // Signals that the program should exit
 
@@ -134,11 +133,6 @@ void init (const char * station_name,
                   NIC))) {
               fprintf(stderr, "vrpn_get_connection_by_name() failed.\n");
               return;
-          }
-          if (delayTime > 0.0) {
-            //((vrpn_DelayedConnection *) c)->setDelay
-                              //(vrpn_MsecsTimeval(delayTime * 1000.0));
-            //((vrpn_DelayedConnection *) c)->delayAllTypes(vrpn_TRUE);
           }
 	}
 
@@ -251,7 +245,7 @@ void Usage (const char * arg0) {
   fprintf(stderr,
 "Usage:  %s [-lli logfile] [-llo logfile] [-rli logfile ] [-rlo logfile]\n"
 "           [-NIC ip] [-filterpos] [-quiet]\n"
-"           [-red num time] [-delay time] station_name\n"
+"           [-red num time] station_name\n"
 "  -notracker:  Don't print tracker reports\n" 
 "  -lli:  log incoming messages locally in <logfile>\n" 
 "  -llo:  log outgoing messages locally in <logfile>\n" 
@@ -262,7 +256,6 @@ void Usage (const char * arg0) {
 "  -quiet:  ignore VRPN warnings\n"
 "  -red <num> <time>:  send every message <num>\n"
 "    times <time> seconds apart\n"
-"  -delay <time:  delay all messages received by <time>\n"
 "  station_name:  VRPN name of data source to contact\n"
 "    one of:  <hostname>[:<portnum>]\n"
 "             file:<filename>\n",
@@ -335,9 +328,6 @@ int main (int argc, char * argv [])
       redNum = atoi(argv[i]);
       i++;
       redTime = atof(argv[i]);
-    } else if (!strcmp(argv[i], "-delay")) {
-      i++;
-      delayTime = atof(argv[i]);
     } else
       station_name = argv[i];
   }

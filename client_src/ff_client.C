@@ -21,17 +21,19 @@
 
 void    VRPN_CALLBACK handle_force_change(void *, const vrpn_FORCECB f)
 {
+  /*
   static vrpn_FORCECB lr;        // last report
-  static int first_report_done = 0;
 
+  static int first_report_done = 0;
   if ((!first_report_done) ||
     ((f.force[0] != lr.force[0]) || (f.force[1] != lr.force[1])
       || (f.force[2] != lr.force[2]))) {
-    //printf("force is (%f,%f,%f)\n", f.force[0], f.force[1], f.force[2]);
+    printf("force is (%f,%f,%f)\n", f.force[0], f.force[1], f.force[2]);
   }
-
   first_report_done = 1;
+
   lr = f;
+  */
 }
 
 void    VRPN_CALLBACK handle_tracker_change(void *userdata, const vrpn_TRACKERCB t)
