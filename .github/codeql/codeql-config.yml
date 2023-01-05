@@ -10,3 +10,4 @@ query-filters:
           - cpp/integer-used-for-enum
           - cpp/poorly-documented-function
           - cpp/array-in-interface
+          - cpp/commented-out-code
