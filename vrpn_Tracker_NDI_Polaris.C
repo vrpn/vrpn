@@ -303,12 +303,12 @@ int vrpn_Tracker_NDI_Polaris::convertBinaryFileToAsciiEncodedHex(const char* fil
 // to the end of the value we just parsed.
 // The caller must make sure the string is at least two characters long
 unsigned int vrpn_Tracker_NDI_Polaris::parse2CharIntFromNDIResponse(unsigned char* str, int* strIndexPtr) {
-	unsigned intVal;
+	unsigned intVal = 0;
 	if (strIndexPtr==NULL){ //if no index was passed in, start at the beginning of the string, and don't
 		//advance the index
-		sscanf((char*) str,"%2u",&intVal);
+		if (1 != sscanf((char*) str,"%2u",&intVal)) { intVal = 0; }
 	} else { 
-		sscanf((char*) &(str[*strIndexPtr]),"%2u",&intVal);
+		if (1 != sscanf((char*) &(str[*strIndexPtr]),"%2u",&intVal)) { intVal = 0; }
 		*strIndexPtr+=2;
 	} 
 	return (intVal);
@@ -321,8 +321,8 @@ unsigned int vrpn_Tracker_NDI_Polaris::parse2CharIntFromNDIResponse(unsigned cha
 // to the end of the value we just parsed.
 // The caller must make sure the string is at least six characters long
 float vrpn_Tracker_NDI_Polaris::parse6CharFloatFromNDIResponse(unsigned char* str,  int* strIndexPtr) {
-	int intVal;
-	sscanf((char*) &(str[*strIndexPtr]),"%6d",&intVal);
+	int intVal = 0;
+        if (1 != sscanf((char*) &(str[*strIndexPtr]),"%6d",&intVal)) { intVal = 0; }
 	*strIndexPtr+=6;
     return (intVal/10000.0f); 
 }
@@ -334,8 +334,8 @@ float vrpn_Tracker_NDI_Polaris::parse6CharFloatFromNDIResponse(unsigned char* st
 // to the end of the value we just parsed.
 // The caller must make sure the string is at least seven characters long
 float vrpn_Tracker_NDI_Polaris::parse7CharFloatFromNDIResponse(unsigned char* str,  int* strIndexPtr) {
-	int intVal;
-	sscanf((char*) &(str[*strIndexPtr]),"%7d",&intVal);
+	int intVal = 0;
+        if (1 != sscanf((char*) &(str[*strIndexPtr]),"%7d",&intVal)) { intVal = 0; }
 	*strIndexPtr+=7;
     return (intVal/100.0f); 
 }
