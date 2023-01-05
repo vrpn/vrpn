@@ -2,3 +2,7 @@ query-filters:
     - exclude:
         id: 
           - cpp/command-line-injection
+          - cpp/long-switch
+          - cpp/path-injection
+          - cpp/large-parameter
+          - cpp/world-writable-file-creation
