@@ -6744,8 +6744,7 @@ char *vrpn_copy_rsh_arguments(const char *hostspecifier)
     len = 1 + faroffset - nearoffset;
     try {
       tbuf = new char[len];
-      strncpy(tbuf, hostspecifier + nearoffset, len - 1);
-      tbuf[len - 1] = 0;
+      vrpn_strncpynull(tbuf, hostspecifier + nearoffset, len);
       // fprintf(stderr, "server args: '%s'.\n", tbuf);
     } catch (...) {
         fprintf(stderr, "vrpn_copy_rsh_arguments: Out of memory!\n");
