@@ -6741,7 +6741,7 @@ char *vrpn_copy_rsh_arguments(const char *hostspecifier)
     nearoffset += strcspn(hostspecifier + nearoffset, "/");
     nearoffset += strcspn(hostspecifier + nearoffset, ",");
     faroffset = strlen(hostspecifier);
-    len = 1 + faroffset - nearoffset;
+    len = (faroffset - nearoffset) + 1;
     try {
       tbuf = new char[len];
       vrpn_strncpynull(tbuf, hostspecifier + nearoffset, len);
