@@ -114,7 +114,9 @@ int main(int, char**)
 		printf("12) Loop sound around head\n");
 		printf("13) Quit\n");
 		printf("Choose option ");
-		scanf("%d", &command);
+                if (0 == scanf("%d", &command)) {
+                    command = 0;
+                }
 
 		switch(command)
 		{
@@ -206,9 +208,8 @@ int main(int, char**)
 			loopSound(id);
 			break;
 		case 13:
-			loop = 0;
-			break;
 		default:
+			loop = 0;
 			break;
 		}
 
