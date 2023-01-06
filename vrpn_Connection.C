@@ -6559,23 +6559,26 @@ char *vrpn_copy_service_name(const char *fullname)
 
 char *vrpn_copy_service_location(const char *fullname)
 {
+    char* ret = NULL;
+
     // If there is no "@" sign in the string, copy the whole string.
-    int offset = static_cast<int>(strcspn(fullname, "@"));
-    size_t len = strlen(fullname) - offset;
-    if (len == 0) {
-        offset = -1;                // We add one to it below.
-        len = strlen(fullname) + 1; // We subtract one from it below.
+    const char *start = fullname;
+    size_t len = strlen(fullname);
+    size_t beforeAt = strcspn(fullname, "@");
+    if (beforeAt < len) {
+        // Skip all of the characters before the @ and the @ itself.
+        start += beforeAt + 1;
+        len -= beforeAt + 1;
     }
-    char *tbuf = NULL;
+    len++;  // Count the null termination character at the end of the string.
     try {
-      tbuf = new char[len];
-      strncpy(tbuf, fullname + offset + 1, len - 1);
-      tbuf[len - 1] = 0;
+        ret = new char[len];
+        vrpn_strncpynull(ret, start, len);
     } catch (...) {
         fprintf(stderr, "vrpn_copy_service_location:  Out of memory!\n");
         return NULL;
     }
-    return tbuf;
+    return ret;
 }
 
 char *vrpn_copy_file_name(const char *filespecifier)
