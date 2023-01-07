@@ -366,13 +366,10 @@ int vrpn_CerealBox::get_report(void)
 	// buttons first, with the highest within each bank in the leftmost
 	// bit.  This assumes we are not using MP for digital inputs.
 
-	int i;
-	int numbuttonchars;
-
 	// Read two characters for each eight buttons that are on, from the
 	// highest bank down.
-	numbuttonchars = ((_numbuttons+7) / 8) * 2;
-	for (i = numbuttonchars-1; i >= 0; i--) {
+	int numbuttonchars = ((_numbuttons+7) / 8) * 2;
+	for (int i = numbuttonchars-1; i >= 0; i--) {
 		// Find the four bits for these buttons by subtracting
 		// the offset to get them into the low-order 4 bits
 		char bits = (char)(_buffer[nextchar++] - offset);
@@ -389,9 +386,9 @@ int vrpn_CerealBox::get_report(void)
 	// analog value; this conversion code grabbed right from the
 	// BG code. They seem to come in lowest-numbered first.
 
-	int	intval, i;
+	int	intval;
 	double	realval;
-	for (i = 0; i < _numchannels; i++) {
+	for (int i = 0; i < _numchannels; i++) {
 		intval =  (0x3f & (_buffer[nextchar++]-offset)) << 6;
 		intval |= (0x3f & (_buffer[nextchar++]-offset));
 		realval = -1.0 + (2.0 * intval/4095.0);

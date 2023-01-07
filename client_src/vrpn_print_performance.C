@@ -353,10 +353,9 @@ int main(int argc, char *argv[])
      */
     printf("Press ^C to exit.\n");
     while (!done) {
-        int i;
 
         // Let all the devices do their things
-        for (i = 0; i < num_devices; i++) {
+        for (int i = 0; i < num_devices; i++) {
             device_list[i].tkr->mainloop();
             device_list[i].btn->mainloop();
             device_list[i].ana->mainloop();
