@@ -92,10 +92,9 @@ void vrpn_Tracker_3Space::reset()
   	fprintf(stderr, "  Got %d of 55 characters for status\n",ret);
    }
    if ( (statusmsg[0]!='2') || (statusmsg[54]!=(char)(10)) ) {
-     int i;
      statusmsg[55] = '\0';	// Null-terminate the string
      fprintf(stderr, "  Tracker: status is (");
-     for (i = 0; i < 55; i++) {
+     for (int i = 0; i < 55; i++) {
       	if (isprint(statusmsg[i])) {
          	fprintf(stderr,"%c",statusmsg[i]);
          } else {

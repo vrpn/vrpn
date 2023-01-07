@@ -172,7 +172,6 @@ int main (int argc, char * argv [])
 	    // Make sure that we are getting analog values
 	    {	static	struct	timeval	last_report;
 		static	int	first = 1;
-		struct timeval now;
 
 		if (first) {
 		    vrpn_gettimeofday(&last_report, NULL);

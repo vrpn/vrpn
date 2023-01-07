@@ -277,10 +277,9 @@ void vrpn_Tracker_Fastrak::reset()
 	 "  Got %d of 55 characters for status (54 expected for IS900)\n",ret);
    }
    if ( (statusmsg[0]!='2') || (statusmsg[ret-1]!=(char)(10)) ) {
-     int i;
      statusmsg[55] = '\0';	// Null-terminate the string
      fprintf(stderr, "  Fastrak: status is (");
-     for (i = 0; i < ret; i++) {
+     for (int i = 0; i < ret; i++) {
       	if (isprint(statusmsg[i])) {
          	fprintf(stderr,"%c",statusmsg[i]);
          } else {
