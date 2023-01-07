@@ -4362,7 +4362,12 @@ int vrpn_Generic_Server_Object::setup_Tracker_FastrakPDI(char *&pch, char *line,
 
         if (strncmp(line, "PDIStylus", strlen("PDIStylus")) == 0) {
             int nStylus = 0;
-            sscanf(line, "PDIStylus %d", &nStylus);
+            if (0 == sscanf(line, "PDIStylus %d", &nStylus)) {
+                fprintf(stderr,
+                    "PDIStylus command missing stylus number: %s\r\n",
+                    line);
+                return -1;
+            }
             if (!(nStylus > 0)) {
                 fprintf(stderr,
                         "PDIStylus command invalid station number: %s\r\n",
