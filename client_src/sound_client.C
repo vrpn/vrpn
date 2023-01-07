@@ -75,9 +75,15 @@ int main(int, char**)
 	Lvelocity[0] = 0; Lvelocity[1] = 0; Lvelocity[2] = 0; Lvelocity[3] = 0;
 
 	printf("Please enter the server you wish to connect to.\n");
-	scanf("%79s", server);
+        if (1 != scanf("%79s", server)) {
+            printf("No response: exiting\n");
+            return 1;
+        }
 	printf("Please enter the sound device name you wish to connect to.\n");
-	scanf("%79s", device);
+	if (1 != scanf("%79s", device)) {
+            printf("No response: exiting\n");
+            return 1;
+        }
 	
 	vrpn_Connection *connection = vrpn_get_connection_by_name(server);
 	soundClient = new vrpn_Sound_Client(device, connection);
@@ -114,24 +120,30 @@ int main(int, char**)
 		printf("12) Loop sound around head\n");
 		printf("13) Quit\n");
 		printf("Choose option ");
-                if (0 == scanf("%d", &command)) {
+                if (1 != scanf("%d", &command)) {
                     command = 0;
                 }
 
 		switch(command)
 		{
 		case 1: {
-				printf("Enter path and file to load\n");
-				scanf("%79s", dummy);
-				vrpn_SoundDef SoundDef;
-				ids[curID] = soundClient->loadSound(dummy, curID, SoundDef);
-                                vrpn_strcpy(files[curID++], dummy);
-				soundClient->mainloop();
+			    printf("Enter path and file to load\n");
+                            if (1 != scanf("%79s", dummy)) {
+                                printf("No response: exiting\n");
+                                return 1;
+                            }
+			    vrpn_SoundDef SoundDef;
+			    ids[curID] = soundClient->loadSound(dummy, curID, SoundDef);
+                            vrpn_strcpy(files[curID++], dummy);
+			    soundClient->mainloop();
 			}
 			break;
 		case 2:
 			printf("Enter ID of sound to unload ");
-			scanf("%d", &id);
+                        if (1 != scanf("%d", &id)) {
+                            printf("No response: exiting\n");
+                            return 1;
+                        }
 			(void)soundClient->unloadSound(id);
 			for(i = 0; i < 100; i++)
 				if (ids[i] == id) ids[i] = -1;
@@ -139,29 +151,47 @@ int main(int, char**)
 			break;
 		case 3:
 			printf("Enter ID of sound to play ");
-			scanf("%d", &id);
+                        if (1 != scanf("%d", &id)) {
+                            printf("No response: exiting\n");
+                            return 1;
+                        }
 			printf("Enter number of times to repeat.  (0 = continuous) ");
-			scanf("%d", &repeat);
+                        if (1 != scanf("%d", &repeat)) {
+                            printf("No response: exiting\n");
+                            return 1;
+                        }
 			(void)soundClient->playSound(id, repeat);
 			soundClient->mainloop();
 			break;
 		case 4:
 			printf("Enter ID of sound to stop ");
-			scanf("%d", &id);
+                        if (1 != scanf("%d", &id)) {
+                            printf("No response: exiting\n");
+                            return 1;
+                        }
 			(void)soundClient->stopSound(id);
 			soundClient->mainloop();
 			break;
 		case 5:
 			printf("Enter ID of sound to change ");
-			scanf("%d", &id);
+                        if (1 != scanf("%d", &id)) {
+                            printf("No response: exiting\n");
+                            return 1;
+                        }
 			printf("Enter value to change volume to ");
-			scanf("%d", &volume);
+                        if (1 != scanf("%d", &volume)) {
+                            printf("No response: exiting\n");
+                            return 1;
+                        }
 			(void)soundClient->setSoundVolume(id, volume);
 			soundClient->mainloop();
 			break;
 		case 6:
 			printf("Enter ID of sound to change ");
-			scanf("%d", &id);
+                        if (1 != scanf("%d", &id)) {
+                            printf("No response: exiting\n");
+                            return 1;
+                        }
 			printf("Enter the new X,Y, and Z position coordinates for the sound\n");
 			scanf("%lf %lf %lf", &position[0], &position[1], &position[2]);
 			(void)soundClient->setSoundPose(id, position, orientation);
@@ -169,7 +199,10 @@ int main(int, char**)
 			break;
 		case 7:
 			printf("Enter ID of sound to change ");
-			scanf("%d", &id);
+                        if (1 != scanf("%d", &id)) {
+                            printf("No response: exiting\n");
+                            return 1;
+                        }
 			printf("Enter the new X,Y, Z, and W orientation coordinates for the sound\n");
 			scanf("%lf %lf %lf %lf", &orientation[0], &orientation[1], &orientation[2], &orientation[3]);
 			(void)soundClient->setSoundPose(id, position, orientation);
@@ -177,33 +210,51 @@ int main(int, char**)
 			break;
 		case 8:
 			printf("Enter ID of sound to change ");
-			scanf("%d", &id);
+                        if (1 != scanf("%d", &id)) {
+                            printf("No response: exiting\n");
+                            return 1;
+                        }
 			printf("Enter the new X,Y, and Z velocity coordinates for the sound and magnitude\n");
-			scanf("%lf %lf %lf %lf", &velocity[0], &velocity[1], &velocity[2], &velocity[3]);
+			if (4 != scanf("%lf %lf %lf %lf", &velocity[0], &velocity[1], &velocity[2], &velocity[3])) {
+                            printf("No response: exiting\n");
+                            return 1;
+                        }
 			(void)soundClient->setSoundVelocity(id,velocity);
 			soundClient->mainloop();
 			break;
 		case 9:
 			printf("Enter the new X,Y, and Z position coordinates for the listener\n");
-			scanf("%lf %lf %lf", &Lposition[0], &Lposition[1], &Lposition[2]);
+			if (3 != scanf("%lf %lf %lf", &Lposition[0], &Lposition[1], &Lposition[2])) {
+                            printf("No response: exiting\n");
+                            return 1;
+                        }
 			(void)soundClient->setListenerPose(Lposition, Lorientation);
 			soundClient->mainloop();
 			break;
 		case 10:
 			printf("Enter the new X,Y, Z, and W orientation coordinates for the listener\n");
-			scanf("%lf %lf %lf %lf", &Lorientation[0], &Lorientation[1], &Lorientation[2], &Lorientation[3]);
+                        if (4 != scanf("%lf %lf %lf %lf", &Lorientation[0], &Lorientation[1], &Lorientation[2], &Lorientation[3])) {
+                            printf("No response: exiting\n");
+                            return 1;
+                        }
 			(void)soundClient->setListenerPose(Lposition, Lorientation);
 			soundClient->mainloop();
 			break;
 		case 11:
 			printf("Enter the new X,Y, and Z velocity coordinates for the listener and magnitude\n");
-			scanf("%lf %lf %lf %lf", &Lvelocity[0], &Lvelocity[1], &Lvelocity[2], &Lvelocity[3]);
+                        if (4 != scanf("%lf %lf %lf %lf", &Lvelocity[0], &Lvelocity[1], &Lvelocity[2], &Lvelocity[3])) {
+                            printf("No response: exiting\n");
+                            return 1;
+                        }
 			(void)soundClient->setListenerVelocity(Lvelocity);
 			soundClient->mainloop();
 			break;
 		case 12:
 			printf("Enter ID of sound to loop");
-			scanf("%d", &id);
+                        if (1 != scanf("%d", &id)) {
+                            printf("No response: exiting\n");
+                            return 1;
+                        }
 			init_sample_values();
 			loopSound(id);
 			break;
