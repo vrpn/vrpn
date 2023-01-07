@@ -11,3 +11,4 @@ query-filters:
           - cpp/poorly-documented-function
           - cpp/array-in-interface
           - cpp/commented-out-code
+          - cpp/unused-static-variable
