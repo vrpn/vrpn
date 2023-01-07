@@ -4334,7 +4334,10 @@ int vrpn_Generic_Server_Object::setup_Tracker_FastrakPDI(char *&pch, char *line,
     VRPN_CONFIG_NEXT();
     // Get the arguments (class(already taken), tracker_name, reports per
     // second)
-    sscanf(pch, "%511s%d", name, &Hz);
+    if (2 != sscanf(pch, "%511s%d", name, &Hz)) {
+        fprintf(stderr, "Bad FastrakPDI line: %s\n", line);
+        return -1;
+    }
 
     // remove the '\' from the end of the name, if it has one
     if (name[strlen(name) - 1] == '\\') {
