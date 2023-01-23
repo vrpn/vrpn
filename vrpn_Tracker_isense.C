@@ -32,70 +32,70 @@
 
 #define MAX_TIME_INTERVAL       (5000000) // max time between reports (usec)
 
-void vrpn_Tracker_InterSense::getTrackerInfo(char *msg)
+void vrpn_Tracker_InterSense::getTrackerInfo(char *msg, size_t len)
 {
-	sprintf(msg, "Port%d (Intersense lib %g) (Firmware Rev %g)", m_TrackerInfo.Port, m_TrackerInfo.LibVersion, m_TrackerInfo.FirmwareRev);
+	snprintf(msg, len, "Port%d (Intersense lib %g) (Firmware Rev %g)", m_TrackerInfo.Port, m_TrackerInfo.LibVersion, m_TrackerInfo.FirmwareRev);
 	switch(m_TrackerInfo.TrackerType) {
 		case ISD_NONE:
-			sprintf(msg, "%.950s (Unknown series:", msg);
+			snprintf(msg, len, "%.950s (Unknown series:", msg);
 			break;
 		case ISD_PRECISION_SERIES:
-			sprintf(msg, "%.950s (Precision series:", msg);
+			snprintf(msg, len, "%.950s (Precision series:", msg);
 			break;
 		case ISD_INTERTRAX_SERIES:
-			sprintf(msg, "%.950s (InterTrax series:", msg);
+			snprintf(msg, len, "%.950s (InterTrax series:", msg);
 			break;
 	}
 	switch(m_TrackerInfo.TrackerModel) {
 		case ISD_UNKNOWN: 
-			sprintf(msg, "%.950s Unknown model)", msg);
+			snprintf(msg, len, "%.950s Unknown model)", msg);
 			break;
 
 		case ISD_IS300:
-			sprintf(msg, "%.950s IS300)", msg);
+			snprintf(msg, len, "%.950s IS300)", msg);
 			break;
 
 		case ISD_IS600:
-			sprintf(msg, "%.950s IS600)", msg);
+			snprintf(msg, len, "%.950s IS600)", msg);
 			break;
 
 		case ISD_IS900:
-			sprintf(msg, "%.950s IS900)", msg);
+			snprintf(msg, len, "%.950s IS900)", msg);
 			break;
 
 		case ISD_IS1200:
-			sprintf(msg, "%.950s IS1200)", msg);
+			snprintf(msg, len, "%.950s IS1200)", msg);
 			break;
 
 		case ISD_INTERTRAX:
-			sprintf(msg, "%.950s InterTrax)", msg);
+			snprintf(msg, len, "%.950s InterTrax)", msg);
 			break;
 
 		case ISD_INTERTRAX_2:
-			sprintf(msg, "%.950s InterTrax2)", msg);
+			snprintf(msg, len, "%.950s InterTrax2)", msg);
 			break;
 
 		case ISD_INTERTRAX_LS:
-			sprintf(msg, "%.950s InterTrax LS)", msg);
+			snprintf(msg, len, "%.950s InterTrax LS)", msg);
 			break;
 
 		case ISD_INTERTRAX_LC:
-			sprintf(msg, "%.950s InterTrax LC)", msg);
+			snprintf(msg, len, "%.950s InterTrax LC)", msg);
 			break;
 
 		case ISD_ICUBE2:
-			sprintf(msg, "%.950s InertiaCube2)", msg);
+			snprintf(msg, len, "%.950s InertiaCube2)", msg);
 			break;
 
 		case ISD_ICUBE2_PRO:
-			sprintf(msg, "%.950s InertiaCube2 Pro)", msg);
+			snprintf(msg, len, "%.950s InertiaCube2 Pro)", msg);
 			break;
 
 		case ISD_ICUBE3:
-			sprintf(msg, "%.950s InertiaCube3)", msg);
+			snprintf(msg, len, "%.950s InertiaCube3)", msg);
 			break;
 	}
-	sprintf(msg, "%.950s\n", msg);
+	snprintf(msg, len, "%.950s\n", msg);
 }
 
 vrpn_Tracker_InterSense::vrpn_Tracker_InterSense(const char *name, 
@@ -112,7 +112,7 @@ m_reset_at_start(reset_at_start)
   register_server_handlers();
 
 	if (additional_reset_commands == NULL) {
-		sprintf(add_reset_cmd, "");
+		snprintf(add_reset_cmd, 2048, "");
 	} else {
 		vrpn_strcpy(add_reset_cmd, additional_reset_commands);
 	}
@@ -129,7 +129,7 @@ m_reset_at_start(reset_at_start)
 
   if(m_Handle == -1)
   {
-    sprintf(errStr,"Failed to open tracker '%.511s' on COM%d: ISLIB_OpenTracker returned -1",name,commPort);
+    snprintf(errStr, 1024,"Failed to open tracker '%.511s' on COM%d: ISLIB_OpenTracker returned -1",name,commPort);
     status = vrpn_TRACKER_FAIL;
     return;
   }
@@ -140,7 +140,7 @@ m_reset_at_start(reset_at_start)
 
   for (i = 0; i < ISD_MAX_STATIONS; i++) {
        if (set_sensor_output_format(i)) {
-		    sprintf(errStr,"Failed to reset sensor %d on tracker '%.511s' on COM%d",i, name,commPort);
+		    snprintf(errStr, 1024,"Failed to reset sensor %d on tracker '%.511s' on COM%d",i, name,commPort);
 			status = vrpn_TRACKER_FAIL;
      		return;
        }
@@ -150,7 +150,7 @@ m_reset_at_start(reset_at_start)
   //what is the update rate of this tracker?
   //we might want to set the update rate of the mainloop to based on this value.
   //for now we just print it out.
-  getTrackerInfo(errStr);
+  getTrackerInfo(errStr, 1024);
   vrpn_gettimeofday(&timestamp, NULL);
   VRPN_MSG_INFO(errStr);
   fprintf(stderr,errStr);	
@@ -230,7 +230,7 @@ int vrpn_Tracker_InterSense::set_sensor_output_format(int station)
 			m_StationInfo[station].AngleFormat = ISD_QUATERNION;
 			if(!ISD_SetStationConfig(m_Handle,&m_StationInfo[station],station+1,FALSE))
 		    {
-				sprintf(errStr,"Warning: Your tracker doesn't seem to support the quaternion format - couldn't set station config for Station%d. ",station+1);
+				snprintf(errStr, 1024,"Warning: Your tracker doesn't seem to support the quaternion format - couldn't set station config for Station%d. ",station+1);
 				vrpn_gettimeofday(&timestamp, NULL);
 				VRPN_MSG_WARNING(errStr);
 
@@ -245,7 +245,7 @@ int vrpn_Tracker_InterSense::set_sensor_output_format(int station)
 				m_StationInfo[station].TimeStamped = TRUE;
 				if(!ISD_SetStationConfig(m_Handle,&m_StationInfo[station],station+1,FALSE))
 			    {
-					sprintf(errStr,"Warning: Your tracker doesn't seem to support the IS900 timestamps - couldn't set station config for Station%d. ",station+1);
+					snprintf(errStr, 1024,"Warning: Your tracker doesn't seem to support the IS900 timestamps - couldn't set station config for Station%d. ",station+1);
 					vrpn_gettimeofday(&timestamp, NULL);
 					VRPN_MSG_WARNING(errStr);
 					m_StationInfo[station].TimeStamped = FALSE;
@@ -256,7 +256,7 @@ int vrpn_Tracker_InterSense::set_sensor_output_format(int station)
 				m_StationInfo[station].GetInputs = TRUE;
 				if(!ISD_SetStationConfig(m_Handle,&m_StationInfo[station],station+1,FALSE))
 			    {
-					sprintf(errStr,"Warning: Your tracker doesn't seem to support the IS900 buttons/analogs - couldn't set station config for Station%d. ",station+1);
+					snprintf(errStr, 1024,"Warning: Your tracker doesn't seem to support the IS900 buttons/analogs - couldn't set station config for Station%d. ",station+1);
 					vrpn_gettimeofday(&timestamp, NULL);
 					VRPN_MSG_WARNING(errStr);
 					m_StationInfo[station].GetInputs = FALSE;
@@ -276,7 +276,7 @@ void vrpn_Tracker_InterSense::reset()
 
   if(m_Handle == -1)
   {
-    sprintf(errStr,"InterSense: Failed to open tracker '%.511s' on COM%d: ISD_OpenTracker returned -1",d_servicename,m_CommPort);
+    snprintf(errStr, 1024,"InterSense: Failed to open tracker '%.511s' on COM%d: ISD_OpenTracker returned -1",d_servicename,m_CommPort);
     fprintf(stderr,errStr);
     vrpn_gettimeofday(&timestamp, NULL);
 	VRPN_MSG_ERROR(errStr);
@@ -308,7 +308,7 @@ void vrpn_Tracker_InterSense::reset()
 		printf("  Intersense writing extended reset commands...\n");
 		if(!ISD_SendScript(m_Handle,add_reset_cmd))
 	    {
-			sprintf(errStr,"Warning: Your tracker failed executing the additional command string. ");
+			snprintf(errStr, 1024,"Warning: Your tracker failed executing the additional command string. ");
 			vrpn_gettimeofday(&timestamp, NULL);
 			VRPN_MSG_WARNING(errStr);
 		}
@@ -324,7 +324,7 @@ void vrpn_Tracker_InterSense::reset()
     	char	clear_timestamp_cmd[] = "MT\015MZ\015";
 		if(!ISD_SendScript(m_Handle,clear_timestamp_cmd))
 	    {
-			sprintf(errStr,"Warning: Your tracker failed executing the additional command string. ");
+			snprintf(errStr, 1024,"Warning: Your tracker failed executing the additional command string. ");
 			vrpn_gettimeofday(&timestamp, NULL);
 			VRPN_MSG_WARNING(errStr);
 		}

@@ -1171,7 +1171,7 @@ BOOL vrpn_Tracker_FastrakPDI::InitStylusBtns()
 		if (((1<<i) & m_nStylusMap) != 0)
 		{
 			char btnName[512];
-			sprintf( btnName, "%.450sStylus%d", d_servicename, i+1);
+			snprintf( btnName, 512, "%.450sStylus%d", d_servicename, i+1);
 			try { FTstylusBtns[i] = new vrpn_Button_Server( btnName, d_connection, 1 ); }
 			catch (...)
 			{
@@ -1739,7 +1739,7 @@ BOOL vrpn_Tracker_LibertyPDI::InitStylusBtns()
 		if (((1<<i) & m_nStylusMap) != 0)
 		{
 			char btnName[512];
-			sprintf( btnName, "%.450sStylus%d", d_servicename, i+1);
+			snprintf( btnName, 512, "%.450sStylus%d", d_servicename, i+1);
 			try { StylusBtns[i] = new vrpn_Button_Server( btnName, d_connection, 1 ); }
 			catch (...)
 			{

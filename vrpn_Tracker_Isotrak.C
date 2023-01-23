@@ -15,7 +15,7 @@
 	
 
 #include <ctype.h>                      // for isprint
-#include <stdio.h>                      // for fprintf, perror, sprintf, etc
+#include <stdio.h>                      // for fprintf, perror, snprintf, etc
 #include <stdlib.h>                     // for atoi
 #include <string.h>                     // for strlen, strtok
 
@@ -71,7 +71,7 @@ int vrpn_Tracker_Isotrak::set_sensor_output_format(int /*sensor*/)
 
     // Set output format for the station to be position, quaternion
     // Don't need the space anymore, though
-    sprintf(outstring, "O2,11\r");
+    snprintf(outstring, 16, "O2,11\r");
 
     if (vrpn_write_characters(serial_fd, (const unsigned char *)outstring,
             strlen(outstring)) == (int)strlen(outstring)) {
@@ -120,7 +120,7 @@ void vrpn_Tracker_Isotrak::reset()
     reset[resetLen++] = 'c'; // Put it into polled (not continuous) mode
     
     
-    sprintf(errmsg, "Resetting the tracker (attempt %d)", num_resets);
+    snprintf(errmsg, 512, "Resetting the tracker (attempt %d)", num_resets);
     VRPN_MSG_WARNING(errmsg);
     
     for (i = 0; i < resetLen; i++) {
@@ -147,7 +147,7 @@ void vrpn_Tracker_Isotrak::reset()
     vrpn_SleepMsecs(1000.0*2);
     unsigned char scrap[80];
     if ( (ret = vrpn_read_available_characters(serial_fd, scrap, 80)) != 0) {
-        sprintf(errmsg,"Got >=%d characters after reset",ret);
+        snprintf(errmsg, 512,"Got >=%d characters after reset",ret);
         VRPN_MSG_WARNING(errmsg);
         for (i = 0; i < ret; i++) {
             if (isprint(scrap[i])) {
@@ -294,7 +294,7 @@ void vrpn_Tracker_Isotrak::reset()
                         fprintf(stderr,"   ...sleeping %d seconds\n",seconds_to_wait);
                         vrpn_SleepMsecs(1000.0*seconds_to_wait);
                 } else {	// This is a command line, send it
-                        sprintf(string_to_send, "%.2040s\015", next_line);
+                        snprintf(string_to_send, sizeof(add_reset_cmd), "%.2040s\015", next_line);
                         fprintf(stderr, "   ...sending command: %s\n", string_to_send);
                         vrpn_write_characters(serial_fd,
                                 (const unsigned char *)string_to_send,strlen(string_to_send));
@@ -375,7 +375,7 @@ int vrpn_Tracker_Isotrak::get_report(void)
 
         // The first byte of a record has the high order bit set
         if(!(buffer[0] & 0x80)) {
-            sprintf(errmsg,"While syncing (looking for byte with high order bit set, "
+            snprintf(errmsg, 512,"While syncing (looking for byte with high order bit set, "
                     "got '%x')", buffer[0]);
             VRPN_MSG_WARNING(errmsg);
             vrpn_flush_input_buffer(serial_fd);
@@ -421,7 +421,7 @@ int vrpn_Tracker_Isotrak::get_report(void)
         if (buffer[i] & 0x80) {
             status = vrpn_TRACKER_SYNCING;
         
-            sprintf(errmsg,"Unexpected sync character in record");
+            snprintf(errmsg, 512,"Unexpected sync character in record");
             VRPN_MSG_WARNING(errmsg);
 
             //VRPN_MSG_WARNING("Not '0' in record, re-syncing");
@@ -475,7 +475,7 @@ int vrpn_Tracker_Isotrak::get_report(void)
     d_sensor = decoded[1] - 49;	// Convert ASCII 1 to sensor 0 and so on.
     if ( (d_sensor < 0) || (d_sensor >= num_stations) ) {
         status = vrpn_TRACKER_SYNCING;
-        sprintf(errmsg,"Bad sensor # (%d) in record, re-syncing", d_sensor);
+        snprintf(errmsg, 512,"Bad sensor # (%d) in record, re-syncing", d_sensor);
         VRPN_MSG_WARNING(errmsg);
         vrpn_flush_input_buffer(serial_fd);
         return 0;

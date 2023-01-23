@@ -5,7 +5,7 @@
 // to allow it to operate a Liberty Latus instead. It has been tested on Linux.
 
 #include <ctype.h>                      // for isprint
-#include <stdio.h>                      // for fprintf, stderr, sprintf, etc
+#include <stdio.h>                      // for fprintf, stderr, snprintf, etc
 #include <stdlib.h>                     // for atoi
 #include <string.h>                     // for strlen, strtok
 
@@ -77,9 +77,9 @@ int vrpn_Tracker_LibertyHS::set_sensor_output_format(int sensor)
 
     char    outstring[64];
     if (sensor == -1)
-          sprintf(outstring, "O*,2,7,8,9,0\015");
+          snprintf(outstring, 64, "O*,2,7,8,9,0\015");
     else
-          sprintf(outstring, "O%d,2,7,8,9,0\015", sensor+1);
+          snprintf(outstring, 64, "O%d,2,7,8,9,0\015", sensor+1);
     int len = strlen(outstring);
     int ret;
  
@@ -213,7 +213,7 @@ void vrpn_Tracker_LibertyHS::reset()
 
    reset[resetLen++] = 'P'; // Put it into polled (not continuous) mode
 
-   sprintf(errmsg, "Resetting the tracker (attempt %d)", num_resets);
+   snprintf(errmsg, 512, "Resetting the tracker (attempt %d)", num_resets);
    VRPN_MSG_WARNING(errmsg);
    for (i = 0; i < resetLen; i++) {
          if (write_usb_data(&reset[i],1) == 1) {
@@ -239,7 +239,7 @@ void vrpn_Tracker_LibertyHS::reset()
    vrpn_SleepMsecs(1000.0*2);
    unsigned char scrap[80];
    if ( (ret = read_usb_data((void*)scrap, 80)) != 0) {
-     sprintf(errmsg,"Got >=%d characters after reset",ret);
+     snprintf(errmsg, 512,"Got >=%d characters after reset",ret);
      VRPN_MSG_WARNING(errmsg);
      for (i = 0; i < ret; i++) {
       	if (isprint(scrap[i])) {
@@ -378,7 +378,7 @@ void vrpn_Tracker_LibertyHS::reset()
 			fprintf(stderr,"   ...sleeping %d seconds\n",seconds_to_wait);
 			vrpn_SleepMsecs(1000.0*seconds_to_wait);
 		} else {	// This is a command line, send it
-			sprintf(string_to_send, "%.2040s\015", next_line);
+			snprintf(string_to_send, sizeof(add_reset_cmd), "%.2040s\015", next_line);
                         fprintf(stderr,"     ...sending command: %s\n", string_to_send);
                         write_usb_data(string_to_send,strlen(string_to_send));
                         vrpn_SleepMsecs(1000.0*2);
@@ -393,7 +393,7 @@ void vrpn_Tracker_LibertyHS::reset()
    
    // Disable USB BUFFERING mode 
    // (disbale output buffering before USB transmission to the host)
-   sprintf(outstring1, "@B0\r");
+   snprintf(outstring1, 64, "@B0\r");
    if (write_usb_data(outstring1, strlen(outstring1)) == (int)strlen(outstring1)) {
       fprintf(stderr, "\n  Tracker USB buffering mode disabled\n");
    }
@@ -401,7 +401,7 @@ void vrpn_Tracker_LibertyHS::reset()
 
    // Set METRIC units
    if (VRPN_LIBERTYHS_METRIC_UNITS) {
-        sprintf(outstring2, "U1\r");
+        snprintf(outstring2, 64, "U1\r");
         if (write_usb_data(outstring2, strlen(outstring2)) == (int)strlen(outstring2)) {
               fprintf(stderr, "  LibertyHS set to metric units\n");
         }
@@ -411,7 +411,7 @@ void vrpn_Tracker_LibertyHS::reset()
    vrpn_SleepMsecs(1000.0);
 
    // Set data format to BINARY mode
-   sprintf(outstring3, "F1\r");
+   snprintf(outstring3, 64, "F1\r");
    if (write_usb_data(outstring3, strlen(outstring3)) == (int)strlen(outstring3)) {
       fprintf(stderr, "  LibertyHS set to binary mode\n\n");
    }
@@ -427,7 +427,7 @@ void vrpn_Tracker_LibertyHS::reset()
    }
 
    // Set tracker to CONTINUOUS mode
-   sprintf(outstring4, "C\r");
+   snprintf(outstring4, 64, "C\r");
    if (write_usb_data(outstring4, strlen(outstring4)) != (int)strlen(outstring4)) {
  	perror("  LibertyHS write failed");
 	status = vrpn_TRACKER_FAIL;
@@ -535,7 +535,7 @@ int vrpn_Tracker_LibertyHS::get_report(void)
      if (VRPN_LIBERTYHS_DEBUG) fprintf(stderr,"[DEBUG]: Awaiting Station - Got Station (%i) \n",buffer[sync_index + bufcount]);
      d_sensor = buffer[sync_index + bufcount] - 1;	// Convert ASCII 1 to sensor 0 and so on.
      if ( (d_sensor < 0) || (d_sensor >= vrpn_LIBERTYHS_MAX_STATIONS) ) {
-       sprintf(errmsg,"Bad sensor # (%d) in record, re-syncing", d_sensor + 1);
+       snprintf(errmsg, 512,"Bad sensor # (%d) in record, re-syncing", d_sensor + 1);
        VRPN_MSG_INFO(errmsg);
        status = vrpn_TRACKER_PARTIAL;
        sync_index += bufcount;

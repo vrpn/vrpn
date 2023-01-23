@@ -76,7 +76,7 @@ class VRPN_API vrpn_Tracker_InterSense : public vrpn_Tracker {
   /// Augments the basic Fastrak format to include IS900 features if needed
   int	set_sensor_output_format(int sensor);
 
-  void  getTrackerInfo(char *msg);
+  void  getTrackerInfo(char *msg, size_t len);
 };
 #endif
 

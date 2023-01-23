@@ -1,5 +1,5 @@
 
-#include <stdio.h>                      // for fprintf, printf, sprintf, etc
+#include <stdio.h>                      // for fprintf, printf, snprintf, etc
 #include <string.h>                     // for strncmp, strlen, strncpy
 
 #include "vrpn_Connection.h"            // for vrpn_CONNECTION_LOW_LATENCY, etc
@@ -268,7 +268,7 @@ int vrpn_Tracker_NDI_Polaris::convertBinaryFileToAsciiEncodedHex(const char* fil
 	}
 	int byteIndex;
 	for (byteIndex=0; byteIndex<fileSizeInBytes; byteIndex++) {
-		sprintf(&(asciiEncodedHexStr[byteIndex*2]),"%02x ",rawBytesFromRomFile[byteIndex]);
+		snprintf(&(asciiEncodedHexStr[byteIndex*2]), 3,"%02x",rawBytesFromRomFile[byteIndex]);
 	}
 	
 	// pad the length to make it a multiple of 64
@@ -379,7 +379,7 @@ int vrpn_Tracker_NDI_Polaris::setupOneTool(const char* NDIToolRomFilename)
 		
 		int NDIAddress=chunkIndex*NDI_ROMFILE_CHUNK_SIZE; //the memory offset (in the NDI machine, not this PC)
 		// where this chunk will start
-		sprintf(commandStr,"PVWR %02u%04x%.129s",portHandleNum, NDIAddress,chunk);
+		snprintf(commandStr, 300,"PVWR %02u%04x%.129s",portHandleNum, NDIAddress,chunk);
 		//printf("DEBUG: >>%s<<\n",commandStr);
 		sendCommand(commandStr);
 		readResponse();
@@ -387,7 +387,7 @@ int vrpn_Tracker_NDI_Polaris::setupOneTool(const char* NDIToolRomFilename)
 		printf("DEBUG: PVWR response: >%s<\n",latestResponseStr);
 #endif
 	}
-	sprintf(commandStr,"PINIT %02u",portHandleNum);  // initializes the port handle
+	snprintf(commandStr, 300,"PINIT %02u",portHandleNum);  // initializes the port handle
 	sendCommand(commandStr);
 	readResponse();
 #ifdef DEBUG
@@ -395,7 +395,7 @@ int vrpn_Tracker_NDI_Polaris::setupOneTool(const char* NDIToolRomFilename)
 #endif
 	if (strncmp("ERROR",(char *) latestResponseStr,5)==0) return (-1);
 	
-	sprintf(commandStr,"PENA %02uD",portHandleNum); //enables the port handle as a dynamic tool (expect motion)
+	snprintf(commandStr, 300,"PENA %02uD",portHandleNum); //enables the port handle as a dynamic tool (expect motion)
 	sendCommand(commandStr); 
 	readResponse();
 #ifdef DEBUG

@@ -5,7 +5,7 @@
 // Modified to work with the Polhemus Patriot as well.
 
 #include <ctype.h>                      // for isprint
-#include <stdio.h>                      // for fprintf, stderr, sprintf, etc
+#include <stdio.h>                      // for fprintf, stderr, snprintf, etc
 #include <stdlib.h>                     // for atoi
 #include <string.h>                     // for strlen, strtok
 
@@ -84,10 +84,10 @@ int vrpn_Tracker_Liberty::set_sensor_output_format(int sensor)
     buttonstring = stylus_buttons[sensor] ? ",10" : "";
     analogstring="";
 
-     sprintf(outstring, "O%d,2,7%.3s%.3s%.3s,0\015", sensor+1, timestring,
+    snprintf(outstring, 64, "O%d,2,7%.3s%.3s%.3s,0\015", sensor+1, timestring,
 	buttonstring, analogstring);
  
-     if (VRPN_LIBERTY_DEBUG)     fprintf(stderr,"[DEBUG]: %s \n",outstring);
+    if (VRPN_LIBERTY_DEBUG)     fprintf(stderr,"[DEBUG]: %s \n",outstring);
     if (vrpn_write_characters(serial_fd, (const unsigned char *)outstring,
 	    strlen(outstring)) == (int)strlen(outstring)) {
 		vrpn_SleepMsecs(50);	// Sleep for a bit to let command run
@@ -170,7 +170,7 @@ void vrpn_Tracker_Liberty::reset()
    }
    reset[resetLen++] = 'P'; // Put it into polled (not continuous) mode
 
-   sprintf(errmsg, "Resetting the tracker (attempt %d)", num_resets);
+   snprintf(errmsg, 512, "Resetting the tracker (attempt %d)", num_resets);
    VRPN_MSG_WARNING(errmsg);
    for (i = 0; i < resetLen; i++) {
 	if (vrpn_write_characters(serial_fd, (unsigned char*)&reset[i], 1) == 1) {
@@ -199,7 +199,7 @@ void vrpn_Tracker_Liberty::reset()
    vrpn_SleepMsecs(1000.0*2);
    unsigned char scrap[80];
    if ( (ret = vrpn_read_available_characters(serial_fd, scrap, 80)) != 0) {
-     sprintf(errmsg,"Got >=%d characters after reset",ret);
+     snprintf(errmsg, 512,"Got >=%d characters after reset",ret);
      VRPN_MSG_WARNING(errmsg);
      for (i = 0; i < ret; i++) {
       	if (isprint(scrap[i])) {
@@ -354,7 +354,7 @@ printf("LIBERTY LATUS STATUS (whoami):\n%s\n\n",statusmsg);
 			fprintf(stderr,"   ...sleeping %d seconds\n",seconds_to_wait);
 			vrpn_SleepMsecs(1000.0*seconds_to_wait);
 		} else {	// This is a command line, send it
-			sprintf(string_to_send, "%.2040s\015", next_line);
+			snprintf(string_to_send, sizeof(add_reset_cmd), "%.2040s\015", next_line);
 			fprintf(stderr, "   ...sending command: %s\n", string_to_send);
 			vrpn_write_characters(serial_fd,
 				(const unsigned char *)string_to_send,strlen(string_to_send));
@@ -368,7 +368,7 @@ printf("LIBERTY LATUS STATUS (whoami):\n%s\n\n",statusmsg);
    }
    
    // Set data format to BINARY mode
-   sprintf(outstring1, "F1\r");
+   snprintf(outstring1, 64, "F1\r");
    if (vrpn_write_characters(serial_fd, (const unsigned char *)outstring1,
 			    strlen(outstring1)) == (int)strlen(outstring1)) {
       fprintf(stderr, "  Liberty set to binary mode\n");
@@ -376,7 +376,7 @@ printf("LIBERTY LATUS STATUS (whoami):\n%s\n\n",statusmsg);
    }
 
    // Set tracker to continuous mode
-   sprintf(outstring3, "C\r");
+   snprintf(outstring3, 64, "C\r");
    if (vrpn_write_characters(serial_fd, (const unsigned char *)outstring3,
                                 strlen(outstring3)) != (int)strlen(outstring3)) {
  	perror("  Liberty write failed");
@@ -484,7 +484,7 @@ int vrpn_Tracker_Liberty::get_report(void)
       ((( buffer[0] == 'L') && (buffer[1] == 'U')) != 1)
       ) 
       {
-      	sprintf(errmsg,"While syncing (looking for 'LY' or 'PA' or 'LU', "
+      	snprintf(errmsg, 512,"While syncing (looking for 'LY' or 'PA' or 'LU', "
 		"got '%c%c')", buffer[0], buffer[1]);
 	VRPN_MSG_INFO(errmsg);
 	vrpn_flush_input_buffer(serial_fd);
@@ -524,7 +524,7 @@ int vrpn_Tracker_Liberty::get_report(void)
       d_sensor = buffer[2] - 1;	// Convert ASCII 1 to sensor 0 and so on.
       if ( (d_sensor < 0) || (d_sensor >= num_stations) ) {
 	   status = vrpn_TRACKER_SYNCING;
-      	   sprintf(errmsg,"Bad sensor # (%d) in record, re-syncing", d_sensor);
+      	   snprintf(errmsg, 512,"Bad sensor # (%d) in record, re-syncing", d_sensor);
 	   VRPN_MSG_INFO(errmsg);
 	   vrpn_flush_input_buffer(serial_fd);
 	   return 0;
