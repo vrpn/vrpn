@@ -1,6 +1,6 @@
 //	This is a driver for the YEI 3Space serial-port devices.
 
-#include <stdio.h>                      // for sprintf, printf
+#include <stdio.h>                      // for snprintf, printf
 
 #include "vrpn_YEI_3Space.h"
 #include "vrpn_MessageMacros.h"         // for VRPN_MSG_INFO, VRPN_MSG_WARNING, VRPN_MSG_ERROR
@@ -419,7 +419,7 @@ void vrpn_YEI_3Space::mainloop ()
         struct timeval current_time;
         vrpn_gettimeofday (&current_time, NULL);
         if (vrpn_TimevalDuration (current_time, timestamp) > MAX_TIME_INTERVAL) {
-          sprintf (l_errmsg, "vrpn_YEI_3Space::mainloop: Timeout... current_time=%ld:%ld, timestamp=%ld:%ld",
+          snprintf(l_errmsg, 256, "vrpn_YEI_3Space::mainloop: Timeout... current_time=%ld:%ld, timestamp=%ld:%ld",
                    current_time.tv_sec,
                    static_cast<long> (current_time.tv_usec),
                    timestamp.tv_sec,
@@ -1018,7 +1018,7 @@ bool vrpn_YEI_3Space_Sensor_Wireless::send_ascii_command (const char *p_cmd)
   char buffer[256];
 
   // Fill in the command
-  sprintf(buffer, ">%d,%.200s\n", d_logical_id, p_cmd);
+  snprintf(buffer, 256, ">%d,%.200s\n", d_logical_id, p_cmd);
 
   // Send the command and see if it worked.
   int buflen = static_cast<int>(strlen(buffer) + 1);

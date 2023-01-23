@@ -111,7 +111,7 @@ bool vrpn_Semaphore::init()
         numMax = 1;
     }
     char tempname[100];
-    sprintf(tempname, "/tmp/vrpn_sem.XXXXXXX");
+    snprintf(tempname, 100, "/tmp/vrpn_sem.XXXXXXX");
     semaphore = sem_open(mktemp(tempname), O_CREAT, 0600, numMax);
     if (semaphore == SEM_FAILED) {
         perror("vrpn_Semaphore::vrpn_Semaphore: error opening semaphore");

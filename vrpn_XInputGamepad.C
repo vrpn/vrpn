@@ -52,9 +52,9 @@ void vrpn_XInputGamepad::mainloop() {
 		struct timeval now;
 
 		if (rv == ERROR_DEVICE_NOT_CONNECTED)
-			sprintf(errMsg, "XInput device %u not connected", _controllerIndex);
+			snprintf(errMsg, 256, "XInput device %u not connected", _controllerIndex);
 		else
-			sprintf(errMsg, "XInput device %u returned Windows error code %u",
+			snprintf(errMsg, 256, "XInput device %u returned Windows error code %u",
 				_controllerIndex, rv);
 
 		vrpn_gettimeofday(&now, NULL);
@@ -136,9 +136,9 @@ void vrpn_XInputGamepad::update_vibration() {
 		struct timeval now;
 
 		if (rv == ERROR_DEVICE_NOT_CONNECTED)
-			sprintf(errMsg, "XInput device %u not connected", _controllerIndex);
+			snprintf(errMsg, 256, "XInput device %u not connected", _controllerIndex);
 		else
-			sprintf(errMsg, "XInput device %u returned Windows error code %u",
+			snprintf(errMsg, 256, "XInput device %u returned Windows error code %u",
 				_controllerIndex, rv);
 
 		vrpn_gettimeofday(&now, NULL);
@@ -183,7 +183,7 @@ int VRPN_CALLBACK vrpn_XInputGamepad::handle_request_message(void *selfPtr,
 	if ( (chan_num < 0) || (chan_num >= me->o_num_channel) ) {
 		fprintf(stderr,"vrpn_Analog_Output_Server::handle_request_message(): Index out of bounds\n");
 		char msg[1024];
-		sprintf( msg, "Error:  (handle_request_message):  channel %d is not active.  Squelching.", chan_num );
+		snprintf( msg, 1024, "Error:  (handle_request_message):  channel %d is not active.  Squelching.", chan_num );
 		me->send_text_message( msg, data.msg_time, vrpn_TEXT_ERROR );
 		return 0;
 	}
@@ -214,14 +214,14 @@ int VRPN_CALLBACK vrpn_XInputGamepad::handle_request_channels_message(void *self
 
 	if (chan_num > me->o_num_channel) {
 		char msg[1024];
-		sprintf( msg, "Error:  (handle_request_channels_message):  channels above %d not active; "
+		snprintf( msg, 1024, "Error:  (handle_request_channels_message):  channels above %d not active; "
 			"bad request up to channel %d.  Squelching.", me->o_num_channel, chan_num );
 		me->send_text_message( msg, data.msg_time, vrpn_TEXT_ERROR );
 		chan_num = me->o_num_channel;
 	}
 	if (chan_num < 0) {
 		char msg[1024];
-		sprintf( msg, "Error:  (handle_request_channels_message):  invalid channel %d.  Squelching.", chan_num );
+		snprintf( msg, 1024, "Error:  (handle_request_channels_message):  invalid channel %d.  Squelching.", chan_num );
 		me->send_text_message( msg, data.msg_time, vrpn_TEXT_ERROR );
 		return 0;
 	}

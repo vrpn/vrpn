@@ -3,7 +3,7 @@
 // of characters to send (and time) and avoid the problem of the
 // device being reset at an out-of-range place.
 
-#include <stdio.h>                      // for fprintf, stderr, sprintf, etc
+#include <stdio.h>                      // for fprintf, stderr, snprintf, etc
 #include <stdlib.h>                     // for atoi
 #include <string.h>                     // for strlen, NULL, strncmp, etc
 
@@ -163,7 +163,7 @@ int	vrpn_Nikon_Controls::reset(void)
 
 	//-----------------------------------------------------------------------
 	// Send the command to request the focus.  Then wait 1 second for a response
-	sprintf(cmd, "rSPR\r");
+	snprintf(cmd, 256, "rSPR\r");
 	if (vrpn_write_characters(serial_fd, (unsigned char *)cmd, strlen(cmd)) != (int)strlen(cmd)) {
 	  fprintf(stderr,"vrpn_Nikon_Controls::reset(): Cannot send focus request\n");
 	  return -1;
@@ -196,7 +196,7 @@ int	vrpn_Nikon_Controls::reset(void)
 	}
 	channel[0] = response_pos;
 
-	sprintf(errmsg,"Focus reported (this is good)");
+	snprintf(errmsg, 256,"Focus reported (this is good)");
 	VRPN_MSG_WARNING(errmsg);
 
 	// We're now waiting for any responses from devices
@@ -347,14 +347,14 @@ int vrpn_Nikon_Controls::set_channel(unsigned chan_num, vrpn_float64 value)
   // (the response from the microscope just says "we got here!).
   if ( (int)chan_num >= o_num_channel ) {
     char msg[1024];
-    sprintf(msg,"vrpn_Nikon_Controls::set_channel(): Index out of bounds (%d of %d), value %lg\n",
+    snprintf(msg, 1024,"vrpn_Nikon_Controls::set_channel(): Index out of bounds (%d of %d), value %lg\n",
       chan_num, o_num_channel, value);
     vrpn_gettimeofday(&o_timestamp, NULL);
     send_text_message(msg, o_timestamp, vrpn_TEXT_ERROR);
   }
 
   char  msg[256];
-  sprintf(msg, "fSMV%ld\r", (long)value);
+  snprintf(msg, 256, "fSMV%ld\r", (long)value);
 #ifdef	VERBOSE
   printf("Nikon Control: Asking to move to %ld with command %s\n", (long)value, msg);
 #endif
@@ -404,7 +404,7 @@ int vrpn_Nikon_Controls::handle_request_channels_message(void* userdata, vrpn_HA
     vrpn_unbuffer(&bufptr, &pad);
     if (num > me->o_num_channel) {
       char msg[1024];
-      sprintf(msg,"vrpn_Nikon_Controls::handle_request_channels_message(): Index out of bounds (%d of %d), clipping\n",
+      snprintf(msg, 1024,"vrpn_Nikon_Controls::handle_request_channels_message(): Index out of bounds (%d of %d), clipping\n",
 	num, me->o_num_channel);
       me->send_text_message(msg, me->timestamp, vrpn_TEXT_ERROR);
       num = me->o_num_channel;
@@ -481,7 +481,7 @@ void	vrpn_Nikon_Controls::mainloop()
 	      if (vrpn_TimevalDuration(current_time, last_poll) > TIMEOUT_TIME_INTERVAL) {
 		// Ask the unit for its current focus location, which will cause it to respond.
 		char  msg[256];
-		sprintf(msg, "rSPR\r");
+		snprintf(msg, 256, "rSPR\r");
 		if (vrpn_write_characters(serial_fd, (unsigned char *)msg, strlen(msg)) != (int)strlen(msg)) {
 		  fprintf(stderr, "vrpn_Nikon_Controls::mainloop(): Can't write focus request command\n");
 		  status = STATUS_RESETTING;
@@ -494,7 +494,7 @@ void	vrpn_Nikon_Controls::mainloop()
 	    }
 
 	    if ( vrpn_TimevalDuration(current_time,timestamp) > TIMEOUT_TIME_INTERVAL) {
-		    sprintf(errmsg,"Timeout... current_time=%ld:%ld, timestamp=%ld:%ld",
+		    snprintf(errmsg, 256,"Timeout... current_time=%ld:%ld, timestamp=%ld:%ld",
 					current_time.tv_sec, static_cast<long>(current_time.tv_usec),
 					timestamp.tv_sec, static_cast<long>(timestamp.tv_usec));
 		    VRPN_MSG_ERROR(errmsg);

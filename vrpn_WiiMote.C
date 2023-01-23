@@ -253,7 +253,7 @@ void vrpn_WiiMote::handle_event() {
 			struct timeval now;
 			vrpn_gettimeofday(&now, NULL);
 			char msg[1024];
-			sprintf(msg, "Unknown Wii Remote expansion type: device->exp.type = %d", wiimote->device->exp.type);
+			snprintf(msg, 1024, "Unknown Wii Remote expansion type: device->exp.type = %d", wiimote->device->exp.type);
 			send_text_message(msg, now, vrpn_TEXT_ERROR);
 	}
 
@@ -278,7 +278,7 @@ void vrpn_WiiMote::connect_wiimote(int timeout) {
 			} else if (!current.empty()) {
 				acquireMessageLock();
 				vrpn_gettimeofday(&now, NULL);
-				sprintf(msg, "Wiimote found, but it's not the one we want: '%.300s' isn't '%.300s'\n", available_wiimotes[i]->bdaddr_str, wiimote->bdaddr.c_str());
+				snprintf(msg, 1024, "Wiimote found, but it's not the one we want: '%.300s' isn't '%.300s'\n", available_wiimotes[i]->bdaddr_str, wiimote->bdaddr.c_str());
 				send_text_message(msg, now);
 				releaseMessageLock();
 			}
@@ -291,7 +291,7 @@ void vrpn_WiiMote::connect_wiimote(int timeout) {
 	if (! wiimote->device) {
 		acquireMessageLock();
 		vrpn_gettimeofday(&now, NULL);
-		sprintf(msg, "Could not open remote %d (%d found)", wiimote->which, num_available);
+		snprintf(msg, 1024, "Could not open remote %d (%d found)", wiimote->which, num_available);
 		send_text_message(msg, now, vrpn_TEXT_ERROR);
 		releaseMessageLock();
 		wiimote->found = false;
@@ -304,7 +304,7 @@ void vrpn_WiiMote::connect_wiimote(int timeout) {
 	if (wiimote->connected) {
 		acquireMessageLock();
 		vrpn_gettimeofday(&now, NULL);
-		sprintf(msg, "Connected to remote %d", wiimote->which);
+		snprintf(msg, 1024, "Connected to remote %d", wiimote->which);
 		send_text_message(msg, now);
 		releaseMessageLock();
 
@@ -316,7 +316,7 @@ void vrpn_WiiMote::connect_wiimote(int timeout) {
 	else {
 		acquireMessageLock();
 		vrpn_gettimeofday(&now, NULL);
-		sprintf(msg, "No connection to remote %d", wiimote->which);
+		snprintf(msg, 1024, "No connection to remote %d", wiimote->which);
 		send_text_message(msg, now, vrpn_TEXT_ERROR);
 		releaseMessageLock();
 	}
@@ -345,7 +345,7 @@ void vrpn_WiiMote::initialize_wiimote_state(void) {
 			struct timeval now;
 			vrpn_gettimeofday(&now, NULL);
 			char msg[1024];
-			sprintf(msg, "Too-large remote %d (1-4 available)", wiimote->which);
+			snprintf(msg, 1024, "Too-large remote %d (1-4 available)", wiimote->which);
 			send_text_message(msg, now, vrpn_TEXT_ERROR);
 			break;
 	}
@@ -662,7 +662,7 @@ int vrpn_WiiMote::handle_request_message(void *userdata,
 	if ((chan_num < 0) || (chan_num >= me->o_num_channel)) {
 		fprintf(stderr, "vrpn_WiiMote::handle_request_message(): Index out of bounds\n");
 		char msg[1024];
-		sprintf(msg, "Error:  (handle_request_message):  channel %d is not active.  Squelching.", chan_num);
+		snprintf(msg, 1024, "Error:  (handle_request_message):  channel %d is not active.  Squelching.", chan_num);
 		me->send_text_message(msg, p.msg_time, vrpn_TEXT_ERROR);
 		return 0;
 	}
@@ -700,14 +700,14 @@ int vrpn_WiiMote::handle_request_channels_message(void* userdata,
 	vrpn_unbuffer(&bufptr, &pad);
 	if (num > me->o_num_channel) {
 		char msg[1024];
-		sprintf(msg, "Error:  (handle_request_channels_message):  channels above %d not active; "
+		snprintf(msg, 1024, "Error:  (handle_request_channels_message):  channels above %d not active; "
 		        "bad request up to channel %d.  Squelching.", me->o_num_channel, num);
 		me->send_text_message(msg, p.msg_time, vrpn_TEXT_ERROR);
 		num = me->o_num_channel;
 	}
 	if (num < 0) {
 		char msg[1024];
-		sprintf(msg, "Error:  (handle_request_channels_message):  invalid channel %d.  Squelching.", num);
+		snprintf(msg, 1024, "Error:  (handle_request_channels_message):  invalid channel %d.  Squelching.", num);
 		me->send_text_message(msg, p.msg_time, vrpn_TEXT_ERROR);
 		return 0;
 	}

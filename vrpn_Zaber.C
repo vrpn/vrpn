@@ -13,7 +13,7 @@
 // the MSB (most-significant byte) of the data.
 
 
-#include <stdio.h>                      // for sprintf, fprintf, stderr, etc
+#include <stdio.h>                      // for snprintf, fprintf, stderr, etc
 
 #include "vrpn_BaseClass.h"             // for ::vrpn_TEXT_ERROR, etc
 #include "vrpn_Serial.h"                // for vrpn_flush_input_buffer, etc
@@ -182,7 +182,7 @@ int	vrpn_Zaber::reset(void)
 	    break;  //< No more devices found
 	  }
 	  if (ret != expected_chars) {
-		  sprintf(errmsg,"reset: Got %d of %d expected characters for position\n",ret, expected_chars);
+		  snprintf(errmsg, 256,"reset: Got %d of %d expected characters for position\n",ret, expected_chars);
 		  VRPN_MSG_ERROR(errmsg);
 		  return -1;
 	  }
@@ -206,7 +206,7 @@ int	vrpn_Zaber::reset(void)
 #ifdef	_WIN32
 #pragma warning ( default : 4127 )
 #endif
-	sprintf(errmsg,"found %d devices",num_channel);
+	snprintf(errmsg, 256,"found %d devices",num_channel);
 	VRPN_MSG_WARNING(errmsg);
 
 	// We're now waiting for any responses from devices
@@ -294,7 +294,7 @@ int vrpn_Zaber::get_report(void)
        && (d_buffer[1] != 20) && (d_buffer[1] != 255) ) {
 	   status = STATUS_SYNCING;
 	   char msg[1024];
-	   sprintf(msg,"Bad command type (%d) in report (ignoring this report)", d_buffer[1]);
+	   snprintf(msg, 1024,"Bad command type (%d) in report (ignoring this report)", d_buffer[1]);
       	   VRPN_MSG_WARNING(msg);
 	   vrpn_flush_input_buffer(serial_fd);
 	   return 0;
@@ -315,7 +315,7 @@ int vrpn_Zaber::get_report(void)
    vrpn_int32 value = convert_bytes_to_reading(&d_buffer[2]);
    if (chan >= num_channel) {	// Unsigned, so can't be < 0
      char msg[1024];
-     sprintf(msg,"Invalid channel (%d of %d), resetting", chan, num_channel);
+     snprintf(msg, 1024,"Invalid channel (%d of %d), resetting", chan, num_channel);
      VRPN_MSG_ERROR(msg);
      status = STATUS_RESETTING;
    }
@@ -349,7 +349,7 @@ int vrpn_Zaber::handle_request_message(void *userdata, vrpn_HANDLERPARAM p)
     // range of the ones we have.
     if ( (chan_num < 0) || (chan_num >= me->o_num_channel) ) {
       char msg[1024];
-      sprintf(msg,"vrpn_Zaber::handle_request_message(): Index out of bounds (%d of %d), value %lg\n",
+      snprintf(msg, 1024,"vrpn_Zaber::handle_request_message(): Index out of bounds (%d of %d), value %lg\n",
 	chan_num, me->num_channel, value);
       me->send_text_message(msg, me->timestamp, vrpn_TEXT_ERROR);
       return 0;
@@ -373,7 +373,7 @@ int vrpn_Zaber::handle_request_channels_message(void* userdata, vrpn_HANDLERPARA
     vrpn_unbuffer(&bufptr, &pad);
     if (num > me->o_num_channel) {
       char msg[1024];
-      sprintf(msg,"vrpn_Zaber::handle_request_channels_message(): Index out of bounds (%d of %d), clipping\n",
+      snprintf(msg, 1024,"vrpn_Zaber::handle_request_channels_message(): Index out of bounds (%d of %d), clipping\n",
 	num, me->o_num_channel);
       me->send_text_message(msg, me->timestamp, vrpn_TEXT_ERROR);
       num = me->o_num_channel;
@@ -456,7 +456,7 @@ void	vrpn_Zaber::mainloop()
 	    }
 
 	    if ( vrpn_TimevalDuration(current_time,timestamp) > TIMEOUT_TIME_INTERVAL) {
-		    sprintf(errmsg,"Timeout... current_time=%ld:%ld, timestamp=%ld:%ld",
+		    snprintf(errmsg, 256,"Timeout... current_time=%ld:%ld, timestamp=%ld:%ld",
 					current_time.tv_sec, static_cast<long>(current_time.tv_usec),
 					timestamp.tv_sec, static_cast<long>(timestamp.tv_usec));
 		    VRPN_MSG_ERROR(errmsg);

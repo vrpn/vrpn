@@ -1,7 +1,7 @@
 #ifndef VRPN_CONNECTION_H
 #define VRPN_CONNECTION_H
 
-#include <stdio.h> // for NULL, sprintf
+#include <stdio.h> // for NULL, snprintf
 
 #include "vrpn_Configure.h" // for VRPN_API, VRPN_CALLBACK, etc
 #include "vrpn_Shared.h"    // for SOCKET, timeval
@@ -13,11 +13,6 @@
 #endif
 
 struct timeval;
-
-// Don't complain about using sprintf() when using Visual Studio.
-#ifdef _MSC_VER
-#pragma warning(disable : 4995 4996)
-#endif
 
 /// This is the list of states that a connection can be in
 /// (possible values for status).  doing_okay() returns VRPN_TRUE
@@ -1030,10 +1025,10 @@ vrpn_create_server_connection(int port = vrpn_DEFAULT_LISTEN_PORT_NO,
 {
     char name[256];
     if (NIC_NAME == NULL) {
-        sprintf(name, ":%d", port);
+        snprintf(name, 256, ":%d", port);
     }
     else {
-        sprintf(name, "%.200s:%d", NIC_NAME, port);
+        snprintf(name, 256, "%.200s:%d", NIC_NAME, port);
     }
     return vrpn_create_server_connection(name, local_in_logfile_name,
                                          local_out_logfile_name);
