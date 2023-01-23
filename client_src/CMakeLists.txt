@@ -22,6 +22,7 @@ if(VRPN_BUILD_CLIENTS)
 	find_package(GLUT)
 	if(APPLE)
 		mark_as_advanced(GLUT_cocoa_LIBRARY)
+		add_definitions("-DGL_SILENCE_DEPRECATION")
 	endif()
 	find_package(OpenGL)
 
