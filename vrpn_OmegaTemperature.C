@@ -61,7 +61,7 @@ S2 037 0<CR> sets reference temperature for channel II
 */
 
 #include <stddef.h>                     // for size_t
-#include <stdio.h>                      // for sprintf, fprintf, stderr, etc
+#include <stdio.h>                      // for snprintf, fprintf, stderr, etc
 #include <string.h>                     // for strlen, NULL
 
 #include "vrpn_BaseClass.h"             // for ::vrpn_TEXT_ERROR, etc
@@ -154,7 +154,7 @@ bool  vrpn_OmegaTemperature::set_reference_temperature(unsigned channel, float v
   // past the decimal.
   int whole = static_cast<int>(value);
   int dec = static_cast<int>(value*10) - whole*10;
-  sprintf(command, "S%d %03d%d\r", channel+1, whole,dec);
+  snprintf(command, 128, "S%d %03d%d\r", channel+1, whole,dec);
 
   // Send the command to the serial port
   return (vrpn_write_characters(serial_fd, (unsigned char *)(command), strlen(command)) == strlen(command));
@@ -169,9 +169,9 @@ bool  vrpn_OmegaTemperature::set_control_status(bool on)
   char command[128];
 
   if (on) {
-    sprintf(command, "ON\r");
+    snprintf(command, 128, "ON\r");
   } else {
-    sprintf(command, "OFF\r");
+    snprintf(command, 128, "OFF\r");
   }
 
   // Send the command to the serial port
@@ -191,7 +191,7 @@ bool  vrpn_OmegaTemperature::request_temperature(unsigned channel)
 {
   char command[128];
 
-  sprintf(command, "T%d\r", channel+1);
+  snprintf(command, 128, "T%d\r", channel+1);
 #ifdef	VERBOSE
   printf("Sending command: %s", command);
 #endif
@@ -343,7 +343,7 @@ int vrpn_OmegaTemperature::get_report(void)
    float value = convert_bytes_to_reading(d_buffer);
    if (value == -1000) {
      char msg[256];
-     sprintf(msg,"Invalid report, channel %d, resetting", d_next_channel_to_read);
+     snprintf(msg, 256,"Invalid report, channel %d, resetting", d_next_channel_to_read);
      VRPN_MSG_ERROR(msg);
      status = STATUS_RESETTING;
    }
@@ -360,7 +360,7 @@ int vrpn_OmegaTemperature::get_report(void)
    d_next_channel_to_read = (d_next_channel_to_read + 1) % 6;
    if (!request_temperature(d_next_channel_to_read)) {
      char msg[256];
-     sprintf(msg,"Can't request reading, channel %d, resetting", d_next_channel_to_read);
+     snprintf(msg, 256,"Can't request reading, channel %d, resetting", d_next_channel_to_read);
      VRPN_MSG_ERROR(msg);
      status = STATUS_RESETTING;
    }
@@ -413,7 +413,7 @@ int vrpn_OmegaTemperature::handle_request_message(void *userdata, vrpn_HANDLERPA
     // range of the ones we have.
     if ( (chan_num < 0) || (chan_num >= me->o_num_channel) ) {
       char msg[1024];
-      sprintf(msg,"vrpn_OmegaTemperature::handle_request_message(): Index out of bounds (%d of %d), value %lg\n",
+      snprintf(msg, 1024,"vrpn_OmegaTemperature::handle_request_message(): Index out of bounds (%d of %d), value %lg\n",
 	chan_num, me->num_channel, value);
       me->send_text_message(msg, me->timestamp, vrpn_TEXT_ERROR);
       return 0;
@@ -436,7 +436,7 @@ int vrpn_OmegaTemperature::handle_request_channels_message(void* userdata, vrpn_
     vrpn_unbuffer(&bufptr, &pad);
     if (num > me->o_num_channel) {
       char msg[1024];
-      sprintf(msg,"vrpn_OmegaTemperature::handle_request_channels_message(): Index out of bounds (%d of %d), clipping\n",
+      snprintf(msg, 1024,"vrpn_OmegaTemperature::handle_request_channels_message(): Index out of bounds (%d of %d), clipping\n",
 	num, me->o_num_channel);
       me->send_text_message(msg, me->timestamp, vrpn_TEXT_ERROR);
       num = me->o_num_channel;
@@ -508,7 +508,7 @@ void	vrpn_OmegaTemperature::mainloop()
 	    struct timeval current_time;
 	    vrpn_gettimeofday(&current_time, NULL);
 	    if ( vrpn_TimevalDuration(current_time,timestamp) > TIMEOUT_TIME_INTERVAL) {
-		    sprintf(errmsg,"Timeout... current_time=%ld:%ld, timestamp=%ld:%ld",
+		    snprintf(errmsg, 256,"Timeout... current_time=%ld:%ld, timestamp=%ld:%ld",
 					current_time.tv_sec, static_cast<long>(current_time.tv_usec),
 					timestamp.tv_sec, static_cast<long>(timestamp.tv_usec));
 		    VRPN_MSG_ERROR(errmsg);

@@ -122,7 +122,7 @@ int vrpn_Analog_Output_Server::handle_request_message(void* userdata,
         fprintf(stderr, "vrpn_Analog_Output_Server::handle_request_message(): "
                         "Index out of bounds\n");
         char msg[1024];
-        sprintf(msg, "Error:  (handle_request_message):  channel %d is not "
+        snprintf(msg, 1024, "Error:  (handle_request_message):  channel %d is not "
                      "active.  Squelching.",
                 chan_num);
         me->send_text_message(msg, p.msg_time, vrpn_TEXT_ERROR);
@@ -148,7 +148,7 @@ int vrpn_Analog_Output_Server::handle_request_channels_message(
     vrpn_unbuffer(&bufptr, &pad);
     if (num > me->o_num_channel) {
         char msg[1024];
-        sprintf(msg, "Error:  (handle_request_channels_message):  channels "
+        snprintf(msg, 1024, "Error:  (handle_request_channels_message):  channels "
                      "above %d not active; "
                      "bad request up to channel %d.  Squelching.",
                 me->o_num_channel, num);
@@ -157,7 +157,7 @@ int vrpn_Analog_Output_Server::handle_request_channels_message(
     }
     if (num < 0) {
         char msg[1024];
-        sprintf(msg, "Error:  (handle_request_channels_message):  invalid "
+        snprintf(msg, 1024, "Error:  (handle_request_channels_message):  invalid "
                      "channel %d.  Squelching.",
                 num);
         me->send_text_message(msg, p.msg_time, vrpn_TEXT_ERROR);

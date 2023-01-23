@@ -13,7 +13,7 @@
 #else
 #include <cassert>                      // for assert
 #include <cmath>                        // for fabs
-#include <cstdio>                       // for sprintf
+#include <cstdio>                       // for snprintf
 #endif
 
 // Format strings for the degree-to-string conversion functions.
@@ -182,7 +182,7 @@ const std::string& LatLonCoord::degreeToD (std::string& output, double degree,
   } else {
     pFormatString = formatD_EW;
   }
-  sprintf(tempString, pFormatString, hemisphereChar, intDegrees,
+  snprintf(tempString, 1000, pFormatString, hemisphereChar, intDegrees,
           int100ThousandthDegrees);
   output = tempString;
   return output;
@@ -216,7 +216,7 @@ const std::string& LatLonCoord::degreeToDM (std::string& output, double degree,
   } else {
     pFormatString = formatDM_EW;
   }
-  sprintf(tempString, pFormatString, hemisphereChar,
+  snprintf(tempString, 1000, pFormatString, hemisphereChar,
           intDegrees, intMinutes, intThousandthMinutes);
   output = tempString;
   return output;
@@ -254,7 +254,7 @@ const std::string& LatLonCoord::degreeToDMS (std::string& output, double degree,
   } else {
     pFormatString = formatDMS_EW;
   }
-  sprintf(tempString, pFormatString, hemisphereChar,
+  snprintf(tempString, 1000, pFormatString, hemisphereChar,
           intDegrees, intMinutes, intSeconds, intTenthSeconds);
   output = tempString;
   return output;

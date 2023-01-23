@@ -117,7 +117,7 @@ void init (const char * station_name,
 	// these will be entered in the table and found by the
 	// vrpn_get_connection_by_name() inside vrpn_Tracker and vrpn_Button
 
-	sprintf(devicename.data(), "Tracker0@%s", station_name);
+	snprintf(devicename.data(), devicename.size(), "Tracker0@%s", station_name);
 	if (!strncmp(station_name, "file:", 5)) {
         fprintf(stderr, "Opening file %s.\n", station_name);
 	  c = new vrpn_File_Connection (station_name);  // now unnecessary!
@@ -145,10 +145,10 @@ void init (const char * station_name,
         fprintf(stderr, "Tracker's name is %s.\n", devicename.data());
 	tkr = new vrpn_Tracker_Remote (devicename.data());
 
-	sprintf(devicename.data(), "Button0@%s", station_name);
+	snprintf(devicename.data(), devicename.size(), "Button0@%s", station_name);
         fprintf(stderr, "Button's name is %s.\n", devicename.data());
 	btn = new vrpn_Button_Remote (devicename.data());
-	sprintf(devicename.data(), "Button1@%s", station_name);
+	snprintf(devicename.data(), devicename.size(), "Button1@%s", station_name);
         fprintf(stderr, "Button 2's name is %s.\n", devicename.data());
 	btn2 = new vrpn_Button_Remote (devicename.data());
 

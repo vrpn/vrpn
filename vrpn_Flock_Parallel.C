@@ -74,7 +74,7 @@ vrpn_Tracker_Flock_Parallel::vrpn_Tracker_Flock_Parallel(char *name,
       return;
     } else {
       // create a traker name
-      sprintf(rgch, "flockSlave%d", i);
+      snprintf(rgch, 25, "flockSlave%d", i);
       rgSlaves[i] = new vrpn_Tracker_Flock_Parallel_Slave( rgch,
 							   d_connection,
 							   slavePortArray[i],

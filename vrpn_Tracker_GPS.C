@@ -37,7 +37,7 @@ vrpn_Tracker_GPS::vrpn_Tracker_GPS(const char *name,
 vrpn_Tracker_Serial(name,c,port,baud)
 {
     //this sets the name of the testfile
-    sprintf(testfilename, "GPS-data.txt"); 				
+    snprintf(testfilename, 256, "GPS-data.txt"); 				
     
     // This allow people to set an external flag whether they want to use real GPS or not
     //Assuming this is 0 by default
@@ -174,7 +174,7 @@ int vrpn_Tracker_GPS::get_report(void)
             // If it's not = to $, keep going until the beginning of a packet starts
             if( buffer[0] != '$') 
             {
-                sprintf(errmsg,"While syncing (looking for '$', got '%c')", buffer[0]);
+                snprintf(errmsg, 512,"While syncing (looking for '$', got '%c')", buffer[0]);
                 
                 
                 VRPN_MSG_INFO(errmsg);
@@ -357,7 +357,7 @@ int vrpn_Tracker_GPS::get_report(void)
                     char	msgbuf[1000];
                     
                     
-                    //sprintf(temp, "position id = %d, sender id = %d", position_m_id, d_sender_id); 
+                    //snprintf(temp, 256, "position id = %d, sender id = %d", position_m_id, d_sender_id); 
                     //MessageBox(NULL, temp,"GPS Testing",0);
                     
                     // Pack position report

@@ -78,7 +78,7 @@ void parseArguments(int argc, char **argv)
 		{
 			if (++i >= argc) usage(argv[0]);
 			device_name = new char[14 + strlen(argv[i])+1];
-			sprintf(device_name,"file://%s", argv[i]);
+			snprintf(device_name, 14 + strlen(argv[i]) + 1,"file://%s", argv[i]);
 		}
 		else if( !strcmp( argv[i], "-head" ) )
 		{

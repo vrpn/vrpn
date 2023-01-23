@@ -1,4 +1,4 @@
-#include <stdio.h>                      // for sprintf, fprintf, stderr, etc
+#include <stdio.h>                      // for snprintf, fprintf, stderr, etc
 #include "vrpn_Shared.h"                // for vrpn_gettimeofday
 
 #include "vrpn_BaseClass.h"             // for ::vrpn_TEXT_WARNING, etc
@@ -79,7 +79,7 @@ vrpn_National_Instruments_Server::vrpn_National_Instruments_Server (const char* 
   // task to handle reading of these channels as a group.  We then
   // start this task.
   if (numInChannels > 0) {
-	  sprintf(portName, "%.700s/ai0:%d", boardName, numInChannels-1);
+	  snprintf(portName, 1024, "%.700s/ai0:%d", boardName, numInChannels-1);
 	  error = DAQmxCreateTask("", &d_analog_task_handle);
 	  if (error == 0) {
 		  error = DAQmxCreateAIVoltageChan(
@@ -107,7 +107,7 @@ vrpn_National_Instruments_Server::vrpn_National_Instruments_Server (const char* 
   // task to handle writing of these channels as a group.  Start the
   // task.  Also, set the outputs to their minimum value at startup.
   if (numOutChannels > 0) {
-	  sprintf(portName, "%.700s/ao0:%d", boardName, numOutChannels-1);
+	  snprintf(portName, 1024, "%.700s/ao0:%d", boardName, numOutChannels-1);
 	  error = DAQmxCreateTask("", &d_analog_out_task_handle);
 	  if (error == 0) {
 		  error = DAQmxCreateAOVoltageChan(
@@ -359,20 +359,20 @@ int VRPN_CALLBACK vrpn_National_Instruments_Server::handle_request_message(void 
     // range of the ones we have.
     if ( (chan_num < 0) || (chan_num >= me->o_num_channel) ) {
       char msg[1024];
-      sprintf( msg, "Error:  (handle_request_message):  channel %d is not active.  Squelching.", chan_num );
+      snprintf( msg, 1024, "Error:  (handle_request_message):  channel %d is not active.  Squelching.", chan_num );
       me->send_text_message( msg, p.msg_time, vrpn_TEXT_ERROR );
       return 0;
     }
     // Make sure the voltage value is within the allowed range.
     if (value < me->d_out_min_voltage) {
       char msg[1024];
-      sprintf( msg, "Error:  (handle_request_message): voltage %g is too low.  Clamping to %g.", value, me->d_out_min_voltage);
+      snprintf( msg, 1024, "Error:  (handle_request_message): voltage %g is too low.  Clamping to %g.", value, me->d_out_min_voltage);
       me->send_text_message( msg, p.msg_time, vrpn_TEXT_WARNING );
       value = me->d_out_min_voltage;
     }
     if (value > me->d_out_max_voltage) {
       char msg[1024];
-      sprintf( msg, "Error:  (handle_request_message): voltage %g is too high.  Clamping to %g.", value, me->d_out_max_voltage);
+      snprintf( msg, 1024, "Error:  (handle_request_message): voltage %g is too high.  Clamping to %g.", value, me->d_out_max_voltage);
       me->send_text_message( msg, p.msg_time, vrpn_TEXT_WARNING );
       value = me->d_out_max_voltage;
     }
@@ -410,7 +410,7 @@ int vrpn_National_Instruments_Server::handle_request_channels_message(void* user
     if (num > me->o_num_channel) 
     {
          char msg[1024];
-         sprintf( msg, "Error:  (handle_request_channels_message):  channels above %d not active; "
+         snprintf( msg, 1024, "Error:  (handle_request_channels_message):  channels above %d not active; "
               "bad request up to channel %d.  Squelching.", me->o_num_channel, num );
          me->send_text_message( msg, p.msg_time, vrpn_TEXT_ERROR );
          num = me->o_num_channel;
@@ -418,7 +418,7 @@ int vrpn_National_Instruments_Server::handle_request_channels_message(void* user
     if (num < 0) 
     {
          char msg[1024];
-         sprintf( msg, "Error:  (handle_request_channels_message):  invalid channel %d.  Squelching.", num );
+         snprintf( msg, 1024, "Error:  (handle_request_channels_message):  invalid channel %d.  Squelching.", num );
          me->send_text_message( msg, p.msg_time, vrpn_TEXT_ERROR );
          return 0;
     }
@@ -428,13 +428,13 @@ int vrpn_National_Instruments_Server::handle_request_channels_message(void* user
 		// Make sure the voltage value is within the allowed range.
 		if (value < me->d_out_min_voltage) {
 		  char msg[1024];
-		  sprintf( msg, "Error:  (handle_request_messages): voltage %g is too low.  Clamping to %g.", value, me->d_out_min_voltage);
+		  snprintf( msg, 1024, "Error:  (handle_request_messages): voltage %g is too low.  Clamping to %g.", value, me->d_out_min_voltage);
 		  me->send_text_message( msg, p.msg_time, vrpn_TEXT_WARNING );
 		  value = me->d_out_min_voltage;
 		}
 		if (value > me->d_out_max_voltage) {
 		  char msg[1024];
-		  sprintf( msg, "Error:  (handle_request_messages): voltage %g is too high.  Clamping to %g.", value, me->d_out_max_voltage);
+		  snprintf( msg, 1024, "Error:  (handle_request_messages): voltage %g is too high.  Clamping to %g.", value, me->d_out_max_voltage);
 		  me->send_text_message( msg, p.msg_time, vrpn_TEXT_WARNING );
 		  value = me->d_out_max_voltage;
 		}
@@ -637,20 +637,20 @@ int VRPN_CALLBACK vrpn_Analog_Output_Server_NI::handle_request_message(void *use
     // range of the ones we have.
     if ( (chan_num < 0) || (chan_num >= me->o_num_channel) ) {
       char msg[1024];
-      sprintf( msg, "Error:  (handle_request_message):  channel %d is not active.  Squelching.", chan_num );
+      snprintf( msg, 1024, "Error:  (handle_request_message):  channel %d is not active.  Squelching.", chan_num );
       me->send_text_message( msg, p.msg_time, vrpn_TEXT_ERROR );
       return 0;
     }
     // Make sure the voltage value is within the allowed range.
     if (value < me->min_voltage) {
       char msg[1024];
-      sprintf( msg, "Error:  (handle_request_message): voltage %g is too low.  Clamping to %g.", value, me->min_voltage);
+      snprintf( msg, 1024, "Error:  (handle_request_message): voltage %g is too low.  Clamping to %g.", value, me->min_voltage);
       me->send_text_message( msg, p.msg_time, vrpn_TEXT_WARNING );
       value = me->min_voltage;
     }
     if (value > me->max_voltage) {
       char msg[1024];
-      sprintf( msg, "Error:  (handle_request_message): voltage %g is too high.  Clamping to %g.", value, me->max_voltage);
+      snprintf( msg, 1024, "Error:  (handle_request_message): voltage %g is too high.  Clamping to %g.", value, me->max_voltage);
       me->send_text_message( msg, p.msg_time, vrpn_TEXT_WARNING );
       value = me->max_voltage;
     }
@@ -682,7 +682,7 @@ int vrpn_Analog_Output_Server_NI::handle_request_channels_message(void* userdata
     if (num > me->o_num_channel) 
     {
          char msg[1024];
-         sprintf( msg, "Error:  (handle_request_channels_message):  channels above %d not active; "
+         snprintf( msg, 1024, "Error:  (handle_request_channels_message):  channels above %d not active; "
               "bad request up to channel %d.  Squelching.", me->o_num_channel, num );
          me->send_text_message( msg, p.msg_time, vrpn_TEXT_ERROR );
          num = me->o_num_channel;
@@ -690,7 +690,7 @@ int vrpn_Analog_Output_Server_NI::handle_request_channels_message(void* userdata
     if (num < 0) 
     {
          char msg[1024];
-         sprintf( msg, "Error:  (handle_request_channels_message):  invalid channel %d.  Squelching.", num );
+         snprintf( msg, 1024, "Error:  (handle_request_channels_message):  invalid channel %d.  Squelching.", num );
          me->send_text_message( msg, p.msg_time, vrpn_TEXT_ERROR );
          return 0;
     }
@@ -700,13 +700,13 @@ int vrpn_Analog_Output_Server_NI::handle_request_channels_message(void* userdata
 	// Make sure the voltage value is within the allowed range.
 	if (value < me->min_voltage) {
 	  char msg[1024];
-	  sprintf( msg, "Error:  (handle_request_messages): voltage %g is too low.  Clamping to %g.", value, me->min_voltage);
+	  snprintf( msg, 1024, "Error:  (handle_request_messages): voltage %g is too low.  Clamping to %g.", value, me->min_voltage);
 	  me->send_text_message( msg, p.msg_time, vrpn_TEXT_WARNING );
 	  value = me->min_voltage;
 	}
 	if (value > me->max_voltage) {
 	  char msg[1024];
-	  sprintf( msg, "Error:  (handle_request_messages): voltage %g is too high.  Clamping to %g.", value, me->max_voltage);
+	  snprintf( msg, 1024, "Error:  (handle_request_messages): voltage %g is too high.  Clamping to %g.", value, me->max_voltage);
 	  me->send_text_message( msg, p.msg_time, vrpn_TEXT_WARNING );
 	  value = me->max_voltage;
 	}

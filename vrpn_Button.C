@@ -179,7 +179,7 @@ void vrpn_Button_Filter::set_momentary(vrpn_int32 which_button)
 {
     if (which_button >= num_buttons) {
         char msg[200];
-        sprintf(msg, "vrpn_Button::set_momentary() buttons id %d is greater "
+        snprintf(msg, 200, "vrpn_Button::set_momentary() buttons id %d is greater "
                      "than the number of buttons(%d)\n",
                 which_button, num_buttons);
         send_text_message(msg, timestamp, vrpn_TEXT_ERROR);
@@ -193,7 +193,7 @@ void vrpn_Button::set_momentary(vrpn_int32 which_button)
 {
     if (which_button >= num_buttons) {
         char msg[200];
-        sprintf(msg, "vrpn_Button::set_momentary() buttons id %d is greater "
+        snprintf(msg, 200, "vrpn_Button::set_momentary() buttons id %d is greater "
                      "than the number of buttons(%d)\n",
                 which_button, num_buttons);
         send_text_message(msg, timestamp, vrpn_TEXT_ERROR);
@@ -207,7 +207,7 @@ void vrpn_Button_Filter::set_toggle(vrpn_int32 which_button,
 {
     if (which_button >= num_buttons) {
         char msg[200];
-        sprintf(msg, "vrpn_Button::set_toggle() buttons id %d is greater then "
+        snprintf(msg, 200, "vrpn_Button::set_toggle() buttons id %d is greater then "
                      "the number of buttons(%d)\n",
                 which_button, num_buttons);
         send_text_message(msg, timestamp, vrpn_TEXT_ERROR);
@@ -228,7 +228,7 @@ void vrpn_Button::set_toggle(vrpn_int32 which_button, vrpn_int32 current_state)
 {
     if (which_button >= num_buttons) {
         char msg[200];
-        sprintf(msg, "vrpn_Button::set_toggle() buttons id %d is greater then "
+        snprintf(msg, 200, "vrpn_Button::set_toggle() buttons id %d is greater then "
                      "the number of buttons(%d)\n",
                 which_button, num_buttons);
         send_text_message(msg, timestamp, vrpn_TEXT_ERROR);

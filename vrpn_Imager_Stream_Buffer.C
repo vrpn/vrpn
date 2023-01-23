@@ -584,7 +584,7 @@ int vrpn_Imager_Stream_Buffer::handle_server_messages(
         tp.type = d_server_text_m_id;
         tp.buffer = buffer;
         tp.payload_len = sizeof(buffer);
-        sprintf(msg, "Unknown message type from server: %d",
+        snprintf(msg, vrpn_MAX_TEXT_LEN, "Unknown message type from server: %d",
                 static_cast<int>(p.type));
         encode_text_message_to_buffer(buffer, vrpn_TEXT_ERROR, 0, msg);
         if (!transcode_and_send(tp)) {

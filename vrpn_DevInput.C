@@ -125,7 +125,7 @@ vrpn_DevInput::vrpn_DevInput( const char* name, vrpn_Connection * cxn, const cha
   std::string node = getDeviceNodes(device_name);
   if (node.length() == 0) {
 	char msg[1024];
-	sprintf(msg, "vrpn_DevInput::vrpn_DevInput(): Could not get device %.511s",
+	snprintf(msg, 1024, "vrpn_DevInput::vrpn_DevInput(): Could not get device %.511s",
 		device_name);
 	REPORT_ERROR(msg);
 	return;
@@ -134,7 +134,7 @@ vrpn_DevInput::vrpn_DevInput( const char* name, vrpn_Connection * cxn, const cha
   d_fileDescriptor = open(node.c_str(), O_RDONLY);
   if(d_fileDescriptor < 0){
 	char msg[1024];
-	sprintf(msg, "vrpn_DevInput::vrpn_DevInput(): Could not open device %.255s (%.512s)",
+	snprintf(msg, 1024, "vrpn_DevInput::vrpn_DevInput(): Could not open device %.255s (%.512s)",
 		device_name, strerror(errno));
 	REPORT_ERROR(msg);
 	return;

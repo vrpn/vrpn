@@ -1991,7 +1991,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_Flock_Parallel(
 
     // set up strtok to get the variable num of port names
     char rgch[24];
-    sprintf(rgch, "%d", i2);
+    snprintf(rgch, 24, "%d", i2);
     char *pch2 = strstr(pch, rgch);
     strtok(pch2, " \t");
     // pch points to baud, next strtok will give invertQuaternion

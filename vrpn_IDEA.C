@@ -4,7 +4,7 @@
 // for the software manual for this device.
 
 #include <stddef.h>                     // for size_t
-#include <stdio.h>                      // for fprintf, stderr, sprintf, etc
+#include <stdio.h>                      // for fprintf, stderr, snprintf, etc
 #include <string.h>                     // for NULL, strlen, strchr, etc
 
 #include "vrpn_BaseClass.h"             // for ::vrpn_TEXT_ERROR, etc
@@ -190,7 +190,7 @@ bool  vrpn_IDEA::send_move_request(vrpn_float64 location_in_steps, double scale)
       address_masks[d_low_limit_index - 1] = 2048;    // Address of program
     }
 
-    if (sprintf(cmd, "i%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d",
+    if (snprintf(cmd, 512, "i%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d",
       edge_masks[0], edge_masks[1], edge_masks[2], edge_masks[3],
       address_masks[0], address_masks[1], address_masks[2], address_masks[3],
       priority_masks[0], priority_masks[1], priority_masks[2], priority_masks[3]
@@ -226,7 +226,7 @@ bool  vrpn_IDEA::send_move_request(vrpn_float64 location_in_steps, double scale)
   // Send the command to move the motor.  It may cause an interrupt which
   // will stop the motion along the way.
   long steps_64th = static_cast<long>(location_in_steps*64);
-  sprintf(cmd, "M%ld,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d",
+  snprintf(cmd, 512, "M%ld,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d",
     steps_64th,
     d_run_speed_tics_sec,
     scale_int(d_start_speed_tics_sec,scale),
@@ -455,7 +455,7 @@ int	vrpn_IDEA::reset(void)
           value |= 1 << (4 + 3);
           value |= (d_output_4_setting != 0) << (3);
         }
-        if (sprintf(cmd, "O%d", value) <= 0) {
+        if (snprintf(cmd, 512, "O%d", value) <= 0) {
           VRPN_MSG_ERROR("vrpn_IDEA::send_output(): Could not configure output command");
           status = STATUS_RESETTING;
           return -1;
@@ -696,7 +696,7 @@ int	vrpn_IDEA::reset(void)
         // Reset the drive count at the present location to the value set in the
 	// constructor.  We need to multiply by 64 to get into microticks.
 	long reset_location = static_cast<long>(64 * d_reset_location);
-	sprintf(cmd, "Z%ld", reset_location);
+	snprintf(cmd, 512, "Z%ld", reset_location);
         if (!send_command(cmd)) {
           fprintf(stderr,"vrpn_IDEA::reset(): Could not set position to 1280\n");
           return -1;
@@ -748,7 +748,7 @@ int vrpn_IDEA::get_report(void)
       // request for reading (probably dropped a character).
       if (d_buffer[0] != '`') {
 	char msg[256];
-	sprintf(msg, "Bad character (got %c, expected `), re-syncing", d_buffer[0]);
+	snprintf(msg, 256, "Bad character (got %c, expected `), re-syncing", d_buffer[0]);
 	VRPN_MSG_WARNING(msg);
         vrpn_SleepMsecs(10);
 	vrpn_flush_input_buffer(serial_fd);
@@ -899,7 +899,7 @@ int vrpn_IDEA::handle_request_message(void *userdata, vrpn_HANDLERPARAM p)
     // range of the ones we have.
     if ( (chan_num < 0) || (chan_num >= me->o_num_channel) ) {
       char msg[1024];
-      sprintf(msg,"vrpn_IDEA::handle_request_message(): Index out of bounds (%d of %d), value %lg\n",
+      snprintf(msg, 1024,"vrpn_IDEA::handle_request_message(): Index out of bounds (%d of %d), value %lg\n",
 	chan_num, me->num_channel, value);
       me->send_text_message(msg, me->d_timestamp, vrpn_TEXT_ERROR);
       return 0;
@@ -923,7 +923,7 @@ int vrpn_IDEA::handle_request_channels_message(void* userdata, vrpn_HANDLERPARAM
     vrpn_unbuffer(&bufptr, &pad);
     if (num > me->o_num_channel) {
       char msg[1024];
-      sprintf(msg,"vrpn_IDEA::handle_request_channels_message(): Index out of bounds (%d of %d), clipping\n",
+      snprintf(msg, 1024,"vrpn_IDEA::handle_request_channels_message(): Index out of bounds (%d of %d), clipping\n",
 	num, me->o_num_channel);
       me->send_text_message(msg, me->d_timestamp, vrpn_TEXT_ERROR);
       num = me->o_num_channel;
@@ -1014,7 +1014,7 @@ void	vrpn_IDEA::mainloop()
 	    }
 
 	    if ( vrpn_TimevalDuration(current_time,d_timestamp) > TIMEOUT_TIME_INTERVAL) {
-		    sprintf(errmsg,"Timeout, resetting... current_time=%ld:%ld, timestamp=%ld:%ld",
+		    snprintf(errmsg, 256,"Timeout, resetting... current_time=%ld:%ld, timestamp=%ld:%ld",
 					current_time.tv_sec, static_cast<long>(current_time.tv_usec),
 					d_timestamp.tv_sec, static_cast<long>(d_timestamp.tv_usec));
 		    VRPN_MSG_ERROR(errmsg);

@@ -1,4 +1,4 @@
-#include <stdio.h>  // for fprintf, stderr, sprintf
+#include <stdio.h>  // for fprintf, stderr, snprintf
 #include <string.h> // for NULL, strcpy, strlen, etc
 
 #include "vrpn_Connection.h"   // for vrpn_Connection, etc
@@ -127,9 +127,9 @@ void vrpn_SharedObject::bindConnection(vrpn_Connection *c)
 
     d_connection = c;
     c->addReference();
-    sprintf(buffer, "vrpn Shared server %.100s %.100s", d_typename, d_name);
+    snprintf(buffer, 256, "vrpn Shared server %.100s %.100s", d_typename, d_name);
     d_serverId = c->register_sender(buffer);
-    sprintf(buffer, "vrpn Shared peer %.100s %.100s", d_typename, d_name);
+    snprintf(buffer, 256, "vrpn Shared peer %.100s %.100s", d_typename, d_name);
     d_remoteId = c->register_sender(buffer);
     // d_updateFromServer_type = c->register_message_type
     //("vrpn_Shared update_from_server");

@@ -861,10 +861,10 @@ int vrpn_Log::setCompoundName(const char *name, int index)
         strncpy(newName.data(), name, dot - name);
         // Automatically NULL-terminated above.
     } else {
-        newName.assign(name, name + strlen(name));
+        strncpy(newName.data(), name, newName.size());
     }
     len = strlen(newName.data());
-    sprintf(newName.data() + len, "-%d", index);
+    snprintf(newName.data() + len, newName.size() - len, "-%d", index);
     if (dot) {
         strncat(newName.data(), dot, newName.size() - (strlen(newName.data())+1) );
     }
@@ -1652,7 +1652,7 @@ static int vrpn_getmyIP(char *myIPchar, unsigned maxlen,
             return -1;
         }
 
-        sprintf(myIPstring, "%u.%u.%u.%u",
+        snprintf(myIPstring, 100, "%u.%u.%u.%u",
                 ntohl(socket_name.sin_addr.s_addr) >> 24,
                 (ntohl(socket_name.sin_addr.s_addr) >> 16) & 0xff,
                 (ntohl(socket_name.sin_addr.s_addr) >> 8) & 0xff,
@@ -1695,7 +1695,7 @@ static int vrpn_getmyIP(char *myIPchar, unsigned maxlen,
         return -1;
     }
 #endif
-    sprintf(myIPstring, "%u.%u.%u.%u",
+    snprintf(myIPstring, 100, "%u.%u.%u.%u",
             (unsigned int)(unsigned char)host->h_addr_list[0][0],
             (unsigned int)(unsigned char)host->h_addr_list[0][1],
             (unsigned int)(unsigned char)host->h_addr_list[0][2],
@@ -2294,7 +2294,7 @@ static SOCKET vrpn_connect_udp_port(const char *machineName, int remotePort,
  * @param max_length The maximum length of the local_host buffer.
  * @param remote_host The name of the remote host.
  *
- * @return Returns -1 on getsockname() error, or the output of sprintf
+ * @return Returns -1 on getsockname() error, or the output of snprintf
  * building the local_host string.
  */
 static int get_local_socket_name(char *local_host, size_t max_length,
@@ -2323,7 +2323,7 @@ static int get_local_socket_name(char *local_host, size_t max_length,
 
     // NOTE NIC will be 0.0.0.0 if we listen on all NICs.
     char myIPstring[100];
-    int ret = sprintf(myIPstring, "%d.%d.%d.%d",
+    int ret = snprintf(myIPstring, 100, "%d.%d.%d.%d",
                       ntohl(udp_name.sin_addr.s_addr) >> 24,
                       (ntohl(udp_name.sin_addr.s_addr) >> 16) & 0xff,
                       (ntohl(udp_name.sin_addr.s_addr) >> 8) & 0xff,
@@ -2381,7 +2381,7 @@ int vrpn_udp_request_lob_packet(
         vrpn_closeSocket(udp_sock);
         return (-1);
     }
-    sprintf(msg, "%.100s %d", myIPchar, local_port);
+    snprintf(msg, 150, "%.100s %d", myIPchar, local_port);
     msglen = static_cast<vrpn_int32>(strlen(msg) +
                                      1); /* Include the terminating 0 char */
 
@@ -2593,7 +2593,7 @@ static int vrpn_start_server(const char *machine, char *server_name, char *args,
         if ((rsh_to_use = (char *)getenv("VRPN_RSH")) == NULL) {
             rsh_to_use = RSH;
         }
-        sprintf(command, "%.100s %.100s %.100s %.100s -client %.100s %d", rsh_to_use, machine,
+        snprintf(command, 600, "%.100s %.100s %.100s %.100s -client %.100s %d", rsh_to_use, machine,
                 server_name, args, myIPchar, PortNum);
         ret = system(command);
         if ((ret == 127) || (ret == -1)) {
@@ -2675,7 +2675,7 @@ int write_vrpn_cookie(char *buffer, size_t length, long remote_log_mode)
 {
     if (length < vrpn_cookie_size() + 1) return -1;
 
-    sprintf(buffer, "%.16s  %c", vrpn_MAGIC,
+    snprintf(buffer, length, "%.16s  %c", vrpn_MAGIC,
             static_cast<char>(remote_log_mode + '0'));
     return 0;
 }
@@ -5651,7 +5651,7 @@ int vrpn_Connection_IP::connect_to_client(const char *machine, int port)
     d_updateEndpoint = vrpn_TRUE;
 
     char msg[256];
-    sprintf(msg, "%.200s %d", machine, port);
+    snprintf(msg, 256, "%.200s %d", machine, port);
     printf("vrpn_Connection_IP::connect_to_client: "
            "Connection request received: %s\n",
            msg);
@@ -5839,7 +5839,7 @@ void vrpn_Connection_IP::server_check_for_incoming_connections(
         // client, and filling in the NIC that the udp request arrived on.
         char fromname[1024];
         unsigned long addr_num = ntohl(from.sin_addr.s_addr);
-        sprintf(fromname, "%lu.%lu.%lu.%lu", (addr_num) >> 24,
+        snprintf(fromname, 1024, "%lu.%lu.%lu.%lu", (addr_num) >> 24,
                 (addr_num >> 16) & 0xff, (addr_num >> 8) & 0xff,
                 addr_num & 0xff);
         printf("vrpn: Connection request received from %s: %s\n", fromname,

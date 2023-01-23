@@ -7,7 +7,7 @@
 //   g_ is the prefixe for global variables
 //   p_ is the prefixe for parameters
 
-#include <stdio.h>                      // for sprintf, printf
+#include <stdio.h>                      // for snprintf, printf
 
 #include "vrpn_Analog_5dt.h"
 #include "vrpn_BaseClass.h"             // for ::vrpn_TEXT_ERROR, etc
@@ -188,7 +188,7 @@ vrpn_5dt::reset (void)
       return -1;
     }
 
-    sprintf (l_errmsg, "vrpn_5dt: glove \"%.256s\"version %d.%d\n", &l_inbuf [16], l_inbuf [2], l_inbuf [3]);
+    snprintf (l_errmsg, 512, "vrpn_5dt: glove \"%.256s\"version %d.%d\n", &l_inbuf [16], l_inbuf [2], l_inbuf [3]);
     VRPN_MSG_INFO (l_errmsg);
 
     if (l_inbuf[4] & 1) {
@@ -463,7 +463,7 @@ void vrpn_5dt::mainloop ()
         struct timeval current_time;
         vrpn_gettimeofday (&current_time, NULL);
         if (vrpn_TimevalDuration (current_time, timestamp) > MAX_TIME_INTERVAL) {
-          sprintf (l_errmsg, "vrpn_5dt::mainloop: Timeout... current_time=%ld:%ld, timestamp=%ld:%ld",
+          snprintf (l_errmsg, 512, "vrpn_5dt::mainloop: Timeout... current_time=%ld:%ld, timestamp=%ld:%ld",
                    current_time.tv_sec,
                    static_cast<long> (current_time.tv_usec),
                    timestamp.tv_sec,

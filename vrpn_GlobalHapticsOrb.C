@@ -7,7 +7,7 @@
 // sent to Russ Taylor to help get a public-domain driver
 // written for the device.
 
-#include <stdio.h>                      // for perror, sprintf
+#include <stdio.h>                      // for perror, snprintf
 
 #include "vrpn_BaseClass.h"             // for ::vrpn_TEXT_ERROR
 #include "vrpn_GlobalHapticsOrb.h"
@@ -117,7 +117,7 @@ int	vrpn_GlobalHapticsOrb::reset(void)
 	}
 	if (inbuf[0] != 0xfc) {
 	  char	message[1024];
-	  sprintf(message, "vrpn_GlobalHapticsOrb::reset(): Bad response from Orb (%02X)", inbuf[0]);
+	  snprintf(message, 1024, "vrpn_GlobalHapticsOrb::reset(): Bad response from Orb (%02X)", inbuf[0]);
 	  send_text_message(message, d_timestamp, vrpn_TEXT_ERROR);
 	  return -1;
 	}

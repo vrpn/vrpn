@@ -74,7 +74,7 @@ vrpn_3DConnexion::vrpn_3DConnexion(vrpn_HidAcceptor *filter, unsigned num_button
     // try to autodetect the device
     char *fname = (char *)malloc(1000*sizeof(char));
     while(i < 256) {
-        sprintf(fname, "/dev/input/event%d", i++);
+        snprintf(fname, 1000, "/dev/input/event%d", i++);
         f = fopen(fname, "r+b");
         if(f) {
           // We got an active device.  Fill in its values and see if it

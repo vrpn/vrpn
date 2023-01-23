@@ -17,7 +17,7 @@
 // which the device echoes.
 
 
-#include <stdio.h>                      // for sprintf
+#include <stdio.h>                      // for snprintf
 #include <string.h>                     // for NULL, memcpy
 
 #include "vrpn_Analog_Radamec_SPI.h"
@@ -244,7 +244,7 @@ int	vrpn_Radamec_SPI::reset(void)
 	// Give it a reasonable amount of time to finish (2 seconds), then timeout
 
 	vrpn_flush_input_buffer(serial_fd);
-	sprintf((char *)command, "%c%c%c", 0xa4, 0xff, 0x02);
+	snprintf((char *)command, 128, "%c%c%c", 0xa4, 0xff, 0x02);
 	send_command((unsigned char *)command, 3);
 /* XXX commented out, since the response doesn't come, but the device still works.
 	timeout.tv_sec = 2;
@@ -260,7 +260,7 @@ int	vrpn_Radamec_SPI::reset(void)
 		return -1;
 	}
 	if (ret != 4) {
-		sprintf(errmsg,"reset: Got %d of %d expected characters for camera ID\n",ret, 4);
+		snprintf(errmsg, 256,"reset: Got %d of %d expected characters for camera ID\n",ret, 4);
 		VRPN_MSG_ERROR(errmsg);
 		return -1;
 	}
@@ -276,7 +276,7 @@ int	vrpn_Radamec_SPI::reset(void)
 	// Send the command to put the camera into stream mode and then read back
 	// to make sure we got a response.
 
-	sprintf((char *)command, "%c%c%c", 0xa4, _camera_id, 0x01);
+	snprintf((char *)command, 128, "%c%c%c", 0xa4, _camera_id, 0x01);
 	send_command(command, 3);
 /* XXX commented out, since the response doesn't come, but the device still works.
 	timeout.tv_sec = 2;
@@ -292,7 +292,7 @@ int	vrpn_Radamec_SPI::reset(void)
 		return -1;
 	}
 	if (ret != 4) {
-		sprintf(errmsg,"vrpn_Radamec_SPI reset: Got %d of %d expected characters\n",ret, 4);
+		snprintf(errmsg, 256,"vrpn_Radamec_SPI reset: Got %d of %d expected characters\n",ret, 4);
 		VRPN_MSG_ERROR(errmsg);
 		return -1;
 	}
@@ -482,7 +482,7 @@ int vrpn_Radamec_SPI::get_report(void)
 	 break;
 
      default:
-	sprintf(errmsg,"vrpn_Radamec_SPI: Unhandled command (0x%02x), resetting\n", _buffer[0]);
+	snprintf(errmsg, 256,"vrpn_Radamec_SPI: Unhandled command (0x%02x), resetting\n", _buffer[0]);
 	VRPN_MSG_ERROR(errmsg);
 	status = STATUS_RESETTING;
 	return 0;
@@ -548,7 +548,7 @@ void	vrpn_Radamec_SPI::mainloop()
 	    struct timeval current_time;
 	    vrpn_gettimeofday(&current_time, NULL);
 	    if ( vrpn_TimevalDuration(current_time,timestamp) > MAX_TIME_INTERVAL) {
-		    sprintf(errmsg,"Timeout... current_time=%ld:%ld, timestamp=%ld:%ld",
+		    snprintf(errmsg, 256,"Timeout... current_time=%ld:%ld, timestamp=%ld:%ld",
 					current_time.tv_sec, static_cast<long>(current_time.tv_usec),
 					timestamp.tv_sec, static_cast<long>(timestamp.tv_usec));
 		    VRPN_MSG_ERROR(errmsg);

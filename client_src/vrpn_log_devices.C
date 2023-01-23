@@ -71,7 +71,7 @@ int main(int argc, char *argv[])
     const char *serverName = argv[2];
     const char* firstObjectName = argv[3];
     char objectName[1024];
-    sprintf(objectName, "%.511s@%.511s", firstObjectName, serverName);
+    snprintf(objectName, 1024, "%.511s@%.511s", firstObjectName, serverName);
     vrpn_Connection* client_connection = vrpn_get_connection_by_name(objectName, logFileName);
     if (client_connection == NULL) {
       fprintf(stderr, "Could not open connection for logging");
@@ -82,7 +82,7 @@ int main(int argc, char *argv[])
     // we just created.  It doesn't matter what kind of object we construct, they
     // will all cause ping/pong messages to happen, so we pick trackers.
     for (int i = 3; i < argc; i++) {
-      sprintf(objectName, "%.511s@%.511s", argv[i], serverName);
+      snprintf(objectName, 1024, "%.511s@%.511s", argv[i], serverName);
       trackers[numTrackers++] = new vrpn_Tracker_Remote(objectName, client_connection);
     }
 

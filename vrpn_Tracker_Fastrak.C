@@ -13,7 +13,7 @@
 // including wands and styli.
 
 #include <ctype.h>                      // for isprint, isalpha
-#include <stdio.h>                      // for fprintf, sprintf, stderr, etc
+#include <stdio.h>                      // for fprintf, snprintf, stderr, etc
 #include <stdlib.h>                     // for atoi
 #include <string.h>                     // for strlen, strtok
 
@@ -112,7 +112,7 @@ int vrpn_Tracker_Fastrak::set_sensor_output_format(int sensor)
       buttonstring = is900_buttons[sensor] ? ",22" : "";
     }
     analogstring = is900_analogs[sensor] ? ",23" : "";
-    sprintf(outstring, "O%d,2,11%.3s%.3s%.3s,0\015", sensor+1, timestring,
+    snprintf(outstring, 64, "O%d,2,11%.3s%.3s%.3s,0\015", sensor+1, timestring,
 	buttonstring, analogstring);
     if (vrpn_write_characters(serial_fd, (const unsigned char *)outstring,
 	    strlen(outstring)) == (int)strlen(outstring)) {
@@ -214,7 +214,7 @@ void vrpn_Tracker_Fastrak::reset()
    }
    reset[resetLen++] = 'c'; // Put it into polled (not continuous) mode
 
-   sprintf(errmsg, "Resetting the tracker (attempt %d)", num_resets);
+   snprintf(errmsg, 512, "Resetting the tracker (attempt %d)", num_resets);
    VRPN_MSG_WARNING(errmsg);
    for (i = 0; i < resetLen; i++) {
 	if (vrpn_write_characters(serial_fd, &reset[i], 1) == 1) {
@@ -243,7 +243,7 @@ void vrpn_Tracker_Fastrak::reset()
    vrpn_SleepMsecs(1000.0*2);
    unsigned char scrap[80];
    if ( (ret = vrpn_read_available_characters(serial_fd, scrap, 80)) != 0) {
-     sprintf(errmsg,"Got >=%d characters after reset",ret);
+     snprintf(errmsg, 512,"Got >=%d characters after reset",ret);
      VRPN_MSG_WARNING(errmsg);
      for (i = 0; i < ret; i++) {
       	if (isprint(scrap[i])) {
@@ -311,7 +311,7 @@ void vrpn_Tracker_Fastrak::reset()
 
    if (really_fastrak) {
       char outstring[64];
-      sprintf(outstring, "e1,0\r");
+      snprintf(outstring, 64, "e1,0\r");
       if (vrpn_write_characters(serial_fd, (const unsigned char *)outstring,
                                 strlen(outstring)) == (int)strlen(outstring)) {
         vrpn_SleepMsecs(50);   // Sleep for a bit to let command run
@@ -377,7 +377,7 @@ void vrpn_Tracker_Fastrak::reset()
 			fprintf(stderr,"   ...sleeping %d seconds\n",seconds_to_wait);
 			vrpn_SleepMsecs(1000.0*seconds_to_wait);
 		} else {	// This is a command line, send it
-			sprintf(string_to_send, "%.2040s\015", next_line);
+			snprintf(string_to_send, sizeof(add_reset_cmd) + 1, "%.2040s\015", next_line);
 			fprintf(stderr, "   ...sending command: %s\n", string_to_send);
 			vrpn_write_characters(serial_fd,
 				(const unsigned char *)string_to_send,strlen(string_to_send));
@@ -475,7 +475,7 @@ int vrpn_Tracker_Fastrak::get_report(void)
       // in Syncing mode so that we will try again next time through.
       // Also, flush the buffer so that it won't take as long to catch up.
       if ( buffer[0] != '0') {
-      	sprintf(errmsg,"While syncing (looking for '0', "
+      	snprintf(errmsg, 512,"While syncing (looking for '0', "
 		"got '%c')", buffer[0]);
 	VRPN_MSG_INFO(errmsg);
 	vrpn_flush_input_buffer(serial_fd);
@@ -510,7 +510,7 @@ int vrpn_Tracker_Fastrak::get_report(void)
       d_sensor = buffer[1] - '1';	// Convert ASCII 1 to sensor 0 and so on.
       if ( (d_sensor < 0) || (d_sensor >= num_stations) ) {
 	   status = vrpn_TRACKER_SYNCING;
-      	   sprintf(errmsg,"Bad sensor # (%d) in record, re-syncing", d_sensor);
+      	   snprintf(errmsg, 512,"Bad sensor # (%d) in record, re-syncing", d_sensor);
 	   VRPN_MSG_INFO(errmsg);
 	   vrpn_flush_input_buffer(serial_fd);
 	   return 0;

@@ -14,6 +14,11 @@
 
 struct timeval;
 
+// Turn off warnings for deprecated calls when compiling on Microsoft Visual Studio
+#ifdef _MSC_VER
+#pragma warning(disable : 4995 4996)
+#endif
+
 /// This is the list of states that a connection can be in
 /// (possible values for status).  doing_okay() returns VRPN_TRUE
 /// for connections > BROKEN.

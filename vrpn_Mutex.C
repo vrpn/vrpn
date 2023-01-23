@@ -1,4 +1,4 @@
-#include <stdio.h>  // for fprintf, stderr, sprintf
+#include <stdio.h>  // for fprintf, stderr, snprintf
 #include <string.h> // for NULL, memcpy, strlen, etc
 
 #include "vrpn_Connection.h" // for vrpn_Connection, etc
@@ -800,7 +800,7 @@ vrpn_PeerMutex::vrpn_PeerMutex(const char *name, int port,
     }
     // XXX Won't work with non-IP connections (MPI, for example)
     char con_name[512];
-    sprintf(con_name, "%.450s:%d", NICaddress, port);
+    snprintf(con_name, 512, "%.450s:%d", NICaddress, port);
     d_server = vrpn_create_server_connection(con_name);
     if (d_server) {
         d_server->addReference();

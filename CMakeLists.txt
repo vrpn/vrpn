@@ -145,6 +145,7 @@ if(WIN32)
 		endif()
 	endif()
 	add_definitions("-D_WIN32_WINNT=${WIN_MIN_VER}" "-DNTDDI_VERSION=${WIN_MIN_VER}0000")
+	ADD_DEFINITIONS( -D_CRT_SECURE_NO_WARNINGS )
 endif()
 
 #-----------------------------------------------------------------------------

@@ -45,7 +45,7 @@ extern "C" {
 #else
 typedef	vrpn_int32	int32;
 #endif
-#include <stdio.h>                      // for fprintf, sprintf, stderr, etc
+#include <stdio.h>                      // for fprintf, snprintf, stderr, etc
 
 //  Constants used by this class
 const vrpn_int32 vrpn_Button_NI_DIO24::vrpn_Button_NI_DIO24_CHANNEL_MAX = 
@@ -74,7 +74,7 @@ vrpn_Button_Filter (name, c)
 
     //  Initialize the DAQCard-DIO-24 for each of the ports used
     //  Define various names the library needs
-    sprintf(portName,"Dev1/line0:%d", num_buttons-1) ;
+    snprintf(portName, 127,"Dev1/line0:%d", num_buttons-1) ;
 
     /*********************************************/
     // DAQmx Configure Code
