@@ -463,7 +463,7 @@ void vrpn_5dt::mainloop ()
         struct timeval current_time;
         vrpn_gettimeofday (&current_time, NULL);
         if (vrpn_TimevalDuration (current_time, timestamp) > MAX_TIME_INTERVAL) {
-          snprintf (l_errmsg, 512, "vrpn_5dt::mainloop: Timeout... current_time=%ld:%ld, timestamp=%ld:%ld",
+          snprintf (l_errmsg, 256, "vrpn_5dt::mainloop: Timeout... current_time=%ld:%ld, timestamp=%ld:%ld",
                    current_time.tv_sec,
                    static_cast<long> (current_time.tv_usec),
                    timestamp.tv_sec,
