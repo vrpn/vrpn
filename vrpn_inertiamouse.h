@@ -65,14 +65,6 @@ public: // ctors, dtor
         out_[0] = 0.0;
         out_[1] = 0.0;
     }
-    lowpass (lowpass const& o)
-    {
-        in_[0] = o.in_[0];
-        in_[1] = o.in_[1];
-        out_[0] = o.out_[0];
-        out_[1] = o.out_[1];
-    }
-    ~lowpass () throw () {}
 public: // methods
     double filter (double s)
     {
