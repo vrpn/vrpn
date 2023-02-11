@@ -100,9 +100,21 @@ vrpn_FunctionGenerator_function_script( const vrpn_FunctionGenerator_function_sc
   : script(NULL)
 {
   try {
-    this->script = new char[strlen(s.script) + 1];
-    vrpn_strncpynull(this->script, s.script, strlen(s.script) + 1);
+    script = new char[strlen(s.script) + 1];
+    vrpn_strncpynull(script, s.script, strlen(s.script) + 1);
   } catch (...) {}
+}
+
+vrpn_FunctionGenerator_function_script &vrpn_FunctionGenerator_function_script::operator =(
+        const vrpn_FunctionGenerator_function_script& s)
+{
+        delete[] script;
+        try {
+                script = new char[strlen(s.script) + 1];
+                vrpn_strncpynull(script, s.script, strlen(s.script) + 1);
+        }
+        catch (...) {}
+        return *this;
 }
 
 

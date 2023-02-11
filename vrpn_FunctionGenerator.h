@@ -107,6 +107,7 @@ public:
 	vrpn_FunctionGenerator_function_script( );
 	vrpn_FunctionGenerator_function_script( const char* script );
 	vrpn_FunctionGenerator_function_script( const vrpn_FunctionGenerator_function_script& );
+        vrpn_FunctionGenerator_function_script& operator =(const vrpn_FunctionGenerator_function_script& s);
 	virtual ~vrpn_FunctionGenerator_function_script();
 
 	virtual vrpn_float32 generateValues( vrpn_float32* buf, vrpn_uint32 nValues,
@@ -129,7 +130,6 @@ public:
 protected:
 	FunctionCode getFunctionCode( ) const {  return FUNCTION_SCRIPT;  }
 	char* script;
-
 };
 
 
