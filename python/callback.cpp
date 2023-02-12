@@ -40,6 +40,14 @@ namespace vrpn_python {
   callbackEntry::~callbackEntry() {
   }
 
+  callbackEntry& callbackEntry::operator =(const callbackEntry& other)
+  {
+    d_userdata = other.d_userdata;
+    d_callback = other.d_callback;
+    d_counterReference = 0;
+    return *this;
+  }
+
   bool callbackEntry::operator == (const callbackEntry &other) const {
     return ((other.d_userdata == d_userdata) && (other.d_callback == d_callback));
   }
