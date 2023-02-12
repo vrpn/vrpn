@@ -450,6 +450,7 @@ public:
     {
       // Copy all elements from the other list.  XXX Side effect, this inverts
       // the order
+      CHANGELIST_ENTRY *current, *next;
       current = from.d_change_list;
       while (current != NULL) {
         register_handler(current->userdata, current->handler);
