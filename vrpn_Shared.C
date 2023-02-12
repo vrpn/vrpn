@@ -1283,5 +1283,18 @@ bool vrpn_test_vrpn_vector(void)
     }
   }
 
+  // Test operator =
+  {
+    vrpn_vector<vrpn_uint32> v0, v1;
+    v0.push_back(1);
+    v0.push_back(2);
+    v1 = v0;
+    v1[0] = 3;
+    if ((v1[1] != 2) || (v0[0] != 1)) {
+      fprintf(stderr, "vrpn_test_vrpn_vector(): operator = failed (%d, %d)\n", v0[0], v1[1]);
+      return false;
+    }
+  }
+
   return true;
 }

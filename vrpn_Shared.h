@@ -575,6 +575,16 @@ public:
     delete [] m_data;
     m_size = m_allocated = 0;
   }
+  vrpn_vector &operator =(const vrpn_vector& from)
+  {
+    delete[] m_data;
+    m_size = m_allocated = from.size();
+    m_data = new T[m_size];
+    for (size_t i = 0; i < m_size; i++) {
+      m_data[i] = from.m_data[i];
+    }
+    return *this;
+  }
   T* data() { return m_data; }
   size_type size() const { return m_size; }
   bool empty() const { return m_size == 0; }
