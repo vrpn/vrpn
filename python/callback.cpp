@@ -15,6 +15,7 @@ namespace vrpn_python {
     callbackEntry(const callbackEntry &other);
     ~callbackEntry();
 
+    callbackEntry& operator =(const callbackEntry& other);
     bool operator == (const callbackEntry &other) const;
     bool operator < (const callbackEntry &other) const;
     bool operator > (const callbackEntry &other) const;
