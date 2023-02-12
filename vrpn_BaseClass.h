@@ -209,12 +209,6 @@ public:
         {
         }
 
-        SendTextMessageBoundCall(SendTextMessageBoundCall const &other)
-            : _p(other._p)
-            , _severity(other._severity)
-        {
-        }
-
         int operator()(const char *msg) const
         {
             struct timeval timestamp;
