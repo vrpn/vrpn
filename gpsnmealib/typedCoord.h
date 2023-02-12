@@ -106,7 +106,6 @@ class TypedCoord
 public:
   TypedCoord () {m_lat = 0; m_lon = 0;}
   virtual ~TypedCoord () {}
-  TypedCoord& operator= (const TypedCoord& other);
   void calculateDistAndBearing (const TypedCoord& coord, double& dist,
                                 double& dirStartToEnd, double& bearingEndToStart) const;
   virtual const std::string& createCoordString (std::string& coordString) const

@@ -30,18 +30,6 @@ static double mod (double num, double divisor)
 }
 
 /////////////////////////////////////////////////////////////////////////////
-// TypedCoord operators
-
-TypedCoord& TypedCoord::operator= (const TypedCoord& other)
-{
-  double lat, lon;
-  other.getLatLonCoord (lat, lon);
-  setLatLonCoord (lat, lon);
-  return *this;
-}
-
-
-/////////////////////////////////////////////////////////////////////////////
 // TypedCoord members
 
 void TypedCoord::calculateDistAndBearing (const TypedCoord& coord,
