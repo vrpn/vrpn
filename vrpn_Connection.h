@@ -4,7 +4,7 @@
 #include <stdio.h> // for NULL, snprintf
 
 #include "vrpn_Configure.h" // for VRPN_API, VRPN_CALLBACK, etc
-#include "vrpn_Shared.h"    // for SOCKET, timeval
+#include "vrpn_Shared.h"    // for vrpn_SOCKET, timeval
 #include "vrpn_Types.h"     // for vrpn_int32, vrpn_uint32, etc
 #include "vrpn_EndpointContainer.h"
 
@@ -495,13 +495,13 @@ public:
     ///    the code split the functions between Endpoint and Connection
     ///    protected:
 
-    SOCKET d_tcpSocket;
+    vrpn_SOCKET d_tcpSocket;
 
     /// This section deals with when a client connection is trying to
     /// establish (or re-establish) a connection with its server. It
     /// keeps track of what we need to know to make this happen.
 
-    SOCKET d_tcpListenSocket;
+    vrpn_SOCKET d_tcpListenSocket;
     int d_tcpListenPort;
     ///< Socket and port that the client listens on
     ///< when lobbing datagrams at the server and
@@ -509,7 +509,7 @@ public:
 
     /// Socket to use to lob UDP requests asking for the server to
     /// call us back.
-    SOCKET d_udpLobSocket;
+    vrpn_SOCKET d_udpLobSocket;
 
     char *d_remote_machine_name;    ///< Machine to call
     int d_remote_port_number;       ///< Port to connect to on remote machine
@@ -525,8 +525,8 @@ protected:
     int getOneTCPMessage(int fd, char *buf, size_t buflen);
     int getOneUDPMessage(char *buf, size_t buflen);
 
-    SOCKET d_udpOutboundSocket;
-    SOCKET d_udpInboundSocket;
+    vrpn_SOCKET d_udpOutboundSocket;
+    vrpn_SOCKET d_udpInboundSocket;
     ///< Inbound unreliable messages come here.
     ///< Need one for each due to different
     ///< clock synchronization for each; we
@@ -893,8 +893,8 @@ protected:
 
     /// @name Only used for a vrpn_Connection that awaits incoming connections
     /// @{
-    SOCKET listen_udp_sock; ///< UDP Connect requests come here
-    SOCKET listen_tcp_sock; ///< TCP Connection requests come here
+    vrpn_SOCKET listen_udp_sock; ///< UDP Connect requests come here
+    vrpn_SOCKET listen_tcp_sock; ///< TCP Connection requests come here
     /// @}
 
     /// Routines that handle system messages
@@ -1107,8 +1107,8 @@ int VRPN_API vrpn_noint_select(int width, fd_set *readfds, fd_set *writefds,
                                fd_set *exceptfds, struct timeval *timeout);
 #else  /* winsock sockets */
 int VRPN_API
-vrpn_noint_block_write(SOCKET outsock, char *buffer, size_t length);
-int VRPN_API vrpn_noint_block_read(SOCKET insock, char *buffer, size_t length);
+vrpn_noint_block_write(vrpn_SOCKET outsock, char *buffer, size_t length);
+int VRPN_API vrpn_noint_block_read(vrpn_SOCKET insock, char *buffer, size_t length);
 #endif /* VRPN_USE_WINSOCK_SOCKETS */
        /// @}
 

@@ -49,12 +49,7 @@ private:
 	bool _network_init(int udp_port);
 	int _network_receive(void *buffer, int maxlen, int tout_us);
 	void _network_release();
-#ifdef _WIN32
-    typedef SOCKET socket_type;
-#else
-    typedef int socket_type;
-#endif
-	socket_type _socket;
+	vrpn_SOCKET _socket;
 	enum {
 		_NETWORK_BUFFER_SIZE = 2000,
 

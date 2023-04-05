@@ -45,12 +45,13 @@
 #if defined(_WIN32) &&                                                         \
     (!defined(__CYGWIN__) || defined(VRPN_CYGWIN_USES_WINSOCK_SOCKETS))
 #define VRPN_USE_WINSOCK_SOCKETS
+#define vrpn_SOCKET SOCKET
 #endif
 
 #ifndef VRPN_USE_WINSOCK_SOCKETS
 // On Win32, this constant is defined as ~0 (sockets are unsigned ints)
 #define INVALID_SOCKET -1
-#define SOCKET int
+#define vrpn_SOCKET int
 #endif
 
 #if !(defined(_WIN32) && defined(VRPN_USE_WINSOCK_SOCKETS))

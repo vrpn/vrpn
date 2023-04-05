@@ -339,7 +339,7 @@ bool vrpn_Tracker_JsonNet::_network_init(int udp_port)
 
 #ifdef _WIN32
 	{
-		// Create a SOCKET for connecting to server
+		// Create a vrpn_SOCKET for connecting to server
 		_socket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 		if (_socket == INVALID_SOCKET) {
 		    printf("socket failed with error: %ld\n", WSAGetLastError());

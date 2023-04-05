@@ -78,11 +78,7 @@ class VRPN_API vrpn_Tracker_DTrack : public vrpn_Tracker, public vrpn_Button_Fil
   
  public:
 
-#ifdef _WIN32
-        typedef SOCKET socket_type;
-#else
-        typedef int socket_type;
-#endif
+  typedef vrpn_SOCKET socket_type;
 
 // Constructor:
 // name (i): device name

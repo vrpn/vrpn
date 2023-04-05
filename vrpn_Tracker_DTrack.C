@@ -1263,7 +1263,7 @@ static vrpn_Tracker_DTrack::socket_type udp_init(unsigned short port)
 #endif
 #ifdef OS_WIN
 	{
-		SOCKET wsock;
+		vrpn_SOCKET wsock;
 		
 		wsock = socket(PF_INET, SOCK_DGRAM, 0);
 

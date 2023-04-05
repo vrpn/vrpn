@@ -1606,7 +1606,7 @@ vrpn_ConnectionManager::vrpn_ConnectionManager(void)
  * so that the remote host can connect back even if it can't resolve the
  * DNS name of this host.  This is especially useful at conferences, where
  * DNS may not even be running.
- *   If the NIC_IP name is passed in as NULL but the SOCKET passed in is
+ *   If the NIC_IP name is passed in as NULL but the vrpn_SOCKET passed in is
  * valid, then look up the address associated with that socket; this is so
  * that when a machine has multiple NICs, it will send the outgoing request
  * for UDP connections to the same place that its TCP connection is on.
@@ -1614,7 +1614,7 @@ vrpn_ConnectionManager::vrpn_ConnectionManager(void)
 
 static int vrpn_getmyIP(char *myIPchar, unsigned maxlen,
                         const char *NIC_IP = NULL,
-                        SOCKET incoming_socket = INVALID_SOCKET)
+  vrpn_SOCKET incoming_socket = INVALID_SOCKET)
 {
     char myname[100];     // Host name of this host
     struct hostent *host; // Encoded host IP address, etc.
@@ -1640,7 +1640,7 @@ static int vrpn_getmyIP(char *myIPchar, unsigned maxlen,
         return 0;
     }
 
-    // If we have a valid specified SOCKET, then look up its address and
+    // If we have a valid specified vrpn_SOCKET, then look up its address and
     // return it.
     if (incoming_socket != INVALID_SOCKET) {
         struct sockaddr_in socket_name;
@@ -1894,7 +1894,7 @@ int vrpn_noint_block_read(int infile, char buffer[], size_t length)
 
 #else /* winsock sockets */
 
-int vrpn_noint_block_write(SOCKET outsock, char *buffer, size_t length)
+int vrpn_noint_block_write(vrpn_SOCKET outsock, char *buffer, size_t length)
 {
     int nwritten;
     size_t sofar = 0;
@@ -1913,7 +1913,7 @@ int vrpn_noint_block_write(SOCKET outsock, char *buffer, size_t length)
     return static_cast<int>(sofar); /* All bytes written */
 }
 
-int vrpn_noint_block_read(SOCKET insock, char *buffer, size_t length)
+int vrpn_noint_block_read(vrpn_SOCKET insock, char *buffer, size_t length)
 {
     int nread;
     size_t sofar = 0;
@@ -1958,7 +1958,7 @@ int vrpn_noint_block_read(SOCKET insock, char *buffer, size_t length)
  * of characters read before timeout (in the case of a timeout).
  */
 
-int vrpn_noint_block_read_timeout(SOCKET infile, char buffer[], size_t length,
+int vrpn_noint_block_read_timeout(vrpn_SOCKET infile, char buffer[], size_t length,
                                   struct timeval *timeout)
 { 
     int ret; /* Return value from the read() */
@@ -2068,7 +2068,7 @@ int vrpn_noint_block_read_timeout(SOCKET infile, char buffer[], size_t length,
  * socket to open;  NULL selects the default NIC.
  */
 
-static SOCKET open_socket(int type, unsigned short *portno,
+static vrpn_SOCKET open_socket(int type, unsigned short *portno,
                           const char *IPaddress)
 {
     struct sockaddr_in name;
@@ -2076,7 +2076,7 @@ static SOCKET open_socket(int type, unsigned short *portno,
     int namelen;
 
     // create an Internet socket of the appropriate type
-    SOCKET sock = socket(AF_INET, type, 0);
+    vrpn_SOCKET sock = socket(AF_INET, type, 0);
     if (sock == INVALID_SOCKET) {
         fprintf(stderr, "open_socket: can't open socket.\n");
 #ifndef _WIN32_WCE
@@ -2175,7 +2175,7 @@ static SOCKET open_socket(int type, unsigned short *portno,
  * Create a UDP socket and bind it to its local address.
  */
 
-static SOCKET open_udp_socket(unsigned short *portno, const char *IPaddress)
+static vrpn_SOCKET open_udp_socket(unsigned short *portno, const char *IPaddress)
 {
     return open_socket(SOCK_DGRAM, portno, IPaddress);
 }
@@ -2184,7 +2184,7 @@ static SOCKET open_udp_socket(unsigned short *portno, const char *IPaddress)
  * Create a TCP socket and bind it to its local address.
  */
 
-static SOCKET open_tcp_socket(unsigned short *portno = NULL,
+static vrpn_SOCKET open_tcp_socket(unsigned short *portno = NULL,
                               const char *NIC_IP = NULL)
 {
     return open_socket(SOCK_STREAM, portno, NIC_IP);
@@ -2194,10 +2194,10 @@ static SOCKET open_tcp_socket(unsigned short *portno = NULL,
  * Create a UDP socket and connect it to a specified port.
  */
 
-static SOCKET vrpn_connect_udp_port(const char *machineName, int remotePort,
+static vrpn_SOCKET vrpn_connect_udp_port(const char *machineName, int remotePort,
                                     const char *NIC_IP = NULL)
 {
-    SOCKET udp_socket;
+    vrpn_SOCKET udp_socket;
     struct sockaddr_in udp_name;
     struct hostent *remoteHost;
     int udp_namelen;
@@ -2304,7 +2304,7 @@ static int get_local_socket_name(char *local_host, size_t max_length,
     struct sockaddr_in udp_name;
     int udp_namelen = sizeof(udp_name);
 
-    SOCKET udp_socket = vrpn_connect_udp_port(remote_host, remote_port, NULL);
+    vrpn_SOCKET udp_socket = vrpn_connect_udp_port(remote_host, remote_port, NULL);
     if (udp_socket == INVALID_SOCKET) {
         fprintf(stderr,
                 "get_local_socket_name: cannot connect_udp_port to %s.\n",
@@ -2358,7 +2358,7 @@ static int get_local_socket_name(char *local_host, size_t max_length,
  */
 
 int vrpn_udp_request_lob_packet(
-    SOCKET udp_sock,      // Socket to use to send
+    vrpn_SOCKET udp_sock, // Socket to use to send
     const char *,         // Name of the machine to call
     const int,            // UDP port on remote machine
     const int local_port, // TCP port on this machine
@@ -2405,7 +2405,7 @@ int vrpn_udp_request_lob_packet(
  * the default value is NULL, which uses the default NIC.
  */
 
-static int vrpn_get_a_TCP_socket(SOCKET *listen_sock, int *listen_portnum,
+static int vrpn_get_a_TCP_socket(vrpn_SOCKET*listen_sock, int *listen_portnum,
                                  const char *NIC_IP = NULL)
 {
     struct sockaddr_in listen_name; /* The listen socket binding name */
@@ -2455,7 +2455,7 @@ static int vrpn_get_a_TCP_socket(SOCKET *listen_sock, int *listen_portnum,
  * it returns 0. If there is an error along the way, it returns -1.
  */
 
-static int vrpn_poll_for_accept(SOCKET listen_sock, SOCKET *accept_sock,
+static int vrpn_poll_for_accept(vrpn_SOCKET listen_sock, vrpn_SOCKET*accept_sock,
                                 double timeout = 0.0)
 {
     fd_set rfds;
@@ -4640,7 +4640,7 @@ int vrpn_Endpoint::pack_sender_description(vrpn_int32 which)
                         vrpn_CONNECTION_RELIABLE);
 }
 
-static int flush_udp_socket(SOCKET fd)
+static int flush_udp_socket(vrpn_SOCKET fd)
 {
     timeval localTimeout;
     fd_set readfds, exceptfds;
@@ -5978,7 +5978,7 @@ void vrpn_Connection_IP::server_check_for_incoming_connections(
     // the listen socket.  This is used when the client needs to punch through
     // a firewall.
 
-    SOCKET newSocket;
+    vrpn_SOCKET newSocket;
     retval = vrpn_poll_for_accept(listen_tcp_sock, &newSocket);
 
     if (retval == -1) {
