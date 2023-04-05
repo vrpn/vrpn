@@ -345,10 +345,12 @@ option_requires(VRPN_BUILD_PYTHON
 	SWIG_FOUND
 	PYTHON2_FOUND)
 
+if (NOT APPLE)
 option_requires(VRPN_BUILD_PYTHON_HANDCODED_2X
 	"Build VRPN Python handcoded bindings for Python 2.x"
 	${PYTHON_DEFAULT_OFF}
 	PYTHON2_FOUND)
+endif (not APPLE)
 
 option_requires(VRPN_BUILD_PYTHON_HANDCODED_3X
 	"Build VRPN Python handcoded bindings for Python 3.x"
