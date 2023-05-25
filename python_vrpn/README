@@ -7,8 +7,8 @@ What you need :
 - SWIG 1.3.34
 
 Basic installation :
+Compile VRPN in the source directory using the built-in Makefile.
 cd vrpn
-tar xzvf python_vrpn.tar.gz
 cd python_vrpn
 edit Makefile.python and set the environment according to your setup
 make vrpn-python
