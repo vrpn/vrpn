@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.12)
+cmake_minimum_required(VERSION 3.12.1)
 project(VRPN)
 
 #-----------------------------------------------------------------------------
@@ -302,19 +302,15 @@ endif()
 
 # Passing just the major version works with as desired multi-python-capable find module such
 # as in latest CMake (2.8.9)
-find_package(PythonLibs ${_VRPN_PYTHON_VERSIONSEARCH} ${QUIET_IF_SUBPROJECT})
-if(PYTHONLIBS_FOUND)
-	if(PYTHONLIBS_VERSION_STRING)
+find_package(Python ${_VRPN_PYTHON_VERSIONSEARCH} COMPONENTS Development ${QUIET_IF_SUBPROJECT})
+if(Python_Development_FOUND)
+	if(Python_VERSION)
 		string(SUBSTRING
-			${PYTHONLIBS_VERSION_STRING}
+			${Python_VERSION}
 			0
 			1
 			vrpn_python_majorver)
 		set(PYTHON${vrpn_python_majorver}_FOUND ON)
-	elseif(PYTHON_LIBRARY MATCHES "python([23])")
-		set(PYTHON${CMAKE_MATCH_1}_FOUND ON)
-	elseif(_VRPN_PYTHON_VERSIONSEARCH)
-		set(PYTHON${_VRPN_PYTHON_VERSIONSEARCH}_FOUND ON)
 	else()
 		message(STATUS
 			"Warning: found python but couldn't determine which version. Please set either VRPN_PYTHON_IS_3 or VRPN_PYTHON_IS_2")
