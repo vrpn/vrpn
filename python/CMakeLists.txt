@@ -1,9 +1,9 @@
 
-if(PYTHONLIBS_FOUND AND (VRPN_BUILD_PYTHON_HANDCODED_2X OR VRPN_BUILD_PYTHON_HANDCODED_3X))
+if(Python_Development_FOUND AND (VRPN_BUILD_PYTHON_HANDCODED_2X OR VRPN_BUILD_PYTHON_HANDCODED_3X))
 	include_directories(${PYTHON_INCLUDE_DIRS} "${CMAKE_CURRENT_SOURCE_DIR}")
 
 	set(PYTHONVERSIONDIR python)
-	if(PYTHON_LIBRARY MATCHES "python([23].[0-9]+)")
+	if(Python_VERSION MATCHES "python([23].[0-9]+)")
 		set(PYTHONVERSIONDIR "python${CMAKE_MATCH_1}/")
 	endif()
 
@@ -12,7 +12,7 @@ if(PYTHONLIBS_FOUND AND (VRPN_BUILD_PYTHON_HANDCODED_2X OR VRPN_BUILD_PYTHON_HAN
 	else()
 		add_definitions(-DCALLBACK_CALL=)
 	endif()
-	python_add_module(vrpn-python
+	python_add_library(vrpn-python MODULE
 		Base.cpp
 		Connection.cpp
 		Device.cpp
@@ -45,7 +45,7 @@ if(PYTHONLIBS_FOUND AND (VRPN_BUILD_PYTHON_HANDCODED_2X OR VRPN_BUILD_PYTHON_HAN
 		sender/include/Text_Sender.hpp
 		sender/sender.cpp
 		tools.cpp)
-	target_link_libraries(vrpn-python ${PYTHON_LIBRARIES} vrpnserver)
+	target_link_libraries(vrpn-python PRIVATE ${PYTHON_LIBRARIES} vrpnserver)
 	set_target_properties(vrpn-python
 		PROPERTIES
 		FOLDER "Python Bindings"
