@@ -25,10 +25,12 @@
 
 #if defined(VRPN_USE_WINSOCK_SOCKETS)
 /* from HP-UX */
+#ifndef _TIMESPEC_DEFINED
 struct timezone {
 	int tz_minuteswest; /* minutes west of Greenwich */
 	int tz_dsttime;     /* type of dst correction */
 };
+#endif
 #endif
 
 // perform normalization of a timeval
