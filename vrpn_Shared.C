@@ -24,13 +24,15 @@
     if (a == -1) return -1
 
 #if defined(VRPN_USE_WINSOCK_SOCKETS)
-/* from HP-UX */
-#ifndef _TIMESPEC_DEFINED
+/* from HP-UX */\
+/* minGW guards the definition, so we do so here as well.
+minGW declares more, so we are not defining _TIMEZONE_DEFINED. */
+#ifndef _TIMEZONE_DEFINED /* also in sys/time.h */
 struct timezone {
 	int tz_minuteswest; /* minutes west of Greenwich */
 	int tz_dsttime;     /* type of dst correction */
 };
-#endif
+#endif /* _TIMEZONE_DEFINED */
 #endif
 
 // perform normalization of a timeval
