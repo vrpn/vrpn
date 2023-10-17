@@ -74,5 +74,37 @@ if(LIBFREESPACE_FOUND)
 	mark_as_advanced(LIBFREESPACE_ROOT_DIR)
 endif()
 
+# Get the version number of the Freespace library
+set(_libfreespace_version_srcfile "${CMAKE_BINARY_DIR}/freespace_version.cpp")
+file(WRITE "${_libfreespace_version_srcfile}"
+"
+#include <freespace/freespace.h>
+#include <algorithm>
+#include <iostream>
+#include <string>
+
+int main() {
+	std::string version = freespace_version();
+	std::replace(version.begin(), version.end(), '.', ';');
+	std::cout << version << std::flush;
+	return 0;
+}
+"
+)
+try_run(_libfreespace_run_result _libfreespace_compile_result
+	${CMAKE_BINARY_DIR}
+	${_libfreespace_version_srcfile}
+	CMAKE_FLAGS "-DINCLUDE_DIRECTORIES=${LIBFREESPACE_INCLUDE_DIRS}"
+	LINK_LIBRARIES ${LIBFREESPACE_LIBRARIES}
+	#COMPILE_OUTPUT_VARIABLE _libfreespace_compiler_output
+	RUN_OUTPUT_VARIABLE LIBFREESPACE_VERSION)
+
+#message(STATUS "libfreespace compiler output = ${_libfreespace_compiler_output}")
+list(APPEND LIBFREESPACE_VERSION 0 0 0) # in case one or more version segments are unused
+list(GET LIBFREESPACE_VERSION 0 LIBFREESPACE_MAJOR_VERSION)
+list(GET LIBFREESPACE_VERSION 1 LIBFREESPACE_MINOR_VERSION)
+list(GET LIBFREESPACE_VERSION 2 LIBFREESPACE_PATCH_VERSION)
+
 mark_as_advanced(LIBFREESPACE_INCLUDE_DIR
 	LIBFREESPACE_LIBRARY)
+
