@@ -69,8 +69,8 @@ public:
         d_compression = NONE;
     };
 
-    cName name;  //< Name of the data set stored in this channel
-    cName units; //< Units for the data set stored in this channel
+    vrpn_CNAME name;  //< Name of the data set stored in this channel
+    vrpn_CNAME units; //< Units for the data set stored in this channel
     vrpn_float32 minVal,
         maxVal; //< Range of possible values for pixels in this channel
     vrpn_float32 offset,

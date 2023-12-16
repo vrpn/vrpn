@@ -325,7 +325,7 @@ public:
     void clear(void);
     ///< Deletes every entry in the table.
 
-    vrpn_int32 addRemoteEntry(cName name, vrpn_int32 remote_id,
+    vrpn_int32 addRemoteEntry(vrpn_CNAME name, vrpn_int32 remote_id,
                               vrpn_int32 local_id);
     ///< Adds a name and local ID to the table, returning its
     ///< remote ID.  This exposes an UGLY hack in the VRPN internals -
@@ -381,7 +381,7 @@ vrpn_int32 vrpn_TranslationTable::mapToLocalID(vrpn_int32 remote_id) const
     return d_entry[remote_id].local_id;
 }
 
-vrpn_int32 vrpn_TranslationTable::addRemoteEntry(cName name,
+vrpn_int32 vrpn_TranslationTable::addRemoteEntry(vrpn_CNAME name,
                                                  vrpn_int32 remote_id,
                                                  vrpn_int32 local_id)
 {
@@ -403,7 +403,7 @@ vrpn_int32 vrpn_TranslationTable::addRemoteEntry(cName name,
     // at a time other than connection set-up.
 
     if (!d_entry[useEntry].name) {
-        try { d_entry[useEntry].name = new char[sizeof(cName)]; }
+        try { d_entry[useEntry].name = new char[sizeof(vrpn_CNAME)]; }
         catch (...) {
             fprintf(stderr, "vrpn_TranslationTable::addRemoteEntry:  "
                             "Out of memory.\n");
@@ -411,7 +411,7 @@ vrpn_int32 vrpn_TranslationTable::addRemoteEntry(cName name,
         }
     }
 
-    memcpy(d_entry[useEntry].name, name, sizeof(cName));
+    memcpy(d_entry[useEntry].name, name, sizeof(vrpn_CNAME));
     d_entry[useEntry].remote_id = remote_id;
     d_entry[useEntry].local_id = local_id;
 
@@ -1025,7 +1025,7 @@ public:
 
 protected:
     struct vrpnLocalMapping {
-        cName name;                      // Name of type
+        vrpn_CNAME name;                 // Name of type
         vrpnMsgCallbackEntry *who_cares; // Callbacks
         vrpn_int32 cCares;               // TCH 28 Oct 97
     };
@@ -1173,7 +1173,7 @@ vrpn_int32 vrpn_TypeDispatcher::addSender(const char *name)
 
         //  fprintf(stderr, "Allocating a new name entry\n");
 
-        try { d_senders[d_numSenders] = new char[sizeof(cName)]; }
+        try { d_senders[d_numSenders] = new char[sizeof(vrpn_CNAME)]; }
         catch (...) {
             fprintf(stderr, "vrpn_TypeDispatcher::addSender:  "
                             "Can't allocate memory for new record\n");
@@ -1182,8 +1182,8 @@ vrpn_int32 vrpn_TypeDispatcher::addSender(const char *name)
     }
 
     // Add this one into the list
-    strncpy(d_senders[d_numSenders], name, sizeof(cName) - 1);
-    d_senders[d_numSenders][sizeof(cName) - 1] = '\0';
+    strncpy(d_senders[d_numSenders], name, sizeof(vrpn_CNAME) - 1);
+    d_senders[d_numSenders][sizeof(vrpn_CNAME) - 1] = '\0';
     d_numSenders++;
 
     // One more in place -- return its index
@@ -3217,14 +3217,14 @@ int vrpn_Endpoint::newLocalType(const char *name, vrpn_int32 which)
 }
 
 // Adds a new remote type and returns its index.  Returns -1 on error.
-int vrpn_Endpoint::newRemoteType(cName type_name, vrpn_int32 remote_id,
+int vrpn_Endpoint::newRemoteType(vrpn_CNAME type_name, vrpn_int32 remote_id,
                                  vrpn_int32 local_id)
 {
     return d_types->addRemoteEntry(type_name, remote_id, local_id);
 }
 
 // Adds a new remote sender and returns its index.  Returns -1 on error.
-int vrpn_Endpoint::newRemoteSender(cName sender_name, vrpn_int32 remote_id,
+int vrpn_Endpoint::newRemoteSender(vrpn_CNAME sender_name, vrpn_int32 remote_id,
                                    vrpn_int32 local_id)
 {
     return d_senders->addRemoteEntry(sender_name, remote_id, local_id);
@@ -4463,11 +4463,11 @@ int vrpn_Endpoint::marshall_message(
 int vrpn_Endpoint::handle_type_message(void *userdata, vrpn_HANDLERPARAM p)
 {
     vrpn_Endpoint *endpoint = static_cast<vrpn_Endpoint *>(userdata);
-    cName type_name;
+    vrpn_CNAME type_name;
     vrpn_int32 i;
     vrpn_int32 local_id;
 
-    if (static_cast<unsigned>(p.payload_len) > sizeof(cName)) {
+    if (static_cast<unsigned>(p.payload_len) > sizeof(vrpn_CNAME)) {
         fprintf(stderr, "vrpn: vrpn_Endpoint::handle_type_message:  "
                         "Type name too long\n");
         return -1;
@@ -4535,11 +4535,11 @@ int vrpn_Endpoint::openLogs(void)
 int vrpn_Endpoint::handle_sender_message(void *userdata, vrpn_HANDLERPARAM p)
 {
     vrpn_Endpoint *endpoint = static_cast<vrpn_Endpoint *>(userdata);
-    cName sender_name;
+    vrpn_CNAME sender_name;
     vrpn_int32 i;
     vrpn_int32 local_id;
 
-    if (static_cast<size_t>(p.payload_len) > sizeof(cName)) {
+    if (static_cast<size_t>(p.payload_len) > sizeof(vrpn_CNAME)) {
         fprintf(stderr, "vrpn: vrpn_Endpoint::handle_sender_message():Sender "
                         "name too long\n");
         return -1;
@@ -4588,7 +4588,7 @@ int vrpn_Endpoint::pack_type_description(vrpn_int32 which)
     vrpn_uint32 len =
         static_cast<vrpn_int32>(strlen(d_dispatcher->typeName(which)) + 1);
     vrpn_uint32 netlen;
-    char buffer[sizeof(len) + sizeof(cName)];
+    char buffer[sizeof(len) + sizeof(vrpn_CNAME)];
 
     netlen = htonl(len);
 // Pack a message with type vrpn_CONNECTION_TYPE_DESCRIPTION
@@ -4618,7 +4618,7 @@ int vrpn_Endpoint::pack_sender_description(vrpn_int32 which)
     vrpn_uint32 len =
         static_cast<vrpn_int32>(strlen(d_dispatcher->senderName(which)) + 1);
     vrpn_uint32 netlen;
-    char buffer[sizeof(len) + sizeof(cName)];
+    char buffer[sizeof(len) + sizeof(vrpn_CNAME)];
 
     netlen = htonl(len);
 // Pack a message with type vrpn_CONNECTION_SENDER_DESCRIPTION

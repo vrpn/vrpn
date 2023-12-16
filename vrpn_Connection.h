@@ -154,7 +154,7 @@ extern VRPN_API const char *vrpn_CONTROL;
 
 /// @brief Length of names within VRPN
 const unsigned vrpn_CNAME_LENGTH = 100;
-typedef char cName[vrpn_CNAME_LENGTH];
+typedef char vrpn_CNAME[vrpn_CNAME_LENGTH];
 
 /// Placed here so vrpn_FileConnection can use it too.
 struct VRPN_API vrpn_LOGLIST {
@@ -291,9 +291,9 @@ public:
     /// Adds a new remote type/sender and returns its index.
     /// Returns -1 on error.
     /// @{
-    int newRemoteType(cName type_name, vrpn_int32 remote_id,
+    int newRemoteType(vrpn_CNAME type_name, vrpn_int32 remote_id,
                       vrpn_int32 local_id);
-    int newRemoteSender(cName sender_name, vrpn_int32 remote_id,
+    int newRemoteSender(vrpn_CNAME sender_name, vrpn_int32 remote_id,
                         vrpn_int32 local_id);
     /// @}
 
