@@ -216,7 +216,7 @@ namespace vrpn {
         /// @brief Extract the pointer (NULL if iterator is invalid)
         pointer get_pointer() const
         {
-            VRPN_ECITERATOR_ASSERT_INVARIANT();
+          // We can be a nullptr, so don't check VRPN_ECITERATOR_ASSERT_INVARIANT();
             // Only need to condition on container validity: invalid indexes
             // safely return null from get_raw_()
             return container_ ? (get_raw_()) : NULL;
@@ -225,7 +225,7 @@ namespace vrpn {
         /// @brief Implicit conversion operator to pointer.
         operator pointer() const
         {
-            VRPN_ECITERATOR_ASSERT_INVARIANT();
+            // We can be a nullptr, so don't check VRPN_ECITERATOR_ASSERT_INVARIANT();
             return get_pointer();
         }
 
