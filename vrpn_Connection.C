@@ -820,7 +820,6 @@ int vrpn_Log::logMessage(vrpn_int32 payloadLen, struct timeval time,
         catch (...) {
             fprintf(stderr, "vrpn_Log::logMessage:  "
                             "Out of memory!\n");
-            try { delete lp; } catch (...) {};
             return -1;
         }
 
@@ -5447,7 +5446,7 @@ vrpn_Connection *vrpn_get_connection_by_name(
         // this is kind of odd, but oh well (can probably be done
         // more cleanly later).
 
-        int is_file = !strncmp(cname, "file:", 5);
+        int is_file = (0 == strncmp(cname, "file:", 5));
 
         if (is_file) {
           try {
@@ -5521,8 +5520,8 @@ vrpn_create_server_connection(const char *cname,
     if (location == NULL) {
         return NULL;
     }
-    int is_loopback = !strncmp(cname, "loopback:", 9);
-    int is_mpi = !strncmp(cname, "mpi:", 4);
+    int is_loopback = (0 == strncmp(cname, "loopback:", 9));
+    int is_mpi = (0 == strncmp(cname, "mpi:", 4));
     if (is_mpi) {
 #ifdef VRPN_USE_MPI
         XXX_implement_MPI_server_connection;
@@ -5958,7 +5957,13 @@ void vrpn_Connection_IP::server_check_for_incoming_connections(
 
         // Because we sometimes use multiple NICs, we are ignoring the IP from
         // the client, and filling in the NIC that the udp request arrived on.
-        sscanf(msg, "%*s %d", &port); // get the port
+        if (1 != sscanf(msg, "%*s %d", &port)) { // get the port
+          fprintf(stderr, "vrpn_Connection_IP::server_check_for_incoming_"
+            "connections:  "
+            "Could not read port.\n");
+          connectionStatus = BROKEN;
+          return;
+        }
         // Fill in NIC address.  Copy the machine name so that we can delete it
         // in the destructor.
         endpoint->d_remote_machine_name = vrpn_copy_service_location(fromname);
