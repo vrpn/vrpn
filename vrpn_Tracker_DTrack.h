@@ -1,12 +1,14 @@
 // vrpn_Tracker_DTrack.h 
 // 
-// Advanced Realtime Tracking GmbH's (http://www.ar-tracking.de) DTrack/DTrack2 client
+// Advanced Realtime Tracking (https://www.ar-tracking.com) DTrack/DTrack2/DTRACK3 client
 //
 // developed by David Nahon for Virtools VR Pack (http://www.virtools.com)
-// (07/20/2004) improved by Advanced Realtime Tracking GmbH (http://www.ar-tracking.de)
+// (07/20/2004) improved by Advanced Realtime Tracking GmbH
 // (07/02/2007, 06/29/2009) upgraded by Advanced Realtime Tracking GmbH to support new devices
 // (08/25/2010) a correction added by Advanced Realtime Tracking GmbH
 // (12/01/2010) support of 3dof objects added by Advanced Realtime Tracking GmbH
+// (2024-01-25) support of extended timestamp, multicast UDP and stateful firewall added
+//              by Advanced Realtime Tracking GmbH & Co. KG
 
 #ifndef VRPN_TRACKER_DTRACK_H
 #define VRPN_TRACKER_DTRACK_H
@@ -78,22 +80,23 @@ class VRPN_API vrpn_Tracker_DTrack : public vrpn_Tracker, public vrpn_Button_Fil
   
  public:
 
-  typedef vrpn_SOCKET socket_type;
-
 // Constructor:
 // name (i): device name
 // c (i): vrpn_Connection
-// dtrackPort (i): DTrack UDP port
+// dtrackHost (i): (optional) DTRACK hostname/IP address or multicast IP address or NULL (if not given)
+// dtrackPort (i): DTRACK UDP port
+// doFirewall (i): enable UDP traffic through stateful firewall
 // timeToReachJoy (i): time needed to reach the maximum value of the joystick
 // fixNbody, fixNflystick (i): fixed numbers of DTrack bodies and Flysticks (-1 if not wanted)
 // fixId (i): renumbering of targets; must have exact (fixNbody + fixNflystick) elements (NULL if not wanted)
 // act3DOFout (i): activate 3dof marker output if present
 // actTracing (i): activate trace output
 
-	vrpn_Tracker_DTrack(const char *name, vrpn_Connection *c,
-	                    int dtrackPort, float timeToReachJoy = 0.f,
-	                    int fixNbody = -1, int fixNflystick = -1, int* fixId = NULL,
-	                    bool act3DOFout = false, bool actTracing = false);
+	vrpn_Tracker_DTrack( const char *name, vrpn_Connection *c,
+	                     const char* dtrackHost, int dtrackPort, bool doFirewall,
+	                     float timeToReachJoy = 0.f,
+	                     int fixNbody = -1, int fixNflystick = -1, int* fixId = NULL,
+	                     bool act3DOFout = false, bool actTracing = false );
 
 	~vrpn_Tracker_DTrack();
 
@@ -145,15 +148,19 @@ class VRPN_API vrpn_Tracker_DTrack : public vrpn_Tracker, public vrpn_Button_Fil
 	// communicating with DTrack:
 	// these functions receive and parse data packets from DTrack
 
-	socket_type d_udpsock;          // socket number for UDP
+	vrpn_SOCKET d_udpsock;          // socket number for UDP
+	unsigned int d_multicastIp;     // multicast IP to listen (optional)
 	int d_udptimeout_us;            // timeout for receiving UDP data
 
 	int d_udpbufsize;               // size of UDP buffer
 	char* d_udpbuf;                 // UDP buffer
 
 	unsigned int act_framecounter;                   // frame counter
-	double act_timestamp;                            // time stamp
-	
+	double act_timestamp;                            // timestamp since midnight (-1, if information not available)
+	unsigned int act_timestamp_sec;                  // timestamp since Unix epoch, seconds (0, if not available)
+	unsigned int act_timestamp_usec;                 // timestamp since Unix epoch, microseconds
+	unsigned int act_latency_usec;                   // latency of current frame (0, if not available)
+
 	bool output_3dof_marker;                         // 3dof marker output if available
 	int act_num_marker;                              // number of 3dof marker (due to '3d' line)
 	vrpn_vector<vrpn_dtrack_marker_type> act_marker; // array containing 3dof marker data
@@ -168,11 +175,11 @@ class VRPN_API vrpn_Tracker_DTrack : public vrpn_Tracker, public vrpn_Button_Fil
 	bool act_has_old_flystick_format;                // DTrack uses old Flystick format
 
 	int d_lasterror;                // last receive error
-	
-	bool dtrack_init(int udpport);
-	bool dtrack_exit(void);
-	
-	bool dtrack_receive(void);
+
+	bool dtrack_init( unsigned int serverIp, int udpport, bool doFirewall );
+	bool dtrack_exit();
+
+	bool dtrack_receive();
 };
 
 #endif

@@ -1,20 +1,23 @@
 // vrpn_Tracker_DTrack.C
 //
-// Advanced Realtime Tracking GmbH's (http://www.ar-tracking.de) DTrack/DTrack2 client
+// Advanced Realtime Tracking (https://www.ar-tracking.com) DTrack/DTrack2/DTRACK3 client
 
 // developed by David Nahon for Virtools VR Pack (http://www.virtools.com)
-// (07/20/2004) improved by Advanced Realtime Tracking GmbH (http://www.ar-tracking.de)
+// (07/20/2004) improved by Advanced Realtime Tracking GmbH
 // (07/02/2007, 06/29/2009) upgraded by Advanced Realtime Tracking GmbH to support new devices
 // (08/25/2010) a correction added by Advanced Realtime Tracking GmbH
 // (12/01/2010) support of 3dof objects added by Advanced Realtime Tracking GmbH
+// (2024-01-25) support of extended timestamp, multicast UDP and stateful firewall added
+//              by Advanced Realtime Tracking GmbH & Co. KG
 //
-// Recommended settings within DTrack's 'Settings / Network' or DTrack2's 'Settings / Output' dialog:
-//   'ts', '6d', '6df' or '6df2', '6dcal', '3d' (optional)
+// Recommended settings within DTrack's 'Settings / Network' or DTrack2's 'Settings / Output' or
+// DTRACK3's 'Tracking / Output' dialog:
+//   'ts2' (or 'ts'), '6d', '6df2' (or '6df'), '6dcal', '3d' (optional)
 
 /* Configuration file:
 
 ################################################################################
-# Advanced Realtime Tracking GmbH (http://www.ar-tracking.de) DTrack/DTrack2 client 
+# Advanced Realtime Tracking (https://www.ar-tracking.com) DTrack/DTrack2/DTRACK3 client
 #
 # creates as many vrpn_Tracker as there are bodies or Flysticks, starting with the bodies
 # creates 2 analogs per Flystick
@@ -26,7 +29,11 @@
 #
 # Arguments:
 #  char  name_of_this_device[]
-#  int   udp_port                               (DTrack sends data to this UDP port)
+#  char  dtrack_connection[]     (connection to DTRACK Controller, can be:
+#                                 <data port>  (DTRACK is sending data to this UDP port)
+#                                 <multicast ip>:<data port>  (plus optional multicast IP address)
+#                                 <hostname or ip>:<data port>:fw  (plus hostname/IP address of
+#                                             DTRACK Controller, for use with stateful firewall) )
 #
 # Optional arguments:
 #  float time_to_reach_joy                      (in seconds; see below)
@@ -36,9 +43,12 @@
 #                                                always last argument if "-" is not present)
 #  char  "-"                                    (activates tracing; always last argument)
 #
+# NOTE: to use multicast UDP or enabling UDP traffic through a stateful firewall, the VRPN server
+#       needs to be built with option VRPN_USE_WINSOCK2
+#
 # NOTE: time_to_reach_joy is the time needed to reach the maximum value (1.0 or -1.0) of the
 #       joystick of older 'Flystick' devices when the corresponding button is pressed
-#       (one of the last buttons amongst the 8); not necessary for newer 'Flystick2' devices
+#       (one of the last buttons amongst the 8); not necessary for 'Flystick2' or newer devices
 #       with its analog joystick
 #
 # NOTE: if fixed numbers of bodies and Flysticks should be used, both arguments
@@ -48,6 +58,9 @@
 #       Flysticks are set; there has to be an argument present for each body/Flystick
 
 #vrpn_Tracker_DTrack DTrack  5000
+#vrpn_Tracker_DTrack DTrack  225.1.1.1:5000
+#vrpn_Tracker_DTrack DTrack  10.10.1.1:5000:fw
+#vrpn_Tracker_DTrack DTrack  atc-302401001:5000:fw
 #vrpn_Tracker_DTrack DTrack  5000  -
 #vrpn_Tracker_DTrack DTrack  5000  3d
 #vrpn_Tracker_DTrack DTrack  5000  3d  -
@@ -59,17 +72,10 @@
 ################################################################################
 */
 
-// usually the following should work:
-
-#ifndef _WIN32
-	#define OS_UNIX  // for Unix (Linux, Irix, ...)
-#else
-	#define OS_WIN   // for MS Windows (2000, XP, ...)
-#endif
-
 #include <stdio.h>                      // for NULL, printf, fprintf, etc
 #include <stdlib.h>                     // for strtod, exit, free, malloc, etc
 #include <string.h>                     // for strncmp, memset, strcat, etc
+#include <math.h>                       // for fabs, etc
 
 #include "quat.h"                       // for Q_RAD_TO_DEG, etc
 #include "vrpn_Connection.h"            // for vrpn_CONNECTION_LOW_LATENCY, etc
@@ -78,18 +84,19 @@
 #include "vrpn_Types.h"                 // for vrpn_float64
 #include "vrpn_MessageMacros.h"         // for VRPN_MSG_INFO, VRPN_MSG_WARNING, VRPN_MSG_ERROR
 
-#ifdef OS_WIN
+#ifdef VRPN_USE_WINSOCK_SOCKETS
   #ifdef VRPN_USE_WINSOCK2
     #include <winsock2.h>    // struct timeval is defined here
+    #include <ws2tcpip.h>    // for getaddrinfo, etc
   #else
     #include <winsock.h>    // struct timeval is defined here
   #endif
-#endif
-#ifdef OS_UNIX
+#else
 	#include <netinet/in.h>                 // for sockaddr_in, INADDR_ANY, etc
 	#include <sys/socket.h>                 // for bind, recv, socket, AF_INET, etc
 	#include <unistd.h>                     // for close
 	#include <sys/select.h>                 // for select, FD_SET, FD_SETSIZE, etc
+	#include <netdb.h>                      // for getaddrinfo, etc
 #endif
 
 
@@ -122,32 +129,37 @@ static char* string_get_d(char* str, double* d);
 static char* string_get_f(char* str, float* f);
 static char* string_get_block(char* str, const char* fmt, int* idat, float* fdat);
 
-static vrpn_Tracker_DTrack::socket_type udp_init(unsigned short port);
-static int udp_exit(vrpn_Tracker_DTrack::socket_type sock);
-static int udp_receive(vrpn_Tracker_DTrack::socket_type sock, void *buffer, int maxlen, int tout_us);
+static unsigned int ip_name2ip( const char* name );
+static vrpn_SOCKET udp_init( unsigned short port, unsigned int multicastIp );
+static int udp_exit( vrpn_SOCKET sock, unsigned int multicastIp );
+static int udp_receive( vrpn_SOCKET sock, void *buffer, int maxlen, int tout_us );
+static int udp_send( vrpn_SOCKET sock, const void* buffer, int len, unsigned int ip, unsigned short port, int toutUs );
 
 
 // --------------------------------------------------------------------------
 // Constructor:
 // name (i): device name
 // c (i): vrpn_Connection
-// dtrackPort (i): DTrack UDP port
+// dtrackHost (i): (optional) DTRACK hostname/IP address or multicast IP address or NULL (if not given)
+// dtrackPort (i): DTRACK UDP port
+// doFirewall (i): enable UDP traffic through stateful firewall
 // timeToReachJoy (i): time needed to reach the maximum value of the joystick
 // fixNbody, fixNflystick (i): fixed numbers of DTrack bodies and Flysticks (-1 if not wanted)
 // fixId (i): renumbering of targets; must have exactly (fixNbody + fixNflystick) elements (NULL if not wanted)
 // actTracing (i): activate trace output
 
-vrpn_Tracker_DTrack::vrpn_Tracker_DTrack(const char *name, vrpn_Connection *c, 
-	                                      int dtrackPort, float timeToReachJoy,
-	                                      int fixNbody, int fixNflystick, int* fixId,
-	                                      bool act3DOFout, bool actTracing) :
+vrpn_Tracker_DTrack::vrpn_Tracker_DTrack( const char *name, vrpn_Connection *c, 
+	                                       const char* dtrackHost, int dtrackPort, bool doFirewall,
+	                                       float timeToReachJoy,
+	                                       int fixNbody, int fixNflystick, int* fixId,
+	                                       bool act3DOFout, bool actTracing ) :
 	vrpn_Tracker(name, c),	  
 	vrpn_Button_Filter(name, c),
 	vrpn_Analog(name, c)
 {
-
 	int i;
-	
+	unsigned int ip;
+
 	// Dunno how many of these there are yet...
 	
 	num_sensors = 0;
@@ -213,16 +225,28 @@ vrpn_Tracker_DTrack::vrpn_Tracker_DTrack(const char *name, vrpn_Connection *c,
 
 	// init: communicating with DTrack
 
-	if(!dtrack_init(dtrackPort)){
-		exit(EXIT_FAILURE);
+	ip = 0;
+	if ( dtrackHost != NULL )
+	{
+		ip = ip_name2ip( dtrackHost );
+		if ( ip == 0 )
+		{
+			fprintf( stderr, "vrpn_Tracker_DTrack: Cannot resolve hostname/IP '%s'.\n", dtrackHost );
+			exit( EXIT_FAILURE );
+		}
+	}
+
+	if ( ! dtrack_init( ip, dtrackPort, doFirewall ) )
+	{
+		exit( EXIT_FAILURE );
 	}
 }
- 
+
+
 // Destructor:
 
 vrpn_Tracker_DTrack::~vrpn_Tracker_DTrack()
 {
-
 	dtrack_exit();
 }
 
@@ -260,8 +284,32 @@ void vrpn_Tracker_DTrack::mainloop()
 	// get time stamp:
 
 	vrpn_gettimeofday(&timestamp, NULL);
-	
-	if(act_timestamp >= 0){  // use DTrack time stamp if available
+
+	if ( act_timestamp_sec > 0 )  // use DTRACK3 extended timestamp, if available
+	{
+		struct timeval timestamp_dt;
+		timestamp_dt.tv_sec = act_timestamp_sec;
+		timestamp_dt.tv_usec = act_timestamp_usec;
+
+		if ( fabs( vrpn_TimevalDurationSeconds( timestamp, timestamp_dt ) ) > 0.1 )  // clocks are not synchronized
+		{
+			if ( timestamp.tv_usec < ( int )act_latency_usec )
+			{
+				timestamp.tv_usec += 1000000 - act_latency_usec;
+				timestamp.tv_sec--;
+			}
+			else
+			{
+				timestamp.tv_usec -= act_latency_usec;
+			}
+		}
+		else
+		{
+			timestamp = timestamp_dt;
+		}
+	}
+	else if ( act_timestamp >= 0 )  // use DTrack time stamp if available
+	{
 		tts = (long )act_timestamp;
 		ttu = (long )((act_timestamp - tts) * 1000000);
 		tts += timestamp.tv_sec - timestamp.tv_sec % 86400;  // add day part of vrpn time stamp
@@ -282,9 +330,11 @@ void vrpn_Tracker_DTrack::mainloop()
 
 	dt = (float )vrpn_TimevalDurationSeconds(timestamp, tim_last);
 	tim_last = timestamp;
-	
-	if(tracing && ((tracing_frames % 10) == 0)){
-		printf("framenr %u  time %.3lf\n", act_framecounter, vrpn_TimevalDurationSeconds(timestamp, tim_first));
+
+	if ( tracing && ( ( tracing_frames % 10 ) == 0 ) )
+	{
+		printf( "framenr %u  ts %d.%06d dtime %.6lf\n", act_framecounter, ( int )timestamp.tv_sec, ( int )timestamp.tv_usec,
+		        vrpn_TimevalDurationSeconds( timestamp, tim_first ) );
 	}
 
 	// find number of targets visible for vrpn to choose the correct vrpn ID numbers:
@@ -654,12 +704,33 @@ int vrpn_Tracker_DTrack::dtrack2vrpn_flystickanalogs(int id, int id_dtrack,
 
 // Initializing communication with DTrack:
 //
+// serverIp (i): IP address of Controller, or multicast IP address, or NULL
 // udpport (i): UDP port number to receive data from DTrack
+// doFirewall (i): enable UDP traffic through stateful firewall
 //
 // return value (o): initialization was successful (boolean)
 
-bool vrpn_Tracker_DTrack::dtrack_init(int udpport)
+bool vrpn_Tracker_DTrack::dtrack_init( unsigned int serverIp, int udpport, bool doFirewall )
 {
+	d_multicastIp = 0;
+	if ( serverIp != 0 )
+	{
+		if ( ( serverIp & 0xf0000000 ) == 0xe0000000 )  // check if multicast IP
+		{
+			d_multicastIp = serverIp;
+
+			if ( doFirewall )
+			{
+				fprintf( stderr, "vrpn_Tracker_DTrack: Cannot enable UDP traffic through stateful firewall.\n" );
+				return false;
+			}
+		}
+		else if ( ! doFirewall )
+		{
+			fprintf( stderr, "vrpn_Tracker_DTrack: Cannot connect to DTRACK in communicating mode.\n" );
+			return false;
+		}
+	}
 
 	d_udpbuf = NULL;
 	d_lasterror = DTRACK_ERR_NONE;
@@ -671,8 +742,8 @@ bool vrpn_Tracker_DTrack::dtrack_init(int udpport)
 		return false;
 	}
 
-	d_udpsock = udp_init((unsigned short )udpport);
-	
+	d_udpsock = udp_init( ( unsigned short )udpport, d_multicastIp );
+
 	if(d_udpsock == INVALID_SOCKET){
 		fprintf(stderr, "vrpn_Tracker_DTrack: Cannot Initialize UDP Socket.\n");
 		return false;
@@ -687,7 +758,7 @@ bool vrpn_Tracker_DTrack::dtrack_init(int udpport)
 	d_udpbuf = (char *)malloc(d_udpbufsize);
 	
 	if(d_udpbuf == NULL){
-		udp_exit(d_udpsock);
+		udp_exit( d_udpsock, d_multicastIp );
 		d_udpsock = INVALID_SOCKET;
 		fprintf(stderr, "vrpn_Tracker_DTrack: Cannot Allocate Memory for UDP Buffer.\n");
 		return false;
@@ -697,10 +768,22 @@ bool vrpn_Tracker_DTrack::dtrack_init(int udpport)
 
 	act_framecounter = 0;
 	act_timestamp = -1;
+	act_timestamp_sec = 0;
+	act_timestamp_usec = 0;
+	act_latency_usec = 0;
 
 	act_num_marker = act_num_body = act_num_flystick = 0;
 	act_has_bodycal_format = false;
 	act_has_old_flystick_format = false;
+
+	// (optionally) enable UDP traffic through a stateful firewall:
+
+	if ( doFirewall )
+	{
+		const char* txt = "fw4vrpndt";
+
+		udp_send( d_udpsock, ( void* )txt, ( int )strlen( txt ) + 1, serverIp, 50107, 100000 );
+	}
 
 	return true;
 }
@@ -710,7 +793,7 @@ bool vrpn_Tracker_DTrack::dtrack_init(int udpport)
 //
 // return value (o): deinitialization was successful (boolean)
 
-bool vrpn_Tracker_DTrack::dtrack_exit(void)
+bool vrpn_Tracker_DTrack::dtrack_exit()
 {
 
 	// release buffer:
@@ -721,10 +804,9 @@ bool vrpn_Tracker_DTrack::dtrack_exit(void)
 
 	// release UDP socket:
 
-	if(d_udpsock != INVALID_SOCKET){
-		udp_exit(d_udpsock);
-	}
-	
+	if ( d_udpsock != INVALID_SOCKET )
+		udp_exit( d_udpsock, d_multicastIp );
+
 	return true;
 }
 
@@ -734,7 +816,7 @@ bool vrpn_Tracker_DTrack::dtrack_exit(void)
 //
 // return value (o): receiving was successful (boolean)
 
-bool vrpn_Tracker_DTrack::dtrack_receive(void)
+bool vrpn_Tracker_DTrack::dtrack_receive()
 {
 	char* s;
 	int i, j, k, l, n, len, id;
@@ -749,15 +831,18 @@ bool vrpn_Tracker_DTrack::dtrack_receive(void)
 	}
 
 	// defaults:
-	
+
 	act_framecounter = 0;
 	act_timestamp = -1;
+	act_timestamp_sec = 0;
+	act_timestamp_usec = 0;
+	act_latency_usec = 0;
 
 	loc_num_bodycal = -1;  // i.e. not available
 	loc_num_flystick1 = loc_num_meatool = 0;
-	
+
 	act_has_bodycal_format = false;
-	
+
 	// receive UDP packet:
 
 	len = udp_receive(d_udpsock, d_udpbuf, d_udpbufsize-1, d_udptimeout_us);
@@ -804,7 +889,32 @@ bool vrpn_Tracker_DTrack::dtrack_receive(void)
 
 			continue;
 		}
-		
+
+		// line for extended timestamp:
+
+		if ( strncmp( s, "ts2 ", 4 ) == 0 )
+		{
+			s += 4;
+
+			s = string_get_ui( s, &act_timestamp_sec );
+
+			if ( s != NULL )
+				s = string_get_ui( s, &act_timestamp_usec );
+
+			if ( s != NULL )
+				s = string_get_ui( s, &act_latency_usec );
+
+			if ( s == NULL )
+			{
+				act_timestamp_sec = 0;
+				act_timestamp_usec = 0;
+				act_latency_usec = 0;
+				return false;
+			}
+
+			continue;
+		}
+
 		// line for additional information about number of calibrated bodies:
 
 		if(!strncmp(s, "6dcal ", 6)){
@@ -1128,8 +1238,8 @@ static char* string_get_i(char* str, int* i)
 static char* string_get_ui(char* str, unsigned int* ui)
 {
 	char* s;
-	
-	*ui = (unsigned int )strtoul(str, &s, 0);
+
+	*ui = ( unsigned int )strtoul( str, &s, 10 );
 	return (s == str) ? NULL : s;
 }
 
@@ -1219,22 +1329,52 @@ static char* string_get_block(char* str, const char* fmt, int* idat, float* fdat
 // ---------------------------------------------------------------------------------------------------
 // Handling UDP data:
 
-#ifdef OS_UNIX
-#define INVALID_SOCKET -1
+// Convert string to IP address:
+// name (i): ipv4 dotted decimal address or hostname
+// return value (o): IP address, 0 if error occured
+
+static unsigned int ip_name2ip( const char* name )
+{
+#if defined( VRPN_USE_WINSOCK_SOCKETS ) && ! defined( VRPN_USE_WINSOCK2 )
+	fprintf( stderr, "vrpn_Tracker_DTrack: This build does not support multicast UDP; needs VRPN_USE_WINSOCK2.\n" );
+	return 0;
+#else
+	int err;
+	struct addrinfo hints, *res;
+
+	memset( &hints, 0, sizeof( hints ) );
+	hints.ai_family = AF_INET;  // only IPv4 supported
+	hints.ai_socktype = SOCK_STREAM;
+
+	res = NULL;
+	err = getaddrinfo( name, NULL, &hints, &res );
+	if ( err != 0 || res == NULL )
+		return 0;
+
+	unsigned int ip;
+	struct sockaddr_in sin;
+	memcpy( &sin, res->ai_addr, sizeof( sin ) );  // casting is causing warnings (-Wcast-align) by some compilers
+	ip = ntohl( ( ( struct in_addr )( sin.sin_addr ) ).s_addr );
+
+	freeaddrinfo( res );
+	return ip;
 #endif
+}
+
 
 // Initialize UDP socket:
 // port (i): port number
-// return value (o): socket number, NULL if error
+// multicastIp (i): multicast IP to listen, or 0
+// return value (o): socket number, INVALID_SOCKET if error
 
-static vrpn_Tracker_DTrack::socket_type udp_init(unsigned short port)
+static vrpn_SOCKET udp_init( unsigned short port, unsigned int multicastIp )
 {
-	vrpn_Tracker_DTrack::socket_type sock;
+	vrpn_SOCKET sock;
 	struct sockaddr_in name;
 
 	// initialize socket dll (only Windows):
 
-#ifdef OS_WIN
+#ifdef VRPN_USE_WINSOCK_SOCKETS
 	{
 		WORD vreq;
 		WSADATA wsa;
@@ -1242,39 +1382,33 @@ static vrpn_Tracker_DTrack::socket_type udp_init(unsigned short port)
 		vreq = MAKEWORD(2, 0);
 		
 		if(WSAStartup(vreq, &wsa) != 0){
-			return NULL;
+			return INVALID_SOCKET;
 		}
 	}
 #endif
         
 	// create socket:
 
-#ifdef OS_UNIX
+	sock = socket( AF_INET, SOCK_DGRAM, 0 );
+
+	if ( sock == INVALID_SOCKET )
 	{
-		int usock;
-		
-		usock = socket(PF_INET, SOCK_DGRAM, 0);
-	
-		if(usock < 0){
+#ifdef VRPN_USE_WINSOCK_SOCKETS
+		WSACleanup();
+#endif
+		return INVALID_SOCKET;
+	}
+
+	if ( multicastIp != 0 )
+	{
+		// set reuse port to on to allow multiple binds per host
+		int flag_on = 1;
+		if ( setsockopt( sock, SOL_SOCKET, SO_REUSEADDR, ( char* )&flag_on, sizeof( flag_on ) ) < 0 )
+		{
+			udp_exit( sock, 0 );
 			return INVALID_SOCKET;
 		}
-		sock = usock;
 	}
-#endif
-#ifdef OS_WIN
-	{
-		vrpn_SOCKET wsock;
-		
-		wsock = socket(PF_INET, SOCK_DGRAM, 0);
-
-		if(wsock == INVALID_SOCKET){
-			WSACleanup();
-			return INVALID_SOCKET;
-		}
-
-		sock = wsock;
-	}
-#endif
 
    // name socket:
 
@@ -1283,28 +1417,53 @@ static vrpn_Tracker_DTrack::socket_type udp_init(unsigned short port)
    name.sin_addr.s_addr = htonl(INADDR_ANY);
 	
 	if(bind(sock, (struct sockaddr *) &name, sizeof(name)) < 0){
-		udp_exit(sock);
+		udp_exit( sock, 0 );
 		return INVALID_SOCKET;
 	}
-        
+
+	if ( multicastIp != 0 )
+	{
+		// construct an IGMP join request structure
+		struct ip_mreq ipmreq;
+		ipmreq.imr_multiaddr.s_addr = htonl( multicastIp );
+		ipmreq.imr_interface.s_addr = htonl( INADDR_ANY );
+
+		// send an ADD MEMBERSHIP message via setsockopt
+		if ( setsockopt( sock, IPPROTO_IP, IP_ADD_MEMBERSHIP, ( char* )&ipmreq, sizeof( ipmreq ) ) < 0 )
+		{
+			udp_exit( sock, 0 );
+			return INVALID_SOCKET;
+		}
+	}
+
    return sock;
 }
 
 
 // Deinitialize UDP socket:
 // sock (i): socket number
+// multicastIp (i): multicast IP to listen, or 0
 // return value (o): 0 ok, -1 error
 
-static int udp_exit(vrpn_Tracker_DTrack::socket_type sock)
+static int udp_exit( vrpn_SOCKET sock, unsigned int multicastIp )
 {
 	int err;
 
-#ifdef OS_UNIX
-	err = close(sock);
-#endif
-#ifdef OS_WIN
+	if ( multicastIp != 0 )
+	{
+		struct ip_mreq ipmreq;
+		ipmreq.imr_multiaddr.s_addr = htonl( multicastIp );
+		ipmreq.imr_interface.s_addr = htonl( INADDR_ANY );
+
+		// send a DROP MEMBERSHIP message via setsockopt
+		setsockopt( sock, IPPROTO_IP, IP_DROP_MEMBERSHIP, ( char* )&ipmreq, sizeof( ipmreq ) );
+	}
+
+#ifdef VRPN_USE_WINSOCK_SOCKETS
 	err = closesocket(sock);
 	WSACleanup();
+#else
+	err = close(sock);
 #endif
 
 	if(err < 0){
@@ -1324,11 +1483,11 @@ static int udp_exit(vrpn_Tracker_DTrack::socket_type sock)
 // return value (o): number of received bytes, <0 if error/timeout occurred
 
 // Don't tell us about the FD_SET causing a conditional expression to be constant
-#ifdef	_WIN32
+#ifdef VRPN_USE_WINSOCK_SOCKETS
 #pragma warning ( disable : 4127 )
 #endif
 
-static int udp_receive(vrpn_Tracker_DTrack::socket_type sock, void *buffer, int maxlen, int tout_us)
+static int udp_receive( vrpn_SOCKET sock, void *buffer, int maxlen, int tout_us )
 {
 	int nbytes, err;
 	fd_set set;
@@ -1384,5 +1543,54 @@ static int udp_receive(vrpn_Tracker_DTrack::socket_type sock, void *buffer, int 
 	}
 }
 
-#endif
+
+// Send UDP data:
+// buffer (i): buffer for UDP data
+// len (i): length of buffer
+// ip (i): IPv4 address to send data to
+// port (i):  port number to send data to
+// toutUs (i): timeout in us (micro sec)
+// return value (o): 0 if ok, <0 if error/timeout occured
+
+static int udp_send( vrpn_SOCKET sock, const void* buffer, int len, unsigned int ip, unsigned short port, int toutUs )
+{
+	fd_set set;
+	struct timeval tout;
+	int err;
+	struct sockaddr_in addr;
+
+	// building address:
+	addr.sin_family = AF_INET;
+	addr.sin_addr.s_addr = htonl( ip );
+	addr.sin_port = htons( port );
+
+	// waiting to send data:
+	FD_ZERO( &set );
+	FD_SET( sock, &set );
+	tout.tv_sec = toutUs / 1000000;
+	tout.tv_usec = toutUs % 1000000;
+
+	err = select( FD_SETSIZE, NULL, &set, NULL, &tout );
+	switch ( err )
+	{
+		case 1:
+			break;
+		case 0:
+			return -1;    // timeout
+		default:
+			return -2;    // error
+	}
+
+	// sending data:
+	int nbytes = static_cast< int >( sendto( sock, ( const char* )buffer, len, 0, ( struct sockaddr* )&addr,
+	                                         ( size_t )sizeof( struct sockaddr_in ) ) );
+	if ( nbytes < len )
+	{	// send error
+		return -3;
+	}
+	return 0;
+}
+
+
+#endif  // sgi
 
