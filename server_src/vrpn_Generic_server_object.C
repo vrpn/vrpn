@@ -2837,8 +2837,13 @@ int vrpn_Generic_Server_Object::setup_DTrack(char *&pch, char *line,
     char *s2;
     char *str[LINESIZE];
     char *s;
-    char sep[] = " ,\t,\n";
+    const char* sep = " \t\n";
     int count = 0;
+    char* connstr[ 3 ];
+    const char* connsep = ":\n";
+    int conncount;
+    const char* dtrackHost;
+    bool doFirewall;
     int dtrackPort, isok;
     float timeToReachJoy;
     int nob, nof, nidbf;
@@ -2862,7 +2867,42 @@ int vrpn_Generic_Server_Object::setup_DTrack(char *&pch, char *line,
     }
 
     s2 = str[0];
-    dtrackPort = (int)strtol(str[1], &s, 0);
+
+    // parse DTRACK connection string:
+
+    conncount = 0;
+    connstr[ conncount ] = strtok( str[ 1 ], connsep );
+    while ( connstr[ conncount ] != NULL )
+    {
+        conncount++;
+        if ( conncount >= 3 )  break;
+        connstr[ conncount ] = strtok( NULL, connsep );
+    }
+
+    doFirewall = false;
+	 if ( conncount >= 2 )
+	 {
+        dtrackHost = connstr[ 0 ];
+        dtrackPort = ( int )strtol( connstr[ 1 ], &s, 10 );
+
+		  if ( conncount == 3 )
+        {
+            if ( strcmp( connstr[ 2 ], "fw" ) == 0 )
+            {
+                doFirewall = true;
+				}
+            else
+            {
+                fprintf( stderr, "Invalid suffix in vrpn_Tracker_DTrack connection string: %s\n", line );
+                return -1;
+				}
+        }
+	 }
+	 else
+    {
+        dtrackHost = NULL;
+        dtrackPort = ( int )strtol( connstr[ 0 ], &s, 10 );
+    }
 
     // tracing/3dof (optional; always last arguments):
 
@@ -2932,10 +2972,20 @@ int vrpn_Generic_Server_Object::setup_DTrack(char *&pch, char *line,
         pidbf = idbf;
     }
 
-    if (verbose) {
-        printf(
-            "Opening vrpn_Tracker_DTrack: %s at port %d, timeToReachJoy %.2f",
-            s2, dtrackPort, timeToReachJoy);
+    if ( verbose )
+    {
+        if ( dtrackHost != NULL )
+        {
+            printf(
+                "Opening vrpn_Tracker_DTrack: %s at host %s port %d fw %d, timeToReachJoy %.2f",
+                s2, dtrackHost, dtrackPort, doFirewall, timeToReachJoy );
+		  }
+        else
+        {
+            printf(
+                "Opening vrpn_Tracker_DTrack: %s at port %d, timeToReachJoy %.2f",
+                s2, dtrackPort, timeToReachJoy );
+        }
         if (nob >= 0 && nof >= 0) {
             printf(", fixNtargets %d %d", nob, nof);
         }
@@ -2950,9 +3000,9 @@ int vrpn_Generic_Server_Object::setup_DTrack(char *&pch, char *line,
 
 #ifndef sgi
 
-    _devices->add(new vrpn_Tracker_DTrack(s2, connection, dtrackPort,
-                                          timeToReachJoy, nob, nof, pidbf,
-                                          act3DOFout, actTracing));
+    _devices->add( new vrpn_Tracker_DTrack( s2, connection, dtrackHost, dtrackPort, doFirewall,
+                                            timeToReachJoy, nob, nof, pidbf,
+                                            act3DOFout, actTracing ) );
 
     return 0;
 #else
