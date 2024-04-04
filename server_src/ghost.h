@@ -65,6 +65,10 @@
 
   class	vrpn_HapticCollision {
   public:
+    vrpn_HapticCollision() {
+      d_location = vrpn_HapticPosition(0,0,0);
+      d_normal = vrpn_HapticVector(0,0,0);
+    }
     vrpn_HapticCollision(const vrpn_HapticPosition &point, const vrpn_HapticVector &dir) {
       d_location = point;
       d_normal = dir;
