@@ -91,8 +91,10 @@ set(OPENHAPTICS_RUNTIME_LIBRARY_DIRS)
 set(_dirs)
 if(NOT "$ENV{OH_SDK_BASE}" STREQUAL "")
 	list(APPEND _dirs "$ENV{OH_SDK_BASE}")
+	set(OH_BASE "$ENV{OH_SDK_BASE}")
 elseif(NOT "$ENV{3DTOUCH_BASE}" STREQUAL "")
 	list(APPEND _dirs "$ENV{3DTOUCH_BASE}")
+	set(OH_BASE "$ENV{3DTOUCH_BASE}")
 endif()
 if(WIN32)
 	program_files_fallback_glob(_pfdirs "/Sensable/3DTouch*/")
@@ -170,7 +172,7 @@ if(UNIX)
 	find_library(HDAPI_PHANToMIO_LIBRARY
 		NAMES
 		PHANToMIO
-  		PhantomIOLib42
+		PhantomIOLib42
 		HINTS
 		${_libsearchdirs})
 	mark_as_advanced(HDAPI_PHANToMIO_LIBRARY)
@@ -244,9 +246,6 @@ find_library(HDAPI_HDU_LIBRARY_DEBUG
 select_library_configurations(HDAPI_HDU)
 
 if(OPENHAPTICS_NESTED_TARGETS OR NOT HDAPI_HDU_LIBRARY)
-	if(HDAPI_HDU_SOURCE_DIR AND NOT EXISTS "${HDAPI_HDU_SOURCE_DIR}/hdu.cpp")
-		unset(HDAPI_HDU_SOURCE_DIR)
-	endif()
 	find_path(HDAPI_HDU_SOURCE_DIR
 		NAMES
 		hdu.cpp
@@ -256,8 +255,10 @@ if(OPENHAPTICS_NESTED_TARGETS OR NOT HDAPI_HDU_LIBRARY)
 		src/HDU/src
 		libsrc/HDU
 		HINTS
+		"${OPENHAPTICS_ROOT_DIR}/"
 		"${HDAPI_HDU_INCLUDE_DIR}/.."
 		"${HDAPI_HDU_INCLUDE_DIR}/../share/3DTouch")
+	message(FATAL "HDAPI_HDU_SOURCE_DIR: ${HDAPI_HDU_SOURCE_DIR}")
 	list(APPEND _deps_check HDAPI_HDU_SOURCE_DIR)
 	if(HDAPI_HDU_SOURCE_DIR)
 		mark_as_advanced(HDAPI_HDU_SOURCE_DIR)
@@ -342,9 +343,6 @@ find_library(HLAPI_HLU_LIBRARY_DEBUG
 select_library_configurations(HLAPI_HLU)
 
 if(OPENHAPTICS_NESTED_TARGETS OR NOT HLAPI_HLU_LIBRARY)
-	if(HLAPI_HLU_SOURCE_DIR AND NOT EXISTS "${HLAPI_HLU_SOURCE_DIR}/hlu.cpp")
-		unset(HLAPI_HLU_SOURCE_DIR)
-	endif()
 	find_path(HLAPI_HLU_SOURCE_DIR
 		NAMES
 		hlu.cpp
@@ -354,6 +352,7 @@ if(OPENHAPTICS_NESTED_TARGETS OR NOT HLAPI_HLU_LIBRARY)
 		src/HLU/src
 		libsrc/HLU
 		HINTS
+		"${OPENHAPTICS_ROOT_DIR}/"
 		"${HLAPI_HLU_INCLUDE_DIR}/.."
 		"${HLAPI_HLU_INCLUDE_DIR}/../share/3DTouch")
 	list(APPEND _deps_check HLAPI_HLU_SOURCE_DIR)
