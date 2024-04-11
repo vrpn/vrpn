@@ -53,11 +53,20 @@
 # (See accompanying file LICENSE_1_0.txt or copy at
 # http://www.boost.org/LICENSE_1_0.txt)
 
-set(OPENHAPTICS_ROOT_DIR
-	"${OPENHAPTICS_ROOT_DIR}"
-	CACHE
-	PATH
-	"Path to search for OpenHaptics")
+if(${OPENHAPTICS_ROOT_DIR})
+	set(OPENHAPTICS_ROOT_DIR
+		"${OPENHAPTICS_ROOT_DIR}"
+		CACHE
+		PATH
+		"Path to search for OpenHaptics")
+else()
+	set(OPENHAPTICS_ROOT_DIR
+		"$ENV{OH_SDK_BASE}"
+		CACHE
+		PATH
+		"Path to search for OpenHaptics")
+endif()
+
 option(OPENHAPTICS_NESTED_TARGETS
 	"Whether we should compile HDU and HLU, if needed, as a part of the solution"
 	ON)
