@@ -161,15 +161,9 @@ if(UNIX)
 	find_library(HDAPI_PHANToMIO_LIBRARY
 		NAMES
 		PHANToMIO
+  		PhantomIOLib42
 		HINTS
 		${_libsearchdirs})
-  	if(NOT HDAPI_PHANToMIO_LIBRARY)
-		find_library(HDAPI_PHANToMIO_LIBRARY
-			NAMES
-			PhantomIOLib42
-			HINTS
-			${_libsearchdirs})
-	endif()
 	mark_as_advanced(HDAPI_PHANToMIO_LIBRARY)
 	list(APPEND _deps_check HDAPI_PHANToMIO_LIBRARY)
 	list(APPEND _deps_libs "${HDAPI_PHANToMIO_LIBRARY}")
