@@ -1695,6 +1695,26 @@
 					/>
 				</FileConfiguration>
 			</File>
+						<File
+				RelativePath="vrpn_RBDFlystick.cpp"
+				>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+			</File>
 			<File
 				RelativePath="vrpn_RedundantTransmission.C"
 				>
@@ -3090,6 +3110,10 @@
 			</File>
 			<File
 				RelativePath="vrpn_raw_sgibox.h"
+				>
+			</File>
+			<File
+				RelativePath="vrpn_RBDFlystick.h"
 				>
 			</File>
 			<File
