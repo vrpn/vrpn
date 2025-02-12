@@ -21,7 +21,7 @@ namespace vrpn_python {
       PyObject *arglist = Py_BuildValue("OO", userdata, value);
       Py_DECREF(value); // Destroy entity created by createPyObjectFromVRPN_Type<>(info)
 
-      PyObject *result = PyEval_CallObject(callback,arglist);
+      PyObject *result = PyObject_CallObject(callback,arglist);
       Py_DECREF(arglist); // Destroy entities created by Py_BuildValue("OO", userdata, value)
 
       if (result != NULL) {
