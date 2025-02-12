@@ -5790,7 +5790,6 @@ void vrpn_Connection_IP::server_check_for_incoming_connections(
     int request;
     timeval timeout;
     int retval;
-    int port;
 
     if (pTimeout) {
         timeout = *pTimeout;
@@ -5955,15 +5954,6 @@ void vrpn_Connection_IP::server_check_for_incoming_connections(
         endpoint->setNICaddress(d_NIC_IP);
         endpoint->status = TRYING_TO_CONNECT;
 
-        // Because we sometimes use multiple NICs, we are ignoring the IP from
-        // the client, and filling in the NIC that the udp request arrived on.
-        if (1 != sscanf(msg, "%*s %d", &port)) { // get the port
-          fprintf(stderr, "vrpn_Connection_IP::server_check_for_incoming_"
-            "connections:  "
-            "Could not read port.\n");
-          connectionStatus = BROKEN;
-          return;
-        }
         // Fill in NIC address.  Copy the machine name so that we can delete it
         // in the destructor.
         endpoint->d_remote_machine_name = vrpn_copy_service_location(fromname);
