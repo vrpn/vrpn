@@ -5854,7 +5854,7 @@ void vrpn_Connection_IP::server_check_for_incoming_connections(
         // the incoming port on his machine.
         char *checkHost = NULL;
         try {
-          checkHost = new char[strlen(msg) + 1];
+          checkHost = new char[200];
         } catch (...) {
           fprintf(stderr, "vrpn_Connection_IP::server_check_for_incoming_connections(): "
             "Out of memory\n");
