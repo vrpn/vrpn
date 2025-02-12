@@ -5873,6 +5873,7 @@ void vrpn_Connection_IP::server_check_for_incoming_connections(
             }
             return;
         }
+        checkHost[199] = '\0';  // Ensure null termination.
         if (checkPort < 1024) {
             fprintf(stderr,
                     "server_check_for_incoming_connections(): Bad port\n");
