@@ -4354,9 +4354,18 @@ int vrpn_Endpoint::tryToMarshall(char *outbuf, vrpn_int32 &buflen,
     // by sending the stuff in them to see if this makes enough
     // room.  If not, we'll have to give up.
     if (!retval) {
+        
+#ifdef VERBOSE
+        fprintf(stderr, "Failed to marshall message of size %d, out buffer filled with %d bytes!\n",
+                len, numOut);
+#endif
         if (send_pending_reports() != 0) {
             return 0;
         }
+#ifdef VERBOSE
+        fprintf(stderr, "After sending, got %d bytes remaining in out buffer!\n",
+                numOut);
+#endif
         retval = marshall_message(outbuf, buflen, numOut, len, time, type,
                                   sender, buffer, sequenceNumber);
     }

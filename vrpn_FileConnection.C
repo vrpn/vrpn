@@ -670,6 +670,7 @@ int vrpn_File_Connection::playone_to_filetime(timeval end_filetime)
     vrpn_Endpoint *endpoint = d_endpoints.front();
     timeval now;
     int retval;
+    int type, sender;
 
     // If we don't have a currentLogEntry, then we've gone past the end of the
     // file.
@@ -703,15 +704,15 @@ int vrpn_File_Connection::playone_to_filetime(timeval end_filetime)
 
     // Handle this log entry
     if (header.type >= 0) {
+        type = endpoint->local_type_id(header.type);
+        sender = endpoint->local_type_id(header.sender);
 #ifdef VERBOSE
         printf("vrpn_FC: Msg Sender (%s), Type (%s), at (%ld:%ld)\n",
-               endpoint->other_senders[header.sender].name,
-               endpoint->other_types[header.type].name, header.msg_time.tv_sec,
-               header.msg_time.tv_usec);
+               sender_name(sender), message_type_name(header.type),
+               header.msg_time.tv_sec, header.msg_time.tv_usec);
 #endif
         if (endpoint->local_type_id(header.type) >= 0) {
-            if (do_callbacks_for(endpoint->local_type_id(header.type),
-                                 endpoint->local_sender_id(header.sender),
+            if (do_callbacks_for(type, sender,
                                  header.msg_time, header.payload_len,
                                  header.buffer)) {
                 return -1;
@@ -834,7 +835,7 @@ void vrpn_File_Connection::find_superlative_user_times()
     }
 #ifdef VERBOSE
     else {
-        fprintf( stderr, "vrpn_File_Connection::find_superlative_user_times:  did not find a highest-time user message\n"
+        fprintf( stderr, "vrpn_File_Connection::find_superlative_user_times:  did not find a highest-time user message\n");
     }
 #endif
 
@@ -845,7 +846,7 @@ void vrpn_File_Connection::find_superlative_user_times()
     }
 #ifdef VERBOSE
     else {
-        fprintf( stderr, "vrpn_File_Connection::find_superlative_user_times:  did not find an earliest user message\n"
+        fprintf( stderr, "vrpn_File_Connection::find_superlative_user_times:  did not find an earliest user message\n");
     }
 #endif
 
