@@ -705,18 +705,28 @@ void vrpn_BaseClassUnique::client_mainloop(void)
             }
         }
     }
+    else if (d_connection) {
+
+        vrpn_gettimeofday(&now, NULL);
+        diff = vrpn_TimevalDiff(now, time_last_ping_response);
+        vrpn_TimevalNormalize(diff);
+
+        if (diff.tv_sec >= 1) {
+
+            // Initiate a new ping cycle if the last one concluded and its response was over a second ago
+            initiate_ping_cycle();
+        }
+    }
 }
 
 void vrpn_BaseClassUnique::initiate_ping_cycle(void)
 {
     // Record when we sent the ping and say that we haven't gotten an answer
     vrpn_gettimeofday(&d_time_first_ping, NULL);
+    vrpn_gettimeofday(&d_time_last_warned, NULL);
     d_connection->pack_message(0, d_time_first_ping, d_ping_message_id,
                                d_sender_id, NULL, vrpn_CONNECTION_RELIABLE);
     d_unanswered_ping = 1;
-
-    // We didn't send a warning about this one yet...
-    d_time_last_warned.tv_sec = d_time_last_warned.tv_usec = 0;
 }
 
 /** Store the time at which the last pong occurred.  Used by client_mainloop()
@@ -731,6 +741,8 @@ int vrpn_BaseClassUnique::handle_pong(void *userdata, vrpn_HANDLERPARAM p)
     vrpn_BaseClassUnique *me = (vrpn_BaseClassUnique *)userdata;
 
     me->d_unanswered_ping = 0;
+
+    vrpn_gettimeofday(&me->time_last_ping_response, NULL);
 
     // If we were flatlined, report that things are okay again.
     if (me->d_flatline) {
@@ -754,10 +766,12 @@ int vrpn_BaseClassUnique::handle_ping(void *userdata, vrpn_HANDLERPARAM)
 {
     vrpn_BaseClassUnique *me = (vrpn_BaseClassUnique *)userdata;
     struct timeval now;
+    int ret;
 
     vrpn_gettimeofday(&now, NULL);
+    me->time_last_ping_response = now;
     if (me->d_connection != NULL) {
-        me->d_connection->pack_message(0, now, me->d_pong_message_id,
+        ret = me->d_connection->pack_message(0, now, me->d_pong_message_id,
                                        me->d_sender_id, NULL,
                                        vrpn_CONNECTION_RELIABLE);
     }

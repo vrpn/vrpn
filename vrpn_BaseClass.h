@@ -195,6 +195,8 @@ public:
 
     bool shutup; // if True, don't print the "No response from server" messages.
 
+    struct timeval time_last_ping_response;
+
     friend class SendTextMessageBoundCall;
     class SendTextMessageBoundCall {
     private:
