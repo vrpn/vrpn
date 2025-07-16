@@ -15,7 +15,7 @@
 
 get_filename_component(_src "${CMAKE_SOURCE_DIR}" ABSOLUTE)
 get_filename_component(_cur_src "${CMAKE_CURRENT_SOURCE_DIR}" ABSOLUTE)
-get_filename_component(_bin "${CMAKE_BINARY_DIR}" ABSOLUTE)
+get_filename_component(_bin "${CMAKE_CURRENT_BINARY_DIR}" ABSOLUTE)
 
 string(LENGTH "${_src}" _src_len)
 string(LENGTH "${_cur_src}" _cur_src_len)
