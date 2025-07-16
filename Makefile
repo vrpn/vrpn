@@ -725,6 +725,7 @@ SLIB_FILES =  $(LIB_FILES) \
 	vrpn_inertiamouse.C \
 	vrpn_nikon_controls.C \
 	vrpn_raw_sgibox.C \
+	vrpn_RBDFlystick.cpp \
 	vrpn_sgibox.C \
 
 
@@ -821,6 +822,7 @@ SLIB_INCLUDES = $(LIB_INCLUDES) \
 	vrpn_inertiamouse.h \
 	vrpn_nikon_controls.h \
 	vrpn_raw_sgibox.h \
+	vrpn_RBDFlystick.h \
 	vrpn_sgibox.h \
 
 ifeq ($(HW_OS), pc_linux64)

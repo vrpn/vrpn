@@ -66,6 +66,7 @@
 #include "vrpn_Poser.h"                 // for vrpn_Poser
 #include "vrpn_Poser_Tek4662.h"         // for vrpn_Poser_Tek4662
 #include "vrpn_raw_sgibox.h"            // for vrpn_raw_SGIBox, for access to the SGI button & dial box connected to the serial port of an linux PC
+#include "vrpn_RBDFlystick.h"           // for RBDFlystick
 #include "vrpn_Retrolink.h"             // for vrpn_Retrolink_GameCube, etc.
 #include "vrpn_Saitek_Controller_Raw.h" // for vrpn_Saitek_ST290_Pro, etc.
 #include "vrpn_sgibox.h" //for access to the B&D box connected to an SGI via the IRIX GL drivers
@@ -5265,6 +5266,49 @@ int vrpn_Generic_Server_Object::setup_Microsoft_Xbox_360(char*& pch, char* line,
 #endif
     return 0; // successful completion
 }
+int vrpn_Generic_Server_Object::setup_RBDFlystick(char *&pch, char *line,
+                                                  FILE *)
+{
+    char name[LINESIZE], conn_type[LINESIZE], comport[10];
+    int baud_or_port, comport_number = 0;
+
+    // 获取设备名和连接类型
+    VRPN_CONFIG_NEXT();
+    if (sscanf(pch, "%511s %511s", name, conn_type) != 2) {
+        fprintf(stderr, "Bad vrpn_RBDFlystick line: %s\n", line);
+        return -1;
+    }
+
+    vrpn_RBDFlystick::ConnectionType type = (strcmp(conn_type, "SERIAL") == 0)
+                                                ? vrpn_RBDFlystick::SERIAL
+                                                : vrpn_RBDFlystick::UDP;
+    if (type == vrpn_RBDFlystick::SERIAL) {
+        // 对于串口连接，需要端口号和波特率
+        if (sscanf(pch, "%*s %*s %d %d", &comport_number, &baud_or_port) != 2) {
+            fprintf(stderr, "Bad vrpn_RBDFlystick serial format. Expected: "
+                            "name SERIAL port_num baud_rate\n");
+            return -1;
+        }
+        if ((comport_number <= 0) || (comport_number > 30)) {
+            fprintf(stderr, "Bad vrpn_RBDFlystick serial port number.\n");
+            return -1;
+        }
+    }
+    else {
+        // 对于UDP连接，只需要端口号
+        if (sscanf(pch, "%*s %*s %d", &baud_or_port) != 1) {
+            fprintf(
+                stderr,
+                "Bad vrpn_RBDFlystick UDP format. Expected: name UDP port\n");
+            return -1;
+        }
+    }
+    snprintf(comport, sizeof(comport), "COM%d", comport_number);
+    //// 创建设备
+    _devices->add(
+        new vrpn_RBDFlystick(name, connection, type, comport, baud_or_port));
+    return 0;
+}
 
 #undef VRPN_CONFIG_NEXT
 
@@ -5883,6 +5927,9 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(
                 }
                 else if (VRPN_ISIT("vrpn_Vality_vGlass")) {
                   VRPN_CHECK(setup_Vality_vGlass);
+                }
+                else if (VRPN_ISIT("vrpn_RBDFlystick")) {
+                    VRPN_CHECK(setup_RBDFlystick);
                 }
                 else {                         // Never heard of it
                     sscanf(line, "%511s", s1); // Find out the class name
