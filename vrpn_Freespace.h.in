@@ -29,6 +29,65 @@
 #include "vrpn_Dial.h"
 #include "vrpn_Tracker.h"
 
+/**
+ * The following values are filled in by CMake.
+ */
+//@{
+#define LIBFREESPACE_MAJOR_VERSION @LIBFREESPACE_MAJOR_VERSION@
+#define LIBFREESPACE_MINOR_VERSION @LIBFREESPACE_MINOR_VERSION@
+#define LIBFREESPACE_PATCH_VERSION @LIBFREESPACE_PATCH_VERSION@
+//@}
+
+/**
+ * Helper function that takes three components of a version number (each
+ * component must be a positive integer in the range [0, 99]) and generates a
+ * single integer value in its place. For example, FREESPACE_MAKE_VERSION(2, 3, 4)
+ * would return 20304.
+ */
+#define FREESPACE_MAKE_VERSION(MAJOR, MINOR, PATCH) \
+    (MAJOR   *   10000 + \
+     MINOR   *     100 + \
+     PATCH)
+
+/**
+ * Defines the Oculus SDK version as a single integer.
+ */
+#define FREESPACE_VERSION \
+    FREESPACE_MAKE_VERSION(LIBFREESPACE_MAJOR_VERSION, \
+                           LIBFREESPACE_MINOR_VERSION, \
+                           LIBFREESPACE_PATCH_VERSION)
+
+/**
+ * Convenience macros that can be used to specify a required version of the
+ * Freespace library.
+ *
+ * <code>
+ * #if FREESPACE_MIN_VERSION_REQUIRED(0, 7, 0)
+ *    // your code here
+ * #endif
+ * </code>
+ */
+//@{
+#define FREESPACE_MIN_VERSION_REQUIRED(MAJOR, MINOR, PATCH) \
+    (FREESPACE_MAKE_VERSION(MAJOR, MINOR, PATCH) >= FREESPACE_VERSION)
+
+#define FREESPACE_VERSION_LESS_THAN(MAJOR, MINOR, PATCH) \
+    (FREESPACE_VERSION < FREESPACE_MAKE_VERSION(MAJOR, MINOR, PATCH))
+
+#define FREESPACE_VERSION_LESS_OR_EQUAL(MAJOR, MINOR, PATCH) \
+    (FREESPACE_VERSION <= FREESPACE_MAKE_VERSION(MAJOR, MINOR, PATCH))
+
+#define FREESPACE_VERSION_GREATER_THAN(MAJOR, MINOR, PATCH) \
+    (FREESPACE_VERSION > FREESPACE_MAKE_VERSION(MAJOR, MINOR, PATCH))
+
+#define FREESPACE_VERSION_GREATER_OR_EQUAL(MAJOR, MINOR, PATCH) \
+    (FREESPACE_VERSION >= FREESPACE_MAKE_VERSION(MAJOR, MINOR, PATCH))
+
+#define FREESPACE_VERSION_EQUAL(MAJOR, MINOR, PATCH) \
+    (FREESPACE_VERSION == FREESPACE_MAKE_VERSION(MAJOR, MINOR, PATCH))
+//@}
+
+
 
 class VRPN_API vrpn_Freespace :
 	public vrpn_Tracker_Server,   // for the positional data
@@ -54,7 +113,7 @@ public:
 
 	static vrpn_Freespace* create(const char *name, 
 								  vrpn_Connection *conn, 
-				                  int device_index = 0,
+								  int device_index = 0,
 								  bool send_body_frames = false,
 								  bool send_user_frames = true);
 	virtual ~vrpn_Freespace(void);
@@ -66,7 +125,6 @@ public:
 	virtual void mainloop(void);
 
 private:
-	static bool _freespace_initialized;
 	static void freespaceInit();
 	/**
 	 * private constructor since opening of the device can fail.
@@ -79,6 +137,10 @@ private:
 	void handleUserFrame(const struct freespace_UserFrame&);
 	void handleBodyFrame(const struct freespace_BodyFrame&);
 	void handleLinkStatus(const struct freespace_LinkStatus&);
+#if FREESPACE_VERSION_GREATER_THAN(0,7,0)
+	void handleBodyUserFrame(const struct freespace_BodyUserFrame&);
+	void handleMotionEngineOutput(const struct freespace_MotionEngineOutput&);
+#endif
 
 	void deviceSetConfiguration(bool send_body_frames, bool send_user_frames);
 	void deviceConfigure();
@@ -93,6 +155,7 @@ protected:
 	FreespaceDeviceInfo _deviceInfo;
 	vrpn_float64 _lastBodyFrameTime;
 };
-#endif //VRPN_USE_FREESPACE
+#endif // VRPN_USE_FREESPACE
 
 #endif // VRPN_FREESPACE_H
+
