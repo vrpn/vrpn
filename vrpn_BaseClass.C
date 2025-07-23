@@ -716,7 +716,7 @@ void vrpn_BaseClassUnique::initiate_ping_cycle(void)
     d_unanswered_ping = 1;
 
     // We didn't send a warning about this one yet...
-    d_time_last_warned.tv_sec = d_time_last_warned.tv_usec = 0;
+    d_time_last_warned = d_time_first_ping;
 }
 
 /** Store the time at which the last pong occurred.  Used by client_mainloop()
