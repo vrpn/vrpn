@@ -834,7 +834,7 @@ void vrpn_File_Connection::find_superlative_user_times()
     }
 #ifdef VERBOSE
     else {
-        fprintf( stderr, "vrpn_File_Connection::find_superlative_user_times:  did not find a highest-time user message\n"
+        fprintf(stderr, "vrpn_File_Connection::find_superlative_user_times: did not find a highest-time user message\n");
     }
 #endif
 
@@ -845,7 +845,7 @@ void vrpn_File_Connection::find_superlative_user_times()
     }
 #ifdef VERBOSE
     else {
-        fprintf( stderr, "vrpn_File_Connection::find_superlative_user_times:  did not find an earliest user message\n"
+        fprintf(stderr, "vrpn_File_Connection::find_superlative_user_times: did not find an earliest user message\n");
     }
 #endif
 
