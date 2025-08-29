@@ -111,7 +111,7 @@ int vrpn_Logitech_Controller_Raw::on_connect(void* /*thisPtr*/, vrpn_HANDLERPARA
 }
 
 //////////////////////////////////////////////////////////////////////////
-// SideWinder Precision 2 Joystick
+// Logitech Extreme 3D Pro Joystick
 //////////////////////////////////////////////////////////////////////////
 vrpn_Logitech_Extreme_3D_Pro::vrpn_Logitech_Extreme_3D_Pro(const char *name, vrpn_Connection *c) :
 vrpn_Logitech_Controller_Raw(new vrpn_HidProductAcceptor(LOGITECH_VENDOR, EXTREME_3D_PRO), name, c, LOGITECH_VENDOR, EXTREME_3D_PRO),
@@ -180,7 +180,7 @@ void vrpn_Logitech_Extreme_3D_Pro::report_changes(vrpn_uint32 class_of_service)
 
 void vrpn_Logitech_Extreme_3D_Pro::decodePacket(size_t bytes, vrpn_uint8 *buffer)
 {
-	// SideWinder Precision 2 joystick
+	// Logitech Extreme 3D Pro joystick
 
 	// Decode all full reports, each of which is 40 bytes long.
 		// Because there is only one type of report, the initial "0" report-type
@@ -198,9 +198,10 @@ void vrpn_Logitech_Extreme_3D_Pro::decodePacket(size_t bytes, vrpn_uint8 *buffer
 	if (bytes == 7)
 	{
 		unsigned int x, y;
-		x = buffer[0];
-		y = ((buffer[2] & 0x0f) << 8) + buffer[1];
-		normalize_axes(x, y, 0x16, 1.0f, channel[0], channel[1], 12);
+		x = ((buffer[1] & 0x03) << 8) + buffer[0];
+		y = ((buffer[2] & 0x0f) << 6) + (buffer[1] >> 2);
+		normalize_axes(x, y, 0x16, 1.0f, channel[0], channel[1], 10);
+		normalize_axis(buffer[3], 0x12, 1.0f, channel[2], 8);
 		normalize_axis(buffer[3], 0x12, 1.0f, channel[2], 8);
 		normalize_axis(buffer[5], 0x0e, 1.0f, channel[3], 8);
 
