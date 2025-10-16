@@ -132,12 +132,12 @@ int	vrpn_IMU_Magnetometer::teardown_vector(vrpn_IMU_Vector *vector)
                           handle_analog_update);
 
 	// Delete the analog device.
-        try {
-          delete vector->ana;
-        } catch (...) {
-          fprintf(stderr, "vrpn_IMU_Magnetometer::teardown_vector(): delete failed\n");
-          return -1;
-        }
+  try {
+    delete vector->ana;
+  } catch (...) {
+    fprintf(stderr, "vrpn_IMU_Magnetometer::teardown_vector(): delete failed\n");
+    return -1;
+  }
 
 	return ret;
 }
@@ -150,8 +150,7 @@ void vrpn_IMU_Magnetometer::mainloop()
   // Call generic server mainloop, since we are a server
   server_mainloop();
 
-  // Mainloop() all of the analogs that are defined
-  // so that we will get all of the values fresh.
+  // Mainloop() our analog so that we will get fresh values.
   if (d_vector.ana != NULL) { d_vector.ana->mainloop(); };
 
   // Keep track of the minimum and maximum values of
@@ -184,8 +183,7 @@ void vrpn_IMU_Magnetometer::mainloop()
       double diff = d_vector.values[i] - d_mins[i];
       if (diff == 0) {
         channel[i] = 0;
-      }
-      else {
+      } else {
         channel[i] = -1 + 2 * diff / (d_maxes[i] - d_mins[i]);
       }
     }
@@ -201,7 +199,7 @@ void vrpn_IMU_Magnetometer::mainloop()
       channel[2] /= len;
     }
 
-    // pack and deliver analog unit vector report;
+    // Pack and deliver analog unit vector report;
     if (d_connection) {
       if (d_report_changes) {
         vrpn_Analog_Server::report_changes();
@@ -372,7 +370,7 @@ void vrpn_IMU_SimpleCombiner::mainloop()
   // Call generic server mainloop, since we are a server
   server_mainloop();
 
-  // Mainloop() all of the analogs that are defined and the button
+  // Mainloop() all of the analogs that are defined
   // so that we will get all of the values fresh.
   if (d_acceleration.ana != NULL) { d_acceleration.ana->mainloop(); }
   if (d_rotational_vel.ana != NULL) { d_rotational_vel.ana->mainloop(); }
@@ -473,45 +471,46 @@ void	vrpn_IMU_SimpleCombiner::update_matrix_based_on_values(double time_interval
 
     // Change how fast we adjust based on how close we are to the
     // expected value of gravity.  Then further scale this by the
-	// amount of time since the last estimate.
+	  // amount of time since the last estimate.
     double gravity_scale = scale * d_gravity_restore_rate * time_interval;
 
-	// Rotate the gravity vector by the estimated transform.
-	// We expect this direction to match the global down (-Y) vector.
-	q_vec_type gravity_global;
-	q_vec_set(gravity_global, d_acceleration.values[0],
-		d_acceleration.values[1], d_acceleration.values[2]);
-	q_vec_normalize(gravity_global, gravity_global);
-	q_xform(gravity_global, forward, gravity_global);
-	//printf("  XXX Gravity: %lg, %lg, %lg\n", gravity_global[0], gravity_global[1], gravity_global[2]);
+	  // Rotate the gravity vector by the estimated transform.
+	  // We expect this direction to match the global down (-Y) vector.
+	  q_vec_type gravity_global;
+	  q_vec_set(gravity_global, d_acceleration.values[0],
+		  d_acceleration.values[1], d_acceleration.values[2]);
+	  q_vec_normalize(gravity_global, gravity_global);
+	  q_xform(gravity_global, forward, gravity_global);
+	  //printf("  XXX Gravity: %lg, %lg, %lg\n", gravity_global[0], gravity_global[1], gravity_global[2]);
 
-	// Determine the rotation needed to take gravity and rotate
-	// it into the direction of -Y.
-	q_vec_type neg_y;
-	q_vec_set(neg_y, 0, -1, 0);
-	q_type rot;
-	q_from_two_vecs(rot, gravity_global, neg_y);
+	  // Determine the rotation needed to take gravity and rotate
+	  // it into the direction of -Y.
+	  q_vec_type neg_y;
+	  q_vec_set(neg_y, 0, -1, 0);
+	  q_type rot;
+	  q_from_two_vecs(rot, gravity_global, neg_y);
 
-	// Scale the rotation by the fraction of the orientation we
-	// should remove based on the time that has passed, how well our
-	// gravity vector matches expected, and the specified rate of
-	// correction.
-	static q_type identity = { 0, 0, 0, 1 };
-	q_type scaled_rot;
-	q_slerp(scaled_rot, identity, rot, gravity_scale);
-	//printf("XXX Scaling gravity vector by %lg\n", gravity_scale);
+	  // Scale the rotation by the fraction of the orientation we
+	  // should remove based on the time that has passed, how well our
+	  // gravity vector matches expected, and the specified rate of
+	  // correction.
+	  static q_type identity = { 0, 0, 0, 1 };
+	  q_type scaled_rot;
+	  q_slerp(scaled_rot, identity, rot, gravity_scale);
+	  //printf("XXX Scaling gravity vector by %lg\n", gravity_scale);
 
     // Rotate by this angle.
     q_mult(d_quat, scaled_rot, d_quat);
 
     //==================================================================
     // If we are getting compass data, and to the extent that the
-    // acceleration vector's magnitude is equal to the expected gravity,
+    // acceleration vector's magnitude is equal to the expected gravity
+    // (because we need a consistent down vector to do the cross product with),
     // compute the cross product of the cross product to find the
     // direction of north perpendicular to down.  This is measured in
     // the rotated coordinate system, so we need to rotate back to the
     // canonical orientation and do the comparison there.
-	//  The fraction of rotation should be as specified in the
+	  //  The fraction of rotation should be as specified in the
     // magnetometer-rotation-rate parameter so we don't swing the head
     // around too quickly but only slowly re-adjust.
 
@@ -522,33 +521,33 @@ void	vrpn_IMU_SimpleCombiner::update_matrix_based_on_values(double time_interval
 
       // Find the North vector that is perpendicular to gravity by
       // clearing its Y axis to zero and renormalizing.
-	  q_vec_type magnetometer;
+  	  q_vec_type magnetometer;
       q_vec_set(magnetometer, d_magnetometer.values[0],
         d_magnetometer.values[1], d_magnetometer.values[2]);
-	  q_vec_type magnetometer_global;
-	  q_xform(magnetometer_global, forward, magnetometer);
-	  magnetometer_global[Q_Y] = 0;
-	  q_vec_type north_global;
-	  q_vec_normalize(north_global, magnetometer_global);
-	  //printf("  XXX north_global: %lg, %lg, %lg\n", north_global[0], north_global[1], north_global[2]);
+	    q_vec_type magnetometer_global;
+	    q_xform(magnetometer_global, forward, magnetometer);
+	    magnetometer_global[Q_Y] = 0;
+	    q_vec_type north_global;
+	    q_vec_normalize(north_global, magnetometer_global);
+	    //printf("  XXX north_global: %lg, %lg, %lg\n", north_global[0], north_global[1], north_global[2]);
 
       // Determine the rotation needed to take north and rotate it
-	  // into the direction of negative Z.
-	  q_vec_type neg_z;
-	  q_vec_set(neg_z, 0, 0, -1);
-	  q_from_two_vecs(rot, north_global, neg_z);
+	    // into the direction of negative Z.
+	    q_vec_type neg_z;
+	    q_vec_set(neg_z, 0, 0, -1);
+	    q_from_two_vecs(rot, north_global, neg_z);
 
-	  // Change how fast we adjust based on how close we are to the
-	  // expected value of gravity.  Then further scale this by the
-	  // amount of time since the last estimate.
-	  double north_rate = scale * d_north_restore_rate * time_interval;
+	    // Change how fast we adjust based on how close we are to the
+	    // expected value of gravity.  Then further scale this by the
+	    // amount of time since the last estimate.
+	    double north_rate = scale * d_north_restore_rate * time_interval;
 
-	  // Scale the rotation by the fraction of the orientation we
-	  // should remove based on the time that has passed, how well our
-	  // gravity vector matches expected, and the specified rate of
-	  // correction.
-	  static q_type identity = { 0, 0, 0, 1 };
-	  q_slerp(scaled_rot, identity, rot, north_rate);
+	    // Scale the rotation by the fraction of the orientation we
+	    // should remove based on the time that has passed, how well our
+	    // gravity vector matches expected, and the specified rate of
+	    // correction.
+	    static q_type identity = { 0, 0, 0, 1 };
+	    q_slerp(scaled_rot, identity, rot, north_rate);
 
       // Rotate by this angle.
       q_mult(d_quat, scaled_rot, d_quat);
@@ -575,4 +574,3 @@ void	vrpn_IMU_SimpleCombiner::update_matrix_based_on_values(double time_interval
   q_mult(vel_quat, forward, canonical);
   vel_quat_dt = 1e-2;
 }
-

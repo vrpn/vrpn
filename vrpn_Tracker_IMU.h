@@ -31,11 +31,11 @@ public:
     }
   }
 
-  std::string name;	  //< Name of the Analog device driving these axes
+  std::string name;	  ///< Name of the Analog device driving these axes
 
-  int channels[3];	  //< Which channel to use from the Analog device for each axis
-  double offsets[3];  //< Offset to apply to the measurement (applied before scale)
-  double scales[3];   //< Scale, including positive or negative axis
+  int channels[3];	  ///< Which channel to use from the Analog device for each axis
+  double offsets[3];  ///< Offset to apply to the measurement (applied before scale)
+  double scales[3];   ///< Scale, including positive or negative axis
 };
 
 class vrpn_IMU_Vector {
@@ -44,10 +44,10 @@ public:
       values[0] = values[1] = values[2] = 0.0;
       time.tv_sec = 0; time.tv_usec = 0; };
 
-  vrpn_IMU_Axis_Params  params;     //< Parameters used to construct values
-  vrpn_Analog_Remote    *ana;       //< Analog Remote device to listen to
-  double                values[3];  //< Vector fo values
-  struct timeval        time;       //< Time of the report used to generate value
+  vrpn_IMU_Axis_Params  params;     ///< Parameters used to construct values
+  vrpn_Analog_Remote    *ana;       ///< Analog Remote device to listen to
+  double                values[3];  ///< Vector of values
+  struct timeval        time;       ///< Time of the report used to generate value
 };
 
 /// @brief Normalizes the three directions for a magnetometer into
@@ -87,9 +87,9 @@ public:
   virtual VRPN_API void mainloop();
 
 protected:
-  double	    d_update_interval;	//< How long to wait between sends
-  struct timeval  d_prevtime;		  //< Time of the previous report
-  bool        d_report_changes;   //< Call report_changes() or report()?
+  double	    d_update_interval;	///< How long to wait between sends
+  struct timeval  d_prevtime;		  ///< Time of the previous report
+  bool        d_report_changes;   ///< Call report_changes() or report()?
 
   /// Axes to handle gathering and scaling the required data.
   vrpn_IMU_Vector	d_vector;
@@ -108,9 +108,9 @@ class vrpn_Tracker_IMU_Params {
 public:
   VRPN_API vrpn_Tracker_IMU_Params(void) {}
 
-  vrpn_IMU_Axis_Params d_acceleration;     //< Acceleration input to use
-  vrpn_IMU_Axis_Params d_rotational_vel;  //< Rotational velocity input to use
-  std::string d_magnetometer_name;        //< Magnetometer to use (Empty if none)
+  vrpn_IMU_Axis_Params d_acceleration;    ///< Acceleration input to use
+  vrpn_IMU_Axis_Params d_rotational_vel;  ///< Rotational velocity input to use
+  std::string d_magnetometer_name;        ///< Magnetometer to use (Empty if none)
 };
 
 /// This class will turn set of two or three analog devices into a tracker by
@@ -139,18 +139,18 @@ class vrpn_IMU_SimpleCombiner : public vrpn_Tracker {
     virtual VRPN_API void mainloop ();
 
   protected:
-    double	    d_update_interval;	//< How long to wait between sends
-    struct timeval  d_prevtime;	  	//< Time of the previous report
-    bool       d_report_changes;    //< Report only changes, or always?
+    double	    d_update_interval;	///< How long to wait between sends
+    struct timeval  d_prevtime;	  	///< Time of the previous report
+    bool       d_report_changes;    ///< Report only changes, or always?
 
-    vrpn_IMU_Vector d_acceleration;     //< Analog input for accelerometer
-    vrpn_IMU_Vector d_rotational_vel;   //< Analog input for rotational velocity
-    vrpn_IMU_Vector d_magnetometer;     //< Analog input for magnetometer, if present
+    vrpn_IMU_Vector d_acceleration;     ///< Analog input for accelerometer
+    vrpn_IMU_Vector d_rotational_vel;   ///< Analog input for rotational velocity
+    vrpn_IMU_Vector d_magnetometer;     ///< Analog input for magnetometer, if present
 
-    double  d_gravity_restore_rate;     //< Radians/second to restore gravity vector
-    double  d_north_restore_rate;       //< Radians/second to restore North vector
+    double  d_gravity_restore_rate;     ///< Radians/second to restore gravity vector
+    double  d_north_restore_rate;       ///< Radians/second to restore North vector
 
-    struct timeval d_prev_update_time;  //< Time of previous integration update
+    struct timeval d_prev_update_time;  ///< Time of previous integration update
     void    update_matrix_based_on_values(double time_interval);
 
     int setup_vector(vrpn_IMU_Vector *vector, vrpn_ANALOGCHANGEHANDLER f);
