@@ -782,7 +782,7 @@ vrpn_int32 vrpn_Sound::decodeSetQuadVert(const char *buf,
     return 0;
 }
 
-vrpn_int32 vrpn_Sound::encodeSetTriVert(const vrpn_float64 vertices[4][3],
+vrpn_int32 vrpn_Sound::encodeSetTriVert(const vrpn_float64 vertices[3][3],
                                         const vrpn_int32 tag, char *buf)
 {
     char *mptr = buf;
