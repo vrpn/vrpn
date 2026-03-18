@@ -97,8 +97,8 @@ list(APPEND _deps_check QUATLIB_FOUND)
 
 if(NOT WIN32)
 	find_package(Threads)
-	list(APPEND _deps_libs ${CMAKE_THREAD_LIBS_INIT})
-	list(APPEND _deps_check CMAKE_HAVE_THREADS_LIBRARY)
+	list(APPEND _deps_libs Threads::Threads)
+	list(APPEND _deps_check Threads_FOUND)
 endif()
 
 

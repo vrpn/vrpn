@@ -18,8 +18,7 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR}
 
 # Do moc stuff
 set(QT_MOC_SRC)
-qt4_wrap_cpp(QT_MOC_SRC ${QT_HEADER})
-add_definitions(-DQT_GUI_LIBS -DQT_CORE_LIB -DQT3_SUPPORT)
+qt6_wrap_cpp(QT_MOC_SRC ${QT_HEADER})
 
 
 #######################################
@@ -55,4 +54,3 @@ add_custom_command(TARGET
 	copy
 	${vrpn_Qt_AutoGUI_SOURCE_DIR}/vrpn_Qt_AutoGUI.xml
 	${EXECUTABLE_OUTPUT_PATH}/Debug)
-

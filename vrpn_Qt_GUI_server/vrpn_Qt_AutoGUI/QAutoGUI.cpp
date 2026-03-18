@@ -8,7 +8,7 @@
                 manually, or via an XML description.
 
                 Widgets currently supported:
-                    
+
                     QPushButton
                     QCheckBox
                     QRadioButton
@@ -19,7 +19,7 @@
                     QScrollBar
                     QSlider
 
-                Widgets are added to the current column with AddWidget(), 
+                Widgets are added to the current column with AddWidget(),
                 and columns can be added with AddColumn().
 
 =========================================================================*/
@@ -33,9 +33,6 @@
 #include <QFile>
 #include <QGroupBox>
 #include <QHBoxLayout>
-#include <QXmlDefaultHandler>
-#include <QXmlInputSource>
-#include <QXmlSimpleReader>
 #include <QVBoxLayout>
 
 
@@ -58,18 +55,14 @@ bool QAutoGUI::ParseXML(const QString& fileName) {
         return false;
     }
 
-    // Set up XML parsing
-    QXmlAutoGUIHandler handler(this);
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        qDebug() << "QAutoGUI::ParseXML() : Error opening file" << fileName;
+        return false;
+    }
 
-    QXmlSimpleReader xmlReader;
-    xmlReader.setContentHandler(&handler);
-    xmlReader.setErrorHandler(&handler);
-    
     // Parse the GUI description
-    QXmlInputSource source(file);
-    xmlReader.parse(source);
-
-    return true;
+    QXmlAutoGUIHandler handler(this);
+    return handler.parse(&file);
 }
 
 void QAutoGUI::AddWidget(QWidget* widget) {
@@ -86,7 +79,7 @@ void QAutoGUI::AddWidget(QWidget* widget) {
 void QAutoGUI::AddColumn(const QString& title) {
     // If there is already a column, add a spacer at the end
     if (vertical) {
-        QSpacerItem* spacer = new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Expanding);    
+        QSpacerItem* spacer = new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Expanding);
         vertical->addItem(spacer);
     }
 
@@ -101,7 +94,7 @@ void QAutoGUI::AddColumn(const QString& title) {
 void QAutoGUI::Finish() {
     // If there is a column, add a spacer at the end
     if (vertical) {
-        QSpacerItem* spacer = new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Expanding);    
+        QSpacerItem* spacer = new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Expanding);
         vertical->addItem(spacer);
     }
 }
