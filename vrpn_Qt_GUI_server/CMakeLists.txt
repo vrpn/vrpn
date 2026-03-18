@@ -23,15 +23,9 @@ option(BUILD_SHARED_LIBS 0)
 # Include Qt
 #######################################
 
-# Need XML for QAutoGUI
-set(QT_USE_QTXML TRUE)
+find_package(Qt6 REQUIRED COMPONENTS Core Gui Widgets Xml)
 
-#Use Qt
-find_package(Qt4 REQUIRED)
-include(${QT_USE_FILE})
-
-include_directories(${QT_INCLUDE_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}
+include_directories(${CMAKE_CURRENT_BINARY_DIR}
 	${CMAKE_CURRENT_SOURCE_DIR})
 
 # Set up variables for moc
@@ -39,7 +33,7 @@ set(QT_HEADER vrpn_Qt.h)
 set(QT_SRC vrpn_Qt.C)
 
 # Do moc stuff
-qt4_wrap_cpp(QT_MOC_SRC ${QT_HEADER})
+qt6_wrap_cpp(QT_MOC_SRC ${QT_HEADER})
 
 
 #######################################
@@ -57,7 +51,7 @@ include_directories(${VRPN_INCLUDE_DIR})
 #######################################
 
 add_library(vrpn_Qt ${QT_HEADER} ${QT_SRC} ${QT_MOC_SRC} ${SRC})
-target_link_libraries(vrpn_Qt ${QT_LIBRARIES} ${VRPN_LIBRARY})
+target_link_libraries(vrpn_Qt Qt6::Core Qt6::Gui Qt6::Widgets Qt6::Xml ${VRPN_LIBRARY})
 if(WIN32)	# MS-Windows, both 32 and 64 bits
 	target_link_libraries(vrpn_Qt wsock32)
 elseif(APPLE)	# Apple
@@ -73,4 +67,3 @@ endif()
 
 add_subdirectory(vrpn_Qt_AutoGUI)
 add_subdirectory(vrpn_Qt_AppExample)
-

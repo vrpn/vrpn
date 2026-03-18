@@ -47,7 +47,7 @@ public:
     void AddWidget(QWidget* widget);
 
     // Add a column
-    void AddColumn(const QString& text = NULL);
+    void AddColumn(const QString& text = QString());
 
     // Finish building the GUI
     void Finish();

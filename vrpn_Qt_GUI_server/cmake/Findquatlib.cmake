@@ -64,8 +64,7 @@ else()
 	# Look for the library.
 	find_library(QUATLIB_LIBRARY
 		NAMES
-		quat.lib
-		libquat.a
+		quat
 		HINTS
 		"${QUATLIB_ROOT_DIR}"
 		PATH_SUFFIXES
