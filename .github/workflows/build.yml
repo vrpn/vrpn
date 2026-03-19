@@ -29,3 +29,40 @@ jobs:
 
       - name: Run tests
         run: ctest --test-dir build --build-config Release --output-on-failure
+
+  build-qt:
+    name: Qt GUI - ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          submodules: true
+
+      - name: Install Qt6
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: "6.10.*"
+          cache: true
+
+      # We need to install VRPN before building the Qt GUI server, as it depends on VRPN. Doesn't include as a subdirectory or anything, so we have to do it manually here.
+      - name: Install VRPN
+        run: |
+          cmake -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${{ github.workspace }}/vrpn-install
+          cmake --build build --config Release --parallel
+          cmake --install build --config Release
+
+      - name: Configure vrpn_Qt_GUI_server
+        run: >
+          cmake -B build-qt -S vrpn_Qt_GUI_server
+          -DCMAKE_BUILD_TYPE=Release
+          -DVRPN_ROOT_DIR=${{ github.workspace }}/vrpn-install
+          -DCMAKE_PREFIX_PATH=${{ github.workspace }}/vrpn-install
+
+      - name: Build vrpn_Qt_GUI_server
+        run: cmake --build build-qt --config Release --parallel
