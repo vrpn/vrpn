@@ -67,3 +67,4 @@ endif()
 
 add_subdirectory(vrpn_Qt_AutoGUI)
 add_subdirectory(vrpn_Qt_AppExample)
+

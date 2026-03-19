@@ -21,7 +21,7 @@ class QAutoGUI;
 
 class QAbstractButton;
 class QAbstractSlider;
-class QDoubleSpinBox;
+class QDoubleSpinBox; 
 class QSpinBox;
 
 
@@ -45,7 +45,7 @@ public:
     QXmlAutoGUIHandler(QAutoGUI* autoGui);
 
     // Callbacks for XML parsing
-    virtual bool startElement(const QString& namespaceURI, const QString& localName,
+    virtual bool startElement(const QString& namespaceURI, const QString& localName, 
                               const QString& qName, const QXmlAttributes& atts);
     virtual bool endDocument();
     virtual bool fatalError(const QXmlParseException& exception);

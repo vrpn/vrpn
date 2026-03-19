@@ -35,3 +35,4 @@ set_source_files_properties(${QT_SRC}
 add_executable(vrpn_Qt_AppExample ${QT_HEADER} ${QT_SRC} ${QT_MOC_SRC})
 add_dependencies(vrpn_Qt_AppExample vrpn_Qt)
 target_link_libraries(vrpn_Qt_AppExample vrpn_Qt)
+

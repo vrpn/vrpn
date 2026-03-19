@@ -54,3 +54,4 @@ add_custom_command(TARGET
 	copy
 	${vrpn_Qt_AutoGUI_SOURCE_DIR}/vrpn_Qt_AutoGUI.xml
 	${EXECUTABLE_OUTPUT_PATH}/Debug)
+
