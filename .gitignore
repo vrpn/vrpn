@@ -1,3 +1,5 @@
+.cache/
+
 # xcode/mac files
 *~.nib/
 *.perspective
