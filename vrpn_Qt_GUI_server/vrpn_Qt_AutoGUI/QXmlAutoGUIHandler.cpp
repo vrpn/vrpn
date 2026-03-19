@@ -74,56 +74,32 @@ QXmlAutoGUIHandler::QXmlAutoGUIHandler(QAutoGUI* autoGui) : gui(autoGui) {
 }
 
 
-bool QXmlAutoGUIHandler::parse(QIODevice* device) {
-    QXmlStreamReader xml(device);
-
-    while (!xml.atEnd() && !xml.hasError()) {
-        QXmlStreamReader::TokenType token = xml.readNext();
-
-        if (token == QXmlStreamReader::StartElement) {
-            QStringView name = xml.name();
-
-            // Top-level tag, do nothing
-            if (name == u"AUTOGUI") continue;
-
-            processElement(name, xml.attributes());
-        }
-    }
-
-    if (xml.hasError()) {
-        qWarning() << "XML parse error at line" << xml.lineNumber()
-                    << ", column" << xml.columnNumber() << ":"
-                    << xml.errorString();
-        return false;
-    }
-
-    // Finish up the GUI
-    gui->Finish();
-
-    return true;
-}
+bool QXmlAutoGUIHandler::startElement(const QString& namespaceURI, const QString& localName,
+                                      const QString& qName, const QXmlAttributes& atts) {
+    // Top-level tag, do nothing
+    if (qName == "AUTOGUI") return true;
 
 
-void QXmlAutoGUIHandler::processElement(const QStringView& qName, const QXmlStreamAttributes& atts) {
     // Add a column
-    if (qName == u"Column") {
+    if (qName == "Column") {
         QString text;
-        for (const auto& att : atts) {
-            if (att.name() == u"Text") {
-                text = att.value().toString();
+        for (int i = 0; i < atts.count(); i++) {
+            if (atts.qName(i) == "Text") {
+                text = atts.value(i);
             }
             else {
-                qWarning() << "Unsupported attribute: " << att.name();
+                qWarning() << "Unsupported attribute: " << atts.qName(i);
             }
         }
 
         gui->AddColumn(text);
-        return;
+
+        return true;
     }
 
 
     // Add a horizontal line
-    if (qName == u"Line") {
+    if (qName == "Line") {
         // Use a frame with some specific properties set to make it a line.
         // This is how Qt Designer does it...
         QFrame* line = new QFrame();
@@ -131,54 +107,55 @@ void QXmlAutoGUIHandler::processElement(const QStringView& qName, const QXmlStre
         line->setFrameShadow(QFrame::Sunken);
 
         gui->AddWidget(line);
-        return;
+
+        return true;
     }
 
 
     // Create the appropriate widget
-    if (qName == u"PushButton") {
+    if (qName == "PushButton") {
         // Create a push button
         QPushButton* widget = new QPushButton();
 
         ProcessPushButton(widget, atts);
     }
-    else if (qName == u"CheckBox") {
+    else if (qName == "CheckBox") {
         // Create a check box
         QCheckBox* widget = new QCheckBox();
 
         ProcessCheckableButton(widget, atts);
     }
-    else if (qName == u"RadioButton") {
-        // Create a radio button
+    else if (qName == "RadioButton") {
+        // Create a check box
         QRadioButton* widget = new QRadioButton();
 
         ProcessCheckableButton(widget, atts);
     }
-    else if (qName == u"SpinBox") {
+    else if (qName == "SpinBox") {
         // Create a spin box
         QSpinBox* widget = new QSpinBox();
 
         ProcessSpinBox(widget, atts);
     }
-    else if (qName == u"DoubleSpinBox") {
-        // Create a double spin box
+    else if (qName == "DoubleSpinBox") {
+        // Create a spin box
         QDoubleSpinBox* widget = new QDoubleSpinBox();
 
         ProcessDoubleSpinBox(widget, atts);
     }
-    else if (qName == u"Dial") {
-        // Create a dial
+    else if (qName == "Dial") {
+        // Create a spin box
         QDial* widget = new QDial();
         widget->setNotchesVisible(true);
 
         ProcessSliderWidget(widget, atts);
     }
-    else if (qName == u"ScrollBar") {
+    else if (qName == "ScrollBar") {
         QScrollBar* widget = new QScrollBar(Qt::Horizontal);
 
         ProcessSliderWidget(widget, atts);
     }
-    else if (qName == u"Slider") {
+    else if (qName == "Slider") {
         QSlider* widget = new QSlider(Qt::Horizontal);
         widget->setTickPosition(QSlider::TicksBelow);
 
@@ -187,20 +164,58 @@ void QXmlAutoGUIHandler::processElement(const QStringView& qName, const QXmlStre
     else {
         qWarning() << "Unsupported widget type: " << qName;
     }
+
+    return true;
+}
+
+bool QXmlAutoGUIHandler::endDocument() {
+    // Finish up the GUI
+    gui->Finish();
+
+    return true;
+}
+
+bool QXmlAutoGUIHandler::fatalError(const QXmlParseException& exception) {
+    // Print a fatal error message
+    qWarning()  << "Fatal error on line" << exception.lineNumber()
+                << ", column" << exception.columnNumber() << ":"
+                << exception.message();
+
+    return false;
 }
 
 
-void QXmlAutoGUIHandler::ProcessPushButton(QAbstractButton* widget, const QXmlStreamAttributes& atts) {
+void QXmlAutoGUIHandler::ProcessPushButton(QAbstractButton* widget, const QXmlAttributes& atts) {
     // Check attributes
-    for (const auto& att : atts) {
-        if (att.name() == u"Name") {
-            widget->setObjectName(att.value().toString());
+    for (int i = 0; i < atts.count(); i++) {
+        if (atts.qName(i) == "Name") {
+            widget->setObjectName(atts.value(i));
         }
-        else if (att.name() == u"Text") {
-            widget->setText(att.value().toString());
+        else if (atts.qName(i) == "Text") {
+            widget->setText(atts.value(i));
         }
         else {
-            qWarning() << "Unsupported attribute: " << att.name();
+            qWarning() << "Unsupported attribute: " << atts.qName(i);
+        }
+    }
+
+    // Add the widget
+    gui->AddWidget(widget);
+}
+void QXmlAutoGUIHandler::ProcessCheckableButton(QAbstractButton* widget, const QXmlAttributes& atts) {
+    // Check attributes
+    for (int i = 0; i < atts.count(); i++) {
+        if (atts.qName(i) == "Name") {
+            widget->setObjectName(atts.value(i));
+        }
+        else if (atts.qName(i) == "Text") {
+            widget->setText(atts.value(i));
+        }
+        else if (atts.qName(i) == "Checked") {
+            widget->setChecked(atts.value(i).toInt());
+        }
+        else {
+            qWarning() << "Unsupported attribute: " << atts.qName(i);
         }
     }
 
@@ -208,54 +223,33 @@ void QXmlAutoGUIHandler::ProcessPushButton(QAbstractButton* widget, const QXmlSt
     gui->AddWidget(widget);
 }
 
-void QXmlAutoGUIHandler::ProcessCheckableButton(QAbstractButton* widget, const QXmlStreamAttributes& atts) {
-    // Check attributes
-    for (const auto& att : atts) {
-        if (att.name() == u"Name") {
-            widget->setObjectName(att.value().toString());
-        }
-        else if (att.name() == u"Text") {
-            widget->setText(att.value().toString());
-        }
-        else if (att.name() == u"Checked") {
-            widget->setChecked(att.value().toInt());
-        }
-        else {
-            qWarning() << "Unsupported attribute: " << att.name();
-        }
-    }
-
-    // Add the widget
-    gui->AddWidget(widget);
-}
-
-void QXmlAutoGUIHandler::ProcessSliderWidget(QAbstractSlider* widget, const QXmlStreamAttributes& atts) {
+void QXmlAutoGUIHandler::ProcessSliderWidget(QAbstractSlider* widget, const QXmlAttributes& atts) {
     // Set this so the scrollbar can expand
     widget->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Preferred);
 
     // Check attributes
     QString text;
-    for (const auto& att : atts) {
-        if (att.name() == u"Name") {
-            widget->setObjectName(att.value().toString());
+    for (int i = 0; i < atts.count(); i++) {
+        if (atts.qName(i) == "Name") {
+            widget->setObjectName(atts.value(i));
         }
-        else if (att.name() == u"Text") {
-            text = att.value().toString();
+        else if (atts.qName(i) == "Text") {
+            text = atts.value(i);
         }
-        else if (att.name() == u"Min") {
-            widget->setMinimum(att.value().toInt());
+        else if (atts.qName(i) == "Min") {
+            widget->setMinimum(atts.value(i).toInt());
         }
-        else if (att.name() == u"Max") {
-            widget->setMaximum(att.value().toInt());
+        else if (atts.qName(i) == "Max") {
+            widget->setMaximum(atts.value(i).toInt());
         }
-        else if (att.name() == u"Value") {
-            widget->setValue(att.value().toInt());
+        else if (atts.qName(i) == "Value") {
+            widget->setValue(atts.value(i).toInt());
         }
-        else if (att.name() == u"Step") {
-            widget->setSingleStep(att.value().toInt());
+        else if (atts.qName(i) == "Step") {
+            widget->setSingleStep(atts.value(i).toInt());
         }
         else {
-            qWarning() << "Unsupported attribute: " << att.name();
+            qWarning() << "Unsupported attribute: " << atts.qName(i);
         }
     }
 
@@ -264,30 +258,30 @@ void QXmlAutoGUIHandler::ProcessSliderWidget(QAbstractSlider* widget, const QXml
     gui->AddWidget(container);
 }
 
-void QXmlAutoGUIHandler::ProcessSpinBox(QSpinBox* widget, const QXmlStreamAttributes& atts)  {
+void QXmlAutoGUIHandler::ProcessSpinBox(QSpinBox* widget, const QXmlAttributes& atts)  {
     // Check attributes
     QString text;
-    for (const auto& att : atts) {
-        if (att.name() == u"Name") {
-            widget->setObjectName(att.value().toString());
+    for (int i = 0; i < atts.count(); i++) {
+        if (atts.qName(i) == "Name") {
+            widget->setObjectName(atts.value(i));
         }
-        else if (att.name() == u"Text") {
-            text = att.value().toString();
+        else if (atts.qName(i) == "Text") {
+            text = atts.value(i);
         }
-        else if (att.name() == u"Min") {
-            widget->setMinimum(att.value().toInt());
+        else if (atts.qName(i) == "Min") {
+            widget->setMinimum(atts.value(i).toInt());
         }
-        else if (att.name() == u"Max") {
-            widget->setMaximum(att.value().toInt());
+        else if (atts.qName(i) == "Max") {
+            widget->setMaximum(atts.value(i).toInt());
         }
-        else if (att.name() == u"Value") {
-            widget->setValue(att.value().toInt());
+        else if (atts.qName(i) == "Value") {
+            widget->setValue(atts.value(i).toInt());
         }
-        else if (att.name() == u"Step") {
-            widget->setSingleStep(att.value().toInt());
+        else if (atts.qName(i) == "Step") {
+            widget->setSingleStep(atts.value(i).toInt());
         }
         else {
-            qWarning() << "Unsupported attribute: " << att.name();
+            qWarning() << "Unsupported attribute: " << atts.qName(i);
         }
     }
 
@@ -296,30 +290,30 @@ void QXmlAutoGUIHandler::ProcessSpinBox(QSpinBox* widget, const QXmlStreamAttrib
     gui->AddWidget(container);
 }
 
-void QXmlAutoGUIHandler::ProcessDoubleSpinBox(QDoubleSpinBox* widget, const QXmlStreamAttributes& atts)  {
+void QXmlAutoGUIHandler::ProcessDoubleSpinBox(QDoubleSpinBox* widget, const QXmlAttributes& atts)  {
     // Check attributes
     QString text;
-    for (const auto& att : atts) {
-        if (att.name() == u"Name") {
-            widget->setObjectName(att.value().toString());
+    for (int i = 0; i < atts.count(); i++) {
+        if (atts.qName(i) == "Name") {
+            widget->setObjectName(atts.value(i));
         }
-        else if (att.name() == u"Text") {
-            text = att.value().toString();
+        else if (atts.qName(i) == "Text") {
+            text = atts.value(i);
         }
-        else if (att.name() == u"Min") {
-            widget->setMinimum(att.value().toDouble());
+        else if (atts.qName(i) == "Min") {
+            widget->setMinimum(atts.value(i).toDouble());
         }
-        else if (att.name() == u"Max") {
-            widget->setMaximum(att.value().toDouble());
+        else if (atts.qName(i) == "Max") {
+            widget->setMaximum(atts.value(i).toDouble());
         }
-        else if (att.name() == u"Value") {
-            widget->setValue(att.value().toDouble());
+        else if (atts.qName(i) == "Value") {
+            widget->setValue(atts.value(i).toDouble());
         }
-        else if (att.name() == u"Step") {
-            widget->setSingleStep(att.value().toDouble());
+        else if (atts.qName(i) == "Step") {
+            widget->setSingleStep(atts.value(i).toDouble());
         }
         else {
-            qWarning() << "Unsupported attribute: " << att.name();
+            qWarning() << "Unsupported attribute: " << atts.qName(i);
         }
     }
 

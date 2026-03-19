@@ -13,7 +13,7 @@
 #define QXMLAUTOGUIHANDLER_H
 
 
-#include <QXmlStreamReader>
+#include <QXmlDefaultHandler>
 #include <QWidget>
 
 
@@ -31,7 +31,7 @@ class QSpinBox;
 // Small container for Qt analog widgets that adds a label
 class QAnalogContainer : public QWidget {
 public:
-    QAnalogContainer(QWidget* widget, const QString& text = QString());
+    QAnalogContainer(QWidget* widget, const QString& text = NULL);
 };
 
 
@@ -39,24 +39,24 @@ public:
 
 
 // XML handler
-class QXmlAutoGUIHandler {
+class QXmlAutoGUIHandler : public QXmlDefaultHandler {
 public:
     // Constructor
     QXmlAutoGUIHandler(QAutoGUI* autoGui);
 
-    // Parse from a QIODevice (e.g. QFile)
-    bool parse(QIODevice* device);
+    // Callbacks for XML parsing
+    virtual bool startElement(const QString& namespaceURI, const QString& localName,
+                              const QString& qName, const QXmlAttributes& atts);
+    virtual bool endDocument();
+    virtual bool fatalError(const QXmlParseException& exception);
 
 protected:
-    // Process individual element types
-    void processElement(const QStringView& name, const QXmlStreamAttributes& atts);
-
     // Set up widgets from XML attributes
-    void ProcessPushButton(QAbstractButton* button, const QXmlStreamAttributes& atts);
-    void ProcessCheckableButton(QAbstractButton* button, const QXmlStreamAttributes& atts);
-    void ProcessSliderWidget(QAbstractSlider* widget, const QXmlStreamAttributes& atts);
-    void ProcessSpinBox(QSpinBox* widget, const QXmlStreamAttributes& atts);
-    void ProcessDoubleSpinBox(QDoubleSpinBox* widget, const QXmlStreamAttributes& atts);
+    void ProcessPushButton(QAbstractButton* button, const QXmlAttributes& atts);
+    void ProcessCheckableButton(QAbstractButton* button, const QXmlAttributes& atts);
+    void ProcessSliderWidget(QAbstractSlider* widget, const QXmlAttributes& atts);
+    void ProcessSpinBox(QSpinBox* widget, const QXmlAttributes& atts);
+    void ProcessDoubleSpinBox(QDoubleSpinBox* widget, const QXmlAttributes& atts);
 
     // The QAutoGUI widget
     QAutoGUI* gui;

@@ -23,7 +23,7 @@ option(BUILD_SHARED_LIBS 0)
 # Include Qt
 #######################################
 
-find_package(Qt6 REQUIRED COMPONENTS Core Gui Widgets Xml)
+find_package(Qt6 REQUIRED COMPONENTS Core Gui Widgets Xml Core5Compat)
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR}
 	${CMAKE_CURRENT_SOURCE_DIR})
@@ -51,7 +51,7 @@ include_directories(${VRPN_INCLUDE_DIR})
 #######################################
 
 add_library(vrpn_Qt ${QT_HEADER} ${QT_SRC} ${QT_MOC_SRC} ${SRC})
-target_link_libraries(vrpn_Qt Qt6::Core Qt6::Gui Qt6::Widgets Qt6::Xml ${VRPN_LIBRARY})
+target_link_libraries(vrpn_Qt Qt6::Core Qt6::Gui Qt6::Widgets Qt6::Xml Qt6::Core5Compat ${VRPN_LIBRARY})
 if(WIN32)	# MS-Windows, both 32 and 64 bits
 	target_link_libraries(vrpn_Qt wsock32)
 elseif(APPLE)	# Apple
