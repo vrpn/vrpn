@@ -25,6 +25,7 @@ jobs:
         uses: jurplel/install-qt-action@v4
         with:
           version: "6.10.*"
+          modules: qt5compat
           cache: true
 
       - name: Configure VRPN

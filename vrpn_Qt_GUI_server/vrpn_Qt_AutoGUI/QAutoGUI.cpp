@@ -34,6 +34,8 @@
 #include <QGroupBox>
 #include <QHBoxLayout>
 #include <QVBoxLayout>
+#include <QXmlSimpleReader>
+#include <QXmlInputSource>
 
 
 QAutoGUI::QAutoGUI(QWidget* parent) : QWidget(parent) {
@@ -55,14 +57,14 @@ bool QAutoGUI::ParseXML(const QString& fileName) {
         return false;
     }
 
-    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        qDebug() << "QAutoGUI::ParseXML() : Error opening file" << fileName;
-        return false;
-    }
-
     // Parse the GUI description
+    QXmlInputSource source(&file);
+    QXmlSimpleReader reader;
     QXmlAutoGUIHandler handler(this);
-    return handler.parse(&file);
+    reader.setContentHandler(&handler);
+    reader.setErrorHandler(&handler);
+
+    return reader.parse(source);
 }
 
 void QAutoGUI::AddWidget(QWidget* widget) {
