@@ -28,7 +28,7 @@ int main(int argc, char** argv) {
 
     // Set default xml file, server name, and port
     QString xmlFile("vrpn_Qt_AutoGUI.xml");
-    const char* name = "qt";
+    char* name = "qt";
     int port = vrpn_DEFAULT_LISTEN_PORT_NO;
     
     // Parse the command line to override defaults

@@ -27,7 +27,7 @@ int main(int argc, char** argv) {
 
 
     // Set default server name and port
-    const char* name = "qt";
+    char* name = "qt";
     int port = vrpn_DEFAULT_LISTEN_PORT_NO;
     
     // Parse the command line to override defaults
