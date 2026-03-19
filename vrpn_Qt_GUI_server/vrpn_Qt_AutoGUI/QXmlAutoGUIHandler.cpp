@@ -60,7 +60,7 @@ QAnalogContainer::QAnalogContainer(QWidget* widget, const QString& text) {
         // Add to the layout
         layout->addWidget(display);
     }
-
+    
     layout->addStretch();
 
     setLayout(layout);
@@ -74,7 +74,7 @@ QXmlAutoGUIHandler::QXmlAutoGUIHandler(QAutoGUI* autoGui) : gui(autoGui) {
 }
 
 
-bool QXmlAutoGUIHandler::startElement(const QString& namespaceURI, const QString& localName,
+bool QXmlAutoGUIHandler::startElement(const QString& namespaceURI, const QString& localName, 
                                       const QString& qName, const QXmlAttributes& atts) {
     // Top-level tag, do nothing
     if (qName == "AUTOGUI") return true;
@@ -100,7 +100,7 @@ bool QXmlAutoGUIHandler::startElement(const QString& namespaceURI, const QString
 
     // Add a horizontal line
     if (qName == "Line") {
-        // Use a frame with some specific properties set to make it a line.
+        // Use a frame with some specific properties set to make it a line.  
         // This is how Qt Designer does it...
         QFrame* line = new QFrame();
         line->setFrameShape(QFrame::HLine);
@@ -113,7 +113,7 @@ bool QXmlAutoGUIHandler::startElement(const QString& namespaceURI, const QString
 
 
     // Create the appropriate widget
-    if (qName == "PushButton") {
+    if (qName == "PushButton") {        
         // Create a push button
         QPushButton* widget = new QPushButton();
 
@@ -136,7 +136,7 @@ bool QXmlAutoGUIHandler::startElement(const QString& namespaceURI, const QString
         QSpinBox* widget = new QSpinBox();
 
         ProcessSpinBox(widget, atts);
-    }
+    }    
     else if (qName == "DoubleSpinBox") {
         // Create a spin box
         QDoubleSpinBox* widget = new QDoubleSpinBox();
@@ -210,7 +210,7 @@ void QXmlAutoGUIHandler::ProcessCheckableButton(QAbstractButton* widget, const Q
         }
         else if (atts.qName(i) == "Text") {
             widget->setText(atts.value(i));
-        }
+        }            
         else if (atts.qName(i) == "Checked") {
             widget->setChecked(atts.value(i).toInt());
         }
@@ -235,10 +235,10 @@ void QXmlAutoGUIHandler::ProcessSliderWidget(QAbstractSlider* widget, const QXml
         }
         else if (atts.qName(i) == "Text") {
             text = atts.value(i);
-        }
+        }            
         else if (atts.qName(i) == "Min") {
             widget->setMinimum(atts.value(i).toInt());
-        }
+        }            
         else if (atts.qName(i) == "Max") {
             widget->setMaximum(atts.value(i).toInt());
         }
@@ -267,10 +267,10 @@ void QXmlAutoGUIHandler::ProcessSpinBox(QSpinBox* widget, const QXmlAttributes& 
         }
         else if (atts.qName(i) == "Text") {
             text = atts.value(i);
-        }
+        }              
         else if (atts.qName(i) == "Min") {
             widget->setMinimum(atts.value(i).toInt());
-        }
+        }            
         else if (atts.qName(i) == "Max") {
             widget->setMaximum(atts.value(i).toInt());
         }
@@ -299,10 +299,10 @@ void QXmlAutoGUIHandler::ProcessDoubleSpinBox(QDoubleSpinBox* widget, const QXml
         }
         else if (atts.qName(i) == "Text") {
             text = atts.value(i);
-        }
+        }           
         else if (atts.qName(i) == "Min") {
             widget->setMinimum(atts.value(i).toDouble());
-        }
+        }            
         else if (atts.qName(i) == "Max") {
             widget->setMaximum(atts.value(i).toDouble());
         }
