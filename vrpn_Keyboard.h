@@ -6,7 +6,9 @@
 // It provides a 256-channel vrpn_Button for keyboard buttons, reporting the
 // scan codes for the key.
 //
-// This implementation is Windows-specific, as it leverages the windows mouse calls.
+// This implementation supports Windows (via GetKeyboardState) and macOS
+// (via CoreGraphics CGEventSourceKeyState).  On macOS, Accessibility
+// permissions are required (System Settings > Privacy & Security > Accessibility).
 //
 
 #include "vrpn_Button.h"                // for vrpn_Button_Filter

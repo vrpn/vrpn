@@ -32,7 +32,8 @@
 // and device protocols.  GPM is commonly included in Linux distributions.
 // The GPM homepage is http://linux.schottelius.org/gpm/
 //
-// It also includes a Windows interface to the mouse.
+// It also includes a Windows interface to the mouse and a macOS interface
+// using CoreGraphics for cursor position and button state polling.
 //
 // The interface reports mouse position in fraction of the screen.
 // The previous version of the Windows implementation had reported them
