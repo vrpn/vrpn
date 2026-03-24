@@ -39,6 +39,10 @@
 
 #endif
 
+#ifdef __APPLE__
+#include <CoreGraphics/CoreGraphics.h>
+#endif
+
 ///////////////////////////////////////////////////////////////////////////
 
 vrpn_Mouse::vrpn_Mouse( const char* name, vrpn_Connection * cxn ) :
@@ -81,6 +85,8 @@ vrpn_Mouse::vrpn_Mouse( const char* name, vrpn_Connection * cxn ) :
 #elif defined(_WIN32)
     // Nothing needs to be opened under Windows; we just make direct
     // calls below to find the values.
+#elif defined(__APPLE__)
+    // CoreGraphics polling functions require no initialization.
 #else
     fprintf(stderr,"vrpn_Mouse::vrpn_Mouse() Not implement on this architecture\n");
 #endif
@@ -166,6 +172,30 @@ int vrpn_Mouse::get_report()
     vrpn_Analog::channel[1] = (vrpn_float64)(curPos.y - GetSystemMetrics(SM_YVIRTUALSCREEN)) / GetSystemMetrics(SM_CYVIRTUALSCREEN);
 
     vrpn_gettimeofday( &timestamp, NULL );
+    report_changes();
+    return 1;
+#elif defined(__APPLE__)
+    // Check mouse button states
+    vrpn_Button::buttons[0] = CGEventSourceButtonState(
+        kCGEventSourceStateCombinedSessionState, kCGMouseButtonLeft) ? 1 : 0;
+    vrpn_Button::buttons[1] = CGEventSourceButtonState(
+        kCGEventSourceStateCombinedSessionState, kCGMouseButtonCenter) ? 1 : 0;
+    vrpn_Button::buttons[2] = CGEventSourceButtonState(
+        kCGEventSourceStateCombinedSessionState, kCGMouseButtonRight) ? 1 : 0;
+
+    // Get cursor position
+    CGEventRef event = CGEventCreate(NULL);
+    CGPoint cursor = CGEventGetLocation(event);
+    CFRelease(event);
+
+    // Normalize position to [0..1] across the main display
+    CGRect mainBounds = CGDisplayBounds(CGMainDisplayID());
+    vrpn_Analog::channel[0] = (vrpn_float64)(cursor.x - mainBounds.origin.x)
+                               / mainBounds.size.width;
+    vrpn_Analog::channel[1] = (vrpn_float64)(cursor.y - mainBounds.origin.y)
+                               / mainBounds.size.height;
+
+    vrpn_gettimeofday(&timestamp, NULL);
     report_changes();
     return 1;
 #else

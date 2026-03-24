@@ -8,6 +8,11 @@ class VRPN_API vrpn_Connection;
 #pragma comment (lib, "user32.lib")
 #endif
 
+#ifdef __APPLE__
+#include <CoreGraphics/CoreGraphics.h>
+#include <ApplicationServices/ApplicationServices.h>
+#endif
+
 vrpn_Keyboard::vrpn_Keyboard (const char * name, vrpn_Connection * c) :
     vrpn_Button_Filter(name, c)
 {
@@ -19,8 +24,15 @@ vrpn_Keyboard::vrpn_Keyboard (const char * name, vrpn_Connection * c) :
       buttons[i] = lastbuttons[i] = 0;
     }
 	
-#ifndef _WIN32
+#if !defined(_WIN32) && !defined(__APPLE__)
     fprintf(stderr,"vrpn_Keyboard:: Not implement on this architecture\n");
+#endif
+
+#ifdef __APPLE__
+    if (!AXIsProcessTrusted()) {
+        fprintf(stderr, "vrpn_Keyboard: macOS Accessibility permission not granted.\n");
+        fprintf(stderr, "  Grant access in System Settings > Privacy & Security > Accessibility\n");
+    }
 #endif
 }
 
@@ -63,6 +75,17 @@ int vrpn_Keyboard::get_report(void)
       if ( (scancode != 0) && ((0x80 & virtual_keys[i]) != 0) ) {
         buttons[scancode] = 1;
       }
+    }
+#elif defined(__APPLE__)
+    // macOS virtual keycodes are 0-127
+    for (int i = 0; i < 256; i++) {
+        buttons[i] = 0;
+    }
+    for (int i = 0; i < 128; i++) {
+        if (CGEventSourceKeyState(kCGEventSourceStateCombinedSessionState,
+                                   (CGKeyCode)i)) {
+            buttons[i] = 1;
+        }
     }
 #endif
     report_changes();        // Report updates to VRPN

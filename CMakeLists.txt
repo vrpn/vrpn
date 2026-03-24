@@ -676,6 +676,20 @@ if(VRPN_USE_GPM_MOUSE)
 endif()
 
 ###
+# CoreGraphics (macOS mouse and keyboard support)
+###
+if(APPLE)
+	find_library(COREGRAPHICS_FRAMEWORK CoreGraphics)
+	if(COREGRAPHICS_FRAMEWORK)
+		list(APPEND EXTRA_LIBS ${COREGRAPHICS_FRAMEWORK})
+	endif()
+	find_library(APPLICATIONSERVICES_FRAMEWORK ApplicationServices)
+	if(APPLICATIONSERVICES_FRAMEWORK)
+		list(APPEND EXTRA_LIBS ${APPLICATIONSERVICES_FRAMEWORK})
+	endif()
+endif()
+
+###
 # INTERSENSE
 ###
 find_package(InterSense ${QUIET_IF_SUBPROJECT})
