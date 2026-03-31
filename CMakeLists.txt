@@ -1017,6 +1017,7 @@ set(VRPN_CLIENT_SOURCES
 	vrpn_SerialPort.C
 	vrpn_Shared.C
 	vrpn_SharedObject.C
+	vrpn_Socket.C
 	vrpn_Sound.C
 	vrpn_Text.C
 	vrpn_Thread.C
@@ -1053,6 +1054,7 @@ set(VRPN_CLIENT_PUBLIC_HEADERS
 	vrpn_SerialPort.h
 	vrpn_Shared.h
 	vrpn_SharedObject.h
+	vrpn_Socket.h
 	vrpn_Sound.h
 	vrpn_Text.h
 	vrpn_Thread.h
