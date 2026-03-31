@@ -31,7 +31,11 @@ vrpn_Keyboard::vrpn_Keyboard (const char * name, vrpn_Connection * c) :
 #ifdef __APPLE__
     if (!AXIsProcessTrusted()) {
         fprintf(stderr, "vrpn_Keyboard: macOS Accessibility permission not granted.\n");
-        fprintf(stderr, "  Grant access in System Settings > Privacy & Security > Accessibility\n");
+        fprintf(stderr, "  Accessibility permissions must be granted for the terminal application\n");
+        fprintf(stderr, "  (e.g. Terminal, iTerm2) in System Settings > Privacy & Security > Accessibility\n");
+        fprintf(stderr, "  for keyboard input to be captured correctly.\n");
+        fprintf(stderr, "  WARNING: This is a security risk. Any program run in an Accessibility-enabled\n");
+        fprintf(stderr, "  terminal may be able to capture all keystrokes, including passwords.\n");
     }
 #endif
 }
