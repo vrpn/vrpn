@@ -3,7 +3,7 @@
     @date 2015
 
     @author
-    Ryan Pavlik (incorporating some code modified from Boost)
+    Rylie Pavlik (incorporating some code modified from Boost)
     Sensics, Inc.
     <http://sensics.com/osvr>
 */

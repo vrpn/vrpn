@@ -10,7 +10,7 @@
 #  MINGWSEARCH_TARGET_TRIPLE - something like x86_64-w64-mingw32 or i686-w64-mingw32, use as you see fit.
 #
 # Original Author:
-# 2016 Ryan Pavlik <ryan@sensics.com> <ryan.pavlik@gmail.com>
+# 2016 Rylie Pavlik <rylie@ryliepavlik.com>
 #
 # Copyright Sensics, Inc. 2016.
 # Distributed under the Boost Software License, Version 1.0.

@@ -18,10 +18,10 @@
 # http://wemarsh.com/
 # Kognitiv Neuroinformatik, Universität Bremen
 #
-# (building on Ryan Pavlik's templates)
+# (building on Rylie Pavlik's templates)
 #
-# 2013 Ryan Pavlik <rpavlik@iastate.edu> <abiryan@ryand.net>
-# http://academic.cleardefinition.com
+# 2013 Rylie Pavlik <rylie@ryliepavlik.com>
+# https://ryliepavlik.com/
 # Iowa State University HCI Graduate Program/VRAC
 #
 # Distributed under the Boost Software License, Version 1.0.
