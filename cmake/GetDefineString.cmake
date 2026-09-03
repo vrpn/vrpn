@@ -7,7 +7,7 @@
 #                     [INCLUDE_DIRS <include-dirs>]
 #                     [DEFINES] <-Ddefinitions>)
 # Original Author:
-# 2014 Ryan Pavlik <ryan@sensics.com> <abiryan@ryand.net>
+# 2014 Rylie Pavlik <rylie@ryliepavlik.com>
 #
 # Copyright Sensics, Inc. 2014.
 # Distributed under the Boost Software License, Version 1.0.

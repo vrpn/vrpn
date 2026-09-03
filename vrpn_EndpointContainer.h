@@ -4,7 +4,7 @@
     @date 2015
 
     @author
-    Ryan Pavlik
+    Rylie Pavlik
     Sensics, Inc.
     <http://sensics.com/osvr>
 */

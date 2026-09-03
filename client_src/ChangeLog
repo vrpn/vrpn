@@ -4,7 +4,7 @@
 
 2009-12-15  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
-	* CmakeLists.txt : Improvements by Ryan Pavlik to the Cmake files that
+	* CmakeLists.txt : Improvements by Rylie Pavlik to the Cmake files that
 		make them cleaner and use more modern constructions.  Also various
 		bug fixes to make code compile on a number of architectures.
 	* bdbox_client.C : Compiles with modern VRPN.

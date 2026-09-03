@@ -2,7 +2,7 @@
 --[[
 Script to generate an include header wrapping windows.h, defining
 symbols to make the include minimal, and undefining to initial state
-when done. -- Ryan Pavlik
+when done. -- Rylie Pavlik
 
 Copyright 2015 Sensics, Inc.
 Distributed under the Boost Software License, Version 1.0.
@@ -33,7 +33,7 @@ print [[/** @file
     @date 2015
 
     @author
-    Ryan Pavlik
+    Rylie Pavlik
     Sensics, Inc.
     <http://sensics.com/osvr>
 */

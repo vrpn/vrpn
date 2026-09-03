@@ -282,7 +282,7 @@
 // WiiUse library is GPL, which is more restrictive than the VRPN public-
 // domain license, so check out its license file before building this driver
 // into your code.  The original WiiUse library was abandoned and a new
-// fork by Ryan Pavlik is available at https://github.com/rpavlik/wiiuse.
+// fork by Rylie Pavlik is available at https://github.com/rpavlik/wiiuse.
 // To get the WiiUse library to compile on Visual Studio 2005 (apparently
 // not for VS 2008), you need to add the include path
 // to the driver developer kit (C:\WINDDK\3790.1830\inc\wxp) and the

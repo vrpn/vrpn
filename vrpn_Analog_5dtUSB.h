@@ -4,9 +4,9 @@
 	@date	2011
 
 	@author
-	Ryan Pavlik
-	<rpavlik@iastate.edu> and <abiryan@ryand.net>
-	http://academic.cleardefinition.com/
+	Rylie Pavlik
+	<rylie@ryliepavlik.com>
+	https://ryliepavlik.com/
 	Iowa State University Virtual Reality Applications Center
 	Human-Computer Interaction Graduate Program
 */
@@ -30,7 +30,7 @@
 
 	This supports connecting to 5dt gloves over USB that present a HID device interface.
 	This includes the 5DT Data Glove 5 Ultra and the 5DT Data Glove 14 Ultra, as well
-	as either of those using the wireless kit. (I, Ryan Pavlik, have only tested this
+	as either of those using the wireless kit. (I, Rylie Pavlik, have only tested this
 	with the 5DT Data Glove 5 Ultras since that's all I have access to, but support based
 	on what I would expect from a 14-sensor glove is included.)
 	

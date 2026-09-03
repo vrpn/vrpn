@@ -4,8 +4,8 @@
     @date 2016
 
     @author
-    Ryan Pavlik
-    <ryan@sensics.com>
+    Rylie Pavlik
+    <rylie@ryliepavlik.com>
     <http://sensics.com>
 */
 
