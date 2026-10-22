@@ -26,6 +26,10 @@
 #include "vrpn_Connection.h"
 #include <string>
 
+#ifndef min
+#define	min(a,b) ( (a) < (b) ? (a) : (b) )
+#endif
+
 // Maximum representable value in size_t, used to limit overflow.
 static size_t MAX_SIZE_T = (size_t)(-1);
 
@@ -4463,7 +4467,7 @@ int vrpn_Endpoint::handle_type_message(void *userdata, vrpn_HANDLERPARAM p)
 {
     vrpn_Endpoint *endpoint = static_cast<vrpn_Endpoint *>(userdata);
     vrpn_CNAME type_name;
-    vrpn_int32 i;
+    vrpn_uint32 i;
     vrpn_int32 local_id;
 
     if (static_cast<unsigned>(p.payload_len) > sizeof(vrpn_CNAME)) {
@@ -4479,7 +4483,7 @@ int vrpn_Endpoint::handle_type_message(void *userdata, vrpn_HANDLERPARAM p)
     // Use the exact length packed into the start of the buffer
     // to figure out where to put the trailing '\0'
     i = ntohl(*((const vrpn_int32 *)p.buffer));
-    type_name[i] = '\0';
+    type_name[min(i, static_cast<vrpn_int32>(sizeof(type_name) - 1))] = '\0';
 
 #ifdef VERBOSE
     printf("Registering other-side type: '%s'\n", type_name);
@@ -4535,7 +4539,7 @@ int vrpn_Endpoint::handle_sender_message(void *userdata, vrpn_HANDLERPARAM p)
 {
     vrpn_Endpoint *endpoint = static_cast<vrpn_Endpoint *>(userdata);
     vrpn_CNAME sender_name;
-    vrpn_int32 i;
+    vrpn_uint32 i;
     vrpn_int32 local_id;
 
     if (static_cast<size_t>(p.payload_len) > sizeof(vrpn_CNAME)) {
@@ -4551,7 +4555,7 @@ int vrpn_Endpoint::handle_sender_message(void *userdata, vrpn_HANDLERPARAM p)
     // Use the exact length packed into the start of the buffer
     // to figure out where to put the trailing '\0'
     i = ntohl(*((const vrpn_int32 *)p.buffer));
-    sender_name[i] = '\0';
+    sender_name[min(i, static_cast<vrpn_int32>(sizeof(sender_name) - 1))] = '\0';
 
 #ifdef VERBOSE
     printf("Registering other-side sender: '%s'\n", sender_name);
